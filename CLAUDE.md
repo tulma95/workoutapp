@@ -7,7 +7,7 @@ A workout tracking application for the nSuns 4-Day Linear Progression program. U
 ## Tech Stack
 
 - **Backend**: Express.js + TypeScript, Prisma (ORM + migrations), bcrypt + jsonwebtoken, zod, vitest + supertest
-- **Frontend**: React + TypeScript, Vite, React Router v6, plain CSS, vitest
+- **Frontend**: React + TypeScript, Vite, React Router v6, plain CSS
 - **E2E**: Playwright
 - **Database**: PostgreSQL latest (Dockerized via docker-compose)
 - **Package manager**: npm workspaces (monorepo: `backend/`, `frontend/`)
@@ -145,11 +145,11 @@ Round calculated weights to nearest **2.5kg** or **5lb** depending on user prefe
 Always write tests for new code.
 
 - **Backend integration tests**: Run against a real PostgreSQL test database (port 5433). No `vi.mock` for DB, config, or bcrypt — use real modules.
-- **Test infrastructure**: `./run_test.sh` handles the full lifecycle: starts test Postgres container, runs migrations, runs vitest, cleans up.
-- **Test isolation**: `vitest.config.ts` uses `fileParallelism: false` and `setup.ts` truncates all tables in `beforeAll` per test file.
-- **Frontend tests**: Vitest (unit tests, no DB needed).
-- **E2E tests**: Playwright for end-to-end user flows (registration, login, workout session, progression).
-- Run tests before committing: `npm test`
+- **Test infrastructure**: `./run_test.sh` handles the full lifecycle: starts test Postgres container, runs migrations, runs backend vitest tests, starts dev servers, runs Playwright E2E tests, cleans up.
+- **Test isolation**: Backend `vitest.config.ts` uses `fileParallelism: false` and `setup.ts` truncates all tables in `beforeAll` per test file.
+- **E2E tests**: Playwright for end-to-end user flows (registration, login, workout session, progression). Test files located in `e2e/`, configuration in `playwright.config.ts` at project root.
+- **Do not write frontend unit tests.** All frontend testing is done via Playwright E2E tests.
+- Run tests before committing: `npm test` or `./run_test.sh`
 
 ## Design Decisions
 
@@ -163,6 +163,10 @@ Always write tests for new code.
 ## Commands
 
 ```bash
+# Start full local dev environment (Docker + backend + frontend in tmux)
+./start_local_env.sh      # Creates/attaches to tmux session 'treenisofta'
+
+# Or start services manually:
 # Start Postgres
 docker compose up -d
 
@@ -176,7 +180,7 @@ npx prisma migrate dev -w backend
 npm run dev -w backend    # Express on :3001
 npm run dev -w frontend   # Vite on :5173
 
-# Run tests (starts test DB, migrates, runs vitest, cleans up)
+# Run tests (starts test DB, migrates, runs backend + E2E tests, cleans up)
 npm test                  # or ./run_test.sh directly
 ```
 
