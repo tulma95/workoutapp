@@ -6,7 +6,7 @@ A workout tracking application for the nSuns 4-Day Linear Progression program. U
 
 ## Tech Stack
 
-- **Backend**: Express.js + TypeScript, Knex.js (queries + migrations), bcrypt + jsonwebtoken, zod, vitest + supertest
+- **Backend**: Express.js + TypeScript, Prisma (ORM + migrations), bcrypt + jsonwebtoken, zod, vitest + supertest
 - **Frontend**: React + TypeScript, Vite, React Router v6, plain CSS, vitest
 - **E2E**: Playwright
 - **Database**: PostgreSQL latest (Dockerized via docker-compose)
@@ -153,7 +153,7 @@ Always write tests for new code.
 - **Weights in kg internally**: Avoids precision loss from repeated lb↔kg conversions. Convert once at display layer.
 - **Append-only training_maxes**: Free progression history. Current TM = `ORDER BY effective_date DESC LIMIT 1`.
 - **Hardcoded exercises in nsuns.ts**: Fixed 4-day program, no need for dynamic exercises table.
-- **Knex over ORM**: Simple queries, lightweight migrations, no entity/schema sync overhead.
+- **Prisma ORM**: Type-safe database client, declarative schema with migrations, auto-generated types.
 - **No CSS framework**: ~10 components total, plain CSS with custom properties is simpler.
 - **T2 exercises reference parent TM**: No separate T2 training maxes. OHP has its own TM; Sumo Dead uses Deadlift TM; CG Bench uses Bench TM; Front Squat uses Squat TM.
 
@@ -167,12 +167,16 @@ docker compose up -d
 npm install
 
 # Run migrations
-npm run migrate -w backend
+npx prisma migrate dev -w backend
 
 # Dev servers
 npm run dev -w backend    # Express on :3001
 npm run dev -w frontend   # Vite on :5173
 ```
+
+## Ralph Post-Completion
+
+When Ralph finishes a task, read `progress.txt` to review what was done. Based on the progress, either create a new skill or add relevant insights into this CLAUDE.md if needed.
 
 ## Environment Variables (.env)
 

@@ -11,7 +11,7 @@ A multi-user workout tracking application for the nSuns 4-Day Linear Progression
 | Backend                | Express.js + TypeScript     |
 | Frontend               | React + TypeScript (Vite)   |
 | Database               | PostgreSQL (latest, Docker) |
-| Query builder          | Knex.js                     |
+| ORM                    | Prisma                      |
 | Auth                   | JWT (jsonwebtoken + bcrypt) |
 | Validation             | zod                         |
 | Styling                | Plain CSS (mobile-first)    |
@@ -351,7 +351,8 @@ treenisofta/
 ├── backend/
 │   ├── package.json
 │   ├── tsconfig.json
-│   ├── knexfile.ts
+│   ├── prisma/
+│   │   └── schema.prisma       # Prisma schema (models + migrations)
 │   ├── src/
 │   │   ├── index.ts            # Server entry point
 │   │   ├── app.ts              # Express app factory
@@ -370,18 +371,12 @@ treenisofta/
 │   │   │   ├── trainingMax.service.ts
 │   │   │   └── workout.service.ts
 │   │   ├── lib/
-│   │   │   ├── db.ts           # Knex instance
+│   │   │   ├── db.ts           # Prisma client instance
 │   │   │   ├── nsuns.ts        # Program definition (sets, %, exercises)
 │   │   │   ├── progression.ts  # TM increase calculation
 │   │   │   └── weightRounding.ts
 │   │   └── types/
 │   │       └── index.ts
-│   └── db/
-│       └── migrations/
-│           ├── 001_create_users.ts
-│           ├── 002_create_training_maxes.ts
-│           ├── 003_create_workouts.ts
-│           └── 004_create_workout_sets.ts
 │
 ├── frontend/
 │   ├── package.json
@@ -436,7 +431,7 @@ treenisofta/
 | --- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 1.1 | Create infrastructure files  | `.nvmrc` (Node 22), `docker-compose.yml` (Postgres latest with volume), `.gitignore` (node_modules, dist, .env, pgdata), `.env.example`                                                                                  |
 | 1.2 | Create root workspace config | `package.json` with npm workspaces pointing to `backend/` and `frontend/`, `tsconfig.base.json` with strict TypeScript                                                                                                   |
-| 1.3 | Scaffold backend             | `npm init` in backend/, install deps (express, typescript, ts-node-dev, knex, pg, cors, dotenv, zod, bcrypt, jsonwebtoken + @types/\*), create `src/index.ts` with health check endpoint, `tsconfig.json` extending base |
+| 1.3 | Scaffold backend             | `npm init` in backend/, install deps (express, typescript, ts-node-dev, prisma, @prisma/client, cors, dotenv, zod, bcrypt, jsonwebtoken + @types/\*), create `src/index.ts` with health check endpoint, `tsconfig.json` extending base |
 | 1.4 | Scaffold frontend            | `npm create vite@latest frontend -- --template react-ts`, configure `vite.config.ts` proxy (`/api` → `http://localhost:3001`), install react-router-dom                                                                  |
 | 1.5 | Setup test infrastructure    | Install vitest + supertest in backend, vitest in frontend, Playwright in root. Configure `vitest.config.ts` for both workspaces. Add `npm test` script to root `package.json`. Create Playwright config                  |
 | 1.6 | **Verify**                   | `docker compose up -d` starts Postgres, both dev servers start, health check responds, `npm test` runs (empty test suite passes)                                                                                         |
@@ -445,16 +440,16 @@ treenisofta/
 
 ### Epic 2: Database Schema
 
-**Goal**: All 4 tables created via Knex migrations.
+**Goal**: All 4 tables created via Prisma migrations.
 
 | #   | Task                      | Details                                                                                                                                                                                 |
 | --- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2.1 | Configure Knex            | Create `knexfile.ts` (reads `DATABASE_URL` from env), create `src/lib/db.ts` (export Knex instance)                                                                                     |
-| 2.2 | Migration: users          | `001_create_users.ts` - id, email (unique), password_hash, display_name, unit_preference, timestamps                                                                                    |
-| 2.3 | Migration: training_maxes | `002_create_training_maxes.ts` - id, user_id FK, exercise, weight, effective_date, unique constraint on (user_id, exercise, effective_date)                                             |
-| 2.4 | Migration: workouts       | `003_create_workouts.ts` - id, user_id FK, day_number, status, completed_at, created_at                                                                                                 |
-| 2.5 | Migration: workout_sets   | `004_create_workout_sets.ts` - id, workout_id FK (CASCADE), exercise, tier, set_order, prescribed_weight/reps, is_amrap, actual_reps, completed. Index on (workout_id, tier, set_order) |
-| 2.6 | **Verify**                | Run `npx knex migrate:latest`, connect to Postgres, confirm all tables and constraints exist                                                                                            |
+| 2.1 | Configure Prisma          | Run `npx prisma init` in backend/, configure `prisma/schema.prisma` with PostgreSQL datasource (reads `DATABASE_URL` from env), create `src/lib/db.ts` (export PrismaClient instance)    |
+| 2.2 | Model: users              | Add `User` model to `schema.prisma` - id, email (unique), passwordHash, displayName, unitPreference, timestamps                                                                         |
+| 2.3 | Model: training_maxes     | Add `TrainingMax` model to `schema.prisma` - id, userId FK, exercise, weight, effectiveDate, unique constraint on (userId, exercise, effectiveDate)                                      |
+| 2.4 | Model: workouts           | Add `Workout` model to `schema.prisma` - id, userId FK, dayNumber, status, completedAt, createdAt                                                                                       |
+| 2.5 | Model: workout_sets       | Add `WorkoutSet` model to `schema.prisma` - id, workoutId FK (CASCADE), exercise, tier, setOrder, prescribedWeight/reps, isAmrap, actualReps, completed. Index on (workoutId, tier, setOrder) |
+| 2.6 | **Verify**                | Run `npx prisma migrate dev`, connect to Postgres, confirm all tables and constraints exist                                                                                              |
 
 ---
 
@@ -679,7 +674,7 @@ NODE_ENV=development
 ```bash
 docker compose up -d              # Start Postgres
 npm install                       # Install all workspace deps
-npm run migrate -w backend        # Run Knex migrations
+npx prisma migrate dev -w backend  # Run Prisma migrations
 npm run dev -w backend            # Express on :3001
 npm run dev -w frontend           # Vite on :5173
 ```
