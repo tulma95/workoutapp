@@ -1,0 +1,15 @@
+# Ralph Progress Log
+## Codebase Patterns
+- Prisma v7 requires `@prisma/adapter-pg` adapter; no `url` in schema.prisma datasource block
+- Prisma config lives in `backend/prisma.config.ts`, schema in `backend/prisma/schema.prisma`
+- Generated Prisma client outputs to `backend/src/generated/prisma/` (gitignored)
+- PrismaClient instantiation: `new PrismaClient({ adapter: new PrismaPg({ connectionString }) })`
+- Import PrismaClient from `../generated/prisma/client` (relative to src files)
+- Run `npx prisma generate` after schema changes to regenerate client types
+- Run `npx prisma migrate dev` from `backend/` directory
+- PostgreSQL 18 (latest) changed data dir: mount volume at `/var/lib/postgresql` not `/var/lib/postgresql/data`
+- Mock PrismaClient's methods with `vi.mock('../lib/db')` in tests (see health.test.ts)
+- Backend uses CommonJS (module: "commonjs"), builds to dist/
+- Express v5 is used - route handlers can return promises, no asyncHandler needed
+- All dependencies already installed: bcrypt, jsonwebtoken, zod, cors, express, supertest, vitest
+---

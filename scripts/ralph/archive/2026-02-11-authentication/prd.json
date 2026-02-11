@@ -1,0 +1,181 @@
+{
+  "project": "nSuns 4-Day LP Workout Tracker",
+  "branchName": "ralph/real-db-tests",
+  "description": "Real Database Testing Infrastructure - Replace all vi.mock-based tests with integration tests against a real PostgreSQL instance",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Add test Docker Compose service",
+      "description": "As a developer, I need a separate Postgres container for tests so that test runs don't interfere with the development database.",
+      "acceptanceCriteria": [
+        "Create docker-compose.test.yml with a Postgres service on port 5433",
+        "Database name: treenisofta_test, user: treenisofta, password: treenisofta_dev",
+        "No named volume — data is ephemeral (use tmpfs or no volume mount)",
+        "Container can be started/stopped independently of the dev database (separate compose file)",
+        "Typecheck passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Use postgres:latest image. The dev docker-compose.yml uses port 5432 — test must use 5433 to avoid conflict. Volume mount convention for PostgreSQL 18: /var/lib/postgresql (not /var/lib/postgresql/data)."
+    },
+    {
+      "id": "US-002",
+      "title": "Create run_test.sh script",
+      "description": "As a developer, I want a single script that handles the entire test lifecycle so I don't need to manually manage the test database.",
+      "acceptanceCriteria": [
+        "Script lives at project root: run_test.sh and is executable (chmod +x)",
+        "Starts test Postgres container via docker compose -f docker-compose.test.yml up -d",
+        "Waits for Postgres to be ready using pg_isready or connection retry loop",
+        "Runs Prisma migrations: npx prisma migrate deploy (from backend/ directory) with DATABASE_URL pointing to test DB",
+        "Runs vitest run (from backend/ directory) with env vars: DATABASE_URL=postgresql://treenisofta:treenisofta_dev@localhost:5433/treenisofta_test, JWT_SECRET=test-jwt-secret-do-not-use-in-production, PORT=3001, NODE_ENV=test",
+        "Captures the test exit code before cleanup",
+        "Stops and removes the test container: docker compose -f docker-compose.test.yml down",
+        "Exits with the captured test exit code (non-zero on failure for CI)",
+        "Script works on macOS and Linux (POSIX-compatible shell)"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "Use #!/usr/bin/env bash. Set -e for early exit on infrastructure failures but capture test exit code manually so cleanup always runs. Use trap for cleanup on unexpected exit. Prisma migrate deploy (not dev) to avoid interactive prompts. The prisma.config.ts reads DATABASE_URL from process.env."
+    },
+    {
+      "id": "US-003",
+      "title": "Add Vitest global setup for database lifecycle",
+      "description": "As a developer, I need test infrastructure that connects to the real database and truncates tables between test suites for isolation.",
+      "acceptanceCriteria": [
+        "Create a vitest globalSetup file (e.g. src/__tests__/globalSetup.ts) that verifies database connectivity on startup and disconnects Prisma on teardown",
+        "Create a vitest setupFile (e.g. src/__tests__/setup.ts) that truncates all application tables (workout_sets, workouts, training_maxes, users) using TRUNCATE ... CASCADE in an afterAll hook",
+        "Update backend/vitest.config.ts to reference both globalSetup and setupFiles",
+        "The real Prisma client from src/lib/db.ts is used (not a mock)",
+        "Tests fail fast with a clear error if the database is not available",
+        "Typecheck passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "globalSetup runs once before all test files. setupFiles runs once per test file (before the tests in that file). Use afterAll in the setupFile to truncate tables after each test file completes. Import prisma from '../../lib/db' (or adjust path). Use prisma.$executeRawUnsafe('TRUNCATE workout_sets, workouts, training_maxes, users CASCADE')."
+    },
+    {
+      "id": "US-004",
+      "title": "Rewrite health check tests",
+      "description": "As a developer, I want the health endpoint tests to verify real database connectivity instead of mocking $queryRaw.",
+      "acceptanceCriteria": [
+        "Remove all vi.mock calls from health.test.ts",
+        "Test GET /health returns 200 with real DB connection",
+        "Test still verifies response body structure ({ status: 'ok' })",
+        "No mocking of config or db modules",
+        "Tests pass against the real test database"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "The health endpoint uses prisma.$queryRaw to verify DB connectivity. With real DB available, this should just work. Import app from the real app module. Use supertest as before but without mocks."
+    },
+    {
+      "id": "US-005",
+      "title": "Rewrite auth middleware tests",
+      "description": "As a developer, I want auth middleware tests to use real JWT tokens and config instead of mocks.",
+      "acceptanceCriteria": [
+        "Remove vi.mock('../../config') from auth.test.ts",
+        "Generate real JWT tokens using jsonwebtoken with the test JWT_SECRET env var (set by run_test.sh)",
+        "Test that valid tokens pass authentication",
+        "Test that invalid/expired tokens are rejected",
+        "Test that missing tokens return 401",
+        "No mocking of config module",
+        "Tests pass"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "The real config module will load JWT_SECRET from env vars set by run_test.sh. Use jwt.sign() with the same secret that config.jwtSecret resolves to (test-jwt-secret-do-not-use-in-production). Import config from the real config module to get the secret for signing test tokens."
+    },
+    {
+      "id": "US-006",
+      "title": "Rewrite error handler middleware tests",
+      "description": "As a developer, I want error handler tests to work without config mocks.",
+      "acceptanceCriteria": [
+        "Remove vi.mock('../../config') from errorHandler.test.ts",
+        "Tests verify error responses correctly for the test NODE_ENV",
+        "No mocking of config module",
+        "Tests pass"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "NODE_ENV will be 'test' when run via run_test.sh. The error handler checks for 'development' to include stack traces. Adjust test assertions if needed — 'test' mode should behave like production (no stack trace). If tests need to verify both modes, consider temporarily setting process.env.NODE_ENV within the test and re-importing config, or just accept testing under 'test' mode."
+    },
+    {
+      "id": "US-007",
+      "title": "Rewrite validation middleware tests",
+      "description": "As a developer, I want validation middleware tests to work without any module mocking.",
+      "acceptanceCriteria": [
+        "Remove any vi.mock calls from validate.test.ts (if any exist)",
+        "Tests still verify Zod schema validation behavior",
+        "Tests pass without any module mocking"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": "validate.test.ts may already have minimal or no mocks since it tests pure middleware logic with Zod schemas. Verify and clean up if needed."
+    },
+    {
+      "id": "US-008",
+      "title": "Rewrite auth route tests as integration tests",
+      "description": "As a developer, I want auth route tests to create real users in the database and verify real password hashing and JWT generation.",
+      "acceptanceCriteria": [
+        "Remove all vi.mock calls (config, db, bcrypt) from routes/auth.test.ts",
+        "POST /api/auth/register creates a real user in the test database",
+        "POST /api/auth/login authenticates against a real bcrypt hash",
+        "JWT tokens returned are real and can be decoded with jsonwebtoken.verify()",
+        "Duplicate email registration returns 409",
+        "Invalid credentials return 401",
+        "Tests use supertest against the real Express app with real middleware",
+        "Tests pass"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": "Import the real app from src/app.ts. No need to create mini Express apps — use the full app. The setupFile handles table truncation between test suites. bcrypt will be slower with real hashing but should still be fast enough. Test the refresh endpoint too if it's in the same file."
+    },
+    {
+      "id": "US-009",
+      "title": "Rewrite user route tests as integration tests",
+      "description": "As a developer, I want user route tests to read and update real user records in the database.",
+      "acceptanceCriteria": [
+        "Remove all vi.mock calls from routes/users.test.ts",
+        "Tests create a real user (via POST /api/auth/register or direct Prisma insert) as test setup",
+        "GET /api/users/me returns the real user from the database",
+        "PATCH /api/users/me updates the real user record",
+        "Tests use real JWT tokens for authentication",
+        "No mocking of config, db, or bcrypt modules",
+        "Tests pass"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": "Create test users via the register endpoint in a beforeAll/beforeEach block. Use the returned JWT token for authenticated requests. This tests the full stack end-to-end."
+    },
+    {
+      "id": "US-010",
+      "title": "Rewrite auth service tests as integration tests",
+      "description": "As a developer, I want auth service tests to exercise the real service with a real database.",
+      "acceptanceCriteria": [
+        "Remove all vi.mock calls from auth.service.test.ts",
+        "register() creates a real user with a real bcrypt hash in the database",
+        "login() authenticates against a real database record",
+        "Duplicate email handling is tested against real unique constraints (Prisma P2002)",
+        "JWT tokens are real and verifiable",
+        "No mocking of config or db modules",
+        "Tests pass"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": "Import the real auth service and call register()/login() directly. The real Prisma client will insert into the test database. Real bcrypt hashing will be used. Table truncation between suites prevents cross-contamination."
+    },
+    {
+      "id": "US-011",
+      "title": "Update package.json test scripts",
+      "description": "As a developer, I want the npm test scripts to reflect the new test infrastructure.",
+      "acceptanceCriteria": [
+        "Root package.json test script calls ./run_test.sh",
+        "Backend package.json retains vitest run as its test script (called by run_test.sh with correct env vars)",
+        "Typecheck passes"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": "The root package.json currently has \"test\": \"npm test -w backend\". Change to \"test\": \"./run_test.sh\". Backend package.json keeps \"test\": \"vitest run\" unchanged."
+    }
+  ]
+}
