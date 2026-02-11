@@ -144,7 +144,10 @@ Round calculated weights to nearest **2.5kg** or **5lb** depending on user prefe
 
 Always write tests for new code.
 
-- **Unit/integration tests**: Vitest for both backend and frontend. Test all services, routes, and lib functions. Use supertest for API route tests. Test core domain logic thoroughly (nsuns.ts, progression.ts, weightRounding.ts).
+- **Backend integration tests**: Run against a real PostgreSQL test database (port 5433). No `vi.mock` for DB, config, or bcrypt — use real modules.
+- **Test infrastructure**: `./run_test.sh` handles the full lifecycle: starts test Postgres container, runs migrations, runs vitest, cleans up.
+- **Test isolation**: `vitest.config.ts` uses `fileParallelism: false` and `setup.ts` truncates all tables in `beforeAll` per test file.
+- **Frontend tests**: Vitest (unit tests, no DB needed).
 - **E2E tests**: Playwright for end-to-end user flows (registration, login, workout session, progression).
 - Run tests before committing: `npm test`
 
@@ -172,6 +175,9 @@ npx prisma migrate dev -w backend
 # Dev servers
 npm run dev -w backend    # Express on :3001
 npm run dev -w frontend   # Vite on :5173
+
+# Run tests (starts test DB, migrates, runs vitest, cleans up)
+npm test                  # or ./run_test.sh directly
 ```
 
 ## Ralph Post-Completion
