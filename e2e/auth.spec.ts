@@ -9,9 +9,9 @@ test.describe('Authentication', () => {
 
     await page.goto('/register');
 
-    await page.fill('input[name="email"]', email);
-    await page.fill('input[name="password"]', password);
-    await page.fill('input[name="displayName"]', displayName);
+    await page.fill('#email', email);
+    await page.fill('#password', password);
+    await page.fill('#displayName', displayName);
     await page.click('button[type="submit"]');
 
     // After successful registration, user should be redirected to setup page
@@ -27,9 +27,9 @@ test.describe('Authentication', () => {
 
     // Register first time
     await page.goto('/register');
-    await page.fill('input[name="email"]', email);
-    await page.fill('input[name="password"]', password);
-    await page.fill('input[name="displayName"]', displayName);
+    await page.fill('#email', email);
+    await page.fill('#password', password);
+    await page.fill('#displayName', displayName);
     await page.click('button[type="submit"]');
     await page.waitForURL('/setup');
 
@@ -38,9 +38,9 @@ test.describe('Authentication', () => {
 
     // Try to register again with same email
     await page.goto('/register');
-    await page.fill('input[name="email"]', email);
-    await page.fill('input[name="password"]', password);
-    await page.fill('input[name="displayName"]', displayName);
+    await page.fill('#email', email);
+    await page.fill('#password', password);
+    await page.fill('#displayName', displayName);
     await page.click('button[type="submit"]');
 
     // Should show error message
@@ -57,9 +57,9 @@ test.describe('Authentication', () => {
 
     // Register first
     await page.goto('/register');
-    await page.fill('input[name="email"]', email);
-    await page.fill('input[name="password"]', password);
-    await page.fill('input[name="displayName"]', displayName);
+    await page.fill('#email', email);
+    await page.fill('#password', password);
+    await page.fill('#displayName', displayName);
     await page.click('button[type="submit"]');
     await page.waitForURL('/setup');
 
@@ -67,8 +67,8 @@ test.describe('Authentication', () => {
     await page.goto('/login');
 
     // Login with valid credentials
-    await page.fill('input[name="email"]', email);
-    await page.fill('input[name="password"]', password);
+    await page.fill('#email', email);
+    await page.fill('#password', password);
     await page.click('button[type="submit"]');
 
     // Should redirect to setup (user has no TMs yet)
@@ -84,9 +84,9 @@ test.describe('Authentication', () => {
 
     // Register first
     await page.goto('/register');
-    await page.fill('input[name="email"]', email);
-    await page.fill('input[name="password"]', password);
-    await page.fill('input[name="displayName"]', displayName);
+    await page.fill('#email', email);
+    await page.fill('#password', password);
+    await page.fill('#displayName', displayName);
     await page.click('button[type="submit"]');
     await page.waitForURL('/setup');
 
@@ -94,8 +94,8 @@ test.describe('Authentication', () => {
     await page.goto('/login');
 
     // Try to login with wrong password
-    await page.fill('input[name="email"]', email);
-    await page.fill('input[name="password"]', 'WrongPassword456');
+    await page.fill('#email', email);
+    await page.fill('#password', 'WrongPassword456');
     await page.click('button[type="submit"]');
 
     // Should show error message
@@ -112,9 +112,9 @@ test.describe('Authentication', () => {
 
     // Register and login
     await page.goto('/register');
-    await page.fill('input[name="email"]', email);
-    await page.fill('input[name="password"]', password);
-    await page.fill('input[name="displayName"]', displayName);
+    await page.fill('#email', email);
+    await page.fill('#password', password);
+    await page.fill('#displayName', displayName);
     await page.click('button[type="submit"]');
     await page.waitForURL('/setup');
 
