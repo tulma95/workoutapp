@@ -52,8 +52,8 @@ export const test = base.extend<{
     // Submit form
     await page.click('button[type="submit"]');
 
-    // Wait for redirect to dashboard
-    await page.waitForURL('/dashboard', { timeout: 10000 });
+    // Wait for redirect to dashboard (root path)
+    await page.waitForURL('/', { timeout: 10000 });
 
     // Provide the page with setup complete and user to the test
     await use({ page, user });

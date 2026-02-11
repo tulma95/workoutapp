@@ -9,12 +9,13 @@ test.describe('Dashboard', () => {
     await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
 
     // Check all 4 day cards exist with correct exercises
+    // Use .first() for exercise names that appear both in TM list and workout cards
     await expect(page.getByRole('heading', { name: /^day 1$/i })).toBeVisible();
     await expect(page.getByText(/bench volume/i)).toBeVisible();
-    await expect(page.getByText(/^ohp$/i)).toBeVisible();
+    await expect(page.getByText(/^ohp$/i).first()).toBeVisible();
 
     await expect(page.getByRole('heading', { name: /^day 2$/i })).toBeVisible();
-    await expect(page.getByText(/^squat$/i)).toBeVisible();
+    await expect(page.getByText(/^squat$/i).first()).toBeVisible();
     await expect(page.getByText(/sumo deadlift/i)).toBeVisible();
 
     await expect(page.getByRole('heading', { name: /^day 3$/i })).toBeVisible();
@@ -22,7 +23,7 @@ test.describe('Dashboard', () => {
     await expect(page.getByText(/close grip bench/i)).toBeVisible();
 
     await expect(page.getByRole('heading', { name: /^day 4$/i })).toBeVisible();
-    await expect(page.getByText(/^deadlift$/i)).toBeVisible();
+    await expect(page.getByText(/^deadlift$/i).first()).toBeVisible();
     await expect(page.getByText(/front squat/i)).toBeVisible();
   });
 

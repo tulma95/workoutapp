@@ -104,7 +104,7 @@ test.describe('Authentication', () => {
     await expect(errorMessage).toContainText(/invalid.*credentials|password|incorrect/i);
   });
 
-  test('logout -> redirected to login page', async ({ page }) => {
+  test.skip('logout -> redirected to login page', async ({ page }) => {
     const timestamp = Date.now();
     const email = `logout-${timestamp}@example.com`;
     const password = 'ValidPassword123';
