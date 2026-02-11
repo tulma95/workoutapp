@@ -106,3 +106,16 @@ Started: Tue Feb 11 2026
   - Uses getByRole selectors for accessibility (heading, button)
   - Uses getByText for exercise names and TM values
 ---
+
+## 2026-02-11 20:40 - US-054
+- Created AmrapInput component for mobile-friendly rep entry
+- Files: frontend/src/components/AmrapInput.tsx, AmrapInput.css
+- **Learnings for future iterations:**
+  - Horizontal layout with [-] [input] [+] buttons
+  - If value is null, + sets to targetReps, - sets to 0
+  - Number input allows direct entry with placeholder showing targetReps
+  - All buttons are 44px min-height for touch targets
+  - Buttons have aria-labels for accessibility
+  - Input hides browser number spinners with CSS
+  - Typecheck passes
+---

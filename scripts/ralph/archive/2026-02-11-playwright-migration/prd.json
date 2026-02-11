@@ -202,7 +202,7 @@
         "Typecheck passes"
       ],
       "priority": 11,
-      "passes": false,
+      "passes": true,
       "notes": "Use a horizontal layout: [-] [value] [+]. The number input in the middle should be a small input[type='number'] for direct editing. Use btn-secondary or custom styles for the +/- buttons. The +/- buttons need aria-labels for accessibility ('Decrease reps', 'Increase reps')."
     },
     {
