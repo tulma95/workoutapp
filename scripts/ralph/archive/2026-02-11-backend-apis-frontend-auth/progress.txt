@@ -1,0 +1,162 @@
+# Ralph Progress Log
+Started: Wed Feb 11 16:16:51 EET 2026
+
+## Codebase Patterns
+- Mock Prisma in tests via `vi.mock('../lib/db', () => ({ default: { ... } }))`
+- Express 5 with TypeScript, CommonJS module output
+- Config loads env vars with dotenv; import `config` from `./config` to validate at startup
+- Existing health test pattern: mock db, import app, use supertest
+- vi.mock() is hoisted: don't reference `const` vars inside factory - use literal values
+- Mock bcrypt: `vi.mock('bcrypt', () => ({ default: { hash: vi.fn(), compare: vi.fn() } }))`
+- Zod v4: use `z.email()` for email validation (not `z.string().email()`)
+- Prisma P2002 error: check `err.code === 'P2002'` for unique constraint violations
+- Auth routes test pattern: create mini Express app, mount router, use supertest
+- Exclude passwordHash from user responses via `const { passwordHash: _, ...safe } = user`
+- Express 5 params return `string | string[]` - cast with `as string` for single params
+- Prisma Decimal fields need `Number()` conversion when returning to callers
+- Use `upsert` with composite unique constraints for same-day TM updates (avoid create + unique violation)
+- Integration tests use real DB via supertest + setup.ts truncation - no mocking needed
+- Frontend: React 19 + @testing-library/react has version mismatch - test auth logic directly instead of rendering components
+- Frontend vitest config: `environment: 'jsdom'` for DOM APIs (localStorage, fetch)
+
+---
+
+## 2026-02-11 16:18 - US-001
+- What was implemented: Centralized config.ts with env var loading (JWT_SECRET, DATABASE_URL, PORT, NODE_ENV), types/index.ts with JwtPayload and AuthRequest interfaces, updated index.ts to use config
+- Files changed: backend/src/config.ts (new), backend/src/types/index.ts (new), backend/src/index.ts (modified)
+- **Learnings for future iterations:**
+  - dotenv is already used in lib/db.ts, config.ts also calls dotenv.config() for standalone usage
+  - index.ts previously used `process.env.PORT || 3001` directly, now uses `config.port`
+  - AuthRequest extends Express Request with optional `userId?: number`
+---
+
+## 2026-02-11 16:19 - US-002
+- What was implemented: Reusable Zod validation middleware in src/middleware/validate.ts with unit tests
+- Files changed: backend/src/middleware/validate.ts (new), backend/src/__tests__/middleware/validate.test.ts (new)
+- **Learnings for future iterations:**
+  - Zod v4 `safeParse` returns `{ success, data, error }` - same API as v3
+  - Zod v4 strips unknown fields by default (no need for `.strip()`)
+  - Error structure: `{ error: { code, message, details: [{ path, message }] } }` - use this pattern consistently
+  - Git commands must run from project root `/Users/rikuhonk/koodailu/treenisofta`, not from backend/
+---
+
+## 2026-02-11 16:20 - US-003
+- What was implemented: Global error handler middleware with dev/prod mode differentiation
+- Files changed: backend/src/middleware/errorHandler.ts (new), backend/src/__tests__/middleware/errorHandler.test.ts (new)
+- **Learnings for future iterations:**
+  - Mock config module with `vi.mock('../../config', () => ({ config: {...} }))` for tests that need config values
+  - Config object properties can be mutated in tests via `vi.mocked(config).nodeEnv = 'production'`
+  - Express 5 error handler still needs 4-arg signature (err, req, res, next)
+---
+
+## 2026-02-11 16:21 - US-004
+- What was implemented: JWT authentication middleware with Bearer token extraction and verification
+- Files changed: backend/src/middleware/auth.ts (new), backend/src/__tests__/middleware/auth.test.ts (new)
+- **Learnings for future iterations:**
+  - Use `jwt.sign({ ... }, SECRET, { expiresIn: '-1s' })` to create expired tokens for testing
+  - Auth middleware sets `req.userId` (not full payload) - downstream handlers use this
+  - Mock config with hardcoded jwtSecret in tests so jwt.sign/verify work together
+---
+
+## 2026-02-11 16:22 - US-005
+- What was implemented: Auth service with register() and login() functions, password hashing, JWT signing
+- Files changed: backend/src/services/auth.service.ts (new), backend/src/__tests__/services/auth.service.test.ts (new)
+- **Learnings for future iterations:**
+  - bcrypt.hash is async, must await it
+  - Prisma unique constraint violations have error code 'P2002' - catch this for duplicate emails
+  - Same error message for wrong email and wrong password to prevent user enumeration
+  - stripPasswordHash helper using destructuring to exclude passwordHash from response
+---
+
+## 2026-02-11 16:23 - US-006
+- What was implemented: Auth routes (POST /register, POST /login) with zod validation and Prisma P2002 error handling
+- Files changed: backend/src/routes/auth.ts (new), backend/src/__tests__/routes/auth.test.ts (new)
+- **Learnings for future iterations:**
+  - Mock bcrypt as default export: `vi.mock('bcrypt', () => ({ default: { hash: vi.fn(), compare: vi.fn() } }))`
+  - Integration tests create a mini Express app with router mounted for isolated testing
+---
+
+## 2026-02-11 16:24 - US-007
+- What was implemented: Token refresh endpoint (POST /refresh) with token rotation, added refreshTokens() to auth service
+- Files changed: backend/src/routes/auth.ts (modified), backend/src/services/auth.service.ts (modified), backend/src/__tests__/routes/auth.test.ts (modified)
+- **Learnings for future iterations:**
+  - Refresh token only contains userId and type, not email - need DB lookup for email when issuing new access token
+  - Verify `decoded.type === 'refresh'` to prevent access tokens being used as refresh tokens
+---
+
+## 2026-02-11 16:25 - US-008
+- What was implemented: User routes (GET /me, PATCH /me) with authenticate middleware and zod validation
+- Files changed: backend/src/routes/users.ts (new), backend/src/__tests__/routes/users.test.ts (new)
+- **Learnings for future iterations:**
+  - vi.mock() is hoisted to top of file - const variables defined before vi.mock() can't be referenced inside factory
+  - router.use(authenticate) applies middleware to all routes in the router
+---
+
+## 2026-02-11 16:26 - US-009
+- What was implemented: Wired auth and user routes into app.ts, added error handler as last middleware
+- Files changed: backend/src/app.ts (modified)
+- **Learnings for future iterations:**
+  - Error handler must be registered AFTER all routes in Express
+  - Health check test still passes after adding route imports (mocking prevents side effects)
+---
+
+## 2026-02-11 16:27 - US-010
+- What was implemented: Full E2E verification - all 33 tests pass, typecheck passes, manual curl flow verified
+- Files changed: none (verification only)
+- **Learnings for future iterations:**
+  - Full auth flow: register → login → GET /me → refresh → GET /me with new token
+  - All API responses correctly exclude passwordHash
+  - 33 unit/integration tests across 7 test files
+---
+
+## 2026-02-11 18:00 - US-017 through US-024 (Backend APIs)
+- What was implemented:
+  - Training max service (getCurrentTMs, setupFromOneRepMaxes, updateTM, getHistory) with lb→kg conversion and Decimal→number handling
+  - Training max routes (GET /, POST /setup, PATCH /:exercise, GET /:exercise/history) mounted at /api/training-maxes
+  - Workout service (startWorkout, getCurrentWorkout, getWorkout, logSet, completeWorkout, getHistory) with Prisma transactions, progression AMRAP detection, and TM auto-update
+  - Workout routes (POST /, GET /current, GET /:id, PATCH /:id/sets/:setId, POST /:id/complete, GET /history) mounted at /api/workouts
+  - 14 training max integration tests + 17 workout integration tests (all using real DB)
+- Files changed:
+  - backend/src/services/trainingMax.service.ts (new)
+  - backend/src/services/workout.service.ts (new)
+  - backend/src/routes/trainingMaxes.ts (new)
+  - backend/src/routes/workouts.ts (new)
+  - backend/src/app.ts (modified - mounted new routes)
+  - backend/src/__tests__/trainingMaxes.test.ts (new)
+  - backend/src/__tests__/workouts.test.ts (new)
+  - backend/src/__tests__/workoutCompletion.test.ts (new)
+- **Learnings for future iterations:**
+  - Express 5 req.params returns `string | string[]` - must cast with `as string`
+  - Use upsert (not create) for TrainingMax inserts to handle same-day unique constraint
+  - completeWorkout must use upsert for TM updates too (multiple completions same day in tests)
+  - 140 * 0.9 = 126 → roundWeight(126, 'kg') = 125 (not 126!) because 126/2.5 = 50.4 → round(50.4) = 50 → 125
+  - Progression AMRAP is highest-percentage AMRAP in T1: set 3 (95%) for Days 2-4, set 9 (65%) for Day 1
+---
+
+## 2026-02-11 18:05 - US-025 through US-033 (Frontend)
+- What was implemented:
+  - Global CSS with custom properties, mobile-first design, button and input styles, bottom nav
+  - API client (apiFetch) with JWT attach, 401 refresh retry, and error handling
+  - Auth API functions (login, register) as thin fetch wrappers
+  - AuthContext with mount validation, login/register/logout, isLoading state
+  - Layout component with header, bottom nav (Dashboard/History/Settings), Outlet
+  - PrivateRoute component with loading/redirect/outlet logic
+  - LoginPage, RegisterPage, SettingsPage (full implementations)
+  - DashboardPage, HistoryPage, SetupPage, WorkoutPage (placeholders)
+  - App.tsx with full React Router v6 setup, AuthProvider, nested protected routes
+  - 8 frontend tests: client.test.ts (4) + AuthContext.test.tsx (4)
+- Files changed:
+  - frontend/src/styles/global.css (new)
+  - frontend/src/api/client.ts, auth.ts (new)
+  - frontend/src/context/AuthContext.tsx (new)
+  - frontend/src/components/Layout.tsx, PrivateRoute.tsx (new)
+  - frontend/src/pages/*.tsx (7 page files, new)
+  - frontend/src/App.tsx, main.tsx (modified)
+  - frontend/vitest.config.ts, package.json (new/modified)
+  - frontend/src/__tests__/*.test.{ts,tsx} (2 test files, new)
+- **Learnings for future iterations:**
+  - React 19 + @testing-library/react@16 has peer dependency on React 18 - causes "Objects are not valid as a React child" when rendering
+  - Workaround: test auth logic directly (API calls, localStorage) without rendering React components
+  - react-router-dom v7 has same Route/Outlet API as v6
+  - Vite proxy handles /api → localhost:3001, so apiFetch uses relative paths
+---

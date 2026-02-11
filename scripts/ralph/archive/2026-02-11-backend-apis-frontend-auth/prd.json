@@ -1,0 +1,340 @@
+{
+  "project": "nSuns 4-Day LP Workout Tracker",
+  "branchName": "ralph/backend-apis-frontend-auth",
+  "description": "Training Max API, Workout API & Frontend Auth - Backend CRUD for training maxes and workouts with progression, plus frontend auth flow, app shell, and protected routing",
+  "userStories": [
+    {
+      "id": "US-017",
+      "title": "Create training max service",
+      "description": "As a developer, I need a service layer for training max CRUD so that routes stay thin and logic is testable.",
+      "acceptanceCriteria": [
+        "Create backend/src/services/trainingMax.service.ts",
+        "getCurrentTMs(userId) returns the latest TrainingMax row per exercise (bench, squat, ohp, deadlift) using ORDER BY effectiveDate DESC with distinct on exercise",
+        "setupFromOneRepMaxes(userId, oneRepMaxes, unit) computes TM = 0.9 * 1RM for each exercise, converts from user's unit to kg if unit is 'lb' (divide by 2.20462), rounds to nearest 2.5kg using roundWeight from lib/weightRounding.ts, and inserts 4 TrainingMax rows with today's date",
+        "Re-calling setup inserts new rows (does not reject if TMs already exist) — use upsert to handle the unique constraint on (userId, exercise, effectiveDate) for same-day re-setup",
+        "updateTM(userId, exercise, weight, unit) converts weight from user's unit to kg, rounds to 2.5kg, inserts new TrainingMax row with today's date",
+        "getHistory(userId, exercise) returns all TrainingMax rows for that exercise ordered by effectiveDate DESC",
+        "Handle Prisma Decimal to number conversion (TrainingMax.weight is Decimal(6,2))",
+        "Typecheck passes"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": "Follow patterns from auth.service.ts. Import prisma from lib/db, roundWeight from lib/weightRounding. The unit parameter comes from the user's unitPreference in the database. For lb→kg conversion: weightInKg = weightInLb / 2.20462. Prisma Decimal fields need Number() conversion when returning to callers."
+    },
+    {
+      "id": "US-018",
+      "title": "Create training max routes and mount in app",
+      "description": "As a user, I want API endpoints to manage my training maxes so the frontend can interact with them.",
+      "acceptanceCriteria": [
+        "Create backend/src/routes/trainingMaxes.ts",
+        "All routes use authenticate middleware (import from middleware/auth.ts)",
+        "GET / returns current TMs for all 4 exercises (or empty array if none set) — calls trainingMax.service.getCurrentTMs",
+        "POST /setup accepts { oneRepMaxes: { bench, squat, ohp, deadlift } } with zod validation (all 4 required, positive numbers). Looks up user's unitPreference from DB, calls setupFromOneRepMaxes, returns created TMs",
+        "PATCH /:exercise accepts { weight } (positive number) with zod validation. Validates exercise param is one of bench/squat/ohp/deadlift. Looks up user's unitPreference, calls updateTM",
+        "GET /:exercise/history validates exercise param, calls getHistory, returns ordered history",
+        "Error responses follow existing pattern: { error: { code: string, message: string } }",
+        "Mount routes in app.ts under /api/training-maxes (add import and app.use)",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": "Follow patterns from routes/auth.ts and routes/users.ts. Use validate() middleware for request body validation. Use AuthRequest type from types/index.ts for req typing. Look up user via prisma.user.findUnique({ where: { id: req.userId } }) to get unitPreference. Response weights are in kg (frontend handles display conversion)."
+    },
+    {
+      "id": "US-019",
+      "title": "Test training max API",
+      "description": "As a developer, I need integration tests to verify the training max API works correctly against a real database.",
+      "acceptanceCriteria": [
+        "Create backend/src/__tests__/trainingMaxes.test.ts",
+        "Test setup from 1RMs with kg user: POST /api/training-maxes/setup with oneRepMaxes → verify returned TMs are 90% of 1RM, rounded to 2.5kg",
+        "Test setup with lb user: register user with unitPreference 'lb', POST setup with lb values → verify stored weights are correctly converted to kg",
+        "Test re-setup: calling setup twice with different values → GET returns latest TMs reflecting second call",
+        "Test GET /api/training-maxes returns latest TM per exercise",
+        "Test GET returns empty array when no TMs set",
+        "Test PATCH /:exercise inserts new row, GET reflects updated weight",
+        "Test PATCH with lb user converts weight to kg correctly",
+        "Test GET /:exercise/history returns all TMs ordered by date",
+        "Test validation rejects invalid exercise name in PATCH (e.g. 'bicep')",
+        "Test validation rejects negative/zero weights",
+        "Test 401 when no JWT provided",
+        "All tests use real database (supertest), no mocking of DB, config, or bcrypt",
+        "All tests pass via ./run_test.sh"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": "Follow test patterns from existing __tests__/auth.test.ts if it exists. Use supertest with the app from app.ts. Register a test user via POST /api/auth/register to get a JWT token, then use that token for subsequent requests. The test DB runs on port 5433. setup.ts truncates all tables in beforeAll. For lb conversion verification: 225lb bench 1RM → TM = 225 * 0.9 / 2.20462 = 91.9kg → rounded to 92.5kg."
+    },
+    {
+      "id": "US-020",
+      "title": "Create workout service - start and read operations",
+      "description": "As a developer, I need workout service functions for starting workouts and reading workout data.",
+      "acceptanceCriteria": [
+        "Create backend/src/services/workout.service.ts",
+        "startWorkout(userId, dayNumber) looks up current TMs via trainingMax.service.getCurrentTMs, looks up user's unitPreference, calls generateWorkoutSets() from lib/nsuns.ts, inserts Workout row (status: 'in_progress') and all WorkoutSet rows in a Prisma transaction, returns the full workout with sets",
+        "startWorkout throws an error (for 400 response) if user has no training maxes for the required exercises",
+        "startWorkout throws an error (for 409 response) if user already has an in-progress workout (check for existing workout with status 'in_progress')",
+        "Weights stored in prescribedWeight are in kg — pass 'kg' to generateWorkoutSets regardless of user preference (the rounding should use the user's unit for plate granularity, but stored value is always kg)",
+        "getCurrentWorkout(userId) finds the in-progress workout with all sets included, or returns null",
+        "getWorkout(workoutId, userId) returns a specific workout with all sets, returns null if not found or not owned by user",
+        "Typecheck passes"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": "Import generateWorkoutSets from lib/nsuns.ts. Import getCurrentTMs from services/trainingMax.service. Use prisma.$transaction for atomic insert of workout + sets. The NSUNS_4DAY constant can tell you which TM exercises are needed for each day. For prescribedWeight storage: the design decision says 'weights in kg internally'. However, generateWorkoutSets currently rounds using the unit param. You need to ensure the stored value is in kg. One approach: always pass 'kg' for storage rounding, but this means lb users see kg-rounded weights. Better approach: generate with user's unit for correct plate rounding, then convert lb-rounded weights back to kg for storage. Actually, since roundWeight just determines rounding granularity (2.5 vs 5), and we store in kg, pass 'kg' to get 2.5kg rounding for all users."
+    },
+    {
+      "id": "US-021",
+      "title": "Create workout service - complete and history operations",
+      "description": "As a developer, I need workout completion with TM progression logic and paginated history.",
+      "acceptanceCriteria": [
+        "Add logSet(setId, userId, data: { actualReps?, completed? }) to workout.service.ts — updates the WorkoutSet fields, with ownership verification by joining through the workout table to check userId",
+        "Add completeWorkout(workoutId, userId) that: verifies ownership, finds the T1 progression AMRAP set (highest percentage AMRAP), reads actualReps, calls calculateProgression() from lib/progression.ts, inserts new TrainingMax row if increase > 0, marks workout completed with completedAt timestamp, returns { workout, progression: { exercise, previousTM, newTM, increase } | null }",
+        "To identify the progression AMRAP: use NSUNS_4DAY[dayNumber-1].t1.sets to find which set index has the highest percentage among AMRAP sets, then match by tier='T1' and that setOrder in the WorkoutSet records",
+        "If the progression AMRAP set has no actualReps logged (null), no TM change — return progression as null but still mark workout completed",
+        "Workout completion does NOT require all sets to be completed — any set can be skipped",
+        "Add getHistory(userId, page, limit) returning paginated completed workouts ordered by completedAt DESC, with total count",
+        "Typecheck passes"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": "Import calculateProgression from lib/progression.ts. Import NSUNS_4DAY from lib/nsuns.ts for looking up which AMRAP set is the progression set. For Day 1: the only T1 AMRAP is set 9 (65%). For Days 2-4: T1 has two AMRAPs — set 3 (95%) and set 9 (65%). The progression AMRAP is always the highest percentage one: set 3 for Days 2-4, set 9 for Day 1. The progression result needs the T1 exercise key (e.g. 'squat' for Day 2) to know which TM to update. Pagination: use prisma skip/take with count query."
+    },
+    {
+      "id": "US-022",
+      "title": "Create workout routes and mount in app",
+      "description": "As a user, I want API endpoints to start workouts, log sets, complete workouts, and view history.",
+      "acceptanceCriteria": [
+        "Create backend/src/routes/workouts.ts",
+        "All routes use authenticate middleware",
+        "POST / accepts { dayNumber } (integer 1-4, zod validated), calls startWorkout, returns 201 with workout+sets. Returns 400 if no TMs, 409 if duplicate in-progress",
+        "GET /current calls getCurrentWorkout, returns workout+sets or null",
+        "GET /:id calls getWorkout, returns workout+sets or 404 if not found/not owned",
+        "PATCH /:id/sets/:setId accepts { actualReps?, completed? } (zod validated, actualReps non-negative integer, completed boolean), calls logSet. Returns 404 if set not found or not owned",
+        "POST /:id/complete calls completeWorkout, returns { workout, progression }. Returns 404 if not found/not owned",
+        "GET /history accepts ?page=1&limit=10 query params (default values), calls getHistory, returns { workouts, total, page, limit }",
+        "Mount routes in app.ts under /api/workouts",
+        "Typecheck passes"
+      ],
+      "priority": 6,
+      "passes": true,
+      "notes": "Follow patterns from routes/auth.ts and routes/users.ts. Use validate() for POST/PATCH bodies. For query params (GET /history), parse page and limit from req.query with parseInt and defaults. Error handling: catch service errors and map to appropriate HTTP status codes. Use the error message to distinguish 400 vs 409 in the POST / handler."
+    },
+    {
+      "id": "US-023",
+      "title": "Test workout API - start and read operations",
+      "description": "As a developer, I need integration tests for starting workouts and reading workout data.",
+      "acceptanceCriteria": [
+        "Create backend/src/__tests__/workouts.test.ts",
+        "Test helper: register a user and set up TMs (bench 90, squat 126, ohp 54, deadlift 162 in kg) before workout tests",
+        "Test POST /api/workouts { dayNumber: 2 } returns 201 with 17 sets (9 T1 Squat + 8 T2 Sumo Deadlift), verify correct exercises and set count",
+        "Test set weights are correct: Day 2 T1 set 3 should be 120kg (95% of 126, rounded to 2.5kg)",
+        "Test POST /api/workouts without TMs returns 400",
+        "Test POST /api/workouts with existing in-progress workout returns 409",
+        "Test GET /api/workouts/current returns the in-progress workout with sets",
+        "Test GET /api/workouts/current returns null when no workout in progress",
+        "Test GET /api/workouts/:id returns workout with sets",
+        "Test GET /api/workouts/:id with wrong user returns 404",
+        "Test PATCH /api/workouts/:id/sets/:setId updates actualReps and completed",
+        "All tests use real database, no mocking",
+        "All tests pass via ./run_test.sh"
+      ],
+      "priority": 7,
+      "passes": true,
+      "notes": "Set up test data in beforeAll or beforeEach: register user via POST /api/auth/register, then POST /api/training-maxes/setup with 1RMs (bench: 100, squat: 140, ohp: 60, deadlift: 180 → TMs: 90, 126, 54, 162). For ownership tests, register a second user. The setup.ts truncates tables in beforeAll per test file."
+    },
+    {
+      "id": "US-024",
+      "title": "Test workout API - completion and progression",
+      "description": "As a developer, I need integration tests for workout completion with TM progression and history.",
+      "acceptanceCriteria": [
+        "Add tests to backend/src/__tests__/workouts.test.ts (or create a separate workoutCompletion.test.ts)",
+        "Test complete Day 2 workout with 3 reps on AMRAP (set 3, 95%) → squat TM increases by 2.5kg (126 → 128.5), verify new TrainingMax row exists",
+        "Test complete Day 2 workout with 0 reps on AMRAP → no TM increase",
+        "Test complete Day 2 workout with 6+ reps on AMRAP → squat TM increases by 7.5kg",
+        "Test complete workout without logging AMRAP reps (actualReps is null) → no TM change, workout still completes",
+        "Test complete workout with some sets skipped (not all completed) → workout still completes successfully",
+        "Test complete Day 1 workout → progression uses set 9 (65% AMRAP, not a higher percentage set since it's the only AMRAP)",
+        "Test GET /api/workouts/history returns completed workouts with pagination (total, page, limit)",
+        "Test history returns workouts ordered by completedAt DESC",
+        "All tests pass via ./run_test.sh"
+      ],
+      "priority": 8,
+      "passes": true,
+      "notes": "To test completion: start workout → log AMRAP set → complete → verify. For Day 2 the progression AMRAP is T1 set 3 (setOrder=3, tier='T1'). For Day 1 the progression AMRAP is T1 set 9 (setOrder=9, tier='T1'). After completion, verify TM change by calling GET /api/training-maxes. For pagination test: complete multiple workouts, then check page=1&limit=2 returns 2 workouts with correct total."
+    },
+    {
+      "id": "US-025",
+      "title": "Create global styles",
+      "description": "As a user, I want the app to look clean and be usable on my phone.",
+      "acceptanceCriteria": [
+        "Create or update frontend/src/styles/global.css",
+        "CSS reset: box-sizing border-box on all elements, margin/padding reset on body",
+        "CSS custom properties on :root for colors: --primary, --primary-dark, --success, --danger, --muted, --bg, --bg-card, --text, --text-muted, --border",
+        "Mobile-first defaults: body max-width container (480px centered), responsive padding",
+        "Base typography: clean sans-serif font stack (system fonts), reasonable line-height",
+        "Form input styles: consistent min-height 44px, border, border-radius, focus ring/outline state",
+        "Button styles: .btn-primary and .btn-secondary classes, min-height 44px, disabled opacity/cursor state",
+        "Bottom nav placeholder styles: .bottom-nav with fixed position at bottom, display flex with equal-width tabs",
+        "Import global.css in frontend/src/main.tsx",
+        "Typecheck passes"
+      ],
+      "priority": 9,
+      "passes": true,
+      "notes": "Keep the CSS simple and functional — no CSS framework. Use :root custom properties so future dark mode is easy. Color suggestions: --primary: #2563eb (blue), --success: #16a34a (green), --danger: #dc2626 (red), --bg: #f8fafc, --text: #1e293b. The existing main.tsx may already import some CSS — check before adding a duplicate import."
+    },
+    {
+      "id": "US-026",
+      "title": "Create API client with JWT handling",
+      "description": "As a developer, I need a fetch wrapper that attaches JWT tokens and handles auth errors consistently.",
+      "acceptanceCriteria": [
+        "Create frontend/src/api/client.ts",
+        "Export apiFetch(path, options?) function that wraps fetch with base URL '/api' prepended to path",
+        "Reads accessToken from localStorage key 'accessToken' and sets Authorization: Bearer header if token exists",
+        "Sets Content-Type: application/json for requests with a body (POST, PATCH, PUT)",
+        "On 401 response: attempts token refresh by calling POST /api/auth/refresh with refreshToken from localStorage. If refresh succeeds, stores new tokens and retries original request. If refresh fails, clears both tokens from localStorage and redirects to /login via window.location.href",
+        "Returns the parsed JSON response for success, throws an error with the response body for non-OK responses",
+        "Create frontend/src/api/auth.ts with login(email, password) and register(email, password, displayName, unitPreference) functions that call POST /api/auth/login and POST /api/auth/register respectively, returning the response JSON",
+        "Typecheck passes"
+      ],
+      "priority": 10,
+      "passes": true,
+      "notes": "The Vite proxy handles /api → http://localhost:3001, so just use relative paths. localStorage keys: 'accessToken' and 'refreshToken'. The backend returns { accessToken, refreshToken, user } from login/register. The auth.ts functions should NOT store tokens — that's AuthContext's job. They just return the API response. Be careful with the 401 refresh logic: use a flag to prevent infinite refresh loops (don't retry refresh on a 401 from the refresh endpoint itself)."
+    },
+    {
+      "id": "US-027",
+      "title": "Create auth context",
+      "description": "As a user, I want my login state to persist across page refreshes so I don't have to log in every time.",
+      "acceptanceCriteria": [
+        "Create frontend/src/context/AuthContext.tsx",
+        "Create React context providing: user (object or null), isLoading (boolean), login(email, password), logout(), register(email, password, displayName, unitPreference)",
+        "On mount: check localStorage for accessToken, if exists call GET /api/users/me via apiFetch to validate. If valid, set user state. If 401/error, clear tokens from localStorage",
+        "isLoading is true during initial token validation (prevents flash of login page)",
+        "login() calls api/auth.ts login, stores accessToken and refreshToken in localStorage, sets user from response",
+        "register() calls api/auth.ts register, stores tokens, sets user from response",
+        "logout() clears accessToken and refreshToken from localStorage, sets user to null",
+        "Export useAuth() hook that calls useContext(AuthContext) with a helpful error if used outside provider",
+        "Typecheck passes"
+      ],
+      "priority": 11,
+      "passes": true,
+      "notes": "Import apiFetch from api/client.ts and login/register from api/auth.ts. The user object shape matches what GET /api/users/me returns: { id, email, displayName, unitPreference, createdAt, updatedAt }. Use useState and useEffect for the mount validation. Wrap the provider value in useMemo to prevent unnecessary rerenders."
+    },
+    {
+      "id": "US-028",
+      "title": "Create layout and private route components",
+      "description": "As a user, I want a mobile-friendly app shell with bottom navigation and protected routing.",
+      "acceptanceCriteria": [
+        "Create frontend/src/components/Layout.tsx",
+        "Header bar with app name 'nSuns 4-Day LP'",
+        "Bottom navigation bar with 3 tabs: Dashboard (links to /), History (links to /history), Settings (links to /settings)",
+        "Active tab is visually highlighted based on current route (use useLocation from react-router-dom)",
+        "Content area renders child routes via <Outlet /> from react-router-dom",
+        "Main content has bottom padding to account for fixed bottom nav",
+        "Create frontend/src/components/PrivateRoute.tsx",
+        "Uses useAuth() to check authentication state",
+        "If isLoading, renders a simple loading indicator (e.g. 'Loading...' text)",
+        "If not authenticated (no user), redirects to /login using <Navigate to='/login' />",
+        "If authenticated, renders <Outlet /> for child routes",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 12,
+      "passes": true,
+      "notes": "Import useAuth from context/AuthContext. Import Outlet, Link, useLocation, Navigate from react-router-dom. The bottom nav should use CSS classes from global.css (bottom-nav). Each tab can be a Link component. Use location.pathname to determine which tab is active."
+    },
+    {
+      "id": "US-029",
+      "title": "Create login page",
+      "description": "As a user, I want to log in with my email and password to access my workout data.",
+      "acceptanceCriteria": [
+        "Create frontend/src/pages/LoginPage.tsx",
+        "Form with email input (type='email') and password input (type='password')",
+        "Submit calls login() from useAuth() hook",
+        "Shows error message below form on failed login (use try/catch, display error.message or 'Invalid email or password')",
+        "Submit button shows 'Logging in...' and is disabled while request is in progress (useState for loading)",
+        "Link below form: 'Don't have an account? Register' linking to /register",
+        "On successful login, redirects to / using useNavigate()",
+        "If user is already logged in (user exists in auth context), redirect to / immediately",
+        "All touch targets at least 44px height (use btn-primary class from global.css)",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 13,
+      "passes": true,
+      "notes": "Import useAuth from context/AuthContext. Import useNavigate, Link from react-router-dom. Use e.preventDefault() on form submit. The login function from AuthContext may throw — catch the error and display it. Check for existing auth with useEffect or early return with Navigate."
+    },
+    {
+      "id": "US-030",
+      "title": "Create register page",
+      "description": "As a new user, I want to create an account with my preferred unit system to start tracking workouts.",
+      "acceptanceCriteria": [
+        "Create frontend/src/pages/RegisterPage.tsx",
+        "Form with: email input, password input (min 8 chars), display name input, unit preference radio buttons (kg/lb, default kg)",
+        "Client-side validation: show inline error if password < 8 characters on blur or submit",
+        "Submit calls register() from useAuth() hook",
+        "Shows error message on failure (e.g. 'Email already in use' from API error)",
+        "Submit button shows 'Creating account...' and is disabled while loading",
+        "Link below form: 'Already have an account? Log in' linking to /login",
+        "On successful registration, redirects to /",
+        "All touch targets at least 44px height",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 14,
+      "passes": true,
+      "notes": "Similar pattern to LoginPage. Radio buttons for kg/lb: use two <label> elements wrapping <input type='radio'> with name='unitPreference'. Default value 'kg'. The register function from AuthContext takes (email, password, displayName, unitPreference)."
+    },
+    {
+      "id": "US-031",
+      "title": "Create settings page",
+      "description": "As a user, I want to change my unit preference and view my account info from the settings tab.",
+      "acceptanceCriteria": [
+        "Create frontend/src/pages/SettingsPage.tsx",
+        "Shows current user's display name and email (from useAuth().user)",
+        "Unit preference toggle: two buttons or radio for kg/lb, current preference pre-selected",
+        "Changing unit preference calls PATCH /api/users/me via apiFetch with { unitPreference: 'kg'|'lb' }",
+        "Shows brief confirmation when preference is saved (e.g. 'Saved!' text that fades or appears for 2 seconds)",
+        "Logout button at bottom that calls logout() from useAuth()",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 15,
+      "passes": true,
+      "notes": "Import useAuth and apiFetch. After saving unit preference, also update the user object in auth context if possible (or the user can refresh). The simplest approach: call apiFetch, show 'Saved!', and update local state. The auth context user object won't auto-update unless you add an updateUser function to the context — for now, showing 'Saved!' is sufficient."
+    },
+    {
+      "id": "US-032",
+      "title": "Wire up app router with all pages",
+      "description": "As a developer, I need React Router configuration connecting all pages with auth guards and placeholder routes.",
+      "acceptanceCriteria": [
+        "Update frontend/src/App.tsx with React Router v6 setup",
+        "Wrap entire app in AuthProvider from context/AuthContext",
+        "Wrap app in BrowserRouter from react-router-dom",
+        "Public routes (no auth required): /login renders LoginPage, /register renders RegisterPage",
+        "Protected routes wrapped in PrivateRoute parent, with Layout as child wrapper: / renders DashboardPage placeholder, /history renders HistoryPage placeholder, /settings renders SettingsPage, /setup renders SetupPage placeholder, /workout/:dayNumber renders WorkoutPage placeholder",
+        "Create minimal placeholder page components for DashboardPage, HistoryPage, SetupPage, WorkoutPage — each just renders an <h1> with the page name (e.g. 'Dashboard', 'History')",
+        "Unknown routes redirect to / using a catch-all Navigate",
+        "Update frontend/src/main.tsx if needed (ensure it renders App and imports global.css)",
+        "Typecheck passes"
+      ],
+      "priority": 16,
+      "passes": true,
+      "notes": "Placeholder pages can be inline components or separate files in pages/. Use Routes, Route, Navigate from react-router-dom. Structure: <BrowserRouter><AuthProvider><Routes>... The PrivateRoute and Layout should be nested route parents using Outlet. Route structure: <Route element={<PrivateRoute />}><Route element={<Layout />}><Route path='/' element={<DashboardPage />} />...</Route></Route>. Put login/register routes outside the PrivateRoute wrapper."
+    },
+    {
+      "id": "US-033",
+      "title": "Test frontend auth",
+      "description": "As a developer, I need tests for auth-related frontend code to ensure login/logout flows work correctly.",
+      "acceptanceCriteria": [
+        "Create frontend/src/__tests__/client.test.ts — test apiFetch attaches Authorization Bearer header when token in localStorage, test apiFetch sets Content-Type for POST requests",
+        "Create frontend/src/__tests__/AuthContext.test.tsx — test login() stores tokens and sets user, test logout() clears tokens and user, test mount with valid token validates and sets user, test mount with invalid token clears storage",
+        "Use vitest with vi.stubGlobal('fetch', ...) or vi.fn() to mock fetch — no real backend needed",
+        "Mock localStorage with vi.spyOn(Storage.prototype, 'getItem') etc. or use a simple in-memory mock",
+        "All tests pass via npm test -w frontend"
+      ],
+      "priority": 17,
+      "passes": true,
+      "notes": "Frontend tests use vitest configured in frontend/vitest.config.ts. For AuthContext tests, render the provider using @testing-library/react (install if not already available, or use a simple test wrapper). Mock fetch to return expected responses. For client.ts tests, mock fetch and verify the headers passed to it."
+    }
+  ]
+}
