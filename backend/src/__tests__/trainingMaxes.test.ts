@@ -70,8 +70,8 @@ describe('Training Maxes API', () => {
       expect(res.body).toHaveLength(4);
     });
 
-    it('creates TMs from 1RMs for lb user (converts lb→kg)', async () => {
-      // 225lb bench 1RM → TM = 225 * 0.9 = 202.5lb → 202.5 / 2.20462 = 91.88kg → rounded to 92.5kg
+    it('creates TMs from 1RMs for lb user (converts lb→kg and returns in lb)', async () => {
+      // 225lb bench 1RM → 225/2.20462 = 102.06kg → TM = 102.06*0.9 = 91.86kg → rounded to 92.5kg → converted back to lb: 92.5*2.20462 = 203.9lb → rounded to 205lb
       const res = await request(app)
         .post('/api/training-maxes/setup')
         .set('Authorization', `Bearer ${lbToken}`)
@@ -83,7 +83,7 @@ describe('Training Maxes API', () => {
       const byExercise = Object.fromEntries(
         res.body.map((tm: { exercise: string }) => [tm.exercise, tm]),
       );
-      expect(byExercise.bench.weight).toBe(92.5); // 225*0.9/2.20462 = 91.88 → 92.5
+      expect(byExercise.bench.weight).toBe(205); // 225lb 1RM → 102.06kg → 91.86kg TM → 92.5kg rounded → 205lb
     });
 
     it('allows re-setup with different values', async () => {
@@ -135,15 +135,15 @@ describe('Training Maxes API', () => {
       expect(bench.weight).toBe(95);
     });
 
-    it('converts lb weight to kg for lb user', async () => {
-      // 200lb → 200/2.20462 = 90.72kg → rounded to 90
+    it('converts lb weight to kg for storage and returns in lb for lb user', async () => {
+      // 200lb → 200/2.20462 = 90.72kg → rounded to 90kg → converted back: 90*2.20462 = 198.42lb → rounded to 200lb
       const res = await request(app)
         .patch('/api/training-maxes/bench')
         .set('Authorization', `Bearer ${lbToken}`)
         .send({ weight: 200 });
 
       expect(res.status).toBe(200);
-      expect(res.body.weight).toBe(90); // 200/2.20462 = 90.72 → round to 90
+      expect(res.body.weight).toBe(200); // 200lb → 90.72kg → 90kg → 200lb
     });
 
     it('rejects invalid exercise name', async () => {

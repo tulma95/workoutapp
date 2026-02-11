@@ -8,11 +8,27 @@ function toKg(weight: number, unit: string): number {
   return unit === 'lb' ? weight / LB_TO_KG : weight;
 }
 
+function toLb(weightKg: number): number {
+  return weightKg * LB_TO_KG;
+}
+
+function convertWeightToUserUnit(weightKg: number, unit: string): number {
+  if (unit === 'lb') {
+    return roundWeight(toLb(weightKg), 'lb');
+  }
+  return weightKg;
+}
+
 function decimalToNumber(val: unknown): number {
   return Number(val);
 }
 
 export async function getCurrentTMs(userId: number) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    return [];
+  }
+
   const results = await Promise.all(
     EXERCISES.map(async (exercise) => {
       const tm = await prisma.trainingMax.findFirst({
@@ -27,7 +43,7 @@ export async function getCurrentTMs(userId: number) {
     .filter((tm) => tm !== null)
     .map((tm) => ({
       ...tm,
-      weight: decimalToNumber(tm.weight),
+      weight: convertWeightToUserUnit(decimalToNumber(tm.weight), user.unitPreference),
     }));
 }
 
@@ -61,7 +77,10 @@ export async function setupFromOneRepMaxes(
           effectiveDate: today,
         },
       });
-      return { ...row, weight: decimalToNumber(row.weight) };
+      return {
+        ...row,
+        weight: convertWeightToUserUnit(decimalToNumber(row.weight), unit)
+      };
     }),
   );
 
@@ -95,10 +114,18 @@ export async function updateTM(
     },
   });
 
-  return { ...row, weight: decimalToNumber(row.weight) };
+  return {
+    ...row,
+    weight: convertWeightToUserUnit(decimalToNumber(row.weight), unit)
+  };
 }
 
 export async function getHistory(userId: number, exercise: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    return [];
+  }
+
   const rows = await prisma.trainingMax.findMany({
     where: { userId, exercise },
     orderBy: { effectiveDate: 'desc' },
@@ -106,6 +133,6 @@ export async function getHistory(userId: number, exercise: string) {
 
   return rows.map((row) => ({
     ...row,
-    weight: decimalToNumber(row.weight),
+    weight: convertWeightToUserUnit(decimalToNumber(row.weight), user.unitPreference),
   }));
 }
