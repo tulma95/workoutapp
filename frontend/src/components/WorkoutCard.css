@@ -1,0 +1,98 @@
+.workout-card {
+  padding: 1.25rem;
+  background-color: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.workout-card--upcoming {
+  border-color: var(--border);
+}
+
+.workout-card--in_progress {
+  border-color: var(--primary);
+  background-color: var(--bg-card);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.workout-card--completed {
+  background-color: var(--muted, #f5f5f5);
+  opacity: 0.8;
+}
+
+.workout-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.workout-card__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.workout-card__checkmark {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--success, #22c55e);
+  color: white;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.workout-card__exercises {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.workout-card__exercise {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.workout-card__label {
+  font-weight: 600;
+  color: var(--text-muted, #666);
+  min-width: 2rem;
+}
+
+.workout-card__name {
+  color: var(--text);
+}
+
+.workout-card__button {
+  min-height: 44px;
+  width: 100%;
+}
+
+.btn-primary {
+  min-height: 44px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
