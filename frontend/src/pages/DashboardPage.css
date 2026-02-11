@@ -1,0 +1,192 @@
+.dashboard-page {
+  padding: 1rem;
+}
+
+.dashboard-page h1 {
+  margin: 0 0 1.5rem 0;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-muted);
+}
+
+.training-maxes-section {
+  margin-bottom: 2rem;
+}
+
+.training-maxes-section h2 {
+  font-size: 1.25rem;
+  margin: 0 0 1rem 0;
+  color: var(--text);
+}
+
+.tm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.tm-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  min-height: 44px;
+}
+
+.tm-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.tm-exercise {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.tm-weight {
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.btn-edit {
+  min-height: 44px;
+  min-width: 60px;
+  padding: 0.5rem 1rem;
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-edit:hover {
+  background-color: var(--bg-hover, #f5f5f5);
+}
+
+.btn-edit:active {
+  background-color: var(--bg-active, #eee);
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background-color: var(--bg-card);
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content h3 {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.25rem;
+  color: var(--text);
+}
+
+.modal-body {
+  margin-bottom: 1.5rem;
+}
+
+.modal-body label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.modal-body input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.modal-body input:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-color: var(--primary);
+}
+
+.modal-body .error {
+  margin-top: 0.5rem;
+  color: var(--danger, #c33);
+  font-size: 0.9rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.btn-secondary {
+  min-height: 44px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  background-color: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--bg-hover, #f5f5f5);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  min-height: 44px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
