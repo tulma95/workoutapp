@@ -185,8 +185,16 @@ export async function completeWorkout(workoutId: number, userId: number) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        await prisma.trainingMax.create({
-          data: {
+        await prisma.trainingMax.upsert({
+          where: {
+            userId_exercise_effectiveDate: {
+              userId,
+              exercise,
+              effectiveDate: today,
+            },
+          },
+          update: { weight: newWeight },
+          create: {
             userId,
             exercise,
             weight: newWeight,
