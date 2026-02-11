@@ -2,3 +2,5 @@ node_modules/
 dist/
 .env
 pgdata/
+test-results/
+playwright-report/
