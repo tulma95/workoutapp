@@ -33,6 +33,29 @@ export async function register(email: string, password: string, displayName: str
   };
 }
 
+export async function refreshTokens(refreshToken: string) {
+  let decoded: { userId: number; type?: string };
+  try {
+    decoded = jwt.verify(refreshToken, config.jwtSecret) as typeof decoded;
+  } catch {
+    throw new Error('Invalid or expired refresh token');
+  }
+
+  if (decoded.type !== 'refresh') {
+    throw new Error('Invalid or expired refresh token');
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+  if (!user) {
+    throw new Error('Invalid or expired refresh token');
+  }
+
+  return {
+    accessToken: signAccessToken(user.id, user.email),
+    refreshToken: signRefreshToken(user.id),
+  };
+}
+
 export async function login(email: string, password: string) {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {

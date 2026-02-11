@@ -49,4 +49,20 @@ router.post('/login', validate(loginSchema), async (req: Request, res: Response)
   }
 });
 
+const refreshSchema = z.object({
+  refreshToken: z.string().min(1),
+});
+
+router.post('/refresh', validate(refreshSchema), async (req: Request, res: Response) => {
+  try {
+    const { refreshToken } = req.body;
+    const result = await authService.refreshTokens(refreshToken);
+    res.status(200).json(result);
+  } catch {
+    res.status(401).json({
+      error: { code: 'TOKEN_INVALID', message: 'Invalid or expired refresh token' },
+    });
+  }
+});
+
 export default router;

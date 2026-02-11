@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
 import express from 'express';
+import jwt from 'jsonwebtoken';
 
 vi.mock('../../config', () => ({
   config: {
@@ -125,6 +126,45 @@ describe('Auth routes', () => {
 
       expect(res.status).toBe(401);
       expect(res.body.error.code).toBe('AUTH_FAILED');
+    });
+  });
+
+  describe('POST /api/auth/refresh', () => {
+    const SECRET = 'test-secret';
+
+    it('returns new tokens with valid refresh token', async () => {
+      const refreshToken = jwt.sign({ userId: 1, type: 'refresh' }, SECRET, { expiresIn: '30d' });
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
+
+      const res = await request(app)
+        .post('/api/auth/refresh')
+        .send({ refreshToken });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('accessToken');
+      expect(res.body).toHaveProperty('refreshToken');
+    });
+
+    it('returns 401 for expired refresh token', async () => {
+      const refreshToken = jwt.sign({ userId: 1, type: 'refresh' }, SECRET, { expiresIn: '-1s' });
+
+      const res = await request(app)
+        .post('/api/auth/refresh')
+        .send({ refreshToken });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error.code).toBe('TOKEN_INVALID');
+    });
+
+    it('returns 401 when using access token as refresh token', async () => {
+      const accessToken = jwt.sign({ userId: 1, email: 'test@example.com' }, SECRET, { expiresIn: '24h' });
+
+      const res = await request(app)
+        .post('/api/auth/refresh')
+        .send({ refreshToken: accessToken });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error.code).toBe('TOKEN_INVALID');
     });
   });
 });
