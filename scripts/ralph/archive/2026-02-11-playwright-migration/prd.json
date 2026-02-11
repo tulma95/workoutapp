@@ -20,7 +20,7 @@
       ],
       "priority": 1,
       "passes": true,
-      "notes": "The user's unitPreference is already available via prisma.user.findUnique in the route handlers. Use roundWeight() from lib/weightRounding.ts for rounding. For kg users nothing changes (kg is the storage unit). For lb users: weight * 2.20462, rounded to nearest 5lb. For input conversion (lb to kg): weight / 2.20462, rounded to nearest 2.5kg. The TM setup and update routes already look up the user to get unitPreference — reuse that. Workout service needs userId to look up unitPreference."
+      "notes": "The user's unitPreference is already available via prisma.user.findUnique in the route handlers. Use roundWeight() from lib/weightRounding.ts for rounding. For kg users nothing changes (kg is the storage unit). For lb users: weight * 2.20462, rounded to nearest 5lb. For input conversion (lb to kg): weight / 2.20462, rounded to nearest 2.5kg. The TM setup and update routes already look up the user to get unitPreference \u2014 reuse that. Workout service needs userId to look up unitPreference."
     },
     {
       "id": "US-045",
@@ -37,7 +37,7 @@
       ],
       "priority": 2,
       "passes": true,
-      "notes": "Follow the same pattern as api/auth.ts. Use apiFetch which already handles JWT tokens and error responses. The hook should use useState + useEffect pattern. Weight values from the backend are already in the user's preferred unit — no conversion needed."
+      "notes": "Follow the same pattern as api/auth.ts. Use apiFetch which already handles JWT tokens and error responses. The hook should use useState + useEffect pattern. Weight values from the backend are already in the user's preferred unit \u2014 no conversion needed."
     },
     {
       "id": "US-046",
@@ -74,8 +74,8 @@
         "Typecheck passes"
       ],
       "priority": 4,
-      "passes": false,
-      "notes": "This is a minimal change to DashboardPage — just add the TM check and redirect logic. The full dashboard UI comes in US-052. Use useNavigate() and useEffect for the redirect. Show a simple loading indicator (e.g., 'Loading...') while fetching."
+      "passes": true,
+      "notes": "This is a minimal change to DashboardPage \u2014 just add the TM check and redirect logic. The full dashboard UI comes in US-052. Use useNavigate() and useEffect for the redirect. Show a simple loading indicator (e.g., 'Loading...') while fetching."
     },
     {
       "id": "US-048",
@@ -95,7 +95,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "notes": "Use updateTrainingMax() from api/trainingMaxes.ts. Can use a simple CSS overlay modal or the HTML <dialog> element. The TM values from the API are already in the user's preferred unit. After save, call refetch() from the useTrainingMaxes hook to refresh the dashboard."
     },
     {
@@ -106,12 +106,12 @@
         "Create e2e/fixtures.ts exporting a custom test object that extends Playwright's base test with reusable fixtures: authenticatedPage (registers new user, returns { page, user }) and setupCompletePage (extends authenticatedPage, completes TM setup with 1RMs: bench 100, squat 140, ohp 60, deadlift 180 in kg, returns { page, user } on dashboard)",
         "Migrate e2e/setup.spec.ts to use fixtures from e2e/fixtures.ts and getByRole selectors where possible (keep same filename)",
         "Test: new user is redirected to /setup when no TMs exist (use authenticatedPage fixture)",
-        "Test: entering 1RMs and submitting redirects to dashboard with correct TMs displayed — use getByRole selectors",
-        "Test: editing a TM from the dashboard updates the displayed value — use getByRole selectors",
+        "Test: entering 1RMs and submitting redirects to dashboard with correct TMs displayed \u2014 use getByRole selectors",
+        "Test: editing a TM from the dashboard updates the displayed value \u2014 use getByRole selectors",
         "All tests pass via ./run_test.sh"
       ],
       "priority": 6,
-      "passes": false,
+      "passes": true,
       "notes": "Use test.extend() from @playwright/test to create fixtures. authenticatedPage fixture: generate unique email with Date.now(), register via /register page, return { page, user: { email, password, displayName } }. setupCompletePage: extend authenticatedPage, fill setup form, submit, waitForURL to dashboard. Use getByRole('spinbutton', { name: /bench/i }) for number inputs, getByRole('button', { name: /calculate/i }) for submit."
     },
     {
@@ -129,7 +129,7 @@
         "Typecheck passes"
       ],
       "priority": 7,
-      "passes": false,
+      "passes": true,
       "notes": "Follow the same pattern as api/trainingMaxes.ts. All weight values from the backend are already in the user's preferred unit. The logSet function needs both workoutId and setId for the URL path."
     },
     {
@@ -146,7 +146,7 @@
         "Typecheck passes"
       ],
       "priority": 8,
-      "passes": false,
+      "passes": true,
       "notes": "Use existing CSS custom properties from global.css (--primary, --success, --muted, --bg-card, --border). Card can be a simple div with conditional CSS classes. Use btn-primary for the action button."
     },
     {
@@ -157,7 +157,7 @@
         "Replace stub in frontend/src/pages/DashboardPage.tsx with full implementation",
         "Fetches current TMs and current workout on mount",
         "If no TMs exist, redirects to /setup (from US-047)",
-        "Shows a 'Training Maxes' section listing all 4 exercises with their current TM value — values come from the backend already in the user's preferred unit, just display them with the unit suffix",
+        "Shows a 'Training Maxes' section listing all 4 exercises with their current TM value \u2014 values come from the backend already in the user's preferred unit, just display them with the unit suffix",
         "Shows 4 WorkoutCard components vertically, one per day, with correct exercise names: Day 1 (Bench Volume + OHP), Day 2 (Squat + Sumo Deadlift), Day 3 (Bench Heavy + Close Grip Bench), Day 4 (Deadlift + Front Squat)",
         "If user has an in-progress workout, that day's card shows in_progress status",
         "Clicking 'Start Workout' navigates to /workout/:dayNumber",
@@ -251,7 +251,7 @@
         "Displays a heading with the day label (e.g., 'Day 2 - Squat')",
         "Renders T1 section with section header showing T1 exercise name and 9 SetRow components",
         "Renders T2 section with section header showing T2 exercise name and 8 SetRow components",
-        "All weights come from the backend already in the user's preferred unit — display with unit suffix from user.unitPreference",
+        "All weights come from the backend already in the user's preferred unit \u2014 display with unit suffix from user.unitPreference",
         "When a non-AMRAP set is completed, calls PATCH /workouts/:id/sets/:setId with { completed: true }",
         "When AMRAP reps are entered/changed, calls PATCH /workouts/:id/sets/:setId with { actualReps: N, completed: true }",
         "'Complete Workout' button is always enabled. If the progression AMRAP set has no reps entered, show a confirmation warning before proceeding",
@@ -263,7 +263,7 @@
       ],
       "priority": 14,
       "passes": false,
-      "notes": "Use getCurrentWorkout() and startWorkout() from api/workouts.ts. Use logSet() for set updates — fire API call on each completion toggle or AMRAP change. Use completeWorkout() for completion. Day-to-exercise mapping same as dashboard: [{day:1, t1:'Bench Volume', t2:'OHP'}, ...]. The progression AMRAP is the highest-percentage AMRAP in T1: Days 2/3/4 = set 3 (95%), Day 1 = set 9 (65%). Use window.confirm() for the missing AMRAP warning. Manage local state for set completion to give immediate visual feedback while API call is in progress."
+      "notes": "Use getCurrentWorkout() and startWorkout() from api/workouts.ts. Use logSet() for set updates \u2014 fire API call on each completion toggle or AMRAP change. Use completeWorkout() for completion. Day-to-exercise mapping same as dashboard: [{day:1, t1:'Bench Volume', t2:'OHP'}, ...]. The progression AMRAP is the highest-percentage AMRAP in T1: Days 2/3/4 = set 3 (95%), Day 1 = set 9 (65%). Use window.confirm() for the missing AMRAP warning. Manage local state for set completion to give immediate visual feedback while API call is in progress."
     },
     {
       "id": "US-058",
@@ -271,8 +271,8 @@
       "description": "As a developer, I need a simple utility for formatting weight display strings since the backend already handles conversion.",
       "acceptanceCriteria": [
         "Create frontend/src/utils/weight.ts",
-        "formatWeight(weight: number, unit: 'kg' | 'lb'): string — returns formatted string like '85 kg' or '190 lb' (weight is already in the correct unit from the backend)",
-        "formatExerciseName(exercise: string): string — capitalizes exercise names for display (e.g., 'bench' -> 'Bench', 'ohp' -> 'OHP', 'deadlift' -> 'Deadlift')",
+        "formatWeight(weight: number, unit: 'kg' | 'lb'): string \u2014 returns formatted string like '85 kg' or '190 lb' (weight is already in the correct unit from the backend)",
+        "formatExerciseName(exercise: string): string \u2014 capitalizes exercise names for display (e.g., 'bench' -> 'Bench', 'ohp' -> 'OHP', 'deadlift' -> 'Deadlift')",
         "Used by DashboardPage (TM display), WorkoutPage (set weight display), and ProgressionBanner",
         "Typecheck passes"
       ],
@@ -287,8 +287,8 @@
       "acceptanceCriteria": [
         "Migrate e2e/workout.spec.ts to use fixtures from e2e/fixtures.ts and getByRole selectors (keep same filename)",
         "Test: starting a workout from the dashboard shows T1 and T2 sections with correct exercise names and set counts (use setupCompletePage fixture)",
-        "Test: completing a non-AMRAP set marks it visually as done — use getByRole('checkbox') or similar",
-        "Test: entering AMRAP reps using the +/- stepper works correctly — use getByRole('button', { name: /\\+/i }) and getByRole('spinbutton')",
+        "Test: completing a non-AMRAP set marks it visually as done \u2014 use getByRole('checkbox') or similar",
+        "Test: entering AMRAP reps using the +/- stepper works correctly \u2014 use getByRole('button', { name: /\\+/i }) and getByRole('spinbutton')",
         "Test: completing a workout shows the progression banner with TM change info",
         "Test: after completing a workout, navigating back to dashboard shows the day as completed",
         "Test: completing a workout without entering AMRAP reps shows the confirmation warning, then completes with no TM change",

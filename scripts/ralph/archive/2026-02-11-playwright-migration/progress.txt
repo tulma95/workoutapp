@@ -62,3 +62,20 @@ Started: Tue Feb 11 2026
   - Form state managed with useState, validation runs on submit
   - Frontend typecheck passes
 ---
+
+## 2026-02-11 20:23 - US-047 through US-051
+- Verified all implementations are complete
+- US-047: Dashboard redirect to setup (in DashboardPage.tsx, lines 28-30)
+- US-048: TM edit modal (in DashboardPage.tsx, lines 41-74, 116-151)
+- US-049: E2E fixtures (e2e/fixtures.ts, e2e/setup.spec.ts)
+- US-050: Workout API module (frontend/src/api/workouts.ts)
+- US-051: WorkoutCard component (frontend/src/components/WorkoutCard.tsx)
+- **Learnings for future iterations:**
+  - Dashboard redirects to /setup if TMs array is empty
+  - Edit modal inline in DashboardPage, uses formatExerciseName() helper
+  - E2E fixtures provide authenticatedPage and setupCompletePage for reusability
+  - Workout API has functions for full workout lifecycle
+  - WorkoutCard has 3 visual states based on status prop
+  - All components use 44px touch targets
+  - All typecheck passes
+---
