@@ -9,6 +9,11 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U treenisofta"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
 
 volumes:
   pgdata:

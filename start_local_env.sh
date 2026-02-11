@@ -20,9 +20,13 @@ if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
     exit 0
 fi
 
-# Create new session with first pane running docker compose
+# Start database and wait for it to be healthy
+echo "Starting database..."
+docker compose up -d --wait
+
+# Create new session with first pane showing docker logs
 echo "Creating tmux session '$SESSION_NAME'..."
-tmux new-session -d -s "$SESSION_NAME" -n "dev" "docker compose up"
+tmux new-session -d -s "$SESSION_NAME" -n "dev" "docker compose logs -f"
 
 # Split window vertically for backend pane
 tmux split-window -t "$SESSION_NAME:dev" -v
@@ -33,10 +37,8 @@ tmux split-window -t "$SESSION_NAME:dev" -v
 # Select even-vertical layout for equal pane sizes
 tmux select-layout -t "$SESSION_NAME:dev" even-vertical
 
-# Send commands to pane 1 (backend) - wait for DB, then migrate and start backend
-tmux send-keys -t "$SESSION_NAME:dev.1" 'echo "Waiting for database to be ready..."' C-m
-tmux send-keys -t "$SESSION_NAME:dev.1" 'while ! docker exec treenisofta-db-1 pg_isready -U treenisofta > /dev/null 2>&1; do sleep 1; done' C-m
-tmux send-keys -t "$SESSION_NAME:dev.1" 'echo "Database ready! Running migrations..."' C-m
+# Send commands to pane 1 (backend) - DB is already healthy, run migrations and start
+tmux send-keys -t "$SESSION_NAME:dev.1" 'echo "Running migrations..."' C-m
 tmux send-keys -t "$SESSION_NAME:dev.1" 'npx prisma migrate dev --name init -w backend' C-m
 tmux send-keys -t "$SESSION_NAME:dev.1" 'echo "Starting backend server..."' C-m
 tmux send-keys -t "$SESSION_NAME:dev.1" 'npm run dev -w backend' C-m
