@@ -4,6 +4,7 @@ import { getTrainingMaxes, updateTrainingMax, type TrainingMax } from '../api/tr
 import { getCurrentWorkout } from '../api/workouts';
 import { useAuth } from '../context/AuthContext';
 import WorkoutCard from '../components/WorkoutCard';
+import { formatExerciseName, formatWeight } from '../utils/weight';
 import './DashboardPage.css';
 
 const WORKOUT_DAYS = [
@@ -24,7 +25,7 @@ export default function DashboardPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const unit = user?.unitPreference || 'kg';
+  const unit = (user?.unitPreference || 'kg') as 'kg' | 'lb';
 
   useEffect(() => {
     loadData();
@@ -98,16 +99,6 @@ export default function DashboardPage() {
     return 'upcoming';
   }
 
-  function formatExerciseName(exercise: string): string {
-    const names: Record<string, string> = {
-      bench: 'Bench',
-      squat: 'Squat',
-      ohp: 'OHP',
-      deadlift: 'Deadlift',
-    };
-    return names[exercise] || exercise.charAt(0).toUpperCase() + exercise.slice(1);
-  }
-
   if (isLoading) {
     return <div className="loading">Loading...</div>;
   }
@@ -124,7 +115,7 @@ export default function DashboardPage() {
               <div className="tm-info">
                 <span className="tm-exercise">{formatExerciseName(tm.exercise)}</span>
                 <span className="tm-weight">
-                  {tm.weight} {unit}
+                  {formatWeight(tm.weight, unit)}
                 </span>
               </div>
               <button

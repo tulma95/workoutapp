@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatExerciseName } from '../utils/weight';
 import './ProgressionBanner.css';
 
 interface ProgressionBannerProps {
@@ -10,17 +11,6 @@ interface ProgressionBannerProps {
   } | null;
   unit: 'kg' | 'lb';
 }
-
-const EXERCISE_NAMES: Record<string, string> = {
-  bench: 'Bench',
-  squat: 'Squat',
-  ohp: 'OHP',
-  deadlift: 'Deadlift',
-};
-
-const formatExerciseName = (exercise: string): string => {
-  return EXERCISE_NAMES[exercise] || exercise.charAt(0).toUpperCase() + exercise.slice(1);
-};
 
 export const ProgressionBanner: React.FC<ProgressionBannerProps> = ({ progression, unit }) => {
   if (!progression || progression.increase === 0) {

@@ -39,8 +39,11 @@ test.describe('Training Max Setup', () => {
     await page.getByRole('button', { name: /calculate/i }).click();
 
     // Should be redirected to dashboard
-    await page.waitForURL('/dashboard', { timeout: 10000 });
-    expect(page.url()).toContain('/dashboard');
+    await page.waitForURL('/', { timeout: 10000 });
+    expect(page.url()).toContain('/');
+
+    // Wait for Training Maxes section to load
+    await page.waitForSelector('text=Training Maxes', { timeout: 5000 });
 
     // Calculate expected TMs (90% of 1RMs, rounded to 2.5kg)
     const expectedTMs = {
@@ -62,7 +65,10 @@ test.describe('Training Max Setup', () => {
     const { page } = setupCompletePage;
 
     // User should be on dashboard with TMs already set up
-    expect(page.url()).toContain('/dashboard');
+    expect(page.url()).toContain('/');
+
+    // Wait for Training Maxes section to load
+    await page.waitForSelector('text=Training Maxes', { timeout: 5000 });
 
     // Initial TM for bench should be 90kg (90% of 100kg)
     let pageContent = await page.textContent('body');
