@@ -79,3 +79,19 @@ Started: Tue Feb 11 2026
   - All components use 44px touch targets
   - All typecheck passes
 ---
+
+## 2026-02-11 20:30 - US-052
+- Implemented full dashboard page with 4 WorkoutCard components
+- Files modified:
+  - frontend/src/pages/DashboardPage.tsx - Added workout cards section
+  - frontend/src/pages/DashboardPage.css - Added workout days section styles
+- **Learnings for future iterations:**
+  - Dashboard now fetches both TMs and current workout in parallel with Promise.all
+  - WORKOUT_DAYS constant hardcodes day-to-exercise mapping
+  - getWorkoutStatus() helper determines card status based on currentWorkout
+  - handleStartWorkout() navigates to /workout/:dayNumber
+  - WorkoutCard component shows 'Start Workout' for upcoming, 'Continue Workout' for in_progress
+  - Training Maxes section and Workout Days section are separate
+  - All touch targets are 44px height
+  - Typecheck passes
+---

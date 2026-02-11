@@ -167,7 +167,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 9,
-      "passes": false,
+      "passes": true,
       "notes": "Use useTrainingMaxes hook for TMs and getCurrentWorkout() from api/workouts.ts for in-progress workout. Hardcode the day-to-exercise mapping: [{day:1, t1:'Bench Volume', t2:'OHP'}, {day:2, t1:'Squat', t2:'Sumo Deadlift'}, {day:3, t1:'Bench Heavy', t2:'Close Grip Bench'}, {day:4, t1:'Deadlift', t2:'Front Squat'}]. Use useNavigate() for navigation on card click. The user's unitPreference from useAuth() determines the suffix ('kg' or 'lb')."
     },
     {
