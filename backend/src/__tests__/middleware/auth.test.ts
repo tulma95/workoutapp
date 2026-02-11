@@ -1,20 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-
-vi.mock('../../config', () => ({
-  config: {
-    jwtSecret: 'test-secret',
-    databaseUrl: 'postgresql://test',
-    port: 3001,
-    nodeEnv: 'test',
-  },
-}));
-
+import { config } from '../../config';
 import { authenticate } from '../../middleware/auth';
 import { AuthRequest } from '../../types';
-
-const SECRET = 'test-secret';
 
 function mockReqResNext(authHeader?: string) {
   const req = { headers: {} } as AuthRequest;
@@ -31,7 +20,7 @@ function mockReqResNext(authHeader?: string) {
 
 describe('authenticate middleware', () => {
   it('passes with valid token and sets userId', () => {
-    const token = jwt.sign({ userId: 42, email: 'test@example.com' }, SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ userId: 42, email: 'test@example.com' }, config.jwtSecret, { expiresIn: '1h' });
     const { req, res, next } = mockReqResNext(`Bearer ${token}`);
 
     authenticate(req, res, next);
@@ -54,7 +43,7 @@ describe('authenticate middleware', () => {
   });
 
   it('returns 401 for expired token', () => {
-    const token = jwt.sign({ userId: 42, email: 'test@example.com' }, SECRET, { expiresIn: '-1s' });
+    const token = jwt.sign({ userId: 42, email: 'test@example.com' }, config.jwtSecret, { expiresIn: '-1s' });
     const { req, res, next } = mockReqResNext(`Bearer ${token}`);
 
     authenticate(req, res, next);
