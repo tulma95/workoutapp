@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 
 export default function RegisterPage() {
-  const { user, register } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -12,10 +12,6 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  if (user) {
-    return <Navigate to="/" />;
-  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -114,7 +110,7 @@ export default function RegisterPage() {
         </div>
 
         {error && (
-          <p style={{ color: 'var(--danger)', margin: 0 }}>{error}</p>
+          <p className="error" role="alert" style={{ color: 'var(--danger)', margin: 0 }}>{error}</p>
         )}
 
         <button type="submit" className="btn-primary" disabled={loading}>
