@@ -183,7 +183,7 @@
         "All tests pass via ./run_test.sh"
       ],
       "priority": 10,
-      "passes": false,
+      "passes": true,
       "notes": "Use setupCompletePage fixture which provides a page on the dashboard with TMs already set. Expected TM values for test 1RMs (bench 100, squat 140, ohp 60, deadlift 180): bench 90kg, squat 125kg, ohp 55kg, deadlift 162.5kg. Clicking Start Workout should navigate to /workout/N."
     },
     {
