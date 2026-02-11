@@ -7,6 +7,6 @@
     "frontend"
   ],
   "scripts": {
-    "test": "npm test -w backend"
+    "test": "./run_test.sh"
   }
 }
