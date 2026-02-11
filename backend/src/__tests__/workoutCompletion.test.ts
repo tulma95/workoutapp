@@ -134,8 +134,11 @@ describe('Workouts API - Completion and Progression', () => {
       );
 
       const workout = await startAndGetWorkout(2);
-      // Don't log any reps, just complete
-      const result = await completeCurrentWorkout(workout.id, 0, null);
+      // Don't log any reps, just complete workout directly without logging AMRAP
+      const res = await request(app)
+        .post(`/api/workouts/${workout.id}/complete`)
+        .set('Authorization', `Bearer ${token}`);
+      const result = res.body;
 
       expect(result.workout.status).toBe('completed');
       expect(result.progression).toBeNull();
