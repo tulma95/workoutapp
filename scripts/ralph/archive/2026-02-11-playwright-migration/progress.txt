@@ -9,6 +9,11 @@ Started: Tue Feb 11 2026
 - Always look up user.unitPreference before returning weights to frontend
 - Frontend receives weights already in user's unit - no conversion needed on frontend
 - For input (user → backend), convert from user's unit to kg for storage
+- Frontend pages use `useAuth().user.unitPreference` to display unit suffix
+- All touch targets must be at least 44px height (use `min-height: 44px` in CSS)
+- Input name attributes must match E2E test selectors (e.g., input[name='bench'])
+- Use `btn-primary` class for primary action buttons
+- Form validation: check for positive numbers before API calls
 
 ---
 
@@ -38,5 +43,22 @@ Started: Tue Feb 11 2026
   - TrainingMax interface includes: id, userId, exercise, weight, effectiveDate, createdAt
   - OneRepMaxes interface for setup: { bench, squat, ohp, deadlift }
   - Hook exposes: { trainingMaxes, isLoading, error, refetch }
+  - Frontend typecheck passes
+---
+
+## 2026-02-11 20:19 - US-046
+- Verified setup page is fully implemented
+- Files created:
+  - frontend/src/pages/SetupPage.tsx - Full setup page implementation
+  - frontend/src/pages/SetupPage.css - Styling with proper touch targets
+- **Learnings for future iterations:**
+  - Setup page uses useAuth() to get user.unitPreference for display
+  - Form has 4 labeled number inputs with name attributes: bench, squat, ohp, deadlift
+  - Client-side validation checks all fields are positive numbers before submit
+  - Uses setupTrainingMaxes() from api/trainingMaxes.ts
+  - Redirects to dashboard (/) on success using useNavigate()
+  - Shows loading state and error messages
+  - All touch targets are 44px height (inputs and button)
+  - Form state managed with useState, validation runs on submit
   - Frontend typecheck passes
 ---

@@ -59,7 +59,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "notes": "Use useAuth() to get the user's unitPreference for display. Use the setupTrainingMaxes() function from api/trainingMaxes.ts. Use useNavigate() from react-router for redirect. The existing E2E tests in e2e/setup.spec.ts use input[name='bench'] etc., so keep those name attributes."
     },
     {
