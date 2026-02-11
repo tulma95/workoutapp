@@ -1,169 +1,322 @@
 {
   "project": "nSuns 4-Day LP Workout Tracker",
-  "branchName": "ralph/playwright-migration",
-  "description": "Migrate frontend tests to Playwright E2E, update run_test.sh, remove frontend unit test infra, add start_local_env.sh",
+  "branchName": "ralph/frontend-ui-epics-8-10",
+  "description": "Setup & Training Max UI, Dashboard, and Workout Session - Epics 8-10 frontend implementation with backend unit conversion",
   "userStories": [
     {
-      "id": "US-034",
-      "title": "Remove frontend unit test infrastructure",
-      "description": "As a developer, I want to remove all frontend unit test files and dependencies so the project has a single, clear testing strategy.",
+      "id": "US-044",
+      "title": "Backend: return weights in user's preferred unit",
+      "description": "As a frontend developer, I want the backend API to return all weights already converted to the user's preferred unit so the frontend doesn't need conversion logic.",
       "acceptanceCriteria": [
-        "Delete frontend/src/__tests__/ directory (AuthContext.test.tsx, client.test.ts)",
-        "Delete frontend/vitest.config.ts",
-        "Remove devDependencies from frontend/package.json: @testing-library/jest-dom, @testing-library/react, jsdom, vitest",
-        "Remove \"test\": \"vitest run\" script from frontend/package.json",
-        "npm install succeeds from project root with no errors",
-        "npm run build -w frontend still works",
+        "Update GET /api/training-maxes to return weights in the user's preferred unit (if lb: multiply stored kg by 2.20462, round to nearest 5lb using roundWeight from lib/weightRounding.ts)",
+        "Update POST /api/training-maxes/setup response to return TMs in the user's preferred unit",
+        "Update PATCH /api/training-maxes/:exercise to accept weight in the user's preferred unit (backend converts to kg for storage) and return the saved TM in the user's unit",
+        "Update GET /api/training-maxes/:exercise/history response to return weights in the user's unit",
+        "Update POST /api/workouts response: prescribedWeight values in all sets are in the user's preferred unit",
+        "Update GET /api/workouts/current and GET /api/workouts/:id to return prescribedWeight in user's unit",
+        "Update POST /api/workouts/:id/complete response: progression.previousTM, progression.newTM, and progression.increase are in the user's unit",
+        "All existing backend tests still pass (update test assertions if needed to account for the conversion)",
         "Typecheck passes"
       ],
       "priority": 1,
       "passes": true,
-      "notes": "Delete the files first, then edit package.json to remove deps and test script. Run npm install from root to clean up node_modules."
+      "notes": "The user's unitPreference is already available via prisma.user.findUnique in the route handlers. Use roundWeight() from lib/weightRounding.ts for rounding. For kg users nothing changes (kg is the storage unit). For lb users: weight * 2.20462, rounded to nearest 5lb. For input conversion (lb to kg): weight / 2.20462, rounded to nearest 2.5kg. The TM setup and update routes already look up the user to get unitPreference — reuse that. Workout service needs userId to look up unitPreference."
     },
     {
-      "id": "US-035",
-      "title": "Install and configure Playwright",
-      "description": "As a developer, I want Playwright set up in the project so I can write E2E tests against the real app.",
+      "id": "US-045",
+      "title": "Create training max API module and hook",
+      "description": "As a developer, I need API functions and a React hook for training max operations so that pages can fetch and update TMs.",
       "acceptanceCriteria": [
-        "Install @playwright/test as a devDependency in the root package.json (not in frontend or backend workspace)",
-        "Create playwright.config.ts at project root with: baseURL http://localhost:5173, testDir e2e/, chromium-only, retries 0, screenshot on failure",
-        "Create e2e/ directory at project root",
-        "Add test-results/ and playwright-report/ to .gitignore",
-        "npx playwright install chromium succeeds",
+        "Create frontend/src/api/trainingMaxes.ts with functions: getTrainingMaxes(), setupTrainingMaxes(oneRepMaxes), updateTrainingMax(exercise, weight), getTrainingMaxHistory(exercise)",
+        "All functions use apiFetch from api/client.ts",
+        "getTrainingMaxes() calls GET /training-maxes and returns array of { exercise, weight, effectiveDate }",
+        "setupTrainingMaxes() calls POST /training-maxes/setup with { oneRepMaxes: { bench, squat, ohp, deadlift } }",
+        "updateTrainingMax() calls PATCH /training-maxes/:exercise with { weight }",
+        "Create frontend/src/hooks/useTrainingMaxes.ts that fetches current TMs on mount and exposes { trainingMaxes, isLoading, error, refetch }",
         "Typecheck passes"
       ],
       "priority": 2,
-      "passes": true,
-      "notes": "Install in root package.json using npm install -D @playwright/test -w treenisofta (or from project root without -w). Then run npx playwright install chromium to download browser binaries."
+      "passes": false,
+      "notes": "Follow the same pattern as api/auth.ts. Use apiFetch which already handles JWT tokens and error responses. The hook should use useState + useEffect pattern. Weight values from the backend are already in the user's preferred unit — no conversion needed."
     },
     {
-      "id": "US-036",
-      "title": "Write E2E test - Registration and Login",
-      "description": "As a developer, I want E2E tests for the auth flows so I can verify users can register and log in through the real UI.",
+      "id": "US-046",
+      "title": "Implement setup page",
+      "description": "As a new user, I want to enter my 1 Rep Maxes so that the app calculates my Training Maxes and I can start working out.",
       "acceptanceCriteria": [
-        "Create e2e/auth.spec.ts",
-        "Test: register a new user with valid credentials -> redirected to setup page",
-        "Test: register with duplicate email -> shows error message",
-        "Test: login with valid credentials -> redirected to dashboard or setup",
-        "Test: login with wrong password -> shows error message",
-        "Test: logout -> redirected to login page",
-        "Each test uses a unique email (timestamp-based) for isolation",
-        "Tests use Playwright page fixture, no mocks"
+        "Replace stub in frontend/src/pages/SetupPage.tsx with full implementation",
+        "Page shows a heading explaining this is the initial setup (e.g., 'Enter Your 1 Rep Maxes')",
+        "4 labeled number inputs for Bench, Squat, OHP, and Deadlift, each with the user's unit suffix (kg or lb) from useAuth().user.unitPreference",
+        "Inputs have name attributes: bench, squat, ohp, deadlift (existing E2E tests rely on these)",
+        "Submit button labeled 'Calculate Training Maxes' or similar",
+        "Client-side validation: all 4 fields must be positive numbers; show error if invalid",
+        "On submit, calls POST /api/training-maxes/setup with the entered values in the user's preferred unit (backend handles conversion to kg)",
+        "On success, redirects to dashboard (/)",
+        "Shows loading state on submit button while API call is in progress",
+        "Shows API error message if setup fails",
+        "All touch targets are at least 44px height",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
       ],
       "priority": 3,
-      "passes": true,
-      "notes": "Use Date.now() in email addresses for uniqueness (e.g. test-1234567890@example.com). The app redirects to /setup if user has no TMs after login. Use page.goto('/register'), fill form fields, click submit, then waitForURL to verify redirect."
+      "passes": false,
+      "notes": "Use useAuth() to get the user's unitPreference for display. Use the setupTrainingMaxes() function from api/trainingMaxes.ts. Use useNavigate() from react-router for redirect. The existing E2E tests in e2e/setup.spec.ts use input[name='bench'] etc., so keep those name attributes."
     },
     {
-      "id": "US-037",
-      "title": "Write E2E test - Training Max Setup",
-      "description": "As a developer, I want E2E tests for the TM setup flow so I can verify users can enter their 1RMs and see computed training maxes.",
+      "id": "US-047",
+      "title": "Add setup redirect from dashboard",
+      "description": "As a new user who hasn't set up TMs, I want to be automatically redirected to the setup page so I don't see an empty dashboard.",
       "acceptanceCriteria": [
-        "Create e2e/setup.spec.ts",
-        "Test: new user sees setup page after first login (no TMs exist)",
-        "Test: enter 4 x 1RM values, submit -> redirected to dashboard",
-        "Test: dashboard shows computed TMs (90% of entered 1RMs)",
-        "Tests register a fresh user as setup, then perform TM setup"
-      ],
-      "priority": 4,
-      "passes": true,
-      "notes": "Register user first, then verify redirect to /setup. Fill in 1RM fields for bench, squat, ohp, deadlift. After submit, verify redirect to dashboard and that TM values are displayed (90% of 1RMs, rounded to 2.5kg)."
-    },
-    {
-      "id": "US-038",
-      "title": "Write E2E test - Workout Session",
-      "description": "As a developer, I want E2E tests for a full workout session so I can verify the core workout flow works end-to-end.",
-      "acceptanceCriteria": [
-        "Create e2e/workout.spec.ts",
-        "Test: start a Day 1 workout from dashboard -> workout page shows T1 and T2 sets",
-        "Test: complete sets by clicking -> sets marked as done",
-        "Test: enter AMRAP reps on the AMRAP set",
-        "Test: complete workout -> see progression result (TM change banner)",
-        "Test registers a fresh user, sets up TMs, then runs a workout"
-      ],
-      "priority": 5,
-      "passes": true,
-      "notes": "Full setup flow: register -> setup TMs -> start Day 1 workout. The workout page should show 9 T1 sets (Bench Volume) and 8 T2 sets (OHP). Complete sets, enter AMRAP reps, then complete workout. Verify progression banner appears showing TM change."
-    },
-    {
-      "id": "US-039",
-      "title": "Write E2E test - Workout History",
-      "description": "As a developer, I want E2E tests for the history page so I can verify past workouts are displayed correctly.",
-      "acceptanceCriteria": [
-        "Create e2e/history.spec.ts",
-        "Test: after completing a workout, navigate to history page -> see the completed workout",
-        "Test: workout entry shows day number, date, and completion status",
-        "Test builds on a completed workout (register -> setup -> workout -> complete -> check history)"
-      ],
-      "priority": 6,
-      "passes": true,
-      "notes": "Reuse the same setup pattern: register -> setup TMs -> start+complete workout -> navigate to /history. Verify the completed workout appears in the list with correct day number and date."
-    },
-    {
-      "id": "US-040",
-      "title": "Write E2E test - Settings Page",
-      "description": "As a developer, I want E2E tests for the settings page so I can verify users can update their preferences.",
-      "acceptanceCriteria": [
-        "Create e2e/settings.spec.ts",
-        "Test: navigate to settings -> see current user info (display name, email, unit preference)",
-        "Test: change unit preference from kg to lb -> saves successfully",
-        "Test: change display name -> saves successfully",
-        "Test registers a fresh user and sets up TMs before navigating to settings"
-      ],
-      "priority": 7,
-      "passes": true,
-      "notes": "Register user, set up TMs (so user lands on dashboard, not setup), then navigate to /settings. Verify display name and email are shown. Toggle unit preference, verify save confirmation. Change display name, verify save confirmation."
-    },
-    {
-      "id": "US-041",
-      "title": "Update run_test.sh to run Playwright E2E tests",
-      "description": "As a developer, I want run_test.sh to run both backend tests and Playwright E2E tests in a single invocation.",
-      "acceptanceCriteria": [
-        "run_test.sh starts test Postgres container (existing behavior)",
-        "run_test.sh waits for DB ready and runs migrations (existing behavior)",
-        "run_test.sh runs backend integration tests (existing behavior)",
-        "If backend tests pass: starts backend server (port 3001) and frontend dev server (port 5173) as background processes",
-        "Waits for both servers to be ready via health check or port check",
-        "Runs npx playwright test",
-        "Cleanup trap kills background server processes and stops test DB container",
-        "Backend server uses the test database URL and test JWT secret",
-        "Script exits with non-zero code if any test phase fails"
-      ],
-      "priority": 8,
-      "passes": true,
-      "notes": "Start backend with: DATABASE_URL=$TEST_DB_URL JWT_SECRET=test-secret PORT=3001 NODE_ENV=test node dist/index.js &. Start frontend with: npm run dev -w frontend &. Wait for servers using curl retry loop on health endpoints. Kill background PIDs in cleanup trap. Must build backend first (npm run build -w backend) before starting it."
-    },
-    {
-      "id": "US-042",
-      "title": "Create start_local_env.sh script",
-      "description": "As a developer, I want a single script to start the full local dev environment so I can quickly begin manual testing.",
-      "acceptanceCriteria": [
-        "start_local_env.sh at project root, executable (chmod +x)",
-        "Creates or attaches to a tmux session named 'treenisofta'",
-        "3 panes in a single tmux window: Pane 1 runs docker compose up, Pane 2 waits for DB then runs migrations and npm run dev -w backend, Pane 3 runs npm run dev -w frontend",
-        "Script checks that tmux is installed, exits with helpful error if not",
-        "If session already exists, attaches to it instead of creating duplicate",
-        "Script is idempotent (running twice doesn't create duplicate sessions)"
-      ],
-      "priority": 9,
-      "passes": true,
-      "notes": "Use tmux new-session for first pane, then tmux split-window for panes 2 and 3. Use tmux select-layout even-vertical for equal pane sizes. Check for existing session with tmux has-session -t treenisofta. Pane 2 needs a sleep/retry loop waiting for postgres to be ready before running migrations."
-    },
-    {
-      "id": "US-043",
-      "title": "Update CLAUDE.md and project configuration",
-      "description": "As a developer, I want CLAUDE.md and project config updated to reflect the new testing strategy.",
-      "acceptanceCriteria": [
-        "CLAUDE.md Testing section: remove mention of frontend unit tests",
-        "CLAUDE.md Testing section: add Playwright E2E test info (location: e2e/, config: playwright.config.ts)",
-        "CLAUDE.md Testing section: add note 'Do not write frontend unit tests. All frontend testing is done via Playwright E2E tests.'",
-        "CLAUDE.md Commands section: document start_local_env.sh",
-        ".gitignore includes Playwright artifacts (test-results/, playwright-report/)",
+        "In DashboardPage, fetch training maxes on mount using useTrainingMaxes hook or direct API call",
+        "If user has no training maxes (empty array returned from API), redirect to /setup",
+        "If user has TMs, render the dashboard normally (for now just show a placeholder with TM values)",
+        "Show a loading spinner while checking for TMs (don't flash dashboard then redirect)",
         "Typecheck passes"
       ],
+      "priority": 4,
+      "passes": false,
+      "notes": "This is a minimal change to DashboardPage — just add the TM check and redirect logic. The full dashboard UI comes in US-052. Use useNavigate() and useEffect for the redirect. Show a simple loading indicator (e.g., 'Loading...') while fetching."
+    },
+    {
+      "id": "US-048",
+      "title": "Create training max edit modal",
+      "description": "As a user, I want to manually adjust a Training Max from the dashboard so I can correct values without re-entering all 1RMs.",
+      "acceptanceCriteria": [
+        "Create a TM edit modal/dialog component (can be inline in DashboardPage or a separate component file)",
+        "Each TM displayed on the dashboard has an 'Edit' button or is tappable to open the edit modal",
+        "Modal shows the exercise name, current TM value, and a number input pre-filled with the current value in user's preferred unit (already converted by backend)",
+        "Input shows the user's unit suffix (kg or lb)",
+        "'Save' button calls PATCH /api/training-maxes/:exercise with the new value in user's preferred unit (backend converts to kg for storage)",
+        "On success, closes the modal and refreshes TMs on the dashboard",
+        "Shows loading state while saving",
+        "Cancel/close button to dismiss without saving",
+        "All touch targets are at least 44px height",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "Use updateTrainingMax() from api/trainingMaxes.ts. Can use a simple CSS overlay modal or the HTML <dialog> element. The TM values from the API are already in the user's preferred unit. After save, call refetch() from the useTrainingMaxes hook to refresh the dashboard."
+    },
+    {
+      "id": "US-049",
+      "title": "E2E tests for setup and training max editing with Playwright fixtures",
+      "description": "As a developer, I need Playwright E2E tests with fixtures for the setup flow and TM editing.",
+      "acceptanceCriteria": [
+        "Create e2e/fixtures.ts exporting a custom test object that extends Playwright's base test with reusable fixtures: authenticatedPage (registers new user, returns { page, user }) and setupCompletePage (extends authenticatedPage, completes TM setup with 1RMs: bench 100, squat 140, ohp 60, deadlift 180 in kg, returns { page, user } on dashboard)",
+        "Migrate e2e/setup.spec.ts to use fixtures from e2e/fixtures.ts and getByRole selectors where possible (keep same filename)",
+        "Test: new user is redirected to /setup when no TMs exist (use authenticatedPage fixture)",
+        "Test: entering 1RMs and submitting redirects to dashboard with correct TMs displayed — use getByRole selectors",
+        "Test: editing a TM from the dashboard updates the displayed value — use getByRole selectors",
+        "All tests pass via ./run_test.sh"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "Use test.extend() from @playwright/test to create fixtures. authenticatedPage fixture: generate unique email with Date.now(), register via /register page, return { page, user: { email, password, displayName } }. setupCompletePage: extend authenticatedPage, fill setup form, submit, waitForURL to dashboard. Use getByRole('spinbutton', { name: /bench/i }) for number inputs, getByRole('button', { name: /calculate/i }) for submit."
+    },
+    {
+      "id": "US-050",
+      "title": "Create workout API module and hook",
+      "description": "As a developer, I need API functions and a React hook for workout operations so pages can start, manage, and complete workouts.",
+      "acceptanceCriteria": [
+        "Create frontend/src/api/workouts.ts with functions: startWorkout(dayNumber), getCurrentWorkout(), getWorkout(id), logSet(workoutId, setId, data), completeWorkout(id), getWorkoutHistory(page, limit)",
+        "All functions use apiFetch from api/client.ts",
+        "startWorkout() calls POST /workouts with { dayNumber }",
+        "getCurrentWorkout() calls GET /workouts/current",
+        "logSet() calls PATCH /workouts/:id/sets/:setId with { actualReps?, completed? }",
+        "completeWorkout() calls POST /workouts/:id/complete",
+        "getWorkoutHistory() calls GET /workouts/history?page=X&limit=Y",
+        "Typecheck passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": "Follow the same pattern as api/trainingMaxes.ts. All weight values from the backend are already in the user's preferred unit. The logSet function needs both workoutId and setId for the URL path."
+    },
+    {
+      "id": "US-051",
+      "title": "Create WorkoutCard component",
+      "description": "As a user, I want to see each training day as a clear card on the dashboard so I know what exercises each day includes and what my status is.",
+      "acceptanceCriteria": [
+        "Create frontend/src/components/WorkoutCard.tsx",
+        "Props: dayNumber (1-4), t1Exercise (string), t2Exercise (string), status ('upcoming' | 'in_progress' | 'completed'), onStart callback",
+        "Card shows: 'Day X' heading, T1 exercise name, T2 exercise name",
+        "Visual states: upcoming = default card style with 'Start Workout' button, in_progress = highlighted border/background with 'Continue Workout' button, completed = muted/gray with checkmark indicator and no action button",
+        "'Start Workout' / 'Continue Workout' button calls onStart(dayNumber)",
+        "All touch targets are at least 44px height",
+        "Typecheck passes"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": "Use existing CSS custom properties from global.css (--primary, --success, --muted, --bg-card, --border). Card can be a simple div with conditional CSS classes. Use btn-primary for the action button."
+    },
+    {
+      "id": "US-052",
+      "title": "Implement dashboard page",
+      "description": "As a user, I want to see my 4 training days and current Training Maxes on the dashboard so I can choose which workout to do.",
+      "acceptanceCriteria": [
+        "Replace stub in frontend/src/pages/DashboardPage.tsx with full implementation",
+        "Fetches current TMs and current workout on mount",
+        "If no TMs exist, redirects to /setup (from US-047)",
+        "Shows a 'Training Maxes' section listing all 4 exercises with their current TM value — values come from the backend already in the user's preferred unit, just display them with the unit suffix",
+        "Shows 4 WorkoutCard components vertically, one per day, with correct exercise names: Day 1 (Bench Volume + OHP), Day 2 (Squat + Sumo Deadlift), Day 3 (Bench Heavy + Close Grip Bench), Day 4 (Deadlift + Front Squat)",
+        "If user has an in-progress workout, that day's card shows in_progress status",
+        "Clicking 'Start Workout' navigates to /workout/:dayNumber",
+        "Clicking 'Continue Workout' navigates to /workout/:dayNumber of the in-progress workout",
+        "Shows loading state while fetching data",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": "Use useTrainingMaxes hook for TMs and getCurrentWorkout() from api/workouts.ts for in-progress workout. Hardcode the day-to-exercise mapping: [{day:1, t1:'Bench Volume', t2:'OHP'}, {day:2, t1:'Squat', t2:'Sumo Deadlift'}, {day:3, t1:'Bench Heavy', t2:'Close Grip Bench'}, {day:4, t1:'Deadlift', t2:'Front Squat'}]. Use useNavigate() for navigation on card click. The user's unitPreference from useAuth() determines the suffix ('kg' or 'lb')."
+    },
+    {
+      "id": "US-053",
+      "title": "E2E tests for dashboard",
+      "description": "As a developer, I need Playwright E2E tests for the dashboard using fixtures and getByRole selectors.",
+      "acceptanceCriteria": [
+        "Create e2e/dashboard.spec.ts using fixtures from e2e/fixtures.ts",
+        "Test: dashboard shows 4 workout day cards with correct exercise names (use setupCompletePage fixture)",
+        "Test: dashboard shows current TM values for all 4 exercises",
+        "Test: clicking 'Start Workout' on a day card navigates to the workout page",
+        "Use getByRole selectors where possible (e.g., page.getByRole('button', { name: /start workout/i }), page.getByRole('heading', { name: /day 1/i }))",
+        "All tests pass via ./run_test.sh"
+      ],
       "priority": 10,
-      "passes": true,
-      "notes": "Update the Testing section and Commands section in CLAUDE.md. The .gitignore update may have been done in US-035 already — verify and add if missing."
+      "passes": false,
+      "notes": "Use setupCompletePage fixture which provides a page on the dashboard with TMs already set. Expected TM values for test 1RMs (bench 100, squat 140, ohp 60, deadlift 180): bench 90kg, squat 125kg, ohp 55kg, deadlift 162.5kg. Clicking Start Workout should navigate to /workout/N."
+    },
+    {
+      "id": "US-054",
+      "title": "Create AmrapInput component",
+      "description": "As a user, I want mobile-friendly +/- buttons to enter my AMRAP reps so I don't have to type on a small keyboard.",
+      "acceptanceCriteria": [
+        "Create frontend/src/components/AmrapInput.tsx",
+        "Props: value (number | null), targetReps (number), onChange callback",
+        "Shows current rep count (or placeholder showing target reps as hint)",
+        "'-' button decrements the value (minimum 0)",
+        "'+' button increments the value",
+        "If value is null (not yet entered), first tap on '+' sets it to the target reps; first tap on '-' sets it to 0",
+        "Buttons are large enough for mobile use (at least 44px)",
+        "Also allows direct number input via a number field for quick entry",
+        "Typecheck passes"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": "Use a horizontal layout: [-] [value] [+]. The number input in the middle should be a small input[type='number'] for direct editing. Use btn-secondary or custom styles for the +/- buttons. The +/- buttons need aria-labels for accessibility ('Decrease reps', 'Increase reps')."
+    },
+    {
+      "id": "US-055",
+      "title": "Create SetRow component",
+      "description": "As a user, I want to see each set in my workout as a clear row showing the weight, target reps, and whether it's done.",
+      "acceptanceCriteria": [
+        "Create frontend/src/components/SetRow.tsx",
+        "Props: setNumber, weight (number, in user's unit), reps (number), isAmrap (boolean), completed (boolean), actualReps (number | null), unit ('kg' | 'lb'), onComplete callback, onAmrapRepsChange callback",
+        "Displays: set number, weight with unit suffix (e.g., '85 kg'), target reps (e.g., 'x4'), and for AMRAP sets append '+' (e.g., 'x8+')",
+        "Non-AMRAP sets: checkbox to mark as completed. When toggled, calls onComplete()",
+        "AMRAP sets: shows the AmrapInput component for entering reps",
+        "Completed sets have a visual distinction (e.g., green background or strikethrough)",
+        "Row height is at least 44px for touch targets",
+        "Typecheck passes"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": "AmrapInput component is created in US-054. Use a horizontal flex layout: [set#] [weight] [reps] [checkbox or AmrapInput]. Use CSS custom properties for completed state (--success for green). Checkbox should use native input[type='checkbox'] with proper sizing."
+    },
+    {
+      "id": "US-056",
+      "title": "Create ProgressionBanner component",
+      "description": "As a user, I want to see a clear message about my Training Max change after completing a workout.",
+      "acceptanceCriteria": [
+        "Create frontend/src/components/ProgressionBanner.tsx",
+        "Props: progression object { exercise, previousTM, newTM, increase } or null, unit ('kg' | 'lb')",
+        "If progression is not null and increase > 0: shows a success banner (green) with message like 'Bench TM +5kg! New TM: 95kg'",
+        "If progression is null or increase is 0: shows a neutral banner with message like 'No TM change this session'",
+        "Exercise name is capitalized for display (e.g., 'bench' -> 'Bench', 'ohp' -> 'OHP')",
+        "Weight values are displayed with the unit suffix",
+        "Typecheck passes"
+      ],
+      "priority": 13,
+      "passes": false,
+      "notes": "Use CSS custom properties for colors: --success for green banner, --bg-card with --border for neutral banner. All weight values come from the backend already in the user's unit. Capitalize exercise names: simple map { bench: 'Bench', squat: 'Squat', ohp: 'OHP', deadlift: 'Deadlift' }."
+    },
+    {
+      "id": "US-057",
+      "title": "Implement workout page",
+      "description": "As a user, I want to perform my workout by seeing all prescribed sets, completing them, entering AMRAP reps, and finishing the workout with progression applied.",
+      "acceptanceCriteria": [
+        "Replace stub in frontend/src/pages/WorkoutPage.tsx with full implementation",
+        "Reads dayNumber from the URL param (:dayNumber) using useParams()",
+        "On mount: calls GET /workouts/current to check for an existing in-progress workout. If one exists for this day number, resumes it. If one exists for a different day, shows a message. If none, calls POST /workouts to start a new one.",
+        "Displays a heading with the day label (e.g., 'Day 2 - Squat')",
+        "Renders T1 section with section header showing T1 exercise name and 9 SetRow components",
+        "Renders T2 section with section header showing T2 exercise name and 8 SetRow components",
+        "All weights come from the backend already in the user's preferred unit — display with unit suffix from user.unitPreference",
+        "When a non-AMRAP set is completed, calls PATCH /workouts/:id/sets/:setId with { completed: true }",
+        "When AMRAP reps are entered/changed, calls PATCH /workouts/:id/sets/:setId with { actualReps: N, completed: true }",
+        "'Complete Workout' button is always enabled. If the progression AMRAP set has no reps entered, show a confirmation warning before proceeding",
+        "On clicking 'Complete Workout' (after confirming if needed): calls POST /workouts/:id/complete, shows ProgressionBanner with the result",
+        "After completion, shows a 'Back to Dashboard' button that navigates to /",
+        "Shows loading state while starting workout and completing workout",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 14,
+      "passes": false,
+      "notes": "Use getCurrentWorkout() and startWorkout() from api/workouts.ts. Use logSet() for set updates — fire API call on each completion toggle or AMRAP change. Use completeWorkout() for completion. Day-to-exercise mapping same as dashboard: [{day:1, t1:'Bench Volume', t2:'OHP'}, ...]. The progression AMRAP is the highest-percentage AMRAP in T1: Days 2/3/4 = set 3 (95%), Day 1 = set 9 (65%). Use window.confirm() for the missing AMRAP warning. Manage local state for set completion to give immediate visual feedback while API call is in progress."
+    },
+    {
+      "id": "US-058",
+      "title": "Weight formatting utility for frontend",
+      "description": "As a developer, I need a simple utility for formatting weight display strings since the backend already handles conversion.",
+      "acceptanceCriteria": [
+        "Create frontend/src/utils/weight.ts",
+        "formatWeight(weight: number, unit: 'kg' | 'lb'): string — returns formatted string like '85 kg' or '190 lb' (weight is already in the correct unit from the backend)",
+        "formatExerciseName(exercise: string): string — capitalizes exercise names for display (e.g., 'bench' -> 'Bench', 'ohp' -> 'OHP', 'deadlift' -> 'Deadlift')",
+        "Used by DashboardPage (TM display), WorkoutPage (set weight display), and ProgressionBanner",
+        "Typecheck passes"
+      ],
+      "priority": 15,
+      "passes": false,
+      "notes": "Simple utility file. formatWeight just concatenates: `${weight} ${unit}`. formatExerciseName uses a lookup map: { bench: 'Bench', squat: 'Squat', ohp: 'OHP', deadlift: 'Deadlift' } with fallback to capitalize first letter. Refactor existing components to use these utilities if they have inline formatting logic."
+    },
+    {
+      "id": "US-059",
+      "title": "E2E tests for workout session with fixtures",
+      "description": "As a developer, I need Playwright E2E tests for the full workout session flow using fixtures and getByRole selectors.",
+      "acceptanceCriteria": [
+        "Migrate e2e/workout.spec.ts to use fixtures from e2e/fixtures.ts and getByRole selectors (keep same filename)",
+        "Test: starting a workout from the dashboard shows T1 and T2 sections with correct exercise names and set counts (use setupCompletePage fixture)",
+        "Test: completing a non-AMRAP set marks it visually as done — use getByRole('checkbox') or similar",
+        "Test: entering AMRAP reps using the +/- stepper works correctly — use getByRole('button', { name: /\\+/i }) and getByRole('spinbutton')",
+        "Test: completing a workout shows the progression banner with TM change info",
+        "Test: after completing a workout, navigating back to dashboard shows the day as completed",
+        "Test: completing a workout without entering AMRAP reps shows the confirmation warning, then completes with no TM change",
+        "Use getByRole selectors wherever possible for accessibility-friendly selectors",
+        "All tests pass via ./run_test.sh"
+      ],
+      "priority": 16,
+      "passes": false,
+      "notes": "Use setupCompletePage fixture to start with a user on the dashboard with TMs set. For Day 1: T1 = Bench Volume (9 sets), T2 = OHP (8 sets). The progression AMRAP for Day 1 is set 9 (65% x 8+). Use page.on('dialog') to handle window.confirm() for the missing AMRAP test. Expected TMs: bench 90kg. With 10+ reps on AMRAP: bench TM +5kg."
+    },
+    {
+      "id": "US-060",
+      "title": "TypeScript code review of Epics 8-10",
+      "description": "As a developer, I want a comprehensive code review of all changes from Epics 8-10 to ensure type safety, best practices, and code quality before merging.",
+      "acceptanceCriteria": [
+        "Run the typescript-code-review skill on all new and modified files from this PRD",
+        "Review covers: type safety, proper error handling, no any types, correct use of React hooks, proper component prop types",
+        "Review covers: API client functions have correct return types, hooks handle loading/error states properly",
+        "Review covers: backend unit conversion logic is correct and consistent across all endpoints",
+        "Review covers: no security issues (XSS in rendered content, improper input handling)",
+        "Review covers: E2E test quality (proper assertions, no flaky patterns like arbitrary timeouts)",
+        "All issues found are fixed before marking this story as complete",
+        "All tests still pass after fixes via ./run_test.sh",
+        "Typecheck passes"
+      ],
+      "priority": 17,
+      "passes": false,
+      "notes": "Use the typescript-code-review skill to review all files created or modified during Epics 8-10. Key files to review: backend services (trainingMax.service.ts, workout.service.ts), frontend API modules (api/trainingMaxes.ts, api/workouts.ts), hooks (useTrainingMaxes.ts), pages (SetupPage, DashboardPage, WorkoutPage), components (WorkoutCard, SetRow, AmrapInput, ProgressionBanner), utils (weight.ts), and E2E tests (fixtures.ts, setup.spec.ts, workout.spec.ts, dashboard.spec.ts). Fix all issues found, then re-run ./run_test.sh to verify nothing broke."
     }
   ]
 }

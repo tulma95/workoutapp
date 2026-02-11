@@ -1,145 +1,27 @@
 # Ralph Progress Log
-Started: Wed Feb 11 18:17:18 EET 2026
+Started: Tue Feb 11 2026
 ---
-## 2026-02-11 18:20 - US-034
-- Removed frontend unit test infrastructure
-- Files changed:
-  - Deleted frontend/src/__tests__/ directory (AuthContext.test.tsx, client.test.ts)
-  - Deleted frontend/vitest.config.ts
-  - Modified frontend/package.json: removed test script and test dependencies
-  - Updated package-lock.json via npm install
-- **Learnings for future iterations:**
-  - Project uses npm workspaces (frontend/, backend/)
-  - npm install from root automatically syncs dependencies across workspaces
-  - Builds verify typecheck: npm run build -w frontend and npm run build -w backend both use tsc
-  - Git commits should include all related changes (package.json + package-lock.json)
+
+## Codebase Patterns
+- Backend stores weights in kg internally, converts to user's preferred unit at API layer
+- Use `convertWeightToUserUnit()` helper in services to convert from kg to user's unit
+- Use `roundWeight()` from lib/weightRounding.ts for rounding (2.5kg or 5lb increments)
+- Always look up user.unitPreference before returning weights to frontend
+- Frontend receives weights already in user's unit - no conversion needed on frontend
+- For input (user → backend), convert from user's unit to kg for storage
+
 ---
-## 2026-02-11 - US-035
-- Installed and configured Playwright for E2E testing
-- Files changed:
-  - Modified package.json and package-lock.json: added @playwright/test as devDependency
-  - Created playwright.config.ts: configured for chromium-only, baseURL localhost:5173, testDir e2e/, retries 0, screenshot on failure
-  - Created e2e/ directory at project root
-  - Modified .gitignore: added test-results/ and playwright-report/
-  - Updated prd.json: marked US-035 as passing
+
+## 2026-02-11 20:15 - US-044
+- Verified backend unit conversion implementation is complete
+- Files already modified (in previous commits):
+  - backend/src/services/trainingMax.service.ts - added convertWeightToUserUnit()
+  - backend/src/services/workout.service.ts - added formatWorkout() helper
 - **Learnings for future iterations:**
-  - Playwright installed at root level (not in workspaces) to test the full app
-  - npx playwright install chromium downloads browser binaries (silent success)
-  - Configuration uses retries: 0 for deterministic test results
-  - workers: 1 prevents parallel test execution (important for E2E tests that share state)
-  - Screenshot and trace only on failure to minimize test artifacts
----
-## 2026-02-11 16:23 - US-036
-- Implemented E2E tests for authentication flows
-- Files changed:
-  - Created e2e/auth.spec.ts with 5 test cases
-  - Updated scripts/ralph/prd.json: marked US-036 as passing
-- **Learnings for future iterations:**
-  - Each E2E test should use unique email addresses (Date.now() timestamp) for test isolation
-  - Playwright page.goto() for navigation, page.fill() for inputs, page.click() for buttons
-  - Use page.waitForURL() to verify redirects after form submissions
-  - Error message selectors should be flexible: `.error, [role="alert"], .alert-error`
-  - Auth flow: Register -> redirects to /setup (no TMs) -> Login -> redirects to /setup (no TMs)
-  - Use flexible text matching with regex for error messages: `/invalid.*credentials|password|incorrect/i`
-  - npx playwright test --list verifies test syntax without running them
----
-## 2026-02-11 18:37 - US-037
-- Implemented E2E tests for Training Max Setup flow
-- Files changed:
-  - Created e2e/setup.spec.ts with 3 test cases
-  - Updated scripts/ralph/prd.json: marked US-037 as passing
-- **Learnings for future iterations:**
-  - Setup flow: Register -> auto-redirect to /setup (no TMs) -> fill 1RMs -> submit -> redirect to /dashboard
-  - TM calculation: TM = round((1RM * 0.9) / 2.5) * 2.5 (round to nearest 2.5kg)
-  - Input selectors should be flexible: `input[name="exercise"], input[placeholder*="Exercise" i]` for robustness
-  - Dashboard TM verification: use page.textContent('body') to check all expected values appear
-  - Expected TMs for test values: bench 100kg -> 90kg, squat 140kg -> 125kg, ohp 60kg -> 55kg, deadlift 180kg -> 162.5kg
-  - waitForURL with timeout: 10000ms ensures dashboard has time to load after API call
----
-## 2026-02-11 19:15 - US-038
-- Implemented E2E tests for full workout session flow
-- Files changed:
-  - Created e2e/workout.spec.ts with 5 test cases
-  - Updated scripts/ralph/prd.json: marked US-038 as passing
-- **Learnings for future iterations:**
-  - Workout test flow: Register -> Setup TMs -> Start workout -> Complete sets -> Enter AMRAP reps -> Complete workout -> Verify progression
-  - Day 1 structure: 9 T1 sets (Bench Volume) + 8 T2 sets (OHP) = 17 total sets
-  - Day 1 progression AMRAP: Set 9 (65% x 8+) - it's the only T1 AMRAP for Day 1
-  - Day 2/3/4 have TWO T1 AMRAPs: high% (95%x1+) and low% (65%x3-5+), progression uses the HIGH% one (setOrder=3)
-  - Use flexible selectors for UI elements: multiple alternatives with .first() to handle various implementations
-  - Helper function pattern: registerAndSetupUser() reduces test boilerplate for common setup
-  - AMRAP rep expectations: 0-1=no increase, 2-3=+2.5kg, 4-5=+2.5-5kg, 6+=+5-7.5kg (upper body +5kg at 6+)
-  - Test both individual flows (start, complete sets, AMRAP, progression) and full integrated flow
-  - Use page.waitForTimeout() sparingly to allow UI state updates (500-1500ms)
----
-## 2026-02-11 19:45 - US-039
-- Implemented E2E tests for Workout History page
-- Files changed:
-  - Created e2e/history.spec.ts with 5 test cases
-  - Updated scripts/ralph/prd.json: marked US-039 as passing
-- **Learnings for future iterations:**
-  - History test flow: Register -> Setup TMs -> Complete workout -> Navigate to /history -> Verify workout appears
-  - Created helper function completeDay1Workout() to reduce test boilerplate
-  - History page should show: day number, completion date, completion status
-  - Navigation patterns: use multiple selector alternatives for robustness (a[href="/history"], a:has-text("History"), button:has-text("History"))
-  - Date verification: check for month name, year, or date pattern (MM/DD) instead of exact date string
-  - Empty state test: verify history page shows appropriate message when no workouts completed
-  - Multiple workouts test: completed Day 1 and Day 2 workouts both appear in history list
-  - Day 2 progression AMRAP: Set 3 (95% x 1+) is the high-percentage AMRAP
----
-## 2026-02-11 - US-040
-- Implemented E2E tests for Settings page
-- Files changed:
-  - Created e2e/settings.spec.ts with 4 test cases
-  - Updated scripts/ralph/prd.json: marked US-040 as passing
-- **Learnings for future iterations:**
-  - Settings page displays display name and email as read-only text (no edit inputs)
-  - Unit preference toggle: two buttons (kg/lb), clicking triggers PATCH /api/users/me and shows "Saved!" for 2 seconds
-  - The "Saved!" confirmation uses setTimeout(2000) so it disappears automatically
-  - Log Out button on settings page uses the logout() from AuthContext
-  - Acceptance criteria may not match actual UI implementation — adapt tests to what the UI actually supports
----
-## 2026-02-11 19:24 - US-041
-- Updated run_test.sh to run Playwright E2E tests after backend tests
-- Files changed:
-  - Modified run_test.sh: added server startup logic, health checks, E2E test execution
-  - Modified playwright.config.ts: added timeouts (30s test timeout, 10s action timeout) and maxFailures: 1
-  - Modified frontend/vite.config.ts: added strictPort: true for deterministic port binding
-  - Modified e2e/auth.spec.ts: changed selectors from input[name="..."] to #... to match actual HTML IDs
-  - Updated scripts/ralph/prd.json: marked US-041 as passing
-- **Learnings for future iterations:**
-  - run_test.sh orchestration: backend tests → build backend → start servers → wait for health → run E2E → cleanup
-  - Backend server must be built before starting (npm run build -w backend creates dist/)
-  - Use lsof -ti:PORT | xargs kill -9 to clean up port conflicts before starting servers
-  - Health check loops: curl -s http://localhost:PORT/endpoint with 30-iteration retry
-  - Background process management: store PID, kill in cleanup trap
-  - Frontend Vite dev server needs strictPort: true to fail fast if port 5173 is taken
-  - E2E tests may fail due to missing app functionality (not test script issues) - verify app behavior before assuming test bugs
-  - The test script correctly exits with non-zero code if backend tests or E2E tests fail
----
-## 2026-02-11 - US-042
-- Created start_local_env.sh script to start full local dev environment
-- Files changed:
-  - Created start_local_env.sh at project root (executable)
-  - Updated scripts/ralph/prd.json: marked US-042 as passing
-- **Learnings for future iterations:**
-  - tmux session management: create new session with `tmux new-session -d -s NAME`, check existence with `tmux has-session -t NAME`
-  - Script is idempotent: if session exists, attach instead of creating duplicate
-  - Tmux pane layout: use `tmux split-window -v` to split vertically, then `tmux select-layout even-vertical` for equal sizes
-  - Pane indexing: pane 0 = first pane (docker), pane 1 = second pane (backend), pane 2 = third pane (frontend)
-  - Database readiness check: use `docker exec treenisofta-db-1 pg_isready -U treenisofta` in a while loop
-  - Send commands to panes with `tmux send-keys -t SESSION:WINDOW.PANE 'command' C-m` (C-m = Enter key)
-  - Always check for required tools (tmux) and exit with helpful error message if not installed
----
-## 2026-02-11 - US-043
-- Updated CLAUDE.md to reflect new Playwright-only testing strategy
-- Files changed:
-  - Modified CLAUDE.md: removed frontend unit test references from Testing section, added Playwright E2E details, added explicit note against frontend unit tests, documented start_local_env.sh in Commands section, removed vitest from Frontend tech stack
-  - Updated scripts/ralph/prd.json: marked US-043 as passing
-- **Learnings for future iterations:**
-  - CLAUDE.md is the single source of truth for project conventions and workflow
-  - Testing strategy updates should be reflected in both Testing and Tech Stack sections
-  - .gitignore was already updated in US-035 (test-results/, playwright-report/)
-  - Clear negative guidance ("Do not write frontend unit tests") helps prevent future deviations from project standards
-  - The Commands section should document convenience scripts like start_local_env.sh for developer onboarding
+  - The unit conversion was implemented earlier in the branch history
+  - All training max endpoints (GET, POST setup, PATCH, GET history) return weights in user's unit
+  - All workout endpoints (POST, GET current, GET by ID, complete) return weights in user's unit
+  - Backend tests cover both kg and lb users with proper conversion assertions
+  - LB_TO_KG constant = 2.20462 used throughout for conversions
+  - All 133 backend tests passing, typecheck passes
 ---
