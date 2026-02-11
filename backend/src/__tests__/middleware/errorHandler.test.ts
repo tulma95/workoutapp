@@ -1,35 +1,26 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { Request, Response, NextFunction } from 'express';
-
-vi.mock('../../config', () => ({
-  config: {
-    nodeEnv: 'development',
-    jwtSecret: 'test-secret',
-    databaseUrl: 'postgresql://test',
-    port: 3001,
-  },
-}));
-
 import { errorHandler } from '../../middleware/errorHandler';
 import { config } from '../../config';
 
 function mockRes() {
-  const res = {
+  return {
     status: vi.fn().mockReturnThis(),
     json: vi.fn().mockReturnThis(),
   } as unknown as Response;
-  return res;
 }
 
 describe('errorHandler middleware', () => {
   const req = {} as Request;
   const next = vi.fn() as NextFunction;
+  const originalNodeEnv = config.nodeEnv;
 
-  beforeEach(() => {
-    vi.mocked(config).nodeEnv = 'development';
+  afterEach(() => {
+    config.nodeEnv = originalNodeEnv;
   });
 
   it('returns 500 with error details in development mode', () => {
+    config.nodeEnv = 'development';
     const res = mockRes();
     const error = new Error('Something broke');
 
@@ -45,8 +36,8 @@ describe('errorHandler middleware', () => {
     });
   });
 
-  it('returns 500 with generic message in production mode', () => {
-    vi.mocked(config).nodeEnv = 'production';
+  it('returns 500 with generic message in non-development mode', () => {
+    config.nodeEnv = 'test';
     const res = mockRes();
     const error = new Error('Secret database error');
 
