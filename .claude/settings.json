@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Before finishing, consider: did you just complete something that should be reflected in the root CLAUDE.md? This includes new architectural decisions, new patterns established, new commands/scripts added, database schema changes, new dependencies, important gotchas discovered, or workflow changes. If CLAUDE.md would benefit from an update, block the stop and update it concisely. Only update for meaningful changes - skip trivial edits, minor bug fixes, or changes already documented. Keep CLAUDE.md scannable and practical."
+          }
+        ]
+      }
+    ]
+  }
+}
