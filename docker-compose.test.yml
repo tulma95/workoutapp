@@ -1,0 +1,11 @@
+services:
+  postgres-test:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: treenisofta_test
+      POSTGRES_USER: treenisofta
+      POSTGRES_PASSWORD: treenisofta_dev
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql
