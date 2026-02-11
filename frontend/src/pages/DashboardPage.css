@@ -13,7 +13,23 @@
 }
 
 .training-maxes-section {
+  margin-bottom: 2.5rem;
+}
+
+.workout-days-section {
   margin-bottom: 2rem;
+}
+
+.workout-days-section h2 {
+  font-size: 1.25rem;
+  margin: 0 0 1rem 0;
+  color: var(--text);
+}
+
+.workout-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .training-maxes-section h2 {

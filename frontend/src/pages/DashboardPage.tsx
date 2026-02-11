@@ -1,13 +1,23 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { getTrainingMaxes, updateTrainingMax, type TrainingMax } from '../api/trainingMaxes';
+import { getCurrentWorkout } from '../api/workouts';
 import { useAuth } from '../context/AuthContext';
+import WorkoutCard from '../components/WorkoutCard';
 import './DashboardPage.css';
+
+const WORKOUT_DAYS = [
+  { day: 1, t1: 'Bench Volume', t2: 'OHP' },
+  { day: 2, t1: 'Squat', t2: 'Sumo Deadlift' },
+  { day: 3, t1: 'Bench Heavy', t2: 'Close Grip Bench' },
+  { day: 4, t1: 'Deadlift', t2: 'Front Squat' },
+];
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [trainingMaxes, setTrainingMaxes] = useState<TrainingMax[]>([]);
+  const [currentWorkout, setCurrentWorkout] = useState<{ dayNumber: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [editingExercise, setEditingExercise] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -17,12 +27,15 @@ export default function DashboardPage() {
   const unit = user?.unitPreference || 'kg';
 
   useEffect(() => {
-    loadTrainingMaxes();
+    loadData();
   }, [navigate]);
 
-  async function loadTrainingMaxes() {
+  async function loadData() {
     try {
-      const tms = await getTrainingMaxes();
+      const [tms, workout] = await Promise.all([
+        getTrainingMaxes(),
+        getCurrentWorkout(),
+      ]);
 
       // If no training maxes exist, redirect to setup
       if (!tms || tms.length === 0) {
@@ -31,9 +44,10 @@ export default function DashboardPage() {
       }
 
       setTrainingMaxes(tms);
+      setCurrentWorkout(workout);
       setIsLoading(false);
     } catch (error) {
-      console.error('Failed to fetch training maxes:', error);
+      console.error('Failed to fetch data:', error);
       setIsLoading(false);
     }
   }
@@ -64,13 +78,24 @@ export default function DashboardPage() {
 
     try {
       await updateTrainingMax(editingExercise, weight);
-      await loadTrainingMaxes(); // Refresh TMs
+      await loadData(); // Refresh TMs
       closeEditModal();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update training max');
     } finally {
       setIsSaving(false);
     }
+  }
+
+  function handleStartWorkout(dayNumber: number) {
+    navigate(`/workout/${dayNumber}`);
+  }
+
+  function getWorkoutStatus(dayNumber: number): 'upcoming' | 'in_progress' | 'completed' {
+    if (currentWorkout && currentWorkout.dayNumber === dayNumber) {
+      return 'in_progress';
+    }
+    return 'upcoming';
   }
 
   function formatExerciseName(exercise: string): string {
@@ -109,6 +134,22 @@ export default function DashboardPage() {
                 Edit
               </button>
             </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="workout-days-section">
+        <h2>Workout Days</h2>
+        <div className="workout-cards">
+          {WORKOUT_DAYS.map((day) => (
+            <WorkoutCard
+              key={day.day}
+              dayNumber={day.day}
+              t1Exercise={day.t1}
+              t2Exercise={day.t2}
+              status={getWorkoutStatus(day.day)}
+              onStart={handleStartWorkout}
+            />
           ))}
         </div>
       </section>
