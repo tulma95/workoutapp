@@ -1,0 +1,54 @@
+## Codebase Patterns
+- Weight rounding: Use `Math.round(weight / increment) * increment` pattern for plate rounding
+- Backend lib files go in `backend/src/lib/`
+- Pure domain logic has no dependencies on DB or external modules
+- Unit tests for lib modules go in `backend/src/__tests__/lib/`
+- PRD example "63.7 → 65" for kg rounding is wrong; 63.7 rounds to 62.5 (nearest 2.5). Always verify math in acceptance criteria.
+
+# Ralph Progress Log
+Started: Wed Feb 11 17:02:54 EET 2026
+---
+
+## 2026-02-11 - US-013
+- What was implemented: Progression calculation function (`calculateProgression`) that determines TM increase based on AMRAP reps and exercise type (upper/lower body)
+- Files changed: `backend/src/lib/progression.ts` (created)
+- **Learnings for future iterations:**
+  - Upper body = bench, ohp; Lower body = squat, deadlift
+  - Progression thresholds: 0-1 → 0, 2-3 → 2.5, 4-5 → 2.5/5, 6+ → 5/7.5 (upper/lower)
+---
+
+## 2026-02-11 - US-012
+- What was implemented: Weight rounding function (`roundWeight`) that snaps calculated weights to nearest plate increment (2.5kg or 5lb)
+- Files changed: `backend/src/lib/weightRounding.ts` (created)
+- **Learnings for future iterations:**
+  - File already existed from a prior attempt/setup, just needed verification
+  - Typecheck passes with `npx tsc --noEmit -p backend/tsconfig.json`
+---
+
+## 2026-02-11 - US-014
+- What was implemented: nSuns 4-day program constant (`NSUNS_4DAY`) with typed interfaces (`SetScheme`, `ExerciseSlot`, `ProgramDay`), plus `GeneratedSet` type and `generateWorkoutSets` function
+- Files changed: `backend/src/lib/nsuns.ts` (created)
+- **Learnings for future iterations:**
+  - The nsuns.ts file was already created in a prior iteration but not committed — check `git status` for untracked files
+  - Day 1 has only 1 AMRAP (set 9 at 65%), Days 2-4 have 2 AMRAPs (set 3 at 95% and set 9 at 65%)
+  - T2 exercises use parent TMs: OHP→ohp, Sumo DL→deadlift, CG Bench→bench, Front Squat→squat
+  - generateWorkoutSets is in the same file as the program constant
+---
+
+## 2026-02-11 - US-015
+- What was implemented: Verified `generateWorkoutSets` function (already implemented in nsuns.ts from US-014 commit)
+- Files changed: None (code was committed with US-014)
+- **Learnings for future iterations:**
+  - generateWorkoutSets was committed as part of the nsuns.ts file in US-014, since both the constant and the function live in the same file
+  - Validation: Day 2 T1 set 3 (95% of 126kg squat TM) = 120kg confirmed correct
+  - T2 set 1 for Day 2 (50% of 162kg deadlift TM) = 80kg (162*0.5=81, 81/2.5=32.4, round(32.4)=32, 32*2.5=80)
+---
+
+## 2026-02-11 - US-016
+- What was implemented: Comprehensive unit tests for all nSuns domain logic: weightRounding (9 tests), progression (32 tests), nsuns program constant + generateWorkoutSets (29 tests). Total: 70 new tests, 102 total passing.
+- Files changed: `backend/src/__tests__/lib/weightRounding.test.ts` (created), `backend/src/__tests__/lib/progression.test.ts` (created), `backend/src/__tests__/lib/nsuns.test.ts` (created)
+- **Learnings for future iterations:**
+  - PRD acceptance criteria example "63.7 → 65" for kg rounding was mathematically wrong (63.7 → 62.5). Always verify math before writing tests.
+  - Progression tests use loop-based approach (`for (const exercise of exercises)`) to cover all exercises at each threshold — effective pattern for exhaustive testing
+  - Pure lib tests don't need DB setup but still run through the same `run_test.sh` lifecycle
+---
