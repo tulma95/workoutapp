@@ -25,3 +25,18 @@ Started: Tue Feb 11 2026
   - LB_TO_KG constant = 2.20462 used throughout for conversions
   - All 133 backend tests passing, typecheck passes
 ---
+
+## 2026-02-11 20:17 - US-045
+- Verified training max API module and hook are implemented
+- Files created:
+  - frontend/src/api/trainingMaxes.ts - API functions for TM operations
+  - frontend/src/hooks/useTrainingMaxes.ts - React hook for fetching TMs
+- **Learnings for future iterations:**
+  - API module follows same pattern as api/auth.ts - uses apiFetch helper
+  - Hook uses useState + useEffect pattern for data fetching
+  - Weight values from backend are already in user's preferred unit
+  - TrainingMax interface includes: id, userId, exercise, weight, effectiveDate, createdAt
+  - OneRepMaxes interface for setup: { bench, squat, ohp, deadlift }
+  - Hook exposes: { trainingMaxes, isLoading, error, refetch }
+  - Frontend typecheck passes
+---

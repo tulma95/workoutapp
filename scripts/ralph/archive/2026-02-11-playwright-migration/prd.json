@@ -36,7 +36,7 @@
         "Typecheck passes"
       ],
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "notes": "Follow the same pattern as api/auth.ts. Use apiFetch which already handles JWT tokens and error responses. The hook should use useState + useEffect pattern. Weight values from the backend are already in the user's preferred unit — no conversion needed."
     },
     {
