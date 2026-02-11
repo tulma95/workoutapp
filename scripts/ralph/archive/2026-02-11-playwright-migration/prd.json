@@ -277,7 +277,7 @@
         "Typecheck passes"
       ],
       "priority": 15,
-      "passes": false,
+      "passes": true,
       "notes": "Simple utility file. formatWeight just concatenates: `${weight} ${unit}`. formatExerciseName uses a lookup map: { bench: 'Bench', squat: 'Squat', ohp: 'OHP', deadlift: 'Deadlift' } with fallback to capitalize first letter. Refactor existing components to use these utilities if they have inline formatting logic."
     },
     {

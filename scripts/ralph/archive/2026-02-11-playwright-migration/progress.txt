@@ -119,3 +119,9 @@ Started: Tue Feb 11 2026
   - Input hides browser number spinners with CSS
   - Typecheck passes
 ---
+
+## 2026-02-11 20:42 - US-054,058
+- US-058: Created weight formatting utilities
+- Files: frontend/src/utils/weight.ts
+- formatWeight() and formatExerciseName() helpers
+---
