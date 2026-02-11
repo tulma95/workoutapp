@@ -3,7 +3,7 @@ import request from 'supertest';
 
 vi.mock('../lib/db', () => ({
   default: {
-    raw: vi.fn().mockResolvedValue([{ '?column?': 1 }]),
+    $queryRaw: vi.fn().mockResolvedValue([{ '?column?': 1 }]),
   },
 }));
 
@@ -20,7 +20,7 @@ describe('GET /api/health', () => {
 
   it('returns 503 when DB is disconnected', async () => {
     const db = await import('../lib/db');
-    vi.mocked(db.default.raw).mockRejectedValueOnce(new Error('Connection refused'));
+    vi.mocked(db.default.$queryRaw).mockRejectedValueOnce(new Error('Connection refused'));
 
     const res = await request(app).get('/api/health');
 
