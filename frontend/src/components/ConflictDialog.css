@@ -1,0 +1,50 @@
+.conflict-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.conflict-dialog {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.conflict-dialog__title {
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.conflict-dialog__message {
+  margin: 0 0 24px 0;
+  font-size: 16px;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.conflict-dialog__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.conflict-dialog__actions button {
+  min-height: 44px;
+  width: 100%;
+}
+
+.btn-danger {
+  color: var(--danger);
+}

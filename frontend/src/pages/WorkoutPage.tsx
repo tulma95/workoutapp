@@ -15,6 +15,7 @@ import SetRow from '../components/SetRow';
 import { ProgressionBanner } from '../components/ProgressionBanner';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { ErrorMessage } from '../components/ErrorMessage';
+import { ConflictDialog } from '../components/ConflictDialog';
 import './WorkoutPage.css';
 
 const WORKOUT_DAYS = [
@@ -43,6 +44,7 @@ export default function WorkoutPage() {
   const [isCompleting, setIsCompleting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
+  const [conflictWorkout, setConflictWorkout] = useState<{ workoutId: number; dayNumber: number } | null>(null);
 
   const dayNumber = parseInt(dayParam || '0', 10);
   const dayInfo = WORKOUT_DAYS.find((d) => d.day === dayNumber);
@@ -67,17 +69,38 @@ export default function WorkoutPage() {
             // Resume existing workout for this day
             setWorkout(currentWorkout);
           } else {
-            // Existing workout for a different day
-            setError(
-              `You have an in-progress workout for Day ${currentWorkout.dayNumber}. Please complete or cancel that workout first.`
-            );
+            // Existing workout for a different day - show conflict dialog
+            setConflictWorkout({
+              workoutId: currentWorkout.id,
+              dayNumber: currentWorkout.dayNumber,
+            });
             setIsLoading(false);
             return;
           }
         } else {
           // Start a new workout
-          const newWorkout = await startWorkout(dayNumber);
-          setWorkout(newWorkout);
+          try {
+            const newWorkout = await startWorkout(dayNumber);
+            setWorkout(newWorkout);
+          } catch (startErr: unknown) {
+            // Handle 409 conflict from backend
+            if (
+              startErr &&
+              typeof startErr === 'object' &&
+              'error' in startErr &&
+              startErr.error === 'EXISTING_WORKOUT' &&
+              'workoutId' in startErr &&
+              'dayNumber' in startErr
+            ) {
+              setConflictWorkout({
+                workoutId: startErr.workoutId as number,
+                dayNumber: startErr.dayNumber as number,
+              });
+              setIsLoading(false);
+              return;
+            }
+            throw startErr;
+          }
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load workout');
@@ -189,11 +212,47 @@ export default function WorkoutPage() {
     }
   };
 
+  const handleContinueExisting = () => {
+    if (!conflictWorkout) return;
+    navigate(`/workout/${conflictWorkout.dayNumber}`);
+  };
+
+  const handleDiscardAndStartNew = async () => {
+    if (!conflictWorkout) return;
+
+    try {
+      await cancelWorkout(conflictWorkout.workoutId);
+      // Reload the page to start a new workout for the requested day
+      window.location.reload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to discard workout');
+      setConflictWorkout(null);
+    }
+  };
+
+  const handleCloseConflictDialog = () => {
+    setConflictWorkout(null);
+    navigate('/');
+  };
+
   if (!dayInfo) {
     return (
       <div className="workout-page">
         <ErrorMessage message="Invalid day number" />
       </div>
+    );
+  }
+
+  if (conflictWorkout) {
+    return (
+      <>
+        <ConflictDialog
+          existingDayNumber={conflictWorkout.dayNumber}
+          onContinue={handleContinueExisting}
+          onDiscard={handleDiscardAndStartNew}
+          onClose={handleCloseConflictDialog}
+        />
+      </>
     );
   }
 
