@@ -14,12 +14,14 @@ ensure_dependencies
 
 # Generate Prisma client
 echo "Generating Prisma client..."
-npx prisma generate -w backend
+cd backend
+npx prisma generate
 
 # Run database migrations
 echo "Running database migrations..."
-npx prisma migrate dev -w backend
+npx prisma migrate dev
 
 # Start backend dev server
 echo "Starting backend dev server..."
+cd "$SCRIPT_DIR"
 npm run dev -w backend
