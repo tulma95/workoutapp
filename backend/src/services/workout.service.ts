@@ -3,6 +3,7 @@ import { generateWorkoutSets, NSUNS_4DAY } from '../lib/nsuns';
 import { calculateProgression } from '../lib/progression';
 import { getCurrentTMs } from './trainingMax.service';
 import { roundWeight } from '../lib/weightRounding';
+import type { WorkoutStatus } from '../types';
 
 const LB_TO_KG = 2.20462;
 
@@ -47,6 +48,7 @@ function formatWorkout(
 ) {
   return {
     ...workout,
+    status: workout.status as WorkoutStatus,
     sets: workout.sets.map((s) => ({
       ...s,
       prescribedWeight: convertWeightToUserUnit(decimalToNumber(s.prescribedWeight), unit),

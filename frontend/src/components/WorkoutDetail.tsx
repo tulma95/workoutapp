@@ -1,6 +1,7 @@
 import React from 'react';
 import { Workout, ProgressionResult } from '../api/workouts';
 import { ProgressionBanner } from './ProgressionBanner';
+import type { UnitPreference } from '../types';
 import './WorkoutDetail.css';
 
 const WORKOUT_DAYS = [
@@ -11,9 +12,9 @@ const WORKOUT_DAYS = [
 ];
 
 interface WorkoutDetailProps {
-  workout: Workout;
+  workout?: Workout;
   progression: ProgressionResult | null;
-  unit: 'kg' | 'lb';
+  unit: UnitPreference;
   isLoading?: boolean;
 }
 
@@ -34,7 +35,7 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
   unit,
   isLoading = false,
 }) => {
-  if (isLoading) {
+  if (isLoading || !workout) {
     return (
       <div className="workout-detail">
         <div className="workout-detail__loading">Loading workout...</div>

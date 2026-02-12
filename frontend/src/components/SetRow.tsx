@@ -1,4 +1,5 @@
 import AmrapInput from './AmrapInput';
+import type { UnitPreference } from '../types';
 import './SetRow.css';
 
 interface SetRowProps {
@@ -8,7 +9,7 @@ interface SetRowProps {
   isAmrap: boolean;
   completed: boolean;
   actualReps: number | null;
-  unit: 'kg' | 'lb';
+  unit: UnitPreference;
   onComplete: () => void;
   onAmrapRepsChange: (reps: number) => void;
 }

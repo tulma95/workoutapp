@@ -230,7 +230,7 @@ export default function WorkoutPage() {
 
   const t1Sets = workout.sets.filter((s) => s.tier === 'T1');
   const t2Sets = workout.sets.filter((s) => s.tier === 'T2');
-  const unit = (user?.unitPreference as 'kg' | 'lb') || 'kg';
+  const unit = user?.unitPreference || 'kg';
 
   if (isCompleted) {
     return (

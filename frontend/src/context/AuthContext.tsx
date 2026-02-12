@@ -1,12 +1,13 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback, type ReactNode } from 'react';
 import { apiFetch } from '../api/client';
 import * as authApi from '../api/auth';
+import type { UnitPreference } from '../types';
 
 interface User {
   id: number;
   email: string;
   displayName: string;
-  unitPreference: string;
+  unitPreference: UnitPreference;
   createdAt: string;
   updatedAt: string;
 }
@@ -16,7 +17,7 @@ interface AuthContextValue {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  register: (email: string, password: string, displayName: string, unitPreference: string) => Promise<void>;
+  register: (email: string, password: string, displayName: string, unitPreference: UnitPreference) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -52,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(result.user);
   }, []);
 
-  const register = useCallback(async (email: string, password: string, displayName: string, unitPreference: string) => {
+  const register = useCallback(async (email: string, password: string, displayName: string, unitPreference: UnitPreference) => {
     const result = await authApi.register(email, password, displayName, unitPreference);
     localStorage.setItem('accessToken', result.accessToken);
     localStorage.setItem('refreshToken', result.refreshToken);

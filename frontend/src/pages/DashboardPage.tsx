@@ -25,7 +25,7 @@ export default function DashboardPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const unit = (user?.unitPreference || 'kg') as 'kg' | 'lb';
+  const unit = user?.unitPreference || 'kg';
 
   useEffect(() => {
     loadData();

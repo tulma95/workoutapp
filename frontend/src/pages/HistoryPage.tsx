@@ -72,16 +72,15 @@ export default function HistoryPage() {
           <div className="history-page__detail">
             {isLoadingWorkout ? (
               <WorkoutDetail
-                workout={{} as Workout}
                 progression={null}
-                unit={user?.unitPreference as 'kg' | 'lb'}
+                unit={user?.unitPreference || 'kg'}
                 isLoading={true}
               />
             ) : selectedWorkout ? (
               <WorkoutDetail
                 workout={selectedWorkout}
                 progression={null}
-                unit={(user?.unitPreference as 'kg' | 'lb') || 'kg'}
+                unit={user?.unitPreference || 'kg'}
               />
             ) : hasAnyWorkouts ? (
               <div className="history-page__prompt">

@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatExerciseName } from '../utils/weight';
+import type { UnitPreference } from '../types';
 import './ProgressionBanner.css';
 
 interface ProgressionBannerProps {
@@ -9,7 +10,7 @@ interface ProgressionBannerProps {
     newTM: number;
     increase: number;
   } | null;
-  unit: 'kg' | 'lb';
+  unit: UnitPreference;
 }
 
 export const ProgressionBanner: React.FC<ProgressionBannerProps> = ({ progression, unit }) => {

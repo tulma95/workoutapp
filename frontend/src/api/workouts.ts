@@ -1,4 +1,5 @@
 import { apiFetch } from './client';
+import type { WorkoutStatus } from '../types';
 
 export interface WorkoutSet {
   id: number;
@@ -18,7 +19,7 @@ export interface Workout {
   id: number;
   userId: number;
   dayNumber: number;
-  status: string;
+  status: WorkoutStatus;
   completedAt: string | null;
   createdAt: string;
   sets: WorkoutSet[];
@@ -27,7 +28,7 @@ export interface Workout {
 export interface WorkoutHistoryItem {
   id: number;
   dayNumber: number;
-  status: string;
+  status: WorkoutStatus;
   completedAt: string | null;
   createdAt: string;
 }
@@ -35,7 +36,7 @@ export interface WorkoutHistoryItem {
 export interface CalendarWorkout {
   id: number;
   dayNumber: number;
-  status: string;
+  status: WorkoutStatus;
   completedAt: string | null;
   createdAt: string;
 }
