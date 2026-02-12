@@ -1,26 +1,26 @@
 .error-message {
-  padding: 16px;
+  padding: var(--space-md);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .error-message-text {
   margin: 0;
   color: var(--danger);
-  font-size: 16px;
+  font-size: 1rem;
   text-align: center;
 }
 
 .error-message-retry {
-  min-height: 44px;
-  padding: 8px 16px;
+  min-height: 3rem;
+  padding: var(--space-sm) var(--space-md);
   background-color: var(--danger);
   color: #fff;
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: var(--space-sm);
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
 }

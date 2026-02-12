@@ -13,23 +13,23 @@
 
 .conflict-dialog {
   background: var(--bg-card);
-  border-radius: 8px;
-  padding: 24px;
-  max-width: 400px;
+  border-radius: var(--space-sm);
+  padding: var(--space-lg);
+  max-width: 25rem;
   width: 90%;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 var(--space-xs) var(--space-md) rgba(0, 0, 0, 0.2);
 }
 
 .conflict-dialog__title {
-  margin: 0 0 16px 0;
-  font-size: 20px;
+  margin: 0 0 var(--space-md) 0;
+  font-size: 1.5rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .conflict-dialog__message {
-  margin: 0 0 24px 0;
-  font-size: 16px;
+  margin: 0 0 var(--space-lg) 0;
+  font-size: 1rem;
   color: var(--text-primary);
   line-height: 1.5;
 }
@@ -37,11 +37,11 @@
 .conflict-dialog__actions {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-md);
 }
 
 .conflict-dialog__actions button {
-  min-height: 44px;
+  min-height: 3rem;
   width: 100%;
 }
 
