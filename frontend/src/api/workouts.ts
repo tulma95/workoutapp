@@ -1,57 +1,12 @@
 import { apiFetch } from './client';
-import type { WorkoutStatus } from '../types';
-
-export interface WorkoutSet {
-  id: number;
-  workoutId: number;
-  exercise: string;
-  tier: string;
-  setOrder: number;
-  prescribedWeight: number;
-  prescribedReps: number;
-  isAmrap: boolean;
-  actualReps: number | null;
-  completed: boolean;
-  createdAt: string;
-}
-
-export interface Workout {
-  id: number;
-  userId: number;
-  dayNumber: number;
-  status: WorkoutStatus;
-  completedAt: string | null;
-  createdAt: string;
-  sets: WorkoutSet[];
-}
-
-export interface WorkoutHistoryItem {
-  id: number;
-  dayNumber: number;
-  status: WorkoutStatus;
-  completedAt: string | null;
-  createdAt: string;
-}
-
-export interface CalendarWorkout {
-  id: number;
-  dayNumber: number;
-  status: WorkoutStatus;
-  completedAt: string | null;
-  createdAt: string;
-}
-
-export interface ProgressionResult {
-  exercise: string;
-  previousTM: number;
-  newTM: number;
-  increase: number;
-}
-
-export interface CompleteWorkoutResponse {
-  workout: Workout;
-  progression: ProgressionResult | null;
-}
+export type {
+  WorkoutSet,
+  Workout,
+  WorkoutHistoryItem,
+  CalendarWorkout,
+  ProgressionResult,
+  CompleteWorkoutResponse,
+} from './schemas';
 
 export async function startWorkout(dayNumber: number): Promise<Workout> {
   return apiFetch('/workouts', {
