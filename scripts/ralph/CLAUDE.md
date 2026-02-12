@@ -104,6 +104,8 @@ If ALL stories are complete and passing, reply with:
 
 If there are still stories with `passes: false`, end your response normally (another iteration will pick up the next story).
 
+!IMPORTANT! Remember to reponse normally if there is still stories which are not passing
+
 ## Important
 
 - Work on ONE story per iteration
