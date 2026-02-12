@@ -109,7 +109,7 @@ If there are still stories with `passes: false`, end your response normally (ano
 ## Important
 
 - Work on ONE story per iteration
-- Commit frequently
+- Commit frequently, dont use co-author, explain the change
 - Only commit prd.json and progress.txt when they are archived
 - Dont commit trash files like logs or buildinfos, such files to .gitignore
 - Keep CI green

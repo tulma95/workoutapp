@@ -210,3 +210,5 @@ NODE_ENV=development
 ```
 
 Dont use typescript-code-review skill
+
+dont use co-author in commits
