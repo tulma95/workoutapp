@@ -1,3 +1,4 @@
+import { LoginResponseSchema } from './schemas';
 export type { User, LoginResponse } from './schemas';
 
 export async function login(email: string, password: string) {
@@ -12,7 +13,8 @@ export async function login(email: string, password: string) {
     throw body;
   }
 
-  return res.json();
+  const data = await res.json();
+  return LoginResponseSchema.parse(data);
 }
 
 export async function register(
@@ -32,5 +34,6 @@ export async function register(
     throw body;
   }
 
-  return res.json();
+  const data = await res.json();
+  return LoginResponseSchema.parse(data);
 }
