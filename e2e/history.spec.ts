@@ -158,6 +158,22 @@ test.describe('Workout History', () => {
     await page.getByRole('link', { name: /history/i }).click();
     await page.waitForURL('/history');
 
+    // Get current date and calculate expected months
+    const currentDate = new Date();
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                        'July', 'August', 'September', 'October', 'November', 'December'];
+
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+
+    // Calculate previous month (accounting for year boundary)
+    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+
+    // Verify current month is displayed (select the heading within the calendar)
+    const monthHeading = page.locator('.workout-calendar__title');
+    await expect(monthHeading).toContainText(`${monthNames[currentMonth]} ${currentYear}`);
+
     // Verify navigation buttons are visible and clickable
     const prevButton = page.getByRole('button', { name: 'Previous month' });
     const nextButton = page.getByRole('button', { name: 'Next month' });
@@ -165,25 +181,24 @@ test.describe('Workout History', () => {
     await expect(prevButton).toBeVisible();
     await expect(nextButton).toBeVisible();
 
-    // Verify buttons are clickable (enabled)
-    await expect(prevButton).toBeEnabled();
-    await expect(nextButton).toBeEnabled();
-
-    // Click the buttons to verify they don't crash
+    // Click Previous month and verify the month changes
     await prevButton.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300); // Wait for View Transition animation
+    await expect(monthHeading).toContainText(`${monthNames[prevMonth]} ${prevYear}`);
 
+    // Click Next month (back to current month) and verify
     await nextButton.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300);
+    await expect(monthHeading).toContainText(`${monthNames[currentMonth]} ${currentYear}`);
 
-    // Verify calendar still renders after clicks
-    const currentDate = new Date();
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                        'July', 'August', 'September', 'October', 'November', 'December'];
-    const currentMonth = monthNames[currentDate.getMonth()];
-    const currentYear = currentDate.getFullYear().toString();
+    // Click Next month again (forward to next month) and verify
+    const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+    const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
+    await nextButton.click();
+    await page.waitForTimeout(300);
+    await expect(monthHeading).toContainText(`${monthNames[nextMonth]} ${nextYear}`);
 
-    // Should still show a month/year heading (may be current or navigated month)
-    await expect(page.getByRole('heading', { level: 2 })).toBeVisible();
+    // Verify calendar grid is still rendered and visible
+    await expect(page.locator('.workout-calendar__grid')).toBeVisible();
   });
 });
