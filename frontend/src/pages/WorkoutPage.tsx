@@ -6,6 +6,7 @@ import {
   startWorkout,
   logSet,
   completeWorkout,
+  cancelWorkout,
   type Workout,
   type WorkoutSet,
   type ProgressionResult,
@@ -39,6 +40,7 @@ export default function WorkoutPage() {
   const [progression, setProgression] = useState<ProgressionResult | null>(null);
   const [isCompleting, setIsCompleting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
 
   const dayNumber = parseInt(dayParam || '0', 10);
   const dayInfo = WORKOUT_DAYS.find((d) => d.day === dayNumber);
@@ -165,6 +167,26 @@ export default function WorkoutPage() {
     navigate('/');
   };
 
+  const handleCancelWorkout = async () => {
+    if (!workout) return;
+
+    const confirmed = window.confirm(
+      'Cancel this workout? All progress will be lost.'
+    );
+
+    if (!confirmed) return;
+
+    setIsCanceling(true);
+
+    try {
+      await cancelWorkout(workout.id);
+      navigate('/');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to cancel workout');
+      setIsCanceling(false);
+    }
+  };
+
   if (!dayInfo) {
     return (
       <div className="workout-page">
@@ -269,10 +291,17 @@ export default function WorkoutPage() {
       <div className="workout-actions">
         <button
           onClick={handleCompleteWorkout}
-          disabled={isCompleting}
+          disabled={isCompleting || isCanceling}
           className="btn-primary btn-large"
         >
           {isCompleting ? 'Completing...' : 'Complete Workout'}
+        </button>
+        <button
+          onClick={handleCancelWorkout}
+          disabled={isCanceling || isCompleting}
+          className="btn-secondary btn-large"
+        >
+          {isCanceling ? 'Canceling...' : 'Cancel Workout'}
         </button>
       </div>
     </div>
