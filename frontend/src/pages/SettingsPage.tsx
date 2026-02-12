@@ -1,21 +1,36 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { apiFetch } from '../api/client';
+import { LoadingSpinner } from '../components/LoadingSpinner';
+import { ErrorMessage } from '../components/ErrorMessage';
 
 export default function SettingsPage() {
   const { user, logout } = useAuth();
   const [unit, setUnit] = useState(user?.unitPreference || 'kg');
   const [saved, setSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState('');
 
   async function handleUnitChange(newUnit: string) {
     setUnit(newUnit);
     setSaved(false);
-    await apiFetch('/users/me', {
-      method: 'PATCH',
-      body: JSON.stringify({ unitPreference: newUnit }),
-    });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setIsSaving(true);
+    setError('');
+
+    try {
+      await apiFetch('/users/me', {
+        method: 'PATCH',
+        body: JSON.stringify({ unitPreference: newUnit }),
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save settings');
+      // Revert unit preference on error
+      setUnit(user?.unitPreference || 'kg');
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -39,6 +54,7 @@ export default function SettingsPage() {
             className={unit === 'kg' ? 'btn-primary' : 'btn-secondary'}
             style={{ flex: 1 }}
             onClick={() => handleUnitChange('kg')}
+            disabled={isSaving}
           >
             kg
           </button>
@@ -46,13 +62,16 @@ export default function SettingsPage() {
             className={unit === 'lb' ? 'btn-primary' : 'btn-secondary'}
             style={{ flex: 1 }}
             onClick={() => handleUnitChange('lb')}
+            disabled={isSaving}
           >
             lb
           </button>
         </div>
+        {isSaving && <LoadingSpinner size={24} />}
         {saved && (
           <p style={{ color: 'var(--success)', margin: '8px 0 0', fontSize: '14px' }}>Saved!</p>
         )}
+        {error && <ErrorMessage message={error} />}
       </div>
 
       <button className="btn-secondary" style={{ color: 'var(--danger)' }} onClick={logout}>

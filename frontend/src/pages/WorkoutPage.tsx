@@ -13,6 +13,8 @@ import {
 } from '../api/workouts';
 import SetRow from '../components/SetRow';
 import { ProgressionBanner } from '../components/ProgressionBanner';
+import { LoadingSpinner } from '../components/LoadingSpinner';
+import { ErrorMessage } from '../components/ErrorMessage';
 import './WorkoutPage.css';
 
 const WORKOUT_DAYS = [
@@ -190,9 +192,7 @@ export default function WorkoutPage() {
   if (!dayInfo) {
     return (
       <div className="workout-page">
-        <div className="error" role="alert">
-          Invalid day number
-        </div>
+        <ErrorMessage message="Invalid day number" />
       </div>
     );
   }
@@ -200,7 +200,7 @@ export default function WorkoutPage() {
   if (isLoading) {
     return (
       <div className="workout-page">
-        <div className="loading">Loading workout...</div>
+        <LoadingSpinner />
       </div>
     );
   }
@@ -208,9 +208,7 @@ export default function WorkoutPage() {
   if (error) {
     return (
       <div className="workout-page">
-        <div className="error" role="alert">
-          {error}
-        </div>
+        <ErrorMessage message={error} />
         <button onClick={handleBackToDashboard} className="btn-secondary">
           Back to Dashboard
         </button>
@@ -221,9 +219,7 @@ export default function WorkoutPage() {
   if (!workout) {
     return (
       <div className="workout-page">
-        <div className="error" role="alert">
-          Failed to load workout
-        </div>
+        <ErrorMessage message="Failed to load workout" />
       </div>
     );
   }

@@ -5,6 +5,8 @@ import { getCurrentWorkout } from '../api/workouts';
 import { useAuth } from '../context/AuthContext';
 import WorkoutCard from '../components/WorkoutCard';
 import { formatExerciseName, formatWeight, convertWeight, roundWeight, convertToKg } from '../utils/weight';
+import { LoadingSpinner } from '../components/LoadingSpinner';
+import { ErrorMessage } from '../components/ErrorMessage';
 import './DashboardPage.css';
 
 const WORKOUT_DAYS = [
@@ -20,6 +22,7 @@ export default function DashboardPage() {
   const [trainingMaxes, setTrainingMaxes] = useState<TrainingMax[]>([]);
   const [currentWorkout, setCurrentWorkout] = useState<{ dayNumber: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
   const [editingExercise, setEditingExercise] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -32,6 +35,8 @@ export default function DashboardPage() {
   }, [navigate]);
 
   async function loadData() {
+    setIsLoading(true);
+    setFetchError('');
     try {
       const [tms, workout] = await Promise.all([
         getTrainingMaxes(),
@@ -49,6 +54,7 @@ export default function DashboardPage() {
       setIsLoading(false);
     } catch (error) {
       console.error('Failed to fetch data:', error);
+      setFetchError(error instanceof Error ? error.message : 'Failed to load dashboard data');
       setIsLoading(false);
     }
   }
@@ -104,7 +110,11 @@ export default function DashboardPage() {
   }
 
   if (isLoading) {
-    return <div className="loading">Loading...</div>;
+    return <LoadingSpinner />;
+  }
+
+  if (fetchError) {
+    return <ErrorMessage message={fetchError} onRetry={loadData} />;
   }
 
   return (

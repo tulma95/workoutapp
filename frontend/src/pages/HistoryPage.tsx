@@ -3,6 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { getWorkoutCalendar, getWorkout, CalendarWorkout, Workout } from '../api/workouts';
 import WorkoutCalendar from '../components/WorkoutCalendar';
 import { WorkoutDetail } from '../components/WorkoutDetail';
+import { LoadingSpinner } from '../components/LoadingSpinner';
+import { ErrorMessage } from '../components/ErrorMessage';
 import './HistoryPage.css';
 
 export default function HistoryPage() {
@@ -11,6 +13,7 @@ export default function HistoryPage() {
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
   const [isLoadingCalendar, setIsLoadingCalendar] = useState(true);
   const [isLoadingWorkout, setIsLoadingWorkout] = useState(false);
+  const [calendarError, setCalendarError] = useState('');
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
 
@@ -21,11 +24,13 @@ export default function HistoryPage() {
 
   const fetchCalendarData = async (year: number, month: number) => {
     setIsLoadingCalendar(true);
+    setCalendarError('');
     try {
       const response = await getWorkoutCalendar(year, month);
       setCalendarWorkouts(response.workouts);
     } catch (error) {
       console.error('Failed to fetch calendar data:', error);
+      setCalendarError(error instanceof Error ? error.message : 'Failed to load calendar');
       setCalendarWorkouts([]);
     } finally {
       setIsLoadingCalendar(false);
@@ -60,7 +65,12 @@ export default function HistoryPage() {
       <h1 className="history-page__title">History</h1>
 
       {isLoadingCalendar ? (
-        <div className="history-page__loading">Loading calendar...</div>
+        <LoadingSpinner />
+      ) : calendarError ? (
+        <ErrorMessage
+          message={calendarError}
+          onRetry={() => fetchCalendarData(currentYear, currentMonth)}
+        />
       ) : (
         <>
           <WorkoutCalendar
