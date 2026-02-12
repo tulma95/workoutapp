@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { getTrainingMaxes, updateTrainingMax, type TrainingMax } from '../api/trainingMaxes';
 import { getCurrentWorkout } from '../api/workouts';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import WorkoutCard from '../components/WorkoutCard';
 import { formatExerciseName, formatWeight, convertWeight, roundWeight, convertToKg } from '../utils/weight';
 import { LoadingSpinner } from '../components/LoadingSpinner';

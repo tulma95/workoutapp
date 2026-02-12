@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { ErrorMessage } from '../components/ErrorMessage';
 
 export default function LoginPage() {

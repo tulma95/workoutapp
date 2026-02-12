@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { flushSync } from 'react-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { getWorkoutCalendar, getWorkout, CalendarWorkout, Workout } from '../api/workouts';
 import WorkoutCalendar from '../components/WorkoutCalendar';
 import { WorkoutDetail } from '../components/WorkoutDetail';
