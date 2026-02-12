@@ -18,10 +18,10 @@ export const test = base.extend<{
   setupCompletePage: SetupCompletePageFixture;
 }>({
   authenticatedPage: async ({ page }, use) => {
-    // Generate unique user
-    const timestamp = Date.now();
+    // Generate unique user (use crypto.randomUUID to avoid collisions in parallel tests)
+    const uniqueId = crypto.randomUUID();
     const user: User = {
-      email: `test-${timestamp}@example.com`,
+      email: `test-${uniqueId}@example.com`,
       password: 'ValidPassword123',
       displayName: 'Test User',
     };
