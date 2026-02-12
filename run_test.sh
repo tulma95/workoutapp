@@ -2,9 +2,14 @@
 set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
+cd "$PROJECT_ROOT"
 COMPOSE_FILE="$PROJECT_ROOT/docker-compose.test.yml"
 TEST_DB_URL="postgresql://treenisofta:treenisofta_dev@localhost:5433/treenisofta_test"
 TEST_JWT_SECRET="test-jwt-secret-do-not-use-in-production"
+
+# Ensure dependencies are up-to-date
+source scripts/common.sh
+ensure_dependencies
 
 # Track background process PIDs
 BACKEND_PID=""
@@ -44,6 +49,10 @@ for i in $(seq 1 30); do
   fi
   sleep 1
 done
+
+echo "Generating Prisma client..."
+cd "$PROJECT_ROOT/backend"
+npx prisma generate
 
 echo "Running migrations..."
 cd "$PROJECT_ROOT/backend"
