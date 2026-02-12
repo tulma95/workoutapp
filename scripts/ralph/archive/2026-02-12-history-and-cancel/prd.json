@@ -1,0 +1,186 @@
+{
+  "project": "nSuns 4-Day LP Workout Tracker",
+  "branchName": "ralph/epic-11-history-and-cancel",
+  "description": "Epic 11 - Calendar-based workout history page and cancel workout feature. Replaces the placeholder History page with a monthly calendar showing workout days, drill-down detail view with sets/weights/progression, and adds ability to cancel in-progress workouts.",
+  "userStories": [
+    {
+      "id": "US-060",
+      "title": "Cancel in-progress workout (backend)",
+      "description": "As a user, I want to cancel an in-progress workout via the API so that I can start a different day's workout.",
+      "acceptanceCriteria": [
+        "Add DELETE /api/workouts/:id route in backend/src/routes/workouts.ts",
+        "Add cancelWorkout(workoutId, userId) function in backend/src/services/workout.service.ts that deletes an in-progress workout",
+        "Only the workout owner can delete their workout — return 404 if not found or not owned",
+        "Only workouts with status 'in_progress' can be deleted — return 409 with error message if workout is already completed",
+        "Deleting a workout also deletes its workout_sets rows (already handled by CASCADE in Prisma schema)",
+        "Backend integration test in backend/src/__tests__/workouts.test.ts covers: successful cancel returns 200, 404 for wrong user, 409 for completed workout",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-061",
+      "title": "Update frontend API client for cancel and calendar endpoints",
+      "description": "As a developer, I need the frontend API module to support the new cancel and calendar endpoints before building UI.",
+      "acceptanceCriteria": [
+        "Add cancelWorkout(id: number) function to frontend/src/api/workouts.ts that calls DELETE /api/workouts/${id}",
+        "Add CalendarWorkout interface: { id: number; dayNumber: number; status: string; completedAt: string | null; createdAt: string }",
+        "Add getWorkoutCalendar(year: number, month: number) function that calls GET /api/workouts/calendar?year=...&month=...",
+        "Return type of getWorkoutCalendar is Promise<{ workouts: CalendarWorkout[] }>",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-062",
+      "title": "Cancel workout button on WorkoutPage",
+      "description": "As a user, I want a Cancel Workout button on the active workout page so I can abandon a session and return to the dashboard.",
+      "acceptanceCriteria": [
+        "Add a Cancel Workout button to frontend/src/pages/WorkoutPage.tsx in the workout-actions div, after the Complete Workout button",
+        "Button is styled as secondary/destructive (use class btn-secondary or btn-danger, not btn-primary)",
+        "Clicking the button shows a browser confirm() dialog with text: Cancel this workout? All progress will be lost.",
+        "On confirm: calls cancelWorkout(workout.id) from the API client, then navigates to / (dashboard)",
+        "On dismiss: nothing happens, user stays on workout page",
+        "Button is disabled while cancel is in progress (similar to isCompleting pattern)",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-063",
+      "title": "Calendar endpoint for workout dates (backend)",
+      "description": "As a developer, I need an API endpoint that returns workout summaries for a given month so the calendar can mark workout days without fetching full set data.",
+      "acceptanceCriteria": [
+        "Add GET /api/workouts/calendar route in backend/src/routes/workouts.ts (must be defined BEFORE the /:id route to avoid route conflicts)",
+        "Accepts required query params: year (integer) and month (integer 1-12)",
+        "Returns 400 if year or month is missing or invalid",
+        "Add getCalendar(userId, year, month) function in backend/src/services/workout.service.ts",
+        "Queries workouts where completedAt or createdAt falls within the given month (use date range: first day of month to first day of next month)",
+        "Response shape: { workouts: [{ id, dayNumber, status, completedAt, createdAt }] } — no sets included",
+        "Includes both completed and in_progress workouts for the month",
+        "Filters by authenticated user only — does not leak other users' data",
+        "Backend integration test covers: correct workouts returned for month, empty month returns empty array, other user's workouts not included",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-064",
+      "title": "WorkoutCalendar component",
+      "description": "As a user, I want to see a monthly calendar on the History page that highlights days when I completed workouts.",
+      "acceptanceCriteria": [
+        "Create frontend/src/components/WorkoutCalendar.tsx as a reusable component",
+        "Create frontend/src/components/WorkoutCalendar.css for calendar styling",
+        "Props: workouts (CalendarWorkout array from API), onSelectWorkout (callback with workout id), selectedDate (optional Date for highlighting selected day)",
+        "Displays current month by default with month/year header (e.g. February 2026)",
+        "Left and right arrow buttons to navigate to previous/next month — arrows have min 44px tap target",
+        "7-column grid with day-of-week headers starting on Monday (Mon, Tue, Wed, Thu, Fri, Sat, Sun)",
+        "Days with completed workouts are visually highlighted with a colored background using the app's primary CSS custom property",
+        "Workout days show the nSuns day number (1-4) as a small badge/indicator on the cell",
+        "Today's date has a distinct visual indicator (e.g. border ring) that differs from the workout highlight",
+        "Days outside the current month are dimmed or hidden",
+        "Tapping a day with a workout calls onSelectWorkout with that workout's id",
+        "Tapping a day without a workout does nothing",
+        "Calendar grid is responsive: fills available width on mobile, max-width ~500px on desktop",
+        "When month changes via navigation, the component calls an onMonthChange(year, month) callback prop so the parent can fetch new data",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": "This is the most complex component. Calendar cells should be at least 44px for touch targets. Use CSS Grid for the 7-column layout."
+    },
+    {
+      "id": "US-065",
+      "title": "Read-only workout detail component",
+      "description": "As a user, I want to see full workout details (sets, weights, reps, progression) when I tap a workout day on the calendar.",
+      "acceptanceCriteria": [
+        "Create frontend/src/components/WorkoutDetail.tsx component",
+        "Create frontend/src/components/WorkoutDetail.css for styling",
+        "Props: workout (Workout type from api/workouts.ts with sets), progression (ProgressionResult | null), unit ('kg' | 'lb')",
+        "Shows header: Day X - [T1 Exercise Name] and the workout date formatted nicely (e.g. Wednesday, Feb 12 2026)",
+        "Use the WORKOUT_DAYS mapping from WorkoutPage.tsx to get T1/T2 exercise names from dayNumber",
+        "Shows T1 section with all T1 sets: each row displays set number, weight with unit, prescribed reps (with + suffix for AMRAP sets), actual reps if logged, and a visual completed indicator (checkmark or similar, NOT interactive)",
+        "Shows T2 section with all T2 sets in the same format",
+        "If progression is provided, shows a ProgressionBanner (reuse existing component)",
+        "If progression is null, shows No TM change text",
+        "Has a card-like container with clear visual separation (border or shadow)",
+        "Loading state: accepts an isLoading prop, shows Loading workout... text when true",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 6,
+      "passes": true,
+      "notes": "Do NOT reuse SetRow with disabled interactivity — create a simpler read-only display. The existing SetRow has checkbox/AmrapInput which would be confusing in read-only mode."
+    },
+    {
+      "id": "US-066",
+      "title": "Wire up HistoryPage with calendar and detail view",
+      "description": "As a user, I want the History page to show the calendar and display workout details when I tap a day.",
+      "acceptanceCriteria": [
+        "Replace the placeholder content in frontend/src/pages/HistoryPage.tsx with the full implementation",
+        "Create frontend/src/pages/HistoryPage.css for page-level styling",
+        "On mount, fetch calendar data for current month using getWorkoutCalendar(year, month)",
+        "Pass calendar data to WorkoutCalendar component",
+        "When month changes (onMonthChange callback), fetch new calendar data and update state",
+        "When a workout is selected (onSelectWorkout callback), fetch full workout via getWorkout(id) and display in WorkoutDetail below the calendar",
+        "Show loading state while fetching workout details",
+        "When no workout is selected and user has no completed workouts at all, show empty state message: No workouts yet. Complete your first workout to see it here!",
+        "When no workout is selected but workouts exist, show a prompt like Tap a workout day to see details",
+        "Use the user's unitPreference from AuthContext for the detail view",
+        "Page has heading History at the top",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 7,
+      "passes": true,
+      "notes": "The progression data for a selected workout is not directly available from the API. For now, pass null for progression — a future story can add progression lookup. Or compute it client-side if TM history endpoint data is available."
+    },
+    {
+      "id": "US-067",
+      "title": "E2E tests for cancel workout",
+      "description": "As a developer, I need E2E tests to verify the cancel workout flow works end-to-end.",
+      "acceptanceCriteria": [
+        "Create e2e/cancel-workout.spec.ts with Playwright tests",
+        "Use the same fixture/helper pattern as e2e/workout.spec.ts for user registration and setup",
+        "Test 1: Start a workout, click Cancel Workout, accept the confirm dialog, verify redirect to dashboard (/)",
+        "Test 2: After canceling a workout, start a new workout for a different day — verify it starts successfully",
+        "Test 3: Start a workout, click Cancel Workout, dismiss the confirm dialog, verify user stays on the workout page",
+        "All tests pass"
+      ],
+      "priority": 8,
+      "passes": true,
+      "notes": "Use page.on('dialog') to handle the confirm() dialog in Playwright."
+    },
+    {
+      "id": "US-068",
+      "title": "E2E tests for History page",
+      "description": "As a developer, I need comprehensive E2E tests for the History page to verify the calendar and detail view work end-to-end.",
+      "acceptanceCriteria": [
+        "Delete ALL existing content in e2e/history.spec.ts and rewrite from scratch",
+        "Use the same fixture/helper pattern as e2e/workout.spec.ts for user registration, setup, and completing workouts",
+        "Test 1: Navigate to history page from bottom nav, verify the calendar is visible with month/year header",
+        "Test 2: No completed workouts — calendar renders, empty state message is shown",
+        "Test 3: Complete a Day 1 workout, navigate to history, verify today's date is highlighted on the calendar",
+        "Test 4: Tap the highlighted day, verify workout detail appears showing Day 1, exercise names, and set data (weights and reps)",
+        "Test 5: Complete two workouts on different days (Day 1 and Day 2), navigate to history, verify both days show on calendar",
+        "Test 6: Month navigation — click previous month arrow, verify header changes to previous month, click next to return",
+        "All tests pass"
+      ],
+      "priority": 9,
+      "passes": true,
+      "notes": "Completing workouts in E2E tests is slow. Reuse helpers and keep the number of full workout completions to a minimum. Tests 3-5 can share setup if using test.describe with beforeAll."
+    }
+  ]
+}

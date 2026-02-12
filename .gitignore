@@ -7,5 +7,7 @@ playwright-report/
 prd.json
 progress.txt
 scripts/ralph/progress.txt
+!scripts/ralph/archive/**/prd.json
+!scripts/ralph/archive/**/progress.txt
 *.log
 *.tsbuildinfo
