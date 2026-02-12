@@ -339,3 +339,43 @@ export async function cancelWorkout(workoutId: number, userId: number) {
 
   return { success: true };
 }
+
+export async function getCalendar(userId: number, year: number, month: number) {
+  // Calculate date range for the given month
+  const startDate = new Date(year, month - 1, 1); // month is 0-indexed in Date constructor
+  const endDate = new Date(year, month, 1); // First day of next month
+
+  // Query workouts where completedAt or createdAt falls within the month
+  const workouts = await prisma.workout.findMany({
+    where: {
+      userId,
+      OR: [
+        {
+          completedAt: {
+            gte: startDate,
+            lt: endDate,
+          },
+        },
+        {
+          completedAt: null,
+          createdAt: {
+            gte: startDate,
+            lt: endDate,
+          },
+        },
+      ],
+    },
+    select: {
+      id: true,
+      dayNumber: true,
+      status: true,
+      completedAt: true,
+      createdAt: true,
+    },
+    orderBy: {
+      createdAt: 'asc',
+    },
+  });
+
+  return { workouts };
+}

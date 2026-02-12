@@ -237,4 +237,82 @@ describe('Workouts API - Start and Read', () => {
       expect(res.body.error.message).toContain('Cannot cancel a completed workout');
     });
   });
+
+  describe('GET /api/workouts/calendar', () => {
+    it('returns 400 if year or month is missing', async () => {
+      const res1 = await request(app)
+        .get('/api/workouts/calendar')
+        .set('Authorization', `Bearer ${token}`);
+      expect(res1.status).toBe(400);
+
+      const res2 = await request(app)
+        .get('/api/workouts/calendar?year=2026')
+        .set('Authorization', `Bearer ${token}`);
+      expect(res2.status).toBe(400);
+
+      const res3 = await request(app)
+        .get('/api/workouts/calendar?month=2')
+        .set('Authorization', `Bearer ${token}`);
+      expect(res3.status).toBe(400);
+    });
+
+    it('returns 400 if month is invalid', async () => {
+      const res = await request(app)
+        .get('/api/workouts/calendar?year=2026&month=13')
+        .set('Authorization', `Bearer ${token}`);
+      expect(res.status).toBe(400);
+    });
+
+    it('returns correct workouts for the current month', async () => {
+      // We have one completed workout from the previous test
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1; // 1-indexed
+
+      const res = await request(app)
+        .get(`/api/workouts/calendar?year=${year}&month=${month}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.workouts).toBeDefined();
+      expect(Array.isArray(res.body.workouts)).toBe(true);
+
+      // Should have at least 1 workout from this month
+      expect(res.body.workouts.length).toBeGreaterThanOrEqual(1);
+
+      // Each workout should have the correct shape
+      const workout = res.body.workouts[0];
+      expect(workout).toHaveProperty('id');
+      expect(workout).toHaveProperty('dayNumber');
+      expect(workout).toHaveProperty('status');
+      expect(workout).toHaveProperty('completedAt');
+      expect(workout).toHaveProperty('createdAt');
+
+      // Should NOT include sets
+      expect(workout.sets).toBeUndefined();
+    });
+
+    it('returns empty array for a month with no workouts', async () => {
+      const res = await request(app)
+        .get('/api/workouts/calendar?year=2020&month=1')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.workouts).toEqual([]);
+    });
+
+    it('does not leak other users workouts', async () => {
+      // token2 user has no workouts
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1;
+
+      const res = await request(app)
+        .get(`/api/workouts/calendar?year=${year}&month=${month}`)
+        .set('Authorization', `Bearer ${token2}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.workouts).toEqual([]);
+    });
+  });
 });

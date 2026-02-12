@@ -44,6 +44,19 @@ router.get('/history', async (req: AuthRequest, res: Response) => {
   res.json(result);
 });
 
+router.get('/calendar', async (req: AuthRequest, res: Response) => {
+  const year = parseInt(req.query.year as string, 10);
+  const month = parseInt(req.query.month as string, 10);
+
+  if (!year || isNaN(year) || !month || isNaN(month) || month < 1 || month > 12) {
+    res.status(400).json({ error: { code: 'INVALID_PARAMS', message: 'Valid year and month (1-12) are required' } });
+    return;
+  }
+
+  const result = await workoutService.getCalendar(req.userId!, year, month);
+  res.json(result);
+});
+
 router.get('/:id', async (req: AuthRequest, res: Response) => {
   const id = parseInt(req.params.id as string, 10);
   if (isNaN(id)) {
