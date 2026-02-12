@@ -32,6 +32,14 @@ export interface WorkoutHistoryItem {
   createdAt: string;
 }
 
+export interface CalendarWorkout {
+  id: number;
+  dayNumber: number;
+  status: string;
+  completedAt: string | null;
+  createdAt: string;
+}
+
 export interface ProgressionResult {
   exercise: string;
   previousTM: number;
@@ -83,4 +91,19 @@ export async function getWorkoutHistory(
   return apiFetch(`/workouts/history?page=${page}&limit=${limit}`) as Promise<
     WorkoutHistoryItem[]
   >;
+}
+
+export async function cancelWorkout(id: number): Promise<void> {
+  return apiFetch(`/workouts/${id}`, {
+    method: 'DELETE',
+  }) as Promise<void>;
+}
+
+export async function getWorkoutCalendar(
+  year: number,
+  month: number
+): Promise<{ workouts: CalendarWorkout[] }> {
+  return apiFetch(`/workouts/calendar?year=${year}&month=${month}`) as Promise<{
+    workouts: CalendarWorkout[];
+  }>;
 }
