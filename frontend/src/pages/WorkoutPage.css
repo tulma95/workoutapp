@@ -1,52 +1,52 @@
 .workout-page {
-  padding: 16px;
-  max-width: 600px;
+  padding: var(--space-md);
+  max-width: 37.5rem;
   margin: 0 auto;
 }
 
 .workout-page h1 {
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-lg);
   color: var(--text-primary);
 }
 
 .workout-section {
-  margin-bottom: 32px;
+  margin-bottom: var(--space-xl);
 }
 
 .workout-section__title {
-  font-size: 20px;
+  font-size: 1.5rem;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 1rem;
   color: var(--text-primary);
-  padding-bottom: 8px;
+  padding-bottom: var(--space-sm);
   border-bottom: 2px solid var(--border);
 }
 
 .workout-section__sets {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .workout-actions {
-  margin-top: 32px;
+  margin-top: var(--space-xl);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-md);
 }
 
 .btn-large {
-  min-height: 56px;
-  font-size: 18px;
+  min-height: 3.5rem;
+  font-size: 1rem;
   font-weight: 600;
 }
 
 .loading {
   text-align: center;
-  padding: 32px;
-  font-size: 16px;
+  padding: var(--space-xl);
+  font-size: 1rem;
   color: var(--text-secondary);
 }
 
@@ -54,8 +54,8 @@
   background-color: rgba(239, 68, 68, 0.1);
   border: 1px solid rgb(239, 68, 68);
   color: rgb(239, 68, 68);
-  padding: 16px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  font-size: 16px;
+  padding: var(--space-md);
+  border-radius: var(--space-sm);
+  margin-bottom: var(--space-md);
+  font-size: 1rem;
 }
