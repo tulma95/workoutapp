@@ -6,6 +6,11 @@ set -e
 
 SESSION_NAME="treenisofta"
 
+function stop() {
+  $local_compose down --remove-orphans || true
+}
+trap stop EXIT
+
 # Check if tmux is installed
 if ! command -v tmux &> /dev/null; then
     echo "Error: tmux is not installed"
