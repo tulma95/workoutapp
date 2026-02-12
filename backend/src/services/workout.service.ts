@@ -334,9 +334,10 @@ export async function cancelWorkout(workoutId: number, userId: number) {
     throw new Error('CONFLICT: Cannot cancel a completed workout');
   }
 
-  // Delete the workout (CASCADE will delete workout_sets)
-  await prisma.workout.delete({
+  // Soft delete: update status to 'discarded' instead of hard deleting
+  await prisma.workout.update({
     where: { id: workoutId },
+    data: { status: 'discarded' },
   });
 
   return { success: true };
@@ -348,9 +349,11 @@ export async function getCalendar(userId: number, year: number, month: number) {
   const endDate = new Date(year, month, 1); // First day of next month
 
   // Query workouts where completedAt or createdAt falls within the month
+  // Exclude discarded workouts
   const workouts = await prisma.workout.findMany({
     where: {
       userId,
+      status: { not: 'discarded' },
       OR: [
         {
           completedAt: {

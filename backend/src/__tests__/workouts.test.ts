@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
 import app from '../app';
+import prisma from '../lib/db';
 
 describe('Workouts API - Start and Read', () => {
   let token: string;
@@ -164,7 +165,7 @@ describe('Workouts API - Start and Read', () => {
   });
 
   describe('DELETE /api/workouts/:id', () => {
-    it('successfully cancels an in-progress workout', async () => {
+    it('successfully cancels an in-progress workout (soft delete)', async () => {
       const currentRes = await request(app)
         .get('/api/workouts/current')
         .set('Authorization', `Bearer ${token}`);
@@ -177,11 +178,18 @@ describe('Workouts API - Start and Read', () => {
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
 
-      // Verify workout is deleted
+      // Verify workout is no longer returned by getCurrentWorkout (status: 'in_progress' filter)
       const checkRes = await request(app)
         .get('/api/workouts/current')
         .set('Authorization', `Bearer ${token}`);
       expect(checkRes.body).toBeNull();
+
+      // Verify workout still exists in DB with status 'discarded'
+      const workout = await prisma.workout.findUnique({
+        where: { id: workoutId },
+      });
+      expect(workout).not.toBeNull();
+      expect(workout?.status).toBe('discarded');
     });
 
     it('returns 404 when workout not found or wrong user', async () => {
@@ -235,6 +243,105 @@ describe('Workouts API - Start and Read', () => {
 
       expect(res.status).toBe(409);
       expect(res.body.error.message).toContain('Cannot cancel a completed workout');
+    });
+
+    it('discarded workouts do not appear in history', async () => {
+      // Get baseline history count
+      const beforeHistoryRes = await request(app)
+        .get('/api/workouts/history')
+        .set('Authorization', `Bearer ${token}`);
+      const beforeCount = beforeHistoryRes.body.workouts.length;
+
+      // Start a new workout first
+      await request(app)
+        .post('/api/workouts')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ dayNumber: 1 });
+
+      // Cancel the workout
+      const currentRes = await request(app)
+        .get('/api/workouts/current')
+        .set('Authorization', `Bearer ${token}`);
+      const workoutId = currentRes.body.id;
+
+      await request(app)
+        .delete(`/api/workouts/${workoutId}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      // Check history - should have same count as before (discarded workout not included)
+      const afterHistoryRes = await request(app)
+        .get('/api/workouts/history')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(afterHistoryRes.status).toBe(200);
+      expect(afterHistoryRes.body.workouts).toHaveLength(beforeCount);
+      // Verify the discarded workout is not in the list
+      const hasDiscardedWorkout = afterHistoryRes.body.workouts.some((w: any) => w.id === workoutId);
+      expect(hasDiscardedWorkout).toBe(false);
+    });
+
+    it('discarded workouts do not appear in calendar', async () => {
+      // Get baseline calendar count
+      const now = new Date();
+      const beforeCalendarRes = await request(app)
+        .get(`/api/workouts/calendar?year=${now.getFullYear()}&month=${now.getMonth() + 1}`)
+        .set('Authorization', `Bearer ${token}`);
+      const beforeCount = beforeCalendarRes.body.workouts.length;
+
+      // Start a new workout first
+      await request(app)
+        .post('/api/workouts')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ dayNumber: 2 });
+
+      // Cancel the workout
+      const currentRes = await request(app)
+        .get('/api/workouts/current')
+        .set('Authorization', `Bearer ${token}`);
+      const workoutId = currentRes.body.id;
+
+      await request(app)
+        .delete(`/api/workouts/${workoutId}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      // Check calendar for current month - should have same count as before
+      const afterCalendarRes = await request(app)
+        .get(`/api/workouts/calendar?year=${now.getFullYear()}&month=${now.getMonth() + 1}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(afterCalendarRes.status).toBe(200);
+      expect(afterCalendarRes.body.workouts).toHaveLength(beforeCount);
+      // Verify the discarded workout is not in the list
+      const hasDiscardedWorkout = afterCalendarRes.body.workouts.some((w: any) => w.id === workoutId);
+      expect(hasDiscardedWorkout).toBe(false);
+    });
+
+    it('can start a new workout after discarding previous one', async () => {
+      // Start a workout first
+      await request(app)
+        .post('/api/workouts')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ dayNumber: 3 });
+
+      // Discard the workout
+      const currentRes = await request(app)
+        .get('/api/workouts/current')
+        .set('Authorization', `Bearer ${token}`);
+      const workoutId = currentRes.body.id;
+
+      await request(app)
+        .delete(`/api/workouts/${workoutId}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      // Start a new workout - should succeed
+      const newWorkoutRes = await request(app)
+        .post('/api/workouts')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ dayNumber: 4 });
+
+      expect(newWorkoutRes.status).toBe(201);
+      expect(newWorkoutRes.body.dayNumber).toBe(4);
+      expect(newWorkoutRes.body.status).toBe('in_progress');
     });
   });
 
