@@ -64,11 +64,16 @@ LAST_BRANCH_FILE="$SCRIPT_DIR/.last-branch"
 #   fi
 # fi
 
-# Track current branch
+# Checkout correct branch from PRD
 if [ -f "$PRD_FILE" ]; then
   CURRENT_BRANCH=$(jq -r '.branchName // empty' "$PRD_FILE" 2>/dev/null || echo "")
   if [ -n "$CURRENT_BRANCH" ]; then
     echo "$CURRENT_BRANCH" > "$LAST_BRANCH_FILE"
+    ACTUAL_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    if [ "$ACTUAL_BRANCH" != "$CURRENT_BRANCH" ]; then
+      echo "Switching to PRD branch: $CURRENT_BRANCH (was on $ACTUAL_BRANCH)"
+      git checkout "$CURRENT_BRANCH" 2>/dev/null || git checkout -b "$CURRENT_BRANCH" main
+    fi
   fi
 fi
 
