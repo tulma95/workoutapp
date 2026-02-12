@@ -66,13 +66,17 @@ describe('Workouts API - Start and Read', () => {
       expect(res.status).toBe(400);
     });
 
-    it('returns 409 when in-progress workout already exists', async () => {
+    it('returns 409 with existing workout details when in-progress workout already exists', async () => {
       const res = await request(app)
         .post('/api/workouts')
         .set('Authorization', `Bearer ${token}`)
         .send({ dayNumber: 1 });
 
       expect(res.status).toBe(409);
+      expect(res.body.error).toBe('EXISTING_WORKOUT');
+      expect(res.body.workoutId).toBeDefined();
+      expect(typeof res.body.workoutId).toBe('number');
+      expect(res.body.dayNumber).toBe(2); // Day 2 workout is in progress from previous test
     });
   });
 
@@ -420,6 +424,80 @@ describe('Workouts API - Start and Read', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.workouts).toEqual([]);
+    });
+  });
+
+  describe('Workflow: Complete and Discard with Conflict Prevention', () => {
+    it('allows starting a new workout after completing the previous one', async () => {
+      // First, discard any existing in-progress workout from previous tests
+      const existingRes = await request(app)
+        .get('/api/workouts/current')
+        .set('Authorization', `Bearer ${token}`);
+      if (existingRes.body) {
+        await request(app)
+          .delete(`/api/workouts/${existingRes.body.id}`)
+          .set('Authorization', `Bearer ${token}`);
+      }
+
+      // Start a fresh Day 2 workout
+      const startRes = await request(app)
+        .post('/api/workouts')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ dayNumber: 2 });
+      expect(startRes.status).toBe(201);
+      const workoutId = startRes.body.id;
+
+      // Find the progression AMRAP set (95% set for Day 2 Squat)
+      const progressionSet = startRes.body.sets.find(
+        (s: { tier: string; isAmrap: boolean; prescribedWeight: number }) =>
+          s.tier === 'T1' && s.isAmrap && s.prescribedWeight === 120
+      );
+
+      // Log the AMRAP reps
+      await request(app)
+        .patch(`/api/workouts/${workoutId}/sets/${progressionSet.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ actualReps: 5, completed: true });
+
+      // Complete the workout
+      const completeRes = await request(app)
+        .post(`/api/workouts/${workoutId}/complete`)
+        .set('Authorization', `Bearer ${token}`);
+      expect(completeRes.status).toBe(200);
+
+      // Now should be able to start a new workout
+      const newWorkoutRes = await request(app)
+        .post('/api/workouts')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ dayNumber: 1 });
+
+      expect(newWorkoutRes.status).toBe(201);
+      expect(newWorkoutRes.body.dayNumber).toBe(1);
+      expect(newWorkoutRes.body.status).toBe('in_progress');
+    });
+
+    it('allows starting a new workout after discarding the previous one', async () => {
+      // Get the current in-progress workout (Day 1 from previous test)
+      const currentRes = await request(app)
+        .get('/api/workouts/current')
+        .set('Authorization', `Bearer ${token}`);
+      const workoutId = currentRes.body.id;
+
+      // Discard the workout
+      const discardRes = await request(app)
+        .delete(`/api/workouts/${workoutId}`)
+        .set('Authorization', `Bearer ${token}`);
+      expect(discardRes.status).toBe(200);
+
+      // Now should be able to start a new workout
+      const newWorkoutRes = await request(app)
+        .post('/api/workouts')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ dayNumber: 3 });
+
+      expect(newWorkoutRes.status).toBe(201);
+      expect(newWorkoutRes.body.dayNumber).toBe(3);
+      expect(newWorkoutRes.body.status).toBe('in_progress');
     });
   });
 });

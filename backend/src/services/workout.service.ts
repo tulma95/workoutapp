@@ -4,6 +4,7 @@ import { calculateProgression } from '../lib/progression';
 import { getCurrentTMs } from './trainingMax.service';
 import { roundWeight } from '../lib/weightRounding';
 import type { WorkoutStatus } from '../types';
+import { ExistingWorkoutError } from '../types';
 
 const LB_TO_KG = 2.20462;
 
@@ -62,7 +63,7 @@ export async function startWorkout(userId: number, dayNumber: number) {
     where: { userId, status: 'in_progress' },
   });
   if (existing) {
-    throw new Error('CONFLICT: Already have an in-progress workout');
+    throw new ExistingWorkoutError(existing.id, existing.dayNumber);
   }
 
   // Get user for unit preference

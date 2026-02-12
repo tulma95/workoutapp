@@ -12,3 +12,13 @@ export interface JwtPayload {
 export interface AuthRequest extends Request {
   userId?: number;
 }
+
+export class ExistingWorkoutError extends Error {
+  constructor(
+    public workoutId: number,
+    public dayNumber: number
+  ) {
+    super('EXISTING_WORKOUT');
+    this.name = 'ExistingWorkoutError';
+  }
+}
