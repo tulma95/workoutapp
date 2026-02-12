@@ -158,24 +158,22 @@
 }
 
 /* View Transition API animations */
-@supports (view-transition-name: none) {
-  /* Next month: slide left (old exits left, new enters from right) */
-  [data-transition-direction='next']::view-transition-old(calendar-grid) {
-    animation: slideOutLeft 200ms ease-in-out;
-  }
+/* Next month: slide left (old exits left, new enters from right) */
+:root[data-transition-direction='next']::view-transition-old(calendar-grid) {
+  animation: slideOutLeft 200ms ease-in-out;
+}
 
-  [data-transition-direction='next']::view-transition-new(calendar-grid) {
-    animation: slideInRight 200ms ease-in-out;
-  }
+:root[data-transition-direction='next']::view-transition-new(calendar-grid) {
+  animation: slideInRight 200ms ease-in-out;
+}
 
-  /* Previous month: slide right (old exits right, new enters from left) */
-  [data-transition-direction='prev']::view-transition-old(calendar-grid) {
-    animation: slideOutRight 200ms ease-in-out;
-  }
+/* Previous month: slide right (old exits right, new enters from left) */
+:root[data-transition-direction='prev']::view-transition-old(calendar-grid) {
+  animation: slideOutRight 200ms ease-in-out;
+}
 
-  [data-transition-direction='prev']::view-transition-new(calendar-grid) {
-    animation: slideInLeft 200ms ease-in-out;
-  }
+:root[data-transition-direction='prev']::view-transition-new(calendar-grid) {
+  animation: slideInLeft 200ms ease-in-out;
 }
 
 @keyframes slideOutLeft {

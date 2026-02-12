@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { CalendarWorkout } from '../api/workouts';
 import './WorkoutCalendar.css';
 
@@ -37,7 +37,6 @@ export default function WorkoutCalendar({
   month,
   isLoading = false,
 }: WorkoutCalendarProps) {
-  const [transitionDirection, setTransitionDirection] = useState<'prev' | 'next' | null>(null);
   const currentYear = year;
   const currentMonth = month - 1; // Convert to 0-indexed for Date constructor
 
@@ -127,13 +126,11 @@ export default function WorkoutCalendar({
 
   const handlePrevMonth = () => {
     const newDate = new Date(currentYear, currentMonth - 1, 1);
-    setTransitionDirection('prev');
     onMonthChange(newDate.getFullYear(), newDate.getMonth() + 1, 'prev');
   };
 
   const handleNextMonth = () => {
     const newDate = new Date(currentYear, currentMonth + 1, 1);
-    setTransitionDirection('next');
     onMonthChange(newDate.getFullYear(), newDate.getMonth() + 1, 'next');
   };
 
@@ -177,7 +174,6 @@ export default function WorkoutCalendar({
 
       <div
         className="workout-calendar__grid"
-        data-transition-direction={transitionDirection || undefined}
       >
         {calendarDays.map((day, index) => (
           <button

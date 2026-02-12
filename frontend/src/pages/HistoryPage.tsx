@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { flushSync } from 'react-dom';
 import { useAuth } from '../context/AuthContext';
 import { getWorkoutCalendar, getWorkout, CalendarWorkout, Workout } from '../api/workouts';
 import WorkoutCalendar from '../components/WorkoutCalendar';
@@ -38,12 +39,17 @@ export default function HistoryPage() {
   };
 
   const handleMonthChange = (year: number, month: number, direction: 'prev' | 'next') => {
-    // Use View Transition API if available
     if (document.startViewTransition) {
-      document.startViewTransition(() => {
-        setCurrentYear(year);
-        setCurrentMonth(month);
-        setSelectedWorkout(null);
+      document.documentElement.dataset.transitionDirection = direction;
+      const transition = document.startViewTransition(() => {
+        flushSync(() => {
+          setCurrentYear(year);
+          setCurrentMonth(month);
+          setSelectedWorkout(null);
+        });
+      });
+      transition.finished.then(() => {
+        delete document.documentElement.dataset.transitionDirection;
       });
     } else {
       setCurrentYear(year);
