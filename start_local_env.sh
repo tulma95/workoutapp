@@ -3,11 +3,21 @@ set -e
 
 # Script to start the full local dev environment in tmux
 # Creates a tmux session with 3 panes: Docker, Backend, Frontend
+# Zero-config: works immediately after cloning with only Docker and tmux as prerequisites
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
 
 SESSION_NAME="treenisofta"
 
+# Export environment variables (inherited by all tmux panes)
+export DATABASE_URL="postgresql://treenisofta:treenisofta_dev@localhost:5432/treenisofta"
+export JWT_SECRET="change-me-in-production"
+export PORT=3001
+export NODE_ENV=development
+
 function stop() {
-  $local_compose down --remove-orphans || true
+  docker compose down --remove-orphans || true
 }
 trap stop EXIT
 
@@ -24,6 +34,10 @@ if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
     tmux attach-session -t "$SESSION_NAME"
     exit 0
 fi
+
+# Ensure dependencies are up-to-date before creating tmux session
+source scripts/common.sh
+ensure_dependencies
 
 # Start database and wait for it to be healthy
 echo "Starting database..."
@@ -42,11 +56,8 @@ tmux split-window -t "$SESSION_NAME:dev" -v
 # Select even-vertical layout for equal pane sizes
 tmux select-layout -t "$SESSION_NAME:dev" even-vertical
 
-# Send commands to pane 1 (backend) - DB is already healthy, run migrations and start
-tmux send-keys -t "$SESSION_NAME:dev.1" 'echo "Running migrations..."' C-m
-tmux send-keys -t "$SESSION_NAME:dev.1" 'npx prisma migrate dev --name init -w backend' C-m
-tmux send-keys -t "$SESSION_NAME:dev.1" 'echo "Starting backend server..."' C-m
-tmux send-keys -t "$SESSION_NAME:dev.1" 'npm run dev -w backend' C-m
+# Send commands to pane 1 (backend) - uses run_backend.sh for full setup
+tmux send-keys -t "$SESSION_NAME:dev.1" './run_backend.sh' C-m
 
 # Send commands to pane 2 (frontend)
 tmux send-keys -t "$SESSION_NAME:dev.2" 'npm run dev -w frontend' C-m
