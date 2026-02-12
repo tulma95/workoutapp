@@ -1,10 +1,10 @@
 .progression-banner {
-  padding: 16px;
-  border-radius: 8px;
+  padding: var(--space-md);
+  border-radius: var(--space-sm);
   text-align: center;
   font-weight: 600;
-  font-size: 16px;
-  margin: 16px 0;
+  font-size: 1rem;
+  margin: var(--space-md) 0;
 }
 
 .progression-banner--success {
