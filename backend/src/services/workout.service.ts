@@ -5,6 +5,7 @@ import { getCurrentTMs } from './trainingMax.service';
 import { roundWeight } from '../lib/weightRounding';
 import type { WorkoutStatus } from '../types';
 import { ExistingWorkoutError } from '../types';
+import { logger } from '../lib/logger';
 
 const LB_TO_KG = 2.20462;
 
@@ -128,6 +129,8 @@ export async function startWorkout(userId: number, dayNumber: number) {
       include: { sets: { orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }] } },
     });
   });
+
+  logger.info('Workout started', { dayNumber, userId, workoutId: workout.id });
 
   return formatWorkout(workout, user.unitPreference);
 }
@@ -267,6 +270,8 @@ export async function completeWorkout(workoutId: number, userId: number) {
           },
         });
 
+        logger.info('TM progression', { exercise, previousTM: currentTMKg, newTM: newWeightKg, increase });
+
         // Convert to user's unit for response
         progression = {
           exercise,
@@ -277,6 +282,8 @@ export async function completeWorkout(workoutId: number, userId: number) {
       }
     }
   }
+
+  logger.info('Workout completed', { workoutId, dayNumber: workout.dayNumber, userId });
 
   // Mark workout completed
   const completed = await prisma.workout.update({

@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import prisma from '../lib/db';
 import { config } from '../config';
+import { logger } from '../lib/logger';
 
 const SALT_ROUNDS = 10;
 const ACCESS_TOKEN_EXPIRY = '24h';
@@ -25,6 +26,8 @@ export async function register(email: string, password: string, displayName: str
   const user = await prisma.user.create({
     data: { email, passwordHash, displayName, unitPreference },
   });
+
+  logger.info('User registered', { email: user.email, userId: user.id });
 
   return {
     accessToken: signAccessToken(user.id, user.email),
@@ -59,13 +62,17 @@ export async function refreshTokens(refreshToken: string) {
 export async function login(email: string, password: string) {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
+    logger.warn('Login failed: unknown email', { email });
     throw new Error('Invalid email or password');
   }
 
   const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) {
+    logger.warn('Login failed: invalid password', { email });
     throw new Error('Invalid email or password');
   }
+
+  logger.info('User logged in', { email, userId: user.id });
 
   return {
     accessToken: signAccessToken(user.id, user.email),

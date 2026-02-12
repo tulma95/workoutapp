@@ -59,13 +59,13 @@ cd "$PROJECT_ROOT/backend"
 DATABASE_URL="$TEST_DB_URL" npx prisma migrate deploy
 
 echo "Running backend tests..."
-cd "$PROJECT_ROOT"
+cd "$PROJECT_ROOT/backend"
 TEST_EXIT_CODE=0
 DATABASE_URL="$TEST_DB_URL" \
 JWT_SECRET="$TEST_JWT_SECRET" \
 PORT=3001 \
 NODE_ENV=test \
-npm test -w backend || TEST_EXIT_CODE=$?
+npx vitest run "$@" || TEST_EXIT_CODE=$?
 
 if [ $TEST_EXIT_CODE -ne 0 ]; then
   echo "Backend tests failed. Exiting."

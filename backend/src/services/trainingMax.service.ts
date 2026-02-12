@@ -1,5 +1,6 @@
 import prisma from '../lib/db';
 import { roundWeight } from '../lib/weightRounding';
+import { logger } from '../lib/logger';
 
 const LB_TO_KG = 2.20462;
 const EXERCISES = ['bench', 'squat', 'ohp', 'deadlift'] as const;
@@ -55,6 +56,8 @@ export async function setupFromOneRepMaxes(
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  logger.info('TM setup from 1RMs', { userId, exercises: Object.keys(oneRepMaxes), unit });
+
   const created = await Promise.all(
     EXERCISES.map(async (exercise) => {
       const orm = oneRepMaxes[exercise];
@@ -93,6 +96,7 @@ export async function updateTM(
   weight: number,
   unit: string,
 ) {
+  logger.info('Manual TM update', { userId, exercise, weight, unit });
   const weightKg = roundWeight(toKg(weight, unit), 'kg');
   const today = new Date();
   today.setHours(0, 0, 0, 0);

@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { validate } from '../middleware/validate';
 import * as authService from '../services/auth.service';
+import { logger } from '../lib/logger';
 
 const router = Router();
 
@@ -19,6 +20,8 @@ const loginSchema = z.object({
 
 router.post('/register', validate(registerSchema), async (req: Request, res: Response) => {
   try {
+    const { password: _pw, ...safeBody } = req.body;
+    logger.debug('Register request', { body: safeBody });
     const { email, password, displayName, unitPreference } = req.body;
     const result = await authService.register(email, password, displayName, unitPreference);
     res.status(201).json(result);
@@ -35,6 +38,7 @@ router.post('/register', validate(registerSchema), async (req: Request, res: Res
 
 router.post('/login', validate(loginSchema), async (req: Request, res: Response) => {
   try {
+    logger.debug('Login request', { body: { email: req.body.email } });
     const { email, password } = req.body;
     const result = await authService.login(email, password);
     res.status(200).json(result);

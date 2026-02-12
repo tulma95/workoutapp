@@ -6,17 +6,24 @@ import userRoutes from './routes/users';
 import trainingMaxRoutes from './routes/trainingMaxes';
 import workoutRoutes from './routes/workouts';
 import { errorHandler } from './middleware/errorHandler';
+import { requestContext } from './middleware/requestContext';
+import { requestLogger } from './middleware/requestLogger';
+import { logger } from './lib/logger';
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(requestContext);
+app.use(requestLogger);
 
 app.get('/api/health', async (_req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
+    logger.debug('Health check passed');
     res.json({ status: 'ok', database: 'connected' });
   } catch {
+    logger.error('Health check failed: database disconnected');
     res.status(503).json({ status: 'error', database: 'disconnected' });
   }
 });
