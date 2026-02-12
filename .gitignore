@@ -4,3 +4,8 @@ dist/
 pgdata/
 test-results/
 playwright-report/
+prd.json
+progress.txt
+scripts/ralph/progress.txt
+*.log
+*.tsbuildinfo
