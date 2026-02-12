@@ -29,12 +29,12 @@ A workout tracking application for the nSuns 4-Day Linear Progression program. U
 
 ### Day Structure
 
-| Day | T1 (9 sets) | T2 (8 sets) |
-|-----|-------------|-------------|
-| 1 | Bench Volume (Bench TM) | OHP (OHP TM, 50-70%) |
-| 2 | Squat (Squat TM) | Sumo Deadlift (Deadlift TM, 50-70%) |
-| 3 | Bench Heavy (Bench TM) | Close Grip Bench (Bench TM, 40-60%) |
-| 4 | Deadlift (Deadlift TM) | Front Squat (Squat TM, 35-55%) |
+| Day | T1 (9 sets)             | T2 (8 sets)                         |
+| --- | ----------------------- | ----------------------------------- |
+| 1   | Bench Volume (Bench TM) | OHP (OHP TM, 50-70%)                |
+| 2   | Squat (Squat TM)        | Sumo Deadlift (Deadlift TM, 50-70%) |
+| 3   | Bench Heavy (Bench TM)  | Close Grip Bench (Bench TM, 40-60%) |
+| 4   | Deadlift (Deadlift TM)  | Front Squat (Squat TM, 35-55%)      |
 
 ### T1 Set Schemes (% of TM)
 
@@ -56,12 +56,12 @@ Bold = **progression AMRAP** (highest-% AMRAP set, used for TM adjustment).
 
 Based on reps achieved in the T1 **progression AMRAP** set:
 
-| AMRAP Reps | TM Increase |
-|------------|-------------|
-| 0-1 | No increase |
-| 2-3 | +2.5kg / +5lb |
-| 4-5 | +2.5-5kg / +5-10lb |
-| 5+ | +5-7.5kg / +10-15lb |
+| AMRAP Reps | TM Increase         |
+| ---------- | ------------------- |
+| 0-1        | No increase         |
+| 2-3        | +2.5kg / +5lb       |
+| 4-5        | +2.5-5kg / +5-10lb  |
+| 5+         | +5-7.5kg / +10-15lb |
 
 ### Weight Rounding
 
@@ -70,29 +70,36 @@ Round calculated weights to nearest **2.5kg** or **5lb** depending on user prefe
 ## Database Schema
 
 ### users
+
 `id, email (unique), password_hash, display_name, unit_preference ('kg'/'lb'), created_at, updated_at`
 
 ### training_maxes (append-only)
+
 `id, user_id (FK), exercise ('bench'/'squat'/'ohp'/'deadlift'), weight (kg), effective_date, created_at`
+
 - Unique constraint: (user_id, exercise, effective_date)
 - Current TM = row with latest effective_date per exercise
 
 ### workouts
+
 `id, user_id (FK), day_number (1-4), status ('in_progress'/'completed'), completed_at, created_at`
 
 ### workout_sets
+
 `id, workout_id (FK CASCADE), exercise, tier ('T1'/'T2'), set_order (1-9), prescribed_weight (kg), prescribed_reps, is_amrap, actual_reps (nullable), completed, created_at`
 
 ## API Endpoints
 
 ### Public
+
 - `POST /api/auth/register` - `{ email, password, displayName, unitPreference }`
 - `POST /api/auth/login` - `{ email, password }` → `{ token, user }`
 
 ### Protected (JWT required)
+
 - `GET /api/users/me` | `PATCH /api/users/me`
 - `GET /api/training-maxes` - current TMs for all 4 lifts
-- `POST /api/training-maxes/setup` - `{ oneRepMaxes: { bench, squat, ohp, deadlift } }` → TM = 90% * 1RM
+- `POST /api/training-maxes/setup` - `{ oneRepMaxes: { bench, squat, ohp, deadlift } }` → TM = 90% \* 1RM
 - `PATCH /api/training-maxes/:exercise` - manual TM override
 - `GET /api/training-maxes/:exercise/history`
 - `POST /api/workouts` - `{ dayNumber }` → generates all sets from current TMs
@@ -105,6 +112,7 @@ Round calculated weights to nearest **2.5kg** or **5lb** depending on user prefe
 ## Key Business Logic
 
 ### Starting a Workout (`POST /api/workouts`)
+
 1. Look up current TMs for the day's exercises
 2. Generate sets using program definition (nsuns.ts) + TMs
 3. Calculate actual weights: `round(TM * percentage)` using user's unit rounding
@@ -112,6 +120,7 @@ Round calculated weights to nearest **2.5kg** or **5lb** depending on user prefe
 5. Return full workout with sets
 
 ### Completing a Workout (`POST /api/workouts/:id/complete`)
+
 1. Find the T1 AMRAP set with the **highest percentage** (this is the progression set)
 2. Read `actual_reps` from that set
 3. Calculate TM increase using progression rules
@@ -120,6 +129,7 @@ Round calculated weights to nearest **2.5kg** or **5lb** depending on user prefe
 6. Return progression result
 
 ### Key Insight: Progression AMRAP Selection
+
 - Days 2, 3, 4 have TWO T1 AMRAP sets (95%x1+ and a lighter final AMRAP)
 - Day 1 has ONE T1 AMRAP (65%x8+)
 - Always use the **highest percentage AMRAP** for progression calculation
@@ -127,6 +137,7 @@ Round calculated weights to nearest **2.5kg** or **5lb** depending on user prefe
 ## Frontend Structure
 
 ### Pages
+
 - `LoginPage` / `RegisterPage` - auth forms
 - `SetupPage` - enter 4 x 1RM inputs (shown once, redirected if no TMs)
 - `DashboardPage` - 4 workout day cards, current TMs, next workout highlighted
@@ -134,6 +145,7 @@ Round calculated weights to nearest **2.5kg** or **5lb** depending on user prefe
 - `HistoryPage` - paginated past workouts with expandable details
 
 ### Key Components
+
 - `Layout` - mobile shell with bottom nav (Dashboard, History, Settings)
 - `SetRow` - single set: weight, reps, completion toggle
 - `AmrapInput` - +/- stepper for mobile-friendly rep entry
@@ -196,3 +208,5 @@ JWT_SECRET=change-me-in-production
 PORT=3001
 NODE_ENV=development
 ```
+
+Dont use typescript-code-review skill
