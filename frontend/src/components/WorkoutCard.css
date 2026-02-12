@@ -1,11 +1,11 @@
 .workout-card {
-  padding: 16px;
+  padding: var(--space-md);
   background-color: var(--bg-card);
   border: 2px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--space-sm);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-md);
 }
 
 .workout-card--upcoming {
@@ -31,14 +31,14 @@
 
 .workout-card__title {
   margin: 0;
-  font-size: 20px;
+  font-size: 1.5rem;
   font-weight: 600;
   color: var(--text);
 }
 
 .workout-card__checkmark {
-  width: 28px;
-  height: 28px;
+  width: 2rem;
+  height: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -46,25 +46,25 @@
   color: white;
   border-radius: 50%;
   font-weight: bold;
-  font-size: 18px;
+  font-size: 1rem;
 }
 
 .workout-card__exercises {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .workout-card__exercise {
   display: flex;
-  gap: 8px;
-  font-size: 16px;
+  gap: var(--space-sm);
+  font-size: 1rem;
 }
 
 .workout-card__label {
   font-weight: 600;
   color: var(--text-muted, #666);
-  min-width: 32px;
+  min-width: 2rem;
 }
 
 .workout-card__name {
@@ -72,19 +72,19 @@
 }
 
 .workout-card__button {
-  min-height: 44px;
+  min-height: 3rem;
   width: 100%;
 }
 
 .btn-primary {
-  min-height: 44px;
-  padding: 8px 24px;
-  font-size: 16px;
+  min-height: 3rem;
+  padding: var(--space-sm) var(--space-lg);
+  font-size: 1rem;
   font-weight: 500;
   background-color: var(--primary);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--space-sm);
   cursor: pointer;
   transition: opacity 0.2s;
 }
