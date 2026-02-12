@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { CalendarWorkout } from '../api/workouts';
 import './WorkoutCalendar.css';
 
@@ -6,7 +6,7 @@ interface WorkoutCalendarProps {
   workouts: CalendarWorkout[];
   onSelectWorkout: (workoutId: number) => void;
   selectedDate?: Date;
-  onMonthChange: (year: number, month: number) => void;
+  onMonthChange: (year: number, month: number, direction: 'prev' | 'next') => void;
   year: number;
   month: number; // 1-indexed (1 = January, 12 = December)
   isLoading?: boolean;
@@ -37,6 +37,7 @@ export default function WorkoutCalendar({
   month,
   isLoading = false,
 }: WorkoutCalendarProps) {
+  const [transitionDirection, setTransitionDirection] = useState<'prev' | 'next' | null>(null);
   const currentYear = year;
   const currentMonth = month - 1; // Convert to 0-indexed for Date constructor
 
@@ -126,12 +127,14 @@ export default function WorkoutCalendar({
 
   const handlePrevMonth = () => {
     const newDate = new Date(currentYear, currentMonth - 1, 1);
-    onMonthChange(newDate.getFullYear(), newDate.getMonth() + 1);
+    setTransitionDirection('prev');
+    onMonthChange(newDate.getFullYear(), newDate.getMonth() + 1, 'prev');
   };
 
   const handleNextMonth = () => {
     const newDate = new Date(currentYear, currentMonth + 1, 1);
-    onMonthChange(newDate.getFullYear(), newDate.getMonth() + 1);
+    setTransitionDirection('next');
+    onMonthChange(newDate.getFullYear(), newDate.getMonth() + 1, 'next');
   };
 
   const handleDayClick = (day: typeof calendarDays[0]) => {
@@ -172,7 +175,10 @@ export default function WorkoutCalendar({
         ))}
       </div>
 
-      <div className="workout-calendar__grid">
+      <div
+        className="workout-calendar__grid"
+        data-transition-direction={transitionDirection || undefined}
+      >
         {calendarDays.map((day, index) => (
           <button
             key={index}

@@ -37,12 +37,21 @@ export default function HistoryPage() {
     }
   };
 
-  const handleMonthChange = (year: number, month: number) => {
-    setCurrentYear(year);
-    setCurrentMonth(month);
+  const handleMonthChange = (year: number, month: number, direction: 'prev' | 'next') => {
+    // Use View Transition API if available
+    if (document.startViewTransition) {
+      document.startViewTransition(() => {
+        setCurrentYear(year);
+        setCurrentMonth(month);
+        setSelectedWorkout(null);
+      });
+    } else {
+      setCurrentYear(year);
+      setCurrentMonth(month);
+      setSelectedWorkout(null);
+    }
+
     fetchCalendarData(year, month);
-    // Clear selected workout when changing months
-    setSelectedWorkout(null);
   };
 
   const handleSelectWorkout = async (workoutId: number) => {
