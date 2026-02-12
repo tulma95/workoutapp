@@ -1,10 +1,27 @@
 .workout-calendar {
+  position: relative;
   width: 100%;
   max-width: 31.25rem;
   margin: 0 auto;
   padding: var(--space-md);
   background-color: var(--bg-card);
   border: 1px solid var(--border);
+  border-radius: var(--space-sm);
+}
+
+.workout-calendar--loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.workout-calendar--loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.1);
   border-radius: var(--space-sm);
 }
 
@@ -30,8 +47,13 @@
   transition: background-color 0.2s;
 }
 
-.workout-calendar__nav-button:hover {
+.workout-calendar__nav-button:hover:not(:disabled) {
   background-color: var(--border);
+}
+
+.workout-calendar__nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .workout-calendar__title {

@@ -64,9 +64,7 @@ export default function HistoryPage() {
     <div className="history-page">
       <h1 className="history-page__title">History</h1>
 
-      {isLoadingCalendar ? (
-        <LoadingSpinner />
-      ) : calendarError ? (
+      {calendarError ? (
         <ErrorMessage
           message={calendarError}
           onRetry={() => fetchCalendarData(currentYear, currentMonth)}
@@ -77,6 +75,9 @@ export default function HistoryPage() {
             workouts={calendarWorkouts}
             onSelectWorkout={handleSelectWorkout}
             onMonthChange={handleMonthChange}
+            year={currentYear}
+            month={currentMonth}
+            isLoading={isLoadingCalendar}
           />
 
           <div className="history-page__detail">

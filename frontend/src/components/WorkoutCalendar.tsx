@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { CalendarWorkout } from '../api/workouts';
 import './WorkoutCalendar.css';
 
@@ -7,6 +7,9 @@ interface WorkoutCalendarProps {
   onSelectWorkout: (workoutId: number) => void;
   selectedDate?: Date;
   onMonthChange: (year: number, month: number) => void;
+  year: number;
+  month: number; // 1-indexed (1 = January, 12 = December)
+  isLoading?: boolean;
 }
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -30,10 +33,12 @@ export default function WorkoutCalendar({
   onSelectWorkout,
   selectedDate,
   onMonthChange,
+  year,
+  month,
+  isLoading = false,
 }: WorkoutCalendarProps) {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const currentYear = currentDate.getFullYear();
-  const currentMonth = currentDate.getMonth(); // 0-indexed
+  const currentYear = year;
+  const currentMonth = month - 1; // Convert to 0-indexed for Date constructor
 
   // Build a map from date string (YYYY-MM-DD) to workout
   const workoutMap = useMemo(() => {
@@ -121,13 +126,11 @@ export default function WorkoutCalendar({
 
   const handlePrevMonth = () => {
     const newDate = new Date(currentYear, currentMonth - 1, 1);
-    setCurrentDate(newDate);
     onMonthChange(newDate.getFullYear(), newDate.getMonth() + 1);
   };
 
   const handleNextMonth = () => {
     const newDate = new Date(currentYear, currentMonth + 1, 1);
-    setCurrentDate(newDate);
     onMonthChange(newDate.getFullYear(), newDate.getMonth() + 1);
   };
 
@@ -138,12 +141,13 @@ export default function WorkoutCalendar({
   };
 
   return (
-    <div className="workout-calendar">
+    <div className={`workout-calendar ${isLoading ? 'workout-calendar--loading' : ''}`}>
       <div className="workout-calendar__header">
         <button
           className="workout-calendar__nav-button"
           onClick={handlePrevMonth}
           aria-label="Previous month"
+          disabled={isLoading}
         >
           ←
         </button>
@@ -154,6 +158,7 @@ export default function WorkoutCalendar({
           className="workout-calendar__nav-button"
           onClick={handleNextMonth}
           aria-label="Next month"
+          disabled={isLoading}
         >
           →
         </button>
