@@ -4,10 +4,11 @@ dist/
 pgdata/
 test-results/
 playwright-report/
+!scripts/ralph/archive/**/prd.json
+!scripts/ralph/archive/**/progress.txt
 prd.json
 progress.txt
 scripts/ralph/progress.txt
-!scripts/ralph/archive/**/prd.json
-!scripts/ralph/archive/**/progress.txt
+scripts/ralph/.last-branch
 *.log
 *.tsbuildinfo

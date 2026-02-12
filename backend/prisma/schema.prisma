@@ -13,8 +13,8 @@ model User {
   passwordHash   String   @map("password_hash")
   displayName    String   @map("display_name")
   unitPreference String   @default("kg") @map("unit_preference")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   trainingMaxes TrainingMax[]
   workouts      Workout[]
@@ -27,8 +27,8 @@ model TrainingMax {
   userId        Int      @map("user_id")
   exercise      String
   weight        Decimal  @db.Decimal(6, 2)
-  effectiveDate DateTime @default(now()) @map("effective_date") @db.Date
-  createdAt     DateTime @default(now()) @map("created_at")
+  effectiveDate DateTime @default(now()) @map("effective_date") @db.Timestamptz(3)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   user User @relation(fields: [userId], references: [id])
 
@@ -41,8 +41,8 @@ model Workout {
   userId      Int       @map("user_id")
   dayNumber   Int       @map("day_number")
   status      String    @default("in_progress")
-  completedAt DateTime? @map("completed_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(3)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
 
   user User         @relation(fields: [userId], references: [id])
   sets WorkoutSet[]
@@ -61,7 +61,7 @@ model WorkoutSet {
   isAmrap          Boolean  @default(false) @map("is_amrap")
   actualReps       Int?     @map("actual_reps")
   completed        Boolean  @default(false)
-  createdAt        DateTime @default(now()) @map("created_at")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   workout Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
 
