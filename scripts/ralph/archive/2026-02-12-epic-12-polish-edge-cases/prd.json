@@ -1,0 +1,139 @@
+{
+  "project": "nSuns 4-Day LP Workout Tracker",
+  "branchName": "ralph/css-rem-8point-grid",
+  "description": "Transform all CSS from px to rem units (1rem = 16px) with 8-point grid enforcement. Round non-aligned values to nearest 8pt multiple, use --space-* tokens where applicable, keep 1px borders as px.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Convert global.css spacing tokens and element styles to rem",
+      "description": "As a developer, I want global.css to use rem units so the entire app scales with browser font size.",
+      "acceptanceCriteria": [
+        "Update --space-xs from 4px to 0.25rem, --space-sm from 8px to 0.5rem, --space-md from 16px to 1rem, --space-lg from 24px to 1.5rem, --space-xl from 32px to 2rem in :root",
+        "Convert all px values in .container, input, select, .btn-primary, .btn-secondary, .bottom-nav to rem",
+        "Use var(--space-*) tokens where values match: 0.25rem → var(--space-xs), 0.5rem → var(--space-sm), 1rem → var(--space-md), 1.5rem → var(--space-lg), 2rem → var(--space-xl)",
+        "Round non-grid-aligned values to nearest 8pt: 44px → 48px = 3rem, 56px stays 3.5rem, 14px → 16px = 1rem",
+        "Keep all border widths as 1px (e.g. border: 1px solid), keep outline-offset: -1px as px",
+        "Do NOT add font-size: 16px to html or :root — browser default handles this",
+        "Do NOT change z-index, opacity, or unitless line-height values",
+        "Typecheck passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Rounding reference: 4px→0.25rem(--space-xs), 8px→0.5rem(--space-sm), 14px→1rem(--space-md), 16px→1rem(--space-md), 44px→3rem, 56px→3.5rem, 480px→30rem. This story must be first because subsequent stories depend on the rem-based tokens."
+    },
+    {
+      "id": "US-002",
+      "title": "Convert AmrapInput, ConflictDialog, and ErrorMessage CSS to rem",
+      "description": "As a developer, I want component CSS files to use rem units and spacing tokens for scalable styling.",
+      "acceptanceCriteria": [
+        "Convert all px values in frontend/src/components/AmrapInput.css to rem, use var(--space-*) tokens where values match",
+        "Convert all px values in frontend/src/components/ConflictDialog.css to rem, use var(--space-*) tokens where values match",
+        "Convert all px values in frontend/src/components/ErrorMessage.css to rem, use var(--space-*) tokens where values match",
+        "Round non-grid-aligned values to nearest 8pt multiple before converting (e.g. 12px→16px=1rem, 14px→16px=1rem, 10px→8px=0.5rem, 44px→48px=3rem)",
+        "Keep all border widths as 1px",
+        "Do NOT change z-index, opacity, or unitless values",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "Rounding reference: 4px→0.25rem(--space-xs), 8px→0.5rem(--space-sm), 10px→0.5rem(--space-sm), 12px→1rem(--space-md), 13px→1rem(--space-md), 14px→1rem(--space-md), 16px→1rem(--space-md), 18px→1rem(--space-md), 20px→1.5rem(--space-lg), 24px→1.5rem(--space-lg), 28px→2rem(--space-xl), 32px→2rem(--space-xl), 44px→3rem, 48px→3rem, 56px→3.5rem, 64px→4rem."
+    },
+    {
+      "id": "US-003",
+      "title": "Convert LoadingSpinner and ProgressionBanner CSS to rem",
+      "description": "As a developer, I want LoadingSpinner and ProgressionBanner CSS to use rem units and spacing tokens.",
+      "acceptanceCriteria": [
+        "Convert all px values in frontend/src/components/LoadingSpinner.css to rem, use var(--space-*) tokens where values match",
+        "Convert all px values in frontend/src/components/ProgressionBanner.css to rem, use var(--space-*) tokens where values match",
+        "Round non-grid-aligned values to nearest 8pt multiple before converting",
+        "Keep all border widths as 1px",
+        "Do NOT change animation/transition durations, z-index, opacity, or unitless values",
+        "Typecheck passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "Same rounding reference as US-002. LoadingSpinner uses border-width for the spinner animation — border widths stay as px. The @keyframes animation should not be modified except for any px values in it."
+    },
+    {
+      "id": "US-004",
+      "title": "Convert SetRow and WorkoutCalendar CSS to rem",
+      "description": "As a developer, I want SetRow and WorkoutCalendar CSS to use rem units and spacing tokens.",
+      "acceptanceCriteria": [
+        "Convert all px values in frontend/src/components/SetRow.css to rem, use var(--space-*) tokens where values match",
+        "Convert all px values in frontend/src/components/WorkoutCalendar.css to rem, use var(--space-*) tokens where values match",
+        "Round non-grid-aligned values to nearest 8pt multiple before converting",
+        "Keep all border widths as 1px",
+        "Do NOT change z-index, opacity, or unitless values",
+        "Typecheck passes"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "Same rounding reference as US-002. SetRow has touch target sizing (44px → 3rem). WorkoutCalendar has calendar cell sizing. Ensure min-height/min-width for interactive elements convert correctly."
+    },
+    {
+      "id": "US-005",
+      "title": "Convert WorkoutCard and WorkoutDetail CSS to rem",
+      "description": "As a developer, I want WorkoutCard and WorkoutDetail CSS to use rem units and spacing tokens.",
+      "acceptanceCriteria": [
+        "Convert all px values in frontend/src/components/WorkoutCard.css to rem, use var(--space-*) tokens where values match",
+        "Convert all px values in frontend/src/components/WorkoutDetail.css to rem, use var(--space-*) tokens where values match",
+        "Round non-grid-aligned values to nearest 8pt multiple before converting",
+        "Keep all border widths as 1px",
+        "Do NOT change z-index, opacity, or unitless values",
+        "Typecheck passes"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "Same rounding reference as US-002. WorkoutDetail is the largest component CSS file — take care to convert all values systematically."
+    },
+    {
+      "id": "US-006",
+      "title": "Convert DashboardPage and SetupPage CSS to rem",
+      "description": "As a developer, I want page-level CSS files to use rem units and spacing tokens.",
+      "acceptanceCriteria": [
+        "Convert all px values in frontend/src/pages/DashboardPage.css to rem, use var(--space-*) tokens where values match",
+        "Convert all px values in frontend/src/pages/SetupPage.css to rem, use var(--space-*) tokens where values match",
+        "Round non-grid-aligned values to nearest 8pt multiple before converting",
+        "Keep all border widths as 1px",
+        "Do NOT change z-index, opacity, or unitless values",
+        "Typecheck passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "Same rounding reference as US-002."
+    },
+    {
+      "id": "US-007",
+      "title": "Convert HistoryPage and WorkoutPage CSS to rem",
+      "description": "As a developer, I want the remaining page CSS files to use rem units and spacing tokens.",
+      "acceptanceCriteria": [
+        "Convert all px values in frontend/src/pages/HistoryPage.css to rem, use var(--space-*) tokens where values match",
+        "Convert all px values in frontend/src/pages/WorkoutPage.css to rem, use var(--space-*) tokens where values match",
+        "Round non-grid-aligned values to nearest 8pt multiple before converting",
+        "Keep all border widths as 1px",
+        "Do NOT change z-index, opacity, or unitless values",
+        "Typecheck passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": "Same rounding reference as US-002."
+    },
+    {
+      "id": "US-008",
+      "title": "Verify accessibility scaling at 125% and 150%",
+      "description": "As a user with low vision, I want the UI to scale proportionally when I increase my browser's default font size.",
+      "acceptanceCriteria": [
+        "Set browser default font size to 20px (125%) — layout remains usable, no overflow or clipping on dashboard, workout, and history pages",
+        "Set browser default font size to 24px (150%) — layout remains usable, no overflow or clipping on dashboard, workout, and history pages",
+        "Text, spacing, buttons, and inputs all scale proportionally",
+        "Bottom navigation remains functional at increased font sizes",
+        "Fix any overflow or layout issues discovered during testing",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": "This is a verification and fix story. Use the browser dev tools to emulate different font sizes. If issues are found, fix them in the relevant CSS files. All previous stories must be complete before this one."
+    }
+  ]
+}

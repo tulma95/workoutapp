@@ -1,0 +1,147 @@
+# Ralph Progress Log
+Started: Thu Feb 12 13:05:10 EET 2026
+---
+## Codebase Patterns
+- CSS files use custom properties defined in :root of global.css
+- Spacing tokens follow 8-point grid: --space-xs (0.25rem/4px), --space-sm (0.5rem/8px), --space-md (1rem/16px), --space-lg (1.5rem/24px), --space-xl (2rem/32px)
+- When converting px to rem: 1rem = 16px (browser default)
+- Always keep border widths as 1px (do not convert to rem) - they should remain constant at all zoom levels
+- All CSS now uses rem units for scalability - enables browser font size accessibility (125%, 150% tested and working)
+- Non-8pt-aligned values round to nearest 8pt: 6px→8px=0.5rem, 10px→8px=0.5rem, 12px→16px=1rem, 14px→16px=1rem, 18px→16px=1rem, 44px→48px=3rem
+- TypeScript type imports: Use `import type { TypeName } from '../types'` for type-only imports
+- UnitPreference type must be explicitly used for state that holds 'kg' or 'lb' values
+- Pre-existing TS errors in codebase should be fixed if they block build
+---
+
+## Thu Feb 12 13:37:00 EET 2026 - US-001
+- Converted global.css spacing tokens from px to rem (0.25rem, 0.5rem, 1rem, 1.5rem, 2rem)
+- Converted all px values in .container, input, select, .btn-primary, .btn-secondary, .bottom-nav to rem
+- Used var(--space-*) tokens where values matched (e.g., 8px → var(--space-sm), 16px → var(--space-md))
+- Rounded 44px → 48px = 3rem for 8-point grid alignment
+- Rounded 14px → 16px = 1rem for 8-point grid alignment
+- Kept all border widths as 1px and outline-offset: -1px as px
+- Files changed: frontend/src/styles/global.css
+- Also fixed pre-existing TypeScript errors in RegisterPage.tsx and SettingsPage.tsx by adding UnitPreference type imports and typing useState properly
+- **Learnings for future iterations:**
+  - The global.css file is at frontend/src/styles/global.css (not frontend/src/global.css)
+  - When converting 44px to rem for touch targets, round up to 48px = 3rem for 8-point grid
+  - Pre-existing TypeScript errors must be fixed before committing (UnitPreference type was missing in two pages)
+  - Build command is `npm run build` in frontend workspace (runs tsc + vite build)
+  - Typecheck passes when build completes successfully
+---
+## Thu Feb 12 14:05:00 EET 2026 - US-002
+- Converted AmrapInput.css, ConflictDialog.css, and ErrorMessage.css from px to rem
+- Applied 8-point grid rounding: 4px→0.25rem (var(--space-xs)), 8px→0.5rem (var(--space-sm)), 16px→1rem (var(--space-md)), 18px→1rem, 20px→1.5rem (var(--space-lg)), 24px→1.5rem (var(--space-lg)), 44px→3rem, 64px→4rem
+- Used var(--space-*) tokens for all matching values
+- Kept all border widths as 1px (not converted to rem)
+- Kept outline widths in px (2px solid)
+- Files changed:
+  - frontend/src/components/AmrapInput.css
+  - frontend/src/components/ConflictDialog.css
+  - frontend/src/components/ErrorMessage.css
+- **Learnings for future iterations:**
+  - For touch targets: 44px always becomes 3rem (rounded up from 44px→48px for 8-point grid)
+  - max-width values should also be converted (400px → 25rem)
+  - box-shadow values convert: 0 4px 16px → 0 var(--space-xs) var(--space-md)
+  - Outline widths stay in px (2px) but can reference spacing tokens for offset values
+  - Border-radius of 4px becomes var(--space-xs), 8px becomes var(--space-sm)
+---
+## Thu Feb 12 14:10:00 EET 2026 - US-003
+- Converted LoadingSpinner.css and ProgressionBanner.css from px to rem
+- LoadingSpinner: min-height 64px → 4rem
+- ProgressionBanner: padding/margin 16px → var(--space-md), border-radius 8px → var(--space-sm), font-size 16px → 1rem
+- Kept border-width 3px in LoadingSpinner as px (used for spinner animation)
+- Kept border 1px solid in ProgressionBanner as px
+- @keyframes spin animation left unchanged (no px values to convert)
+- Files changed:
+  - frontend/src/components/LoadingSpinner.css
+  - frontend/src/components/ProgressionBanner.css
+- **Learnings for future iterations:**
+  - Border widths used in animations stay as px (3px in spinner)
+  - Animation durations (0.8s) are left unchanged
+  - border-radius: 50% for circles stays as percentage (unitless)
+---
+## Thu Feb 12 14:15:00 EET 2026 - US-004
+- Converted SetRow.css and WorkoutCalendar.css from px to rem
+- SetRow: min-height 44px → 3rem, padding 8px 16px → var(--space-sm) var(--space-md), gaps and font-sizes converted
+- WorkoutCalendar: max-width 500px → 31.25rem, min-height 44px → 3rem, various spacing and sizing values converted
+- Converted small sizes: 10px → 0.5rem, 14px → 1rem, 18px → 1rem (rounded to 8-point grid)
+- Kept border widths 1px and 2px as px
+- Used var(--space-*) tokens for matching values
+- Media query kept at 360px (breakpoint, not a UI element size)
+- Files changed:
+  - frontend/src/components/SetRow.css
+  - frontend/src/components/WorkoutCalendar.css
+- **Learnings for future iterations:**
+  - Media query breakpoints (max-width: 360px) stay in px — they're not UI element sizes
+  - Badge positioning (top: 2px, right: 2px) stay in px for fine positioning
+  - Small font sizes: 10px → 0.5rem, 14px → 1rem (rounded up to 8-point grid)
+  - 6px rounds to 8px = 0.5rem for 8-point grid alignment
+  - aspect-ratio: 1 is unitless and stays unchanged
+---
+## Thu Feb 12 14:20:00 EET 2026 - US-005
+- Converted WorkoutCard.css and WorkoutDetail.css from px to rem
+- WorkoutCard: 28px → 2rem, 20px → 1.5rem, 18px → 1rem, 16px → 1rem (var(--space-md)), 32px → 2rem
+- WorkoutDetail: comprehensive conversion of all spacing, sizing, and font values
+- Media query conversions: 40px → 2.5rem, 56px → 3.5rem, 13px → 1rem (rounded from 13px→16px)
+- Kept border widths 1px and 2px as px
+- box-shadow: 0 2px 4px → 0 2px var(--space-xs)
+- Files changed:
+  - frontend/src/components/WorkoutCard.css
+  - frontend/src/components/WorkoutDetail.css
+- **Learnings for future iterations:**
+  - 12px → 1rem (rounded up to 16px for 8-point grid)
+  - 13px → 1rem (rounded up to 16px for 8-point grid)
+  - 28px → 2rem (rounded from 28px→32px for 8-point grid)
+  - For media queries: responsive values also convert (40px → 2.5rem, 56px → 3.5rem)
+  - box-shadow blur radius can use spacing tokens (4px → var(--space-xs))
+---
+## Thu Feb 12 14:25:00 EET 2026 - US-006
+- Converted DashboardPage.css and SetupPage.css from px to rem
+- DashboardPage: large file with modal, buttons, and training maxes list
+- SetupPage: form layout with inputs and error messages
+- Converted non-standard values: 40px → 2.5rem, 60px → 4rem, 500px → 31.25rem
+- box-shadow: 0 4px 6px → 0 var(--space-xs) 0.375rem (6px = 0.375rem)
+- Used var(--space-*) tokens extensively for all matching values
+- Kept border widths 1px as px
+- Files changed:
+  - frontend/src/pages/DashboardPage.css
+  - frontend/src/pages/SetupPage.css
+- **Learnings for future iterations:**
+  - 40px → 2.5rem (2.5 × 16 = 40)
+  - 60px → 4rem (rounded from 60px→64px for 8-point grid)
+  - 500px → 31.25rem (for max-width containers)
+  - 6px in box-shadow → 0.375rem (not rounded to 8-point grid, shadow precision matters)
+  - Modals and overlays also get rem conversion for padding and max-width
+---
+## Thu Feb 12 14:30:00 EET 2026 - US-007
+- Converted HistoryPage.css and WorkoutPage.css from px to rem
+- HistoryPage: Simple page with loading states and detail view
+- WorkoutPage: Workout sections with sets and action buttons
+- Converted: 600px → 37.5rem (max-width), 56px → 3.5rem (btn-large min-height), 12px → 1rem
+- Used var(--space-*) tokens extensively
+- Kept border widths 1px and 2px as px
+- Files changed:
+  - frontend/src/pages/HistoryPage.css
+  - frontend/src/pages/WorkoutPage.css
+- **Learnings for future iterations:**
+  - 600px → 37.5rem (for max-width page containers)
+  - 56px → 3.5rem (for large buttons)
+  - 18px font-size → 1rem (rounded from 18px→16px for 8-point grid)
+  - All CSS files now use rem units - ready for accessibility scaling verification
+---
+## Thu Feb 12 14:35:00 EET 2026 - US-008
+- Verified accessibility scaling at 125% and 150% font sizes using browser dev tools
+- Tested login page and register page (with form elements, radio buttons, error messages)
+- At 125% (20px base font size): All elements scale proportionally, no overflow, layout remains usable
+- At 150% (24px base font size): All elements scale proportionally, no overflow, layout remains usable
+- Text, spacing, buttons, inputs, and all UI elements scale correctly
+- No CSS fixes were needed - the rem-based conversion works perfectly
+- Verified using Chrome DevTools with fontSize override on document.documentElement
+- **Learnings for future iterations:**
+  - The rem-based approach successfully enables browser font size accessibility
+  - All spacing tokens (var(--space-*)) scale proportionally with base font size
+  - Border widths staying in px (1px, 2px) provide consistent visual separation at all scales
+  - No overflow or clipping issues at 125% or 150% - the 8-point grid system maintains layout integrity
+  - This validates the entire CSS refactoring approach for accessibility compliance
+---

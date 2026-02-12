@@ -1,0 +1,22 @@
+# Ralph Progress Log
+Started: Wed Feb 12 2026
+---
+
+## Codebase Patterns
+- Backend routes: Define specific routes (e.g. `/calendar`) BEFORE parameterized routes (e.g. `/:id`) to avoid route conflicts
+- Date queries: Use date range with first day of current month and first day of next month for month-based queries
+- Test coverage: Always include validation tests (400 errors), data filtering tests, and privacy/isolation tests for multi-user scenarios
+- Backend service functions: Return simple objects with data, no need for complex formatting unless converting units
+- Frontend components: Each component has a corresponding .css file in the same directory for styles
+- Calendar date formatting: Use YYYY-MM-DD string keys for date-to-data maps, convert timestamps with completedAt || createdAt
+- Month indexing: API uses 1-12, JavaScript Date uses 0-11 - add 1 when calling API, subtract 1 when constructing Date objects
+- Read-only vs interactive components: Build separate components for read-only displays instead of reusing interactive components with disabled states
+- Date display: Use Intl.DateTimeFormat with options for readable dates, prefer completedAt || createdAt pattern
+- Frontend typecheck: run `cd frontend && npx tsc --noEmit` (not from root)
+- Backend typecheck: run `cd backend && npx tsc --noEmit`
+- Error handling pattern: throw errors with prefixes like "CONFLICT:" or "BAD_REQUEST:" in service, catch and convert to HTTP status in route
+- Prisma CASCADE delete is configured in schema - deleting workout automatically deletes workout_sets
+- window.confirm() is the current pattern for destructive actions
+- The setupCompletePage fixture in E2E creates a unique user with TMs set up
+---
+
