@@ -2,7 +2,7 @@
   width: 100%;
   max-width: 500px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 16px;
   background-color: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -12,7 +12,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  margin-bottom: 16px;
 }
 
 .workout-calendar__nav-button {
@@ -25,7 +25,7 @@
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 4px;
-  font-size: 1.5rem;
+  font-size: 24px;
   cursor: pointer;
   transition: background-color 0.2s;
 }
@@ -36,7 +36,7 @@
 
 .workout-calendar__title {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 20px;
   font-weight: 600;
   color: var(--text);
 }
@@ -45,15 +45,15 @@
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 4px;
-  margin-bottom: 0.5rem;
+  margin-bottom: 8px;
 }
 
 .workout-calendar__weekday {
   text-align: center;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-muted);
-  padding: 0.5rem 0;
+  padding: 8px 0;
 }
 
 .workout-calendar__grid {
@@ -75,7 +75,7 @@
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s;
-  padding: 0.25rem;
+  padding: 4px;
 }
 
 .workout-calendar__day:disabled {
@@ -102,7 +102,7 @@
 }
 
 .workout-calendar__day-number {
-  font-size: 1rem;
+  font-size: 16px;
 }
 
 .workout-calendar__day-badge {
@@ -117,19 +117,19 @@
   background-color: rgba(255, 255, 255, 0.9);
   color: var(--primary);
   border-radius: 50%;
-  font-size: 0.625rem;
+  font-size: 10px;
   font-weight: 700;
 }
 
 /* Responsive: smaller font on very small screens */
 @media (max-width: 360px) {
   .workout-calendar__day-number {
-    font-size: 0.875rem;
+    font-size: 14px;
   }
 
   .workout-calendar__day-badge {
     width: 16px;
     height: 16px;
-    font-size: 0.5rem;
+    font-size: 8px;
   }
 }

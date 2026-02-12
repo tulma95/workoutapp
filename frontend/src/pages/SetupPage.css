@@ -3,55 +3,55 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: 16px;
   background-color: var(--bg);
 }
 
 .setup-container {
   width: 100%;
   max-width: 500px;
-  padding: 2rem;
+  padding: 32px;
   background-color: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 8px;
 }
 
 .setup-container h1 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.75rem;
+  margin: 0 0 8px 0;
+  font-size: 24px;
   color: var(--text);
 }
 
 .setup-description {
-  margin: 0 0 2rem 0;
+  margin: 0 0 32px 0;
   color: var(--text-muted);
-  font-size: 0.95rem;
+  font-size: 16px;
 }
 
 .setup-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 24px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 8px;
 }
 
 .form-group label {
   font-weight: 500;
   color: var(--text);
-  font-size: 0.95rem;
+  font-size: 16px;
 }
 
 .form-group input {
   min-height: 44px;
-  padding: 0.75rem;
-  font-size: 1rem;
+  padding: 12px;
+  font-size: 16px;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 8px;
   background-color: var(--bg);
   color: var(--text);
 }
@@ -63,23 +63,23 @@
 }
 
 .error-message {
-  padding: 0.75rem;
+  padding: 12px;
   background-color: var(--error-bg, #fee);
   color: var(--error, #c33);
   border: 1px solid var(--error, #c33);
-  border-radius: 4px;
-  font-size: 0.9rem;
+  border-radius: 8px;
+  font-size: 14px;
 }
 
 .btn-primary {
   min-height: 44px;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
+  padding: 8px 24px;
+  font-size: 16px;
   font-weight: 500;
   background-color: var(--primary);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   transition: opacity 0.2s;
 }

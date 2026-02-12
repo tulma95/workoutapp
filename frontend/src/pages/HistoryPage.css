@@ -1,36 +1,37 @@
 .history-page {
-  padding: 1rem;
+  padding: 16px;
   max-width: 600px;
   margin: 0 auto;
 }
 
 .history-page__title {
-  font-size: 1.5rem;
+  font-size: 24px;
   font-weight: 600;
-  margin-bottom: 1rem;
+  margin-bottom: 16px;
   color: var(--text-primary);
 }
 
 .history-page__loading {
-  padding: 2rem;
+  padding: 32px;
   text-align: center;
   color: var(--text-secondary);
+  font-size: 16px;
 }
 
 .history-page__detail {
-  margin-top: 1.5rem;
+  margin-top: 24px;
 }
 
 .history-page__prompt {
-  padding: 2rem;
+  padding: 32px;
   text-align: center;
   color: var(--text-secondary);
-  font-size: 0.95rem;
+  font-size: 16px;
 }
 
 .history-page__empty {
-  padding: 2rem;
+  padding: 32px;
   text-align: center;
   color: var(--text-secondary);
-  font-size: 0.95rem;
+  font-size: 16px;
 }

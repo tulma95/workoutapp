@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: space-between;
   min-height: 44px;
-  padding: 0.75rem 1rem;
+  padding: 8px 16px;
   border-bottom: 1px solid var(--border);
   background-color: var(--bg-card);
   transition: background-color 0.2s;
@@ -16,30 +16,37 @@
 .set-row__info {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 16px;
   flex: 1;
 }
 
 .set-row__number {
   font-weight: 600;
   color: var(--text-muted);
-  min-width: 1.5rem;
+  font-size: 16px;
+  min-width: 24px;
 }
 
 .set-row__weight {
   font-weight: 700;
   color: var(--text);
-  min-width: 4rem;
+  font-size: 16px;
+  min-width: 64px;
 }
 
 .set-row__reps {
   font-weight: 600;
   color: var(--text);
+  font-size: 16px;
 }
 
 .set-row__action {
   display: flex;
   align-items: center;
+  position: relative;
+  min-width: 44px;
+  min-height: 44px;
+  justify-content: center;
 }
 
 .set-row__checkbox {
@@ -49,15 +56,4 @@
   min-height: 24px;
   cursor: pointer;
   accent-color: var(--success);
-}
-
-/* Ensure checkbox is touchable on mobile */
-.set-row__checkbox::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 44px;
-  height: 44px;
 }

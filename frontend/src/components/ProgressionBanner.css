@@ -1,9 +1,10 @@
 .progression-banner {
-  padding: 1rem;
-  border-radius: 0.5rem;
+  padding: 16px;
+  border-radius: 8px;
   text-align: center;
   font-weight: 600;
-  margin: 1rem 0;
+  font-size: 16px;
+  margin: 16px 0;
 }
 
 .progression-banner--success {
