@@ -91,6 +91,10 @@ For any story that changes UI, verify it works in the browser if you have browse
 
 If no browser tools are available, note in your progress report that manual browser verification is needed.
 
+## running tests
+
+Test can be ran using run_test.sh from root. If it doesnt work, fix
+
 ## Stop Condition
 
 After completing a user story, check if ALL stories have `passes: true`.

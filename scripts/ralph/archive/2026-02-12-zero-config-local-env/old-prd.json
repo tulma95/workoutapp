@@ -1,0 +1,91 @@
+{
+  "project": "nSuns 4-Day LP Workout Tracker",
+  "branchName": "ralph/zero-config-local-env",
+  "description": "Make start_local_env.sh work immediately after cloning the repo with zero manual setup. Remove .env files and dotenv dependency, export env vars from shell scripts, auto-detect stale node_modules, and auto-run Prisma generate/migrations.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Remove dotenv and .env files",
+      "description": "As a developer, I want environment variables managed by shell scripts so that I don't need to create or maintain .env files.",
+      "acceptanceCriteria": [
+        "Delete backend/.env and .env.example files",
+        "Remove .env entries from both .gitignore files (root and backend)",
+        "Uninstall dotenv from backend dependencies (npm uninstall dotenv -w backend)",
+        "Remove all import dotenv / dotenv.config() calls from backend source code (config.ts, db.ts)",
+        "Remove import \"dotenv/config\" from prisma.config.ts",
+        "config.ts still reads from process.env but no longer calls dotenv — expects vars to be exported by the calling script",
+        "prisma.config.ts still reads process.env[\"DATABASE_URL\"] — expects it exported",
+        "Typecheck passes (npm run build -w backend)"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": "This must be first because all other stories depend on dotenv being removed. Files to modify: backend/src/config.ts, backend/src/lib/db.ts, backend/prisma.config.ts, .gitignore, backend/.gitignore. Files to delete: backend/.env, .env.example."
+    },
+    {
+      "id": "US-002",
+      "title": "Create shared shell helpers in scripts/common.sh",
+      "description": "As a developer, I want common shell logic (dependency checking) shared between scripts so they stay consistent and DRY.",
+      "acceptanceCriteria": [
+        "Create scripts/common.sh with an ensure_dependencies() function",
+        "ensure_dependencies() compares md5 checksum of package-lock.json against a stored checksum file",
+        "Checksum stored at node_modules/.package-lock-checksum (automatically gitignored inside node_modules)",
+        "If checksum differs or node_modules is missing, runs npm install and updates the checksum",
+        "Handles both macOS (md5 -q) and Linux (md5sum) for cross-platform support",
+        "File is executable and can be sourced by other scripts",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": "This must come before the scripts that use it. The checksum file inside node_modules/ is already gitignored since node_modules/ is in .gitignore."
+    },
+    {
+      "id": "US-003",
+      "title": "Create run_backend.sh helper script",
+      "description": "As a developer, I want a single script that handles all backend prerequisites (dependencies, Prisma generate, migrations) and starts the dev server.",
+      "acceptanceCriteria": [
+        "New file run_backend.sh at project root, executable (chmod +x)",
+        "Sources scripts/common.sh and calls ensure_dependencies()",
+        "Runs npx prisma generate -w backend",
+        "Runs npx prisma migrate dev -w backend",
+        "Starts backend dev server: npm run dev -w backend",
+        "Expects environment variables (DATABASE_URL, JWT_SECRET, PORT, NODE_ENV) to already be exported by the caller",
+        "Typecheck passes"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": "This script is called by start_local_env.sh with env vars already exported. It does NOT export env vars itself."
+    },
+    {
+      "id": "US-004",
+      "title": "Update start_local_env.sh to be zero-config",
+      "description": "As a developer, I want start_local_env.sh to work immediately after cloning the repo with no manual steps.",
+      "acceptanceCriteria": [
+        "Exports all required environment variables at the top: DATABASE_URL=postgresql://treenisofta:treenisofta_dev@localhost:5432/treenisofta, JWT_SECRET=change-me-in-production, PORT=3001, NODE_ENV=development",
+        "Sources scripts/common.sh and calls ensure_dependencies() before creating tmux session",
+        "Backend tmux pane runs ./run_backend.sh instead of separate prisma/npm commands",
+        "Frontend tmux pane runs npm run dev -w frontend (dependencies already handled)",
+        "Script works on a fresh clone with only Docker and tmux as prerequisites",
+        "Typecheck passes"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": "Env vars exported before tmux session creation are inherited by all panes. The ensure_dependencies() call before tmux handles npm install so panes don't race on it."
+    },
+    {
+      "id": "US-005",
+      "title": "Update run_test.sh to match new pattern",
+      "description": "As a developer, I want run_test.sh to follow the same pattern of handling dependencies and Prisma generation without dotenv.",
+      "acceptanceCriteria": [
+        "Sources scripts/common.sh and calls ensure_dependencies() at the start",
+        "Adds npx prisma generate -w backend before running migrations",
+        "Continues to export its own test-specific env vars inline (DATABASE_URL, JWT_SECRET, PORT, NODE_ENV with test values)",
+        "Works on a fresh clone after docker compose is available",
+        "All existing tests still pass",
+        "Typecheck passes"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": "run_test.sh already hardcodes test env vars inline — keep that pattern. Just add the shared dependency check and prisma generate step."
+    }
+  ]
+}
