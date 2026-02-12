@@ -2,8 +2,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 44px;
-  padding: 8px 16px;
+  min-height: 3rem;
+  padding: var(--space-sm) var(--space-md);
   border-bottom: 1px solid var(--border);
   background-color: var(--bg-card);
   transition: background-color 0.2s;
@@ -16,44 +16,44 @@
 .set-row__info {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-md);
   flex: 1;
 }
 
 .set-row__number {
   font-weight: 600;
   color: var(--text-muted);
-  font-size: 16px;
-  min-width: 24px;
+  font-size: 1rem;
+  min-width: 1.5rem;
 }
 
 .set-row__weight {
   font-weight: 700;
   color: var(--text);
-  font-size: 16px;
-  min-width: 64px;
+  font-size: 1rem;
+  min-width: 4rem;
 }
 
 .set-row__reps {
   font-weight: 600;
   color: var(--text);
-  font-size: 16px;
+  font-size: 1rem;
 }
 
 .set-row__action {
   display: flex;
   align-items: center;
   position: relative;
-  min-width: 44px;
-  min-height: 44px;
+  min-width: 3rem;
+  min-height: 3rem;
   justify-content: center;
 }
 
 .set-row__checkbox {
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
-  min-height: 24px;
+  width: 1.5rem;
+  height: 1.5rem;
+  min-width: 1.5rem;
+  min-height: 1.5rem;
   cursor: pointer;
   accent-color: var(--success);
 }
