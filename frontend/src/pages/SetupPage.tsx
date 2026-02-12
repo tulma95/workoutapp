@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { setupTrainingMaxes } from '../api/trainingMaxes';
 import { convertToKg } from '../utils/weight';
+import { ErrorMessage } from '../components/ErrorMessage';
 import './SetupPage.css';
 
 export default function SetupPage() {
@@ -138,10 +139,10 @@ export default function SetupPage() {
             />
           </div>
 
-          {error && <div className="error-message">{error}</div>}
+          {error && <ErrorMessage message={error} />}
 
           <button type="submit" className="btn-primary" disabled={isLoading}>
-            {isLoading ? 'Calculating...' : 'Calculate Training Maxes'}
+            {isLoading ? 'Saving...' : 'Calculate Training Maxes'}
           </button>
         </form>
       </div>

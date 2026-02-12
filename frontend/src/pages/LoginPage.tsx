@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
+import { ErrorMessage } from '../components/ErrorMessage';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -54,9 +55,7 @@ export default function LoginPage() {
           />
         </div>
 
-        {error && (
-          <p className="error" role="alert" style={{ color: 'var(--danger)', margin: 0 }}>{error}</p>
-        )}
+        {error && <ErrorMessage message={error} />}
 
         <button type="submit" className="btn-primary" disabled={loading}>
           {loading ? 'Logging in...' : 'Log In'}
