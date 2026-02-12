@@ -1,20 +1,10 @@
 import { apiFetch } from './client';
-
-export interface TrainingMax {
-  id: number;
-  userId: number;
-  exercise: string;
-  weight: number;
-  effectiveDate: string;
-  createdAt: string;
-}
-
-export interface OneRepMaxes {
-  bench: number;
-  squat: number;
-  ohp: number;
-  deadlift: number;
-}
+export type {
+  TrainingMax,
+  OneRepMaxes,
+  SetupResponse,
+  TrainingMaxHistory,
+} from './schemas';
 
 export async function getTrainingMaxes(): Promise<TrainingMax[]> {
   return apiFetch('/training-maxes') as Promise<TrainingMax[]>;

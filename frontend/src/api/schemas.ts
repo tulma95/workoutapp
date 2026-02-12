@@ -57,6 +57,41 @@ export const WorkoutCalendarResponseSchema = z.object({
   workouts: z.array(CalendarWorkoutSchema),
 });
 
+// Auth schemas
+export const UserSchema = z.object({
+  id: z.number(),
+  email: z.string(),
+  displayName: z.string(),
+  unitPreference: z.enum(['kg', 'lb']),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export const LoginResponseSchema = z.object({
+  token: z.string(),
+  user: UserSchema,
+});
+
+// Training Max schemas
+export const TrainingMaxSchema = z.object({
+  id: z.number(),
+  userId: z.number(),
+  exercise: z.string(),
+  weight: z.number(),
+  effectiveDate: z.string(),
+  createdAt: z.string(),
+});
+
+export const OneRepMaxesSchema = z.object({
+  bench: z.number(),
+  squat: z.number(),
+  ohp: z.number(),
+  deadlift: z.number(),
+});
+
+export const SetupResponseSchema = z.array(TrainingMaxSchema);
+export const TrainingMaxHistorySchema = z.array(TrainingMaxSchema);
+
 // Infer TypeScript types from schemas
 export type WorkoutSet = z.infer<typeof WorkoutSetSchema>;
 export type Workout = z.infer<typeof WorkoutSchema>;
@@ -65,3 +100,10 @@ export type CalendarWorkout = z.infer<typeof CalendarWorkoutSchema>;
 export type ProgressionResult = z.infer<typeof ProgressionResultSchema>;
 export type CompleteWorkoutResponse = z.infer<typeof CompleteWorkoutResponseSchema>;
 export type WorkoutCalendarResponse = z.infer<typeof WorkoutCalendarResponseSchema>;
+
+export type User = z.infer<typeof UserSchema>;
+export type LoginResponse = z.infer<typeof LoginResponseSchema>;
+export type TrainingMax = z.infer<typeof TrainingMaxSchema>;
+export type OneRepMaxes = z.infer<typeof OneRepMaxesSchema>;
+export type SetupResponse = z.infer<typeof SetupResponseSchema>;
+export type TrainingMaxHistory = z.infer<typeof TrainingMaxHistorySchema>;

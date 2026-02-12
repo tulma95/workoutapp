@@ -1,16 +1,8 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback, type ReactNode } from 'react';
 import { apiFetch } from '../api/client';
 import * as authApi from '../api/auth';
+import type { User } from '../api/schemas';
 import type { UnitPreference } from '../types';
-
-interface User {
-  id: number;
-  email: string;
-  displayName: string;
-  unitPreference: UnitPreference;
-  createdAt: string;
-  updatedAt: string;
-}
 
 interface AuthContextValue {
   user: User | null;

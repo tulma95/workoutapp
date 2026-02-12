@@ -1,3 +1,5 @@
+export type { User, LoginResponse } from './schemas';
+
 export async function login(email: string, password: string) {
   const res = await fetch('/api/auth/login', {
     method: 'POST',
