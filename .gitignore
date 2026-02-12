@@ -12,3 +12,4 @@ scripts/ralph/progress.txt
 scripts/ralph/.last-branch
 *.log
 *.tsbuildinfo
+tasks/
