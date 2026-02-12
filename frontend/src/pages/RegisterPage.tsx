@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { ErrorMessage } from '../components/ErrorMessage';
+import type { UnitPreference } from '../types';
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -9,7 +10,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [unitPreference, setUnitPreference] = useState('kg');
+  const [unitPreference, setUnitPreference] = useState<UnitPreference>('kg');
   const [error, setError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [loading, setLoading] = useState(false);

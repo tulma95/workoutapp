@@ -3,15 +3,16 @@ import { useAuth } from '../context/AuthContext';
 import { apiFetch } from '../api/client';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { ErrorMessage } from '../components/ErrorMessage';
+import type { UnitPreference } from '../types';
 
 export default function SettingsPage() {
   const { user, logout } = useAuth();
-  const [unit, setUnit] = useState(user?.unitPreference || 'kg');
+  const [unit, setUnit] = useState<UnitPreference>(user?.unitPreference || 'kg');
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
 
-  async function handleUnitChange(newUnit: string) {
+  async function handleUnitChange(newUnit: UnitPreference) {
     setUnit(newUnit);
     setSaved(false);
     setIsSaving(true);
