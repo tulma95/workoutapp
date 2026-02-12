@@ -91,4 +91,26 @@ router.post('/:id/complete', async (req: AuthRequest, res: Response) => {
   res.json(result);
 });
 
+router.delete('/:id', async (req: AuthRequest, res: Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: { code: 'INVALID_ID', message: 'Invalid workout ID' } });
+    return;
+  }
+  try {
+    const result = await workoutService.cancelWorkout(id, req.userId!);
+    if (!result) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Workout not found' } });
+      return;
+    }
+    res.status(200).json(result);
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message.startsWith('CONFLICT:')) {
+      res.status(409).json({ error: { code: 'CONFLICT', message: err.message.slice(10) } });
+      return;
+    }
+    throw err;
+  }
+});
+
 export default router;

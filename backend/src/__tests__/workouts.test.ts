@@ -162,4 +162,79 @@ describe('Workouts API - Start and Read', () => {
       expect(set3.prescribedWeight).toBe(120); // 95% of 125 = 118.75 → 120
     });
   });
+
+  describe('DELETE /api/workouts/:id', () => {
+    it('successfully cancels an in-progress workout', async () => {
+      const currentRes = await request(app)
+        .get('/api/workouts/current')
+        .set('Authorization', `Bearer ${token}`);
+      const workoutId = currentRes.body.id;
+
+      const res = await request(app)
+        .delete(`/api/workouts/${workoutId}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+
+      // Verify workout is deleted
+      const checkRes = await request(app)
+        .get('/api/workouts/current')
+        .set('Authorization', `Bearer ${token}`);
+      expect(checkRes.body).toBeNull();
+    });
+
+    it('returns 404 when workout not found or wrong user', async () => {
+      // Create a workout for user 1 first
+      await request(app)
+        .post('/api/workouts')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ dayNumber: 3 });
+
+      const currentRes = await request(app)
+        .get('/api/workouts/current')
+        .set('Authorization', `Bearer ${token}`);
+      const workoutId = currentRes.body.id;
+
+      // Try to delete with user 2
+      const res = await request(app)
+        .delete(`/api/workouts/${workoutId}`)
+        .set('Authorization', `Bearer ${token2}`);
+
+      expect(res.status).toBe(404);
+    });
+
+    it('returns 409 when workout is already completed', async () => {
+      // Get current workout
+      const currentRes = await request(app)
+        .get('/api/workouts/current')
+        .set('Authorization', `Bearer ${token}`);
+      const workoutId = currentRes.body.id;
+
+      // Complete the workout first
+      // Log the progression AMRAP set (Day 3 has 95% set at position 3)
+      const t1Sets = currentRes.body.sets.filter(
+        (s: { tier: string }) => s.tier === 'T1',
+      );
+      const amrapSet = t1Sets.find(
+        (s: { setOrder: number; isAmrap: boolean }) => s.setOrder === 3 && s.isAmrap,
+      );
+      await request(app)
+        .patch(`/api/workouts/${workoutId}/sets/${amrapSet.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ actualReps: 2, completed: true });
+
+      await request(app)
+        .post(`/api/workouts/${workoutId}/complete`)
+        .set('Authorization', `Bearer ${token}`);
+
+      // Try to cancel the completed workout
+      const res = await request(app)
+        .delete(`/api/workouts/${workoutId}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(409);
+      expect(res.body.error.message).toContain('Cannot cancel a completed workout');
+    });
+  });
 });

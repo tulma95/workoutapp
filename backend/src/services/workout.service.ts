@@ -316,3 +316,26 @@ export async function getHistory(userId: number, page: number, limit: number) {
     limit,
   };
 }
+
+export async function cancelWorkout(workoutId: number, userId: number) {
+  // Find workout and verify ownership
+  const workout = await prisma.workout.findFirst({
+    where: { id: workoutId, userId },
+  });
+
+  if (!workout) {
+    return null;
+  }
+
+  // Check if workout is in_progress
+  if (workout.status !== 'in_progress') {
+    throw new Error('CONFLICT: Cannot cancel a completed workout');
+  }
+
+  // Delete the workout (CASCADE will delete workout_sets)
+  await prisma.workout.delete({
+    where: { id: workoutId },
+  });
+
+  return { success: true };
+}
