@@ -4,7 +4,7 @@ import { getTrainingMaxes, updateTrainingMax, type TrainingMax } from '../api/tr
 import { getCurrentWorkout } from '../api/workouts';
 import { useAuth } from '../context/AuthContext';
 import WorkoutCard from '../components/WorkoutCard';
-import { formatExerciseName, formatWeight } from '../utils/weight';
+import { formatExerciseName, formatWeight, convertWeight, roundWeight, convertToKg } from '../utils/weight';
 import './DashboardPage.css';
 
 const WORKOUT_DAYS = [
@@ -55,7 +55,9 @@ export default function DashboardPage() {
 
   function openEditModal(exercise: string, currentWeight: number) {
     setEditingExercise(exercise);
-    setEditValue(currentWeight.toString());
+    // Convert weight from kg to user's unit for display in the input
+    const weightInUserUnit = roundWeight(convertWeight(currentWeight, unit), unit);
+    setEditValue(weightInUserUnit.toString());
     setError('');
   }
 
@@ -68,8 +70,8 @@ export default function DashboardPage() {
   async function handleSave() {
     if (!editingExercise) return;
 
-    const weight = parseFloat(editValue);
-    if (isNaN(weight) || weight <= 0) {
+    const weightInUserUnit = parseFloat(editValue);
+    if (isNaN(weightInUserUnit) || weightInUserUnit <= 0) {
       setError('Please enter a valid positive number');
       return;
     }
@@ -78,7 +80,9 @@ export default function DashboardPage() {
     setError('');
 
     try {
-      await updateTrainingMax(editingExercise, weight);
+      // Convert weight from user's unit to kg before sending to backend
+      const weightInKg = convertToKg(weightInUserUnit, unit);
+      await updateTrainingMax(editingExercise, weightInKg);
       await loadData(); // Refresh TMs
       closeEditModal();
     } catch (err) {

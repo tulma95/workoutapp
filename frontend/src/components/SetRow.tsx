@@ -1,5 +1,6 @@
 import AmrapInput from './AmrapInput';
 import type { UnitPreference } from '../types';
+import { formatWeight } from '../utils/weight';
 import './SetRow.css';
 
 interface SetRowProps {
@@ -30,7 +31,7 @@ export default function SetRow({
       <div className="set-row__info">
         <span className="set-row__number">{setNumber}</span>
         <span className="set-row__weight">
-          {weight} {unit}
+          {formatWeight(weight, unit)}
         </span>
         <span className="set-row__reps">
           x{reps}

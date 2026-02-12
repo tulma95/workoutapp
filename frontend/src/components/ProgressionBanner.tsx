@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatExerciseName } from '../utils/weight';
+import { formatExerciseName, formatWeight, convertWeight, roundWeight } from '../utils/weight';
 import type { UnitPreference } from '../types';
 import './ProgressionBanner.css';
 
@@ -23,11 +23,17 @@ export const ProgressionBanner: React.FC<ProgressionBannerProps> = ({ progressio
   }
 
   const exerciseName = formatExerciseName(progression.exercise);
-  const increaseStr = progression.increase > 0 ? `+${progression.increase}${unit}` : `${progression.increase}${unit}`;
+
+  // Convert and round the increase value for display
+  const increaseInUserUnit = roundWeight(convertWeight(progression.increase, unit), unit);
+  const increaseStr = increaseInUserUnit > 0 ? `+${increaseInUserUnit} ${unit}` : `${increaseInUserUnit} ${unit}`;
+
+  // Format the new TM
+  const newTMFormatted = formatWeight(progression.newTM, unit);
 
   return (
     <div className="progression-banner progression-banner--success">
-      {exerciseName} TM {increaseStr}! New TM: {progression.newTM}{unit}
+      {exerciseName} TM {increaseStr}! New TM: {newTMFormatted}
     </div>
   );
 };

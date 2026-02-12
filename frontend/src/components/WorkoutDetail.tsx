@@ -2,6 +2,7 @@ import React from 'react';
 import { Workout, ProgressionResult } from '../api/workouts';
 import { ProgressionBanner } from './ProgressionBanner';
 import type { UnitPreference } from '../types';
+import { formatWeight } from '../utils/weight';
 import './WorkoutDetail.css';
 
 const WORKOUT_DAYS = [
@@ -72,8 +73,7 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
             <div key={set.id} className="workout-detail__set-row">
               <span className="workout-detail__set-number">Set {index + 1}</span>
               <span className="workout-detail__set-weight">
-                {set.prescribedWeight}
-                {unit}
+                {formatWeight(set.prescribedWeight, unit)}
               </span>
               <span className="workout-detail__set-reps">
                 {set.prescribedReps}
@@ -101,8 +101,7 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
             <div key={set.id} className="workout-detail__set-row">
               <span className="workout-detail__set-number">Set {index + 1}</span>
               <span className="workout-detail__set-weight">
-                {set.prescribedWeight}
-                {unit}
+                {formatWeight(set.prescribedWeight, unit)}
               </span>
               <span className="workout-detail__set-reps">
                 {set.prescribedReps}

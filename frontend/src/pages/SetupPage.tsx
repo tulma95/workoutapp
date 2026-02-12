@@ -2,6 +2,7 @@ import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { setupTrainingMaxes } from '../api/trainingMaxes';
+import { convertToKg } from '../utils/weight';
 import './SetupPage.css';
 
 export default function SetupPage() {
@@ -26,25 +27,25 @@ export default function SetupPage() {
     e.preventDefault();
     setError('');
 
-    // Client-side validation
-    const bench = parseFloat(formData.bench);
-    const squat = parseFloat(formData.squat);
-    const ohp = parseFloat(formData.ohp);
-    const deadlift = parseFloat(formData.deadlift);
+    // Client-side validation - parse values in user's unit
+    const benchInUserUnit = parseFloat(formData.bench);
+    const squatInUserUnit = parseFloat(formData.squat);
+    const ohpInUserUnit = parseFloat(formData.ohp);
+    const deadliftInUserUnit = parseFloat(formData.deadlift);
 
     if (
       !formData.bench ||
       !formData.squat ||
       !formData.ohp ||
       !formData.deadlift ||
-      bench <= 0 ||
-      squat <= 0 ||
-      ohp <= 0 ||
-      deadlift <= 0 ||
-      isNaN(bench) ||
-      isNaN(squat) ||
-      isNaN(ohp) ||
-      isNaN(deadlift)
+      benchInUserUnit <= 0 ||
+      squatInUserUnit <= 0 ||
+      ohpInUserUnit <= 0 ||
+      deadliftInUserUnit <= 0 ||
+      isNaN(benchInUserUnit) ||
+      isNaN(squatInUserUnit) ||
+      isNaN(ohpInUserUnit) ||
+      isNaN(deadliftInUserUnit)
     ) {
       setError('All fields must be positive numbers');
       return;
@@ -53,11 +54,12 @@ export default function SetupPage() {
     setIsLoading(true);
 
     try {
+      // Convert all values from user's unit to kg before sending to backend
       await setupTrainingMaxes({
-        bench,
-        squat,
-        ohp,
-        deadlift,
+        bench: convertToKg(benchInUserUnit, unit),
+        squat: convertToKg(squatInUserUnit, unit),
+        ohp: convertToKg(ohpInUserUnit, unit),
+        deadlift: convertToKg(deadliftInUserUnit, unit),
       });
 
       // Redirect to dashboard on success
