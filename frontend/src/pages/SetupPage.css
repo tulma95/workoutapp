@@ -3,55 +3,55 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: var(--space-md);
   background-color: var(--bg);
 }
 
 .setup-container {
   width: 100%;
-  max-width: 500px;
-  padding: 32px;
+  max-width: 31.25rem;
+  padding: var(--space-xl);
   background-color: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--space-sm);
 }
 
 .setup-container h1 {
-  margin: 0 0 8px 0;
-  font-size: 24px;
+  margin: 0 0 var(--space-sm) 0;
+  font-size: 1.5rem;
   color: var(--text);
 }
 
 .setup-description {
-  margin: 0 0 32px 0;
+  margin: 0 0 var(--space-xl) 0;
   color: var(--text-muted);
-  font-size: 16px;
+  font-size: 1rem;
 }
 
 .setup-form {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--space-lg);
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .form-group label {
   font-weight: 500;
   color: var(--text);
-  font-size: 16px;
+  font-size: 1rem;
 }
 
 .form-group input {
-  min-height: 44px;
-  padding: 12px;
-  font-size: 16px;
+  min-height: 3rem;
+  padding: 1rem;
+  font-size: 1rem;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--space-sm);
   background-color: var(--bg);
   color: var(--text);
 }
@@ -63,23 +63,23 @@
 }
 
 .error-message {
-  padding: 12px;
+  padding: 1rem;
   background-color: var(--error-bg, #fee);
   color: var(--error, #c33);
   border: 1px solid var(--error, #c33);
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: var(--space-sm);
+  font-size: 1rem;
 }
 
 .btn-primary {
-  min-height: 44px;
-  padding: 8px 24px;
-  font-size: 16px;
+  min-height: 3rem;
+  padding: var(--space-sm) var(--space-lg);
+  font-size: 1rem;
   font-weight: 500;
   background-color: var(--primary);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--space-sm);
   cursor: pointer;
   transition: opacity 0.2s;
 }
