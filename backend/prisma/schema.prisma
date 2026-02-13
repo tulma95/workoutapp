@@ -16,8 +16,9 @@ model Exercise {
   isUpperBody Boolean  @default(false) @map("is_upper_body")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
-  planDayExercises   PlanDayExercise[] @relation("exercise")
-  tmPlanDayExercises PlanDayExercise[] @relation("tmExerciseRef")
+  planDayExercises   PlanDayExercise[]     @relation("exercise")
+  tmPlanDayExercises PlanDayExercise[]     @relation("tmExerciseRef")
+  progressionRules   PlanProgressionRule[]
 
   @@map("exercises")
 }
@@ -34,7 +35,9 @@ model WorkoutPlan {
   createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  days PlanDay[]
+  days              PlanDay[]
+  progressionRules  PlanProgressionRule[]
+  subscriptions     UserPlan[]
 
   @@map("workout_plans")
 }
@@ -96,6 +99,7 @@ model User {
 
   trainingMaxes TrainingMax[]
   workouts      Workout[]
+  plans         UserPlan[]
 
   @@map("users")
 }
@@ -145,4 +149,33 @@ model WorkoutSet {
 
   @@index([workoutId, tier, setOrder])
   @@map("workout_sets")
+}
+
+model PlanProgressionRule {
+  id         Int      @id @default(autoincrement())
+  planId     Int      @map("plan_id")
+  exerciseId Int?     @map("exercise_id")
+  category   String?
+  minReps    Int      @map("min_reps")
+  maxReps    Int      @map("max_reps")
+  increase   Decimal  @db.Decimal(5, 2)
+
+  plan     WorkoutPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  exercise Exercise?   @relation(fields: [exerciseId], references: [id])
+
+  @@map("plan_progression_rules")
+}
+
+model UserPlan {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  planId    Int       @map("plan_id")
+  isActive  Boolean   @default(true) @map("is_active")
+  startedAt DateTime  @default(now()) @map("started_at") @db.Timestamptz(3)
+  endedAt   DateTime? @map("ended_at") @db.Timestamptz(3)
+
+  user User        @relation(fields: [userId], references: [id])
+  plan WorkoutPlan @relation(fields: [planId], references: [id])
+
+  @@map("user_plans")
 }
