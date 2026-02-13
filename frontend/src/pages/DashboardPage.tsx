@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { getTrainingMaxes, updateTrainingMax, type TrainingMax } from '../api/trainingMaxes';
 import { getCurrentWorkout } from '../api/workouts';
+import { getCurrentPlan, type WorkoutPlan } from '../api/plans';
 import { useAuth } from '../context/useAuth';
 import WorkoutCard from '../components/WorkoutCard';
 import { formatExerciseName, formatWeight, convertWeight, roundWeight, convertToKg } from '../utils/weight';
@@ -9,16 +10,10 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import { ErrorMessage } from '../components/ErrorMessage';
 import './DashboardPage.css';
 
-const WORKOUT_DAYS = [
-  { day: 1, t1: 'Bench Volume', t2: 'OHP' },
-  { day: 2, t1: 'Squat', t2: 'Sumo Deadlift' },
-  { day: 3, t1: 'Bench Heavy', t2: 'Close Grip Bench' },
-  { day: 4, t1: 'Deadlift', t2: 'Front Squat' },
-];
-
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user, activePlanId, isLoading: authLoading } = useAuth();
+  const [activePlan, setActivePlan] = useState<WorkoutPlan | null>(null);
   const [trainingMaxes, setTrainingMaxes] = useState<TrainingMax[]>([]);
   const [currentWorkout, setCurrentWorkout] = useState<{ dayNumber: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,10 +38,17 @@ export default function DashboardPage() {
     setIsLoading(true);
     setFetchError('');
     try {
-      const [tms, workout] = await Promise.all([
+      const [plan, tms, workout] = await Promise.all([
+        getCurrentPlan(),
         getTrainingMaxes(),
         getCurrentWorkout(),
       ]);
+
+      // If no plan, redirect to plan selection
+      if (!plan) {
+        navigate('/select-plan');
+        return;
+      }
 
       // If no training maxes exist, redirect to setup
       if (!tms || tms.length === 0) {
@@ -54,6 +56,7 @@ export default function DashboardPage() {
         return;
       }
 
+      setActivePlan(plan);
       setTrainingMaxes(tms);
       setCurrentWorkout(workout);
       setIsLoading(false);
@@ -122,14 +125,48 @@ export default function DashboardPage() {
     return <ErrorMessage message={fetchError} onRetry={loadData} />;
   }
 
+  // Get unique TM exercise IDs from the plan
+  const planTMExerciseIds = activePlan
+    ? new Set(
+        activePlan.days.flatMap((day) =>
+          day.exercises.map((ex) => ex.tmExerciseId)
+        )
+      )
+    : new Set();
+
+  // Filter training maxes to show only those used in the current plan
+  // Note: TM uses exercise string (slug), need to match by exercise ID from plan
+  // For now, show all TMs - proper filtering would require TM to store exerciseId
+  const relevantTMs = trainingMaxes;
+
   return (
     <div className="dashboard-page">
       <h1>Dashboard</h1>
 
+      {activePlan && (
+        <section className="current-plan-section">
+          <div className="current-plan-header">
+            <div>
+              <h2>Current Plan</h2>
+              <p className="plan-name">{activePlan.name}</p>
+              {activePlan.description && (
+                <p className="plan-description">{activePlan.description}</p>
+              )}
+            </div>
+            <button
+              className="btn-secondary"
+              onClick={() => navigate('/select-plan')}
+            >
+              Change
+            </button>
+          </div>
+        </section>
+      )}
+
       <section className="training-maxes-section">
         <h2>Training Maxes</h2>
         <div className="tm-list">
-          {trainingMaxes.map((tm) => (
+          {relevantTMs.map((tm) => (
             <div key={tm.exercise} className="tm-item">
               <div className="tm-info">
                 <span className="tm-exercise">{formatExerciseName(tm.exercise)}</span>
@@ -151,16 +188,30 @@ export default function DashboardPage() {
       <section className="workout-days-section">
         <h2>Workout Days</h2>
         <div className="workout-cards">
-          {WORKOUT_DAYS.map((day) => (
-            <WorkoutCard
-              key={day.day}
-              dayNumber={day.day}
-              t1Exercise={day.t1}
-              t2Exercise={day.t2}
-              status={getWorkoutStatus(day.day)}
-              onStart={handleStartWorkout}
-            />
-          ))}
+          {activePlan?.days.map((day) => {
+            // Get T1 and T2 exercises for this day
+            const t1Exercise = day.exercises.find((ex) => ex.tier === 'T1');
+            const t2Exercise = day.exercises.find((ex) => ex.tier === 'T2');
+
+            return (
+              <WorkoutCard
+                key={day.dayNumber}
+                dayNumber={day.dayNumber}
+                t1Exercise={
+                  t1Exercise
+                    ? t1Exercise.displayName || t1Exercise.exercise.name
+                    : 'N/A'
+                }
+                t2Exercise={
+                  t2Exercise
+                    ? t2Exercise.displayName || t2Exercise.exercise.name
+                    : 'N/A'
+                }
+                status={getWorkoutStatus(day.dayNumber)}
+                onStart={handleStartWorkout}
+              />
+            );
+          })}
         </div>
       </section>
 
