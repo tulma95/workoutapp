@@ -5,6 +5,7 @@ import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import trainingMaxRoutes from './routes/trainingMaxes';
 import workoutRoutes from './routes/workouts';
+import adminExerciseRoutes from './routes/admin/exercises';
 import { errorHandler } from './middleware/errorHandler';
 import { requestContext } from './middleware/requestContext';
 import { requestLogger } from './middleware/requestLogger';
@@ -32,6 +33,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/training-maxes', trainingMaxRoutes);
 app.use('/api/workouts', workoutRoutes);
+app.use('/api/admin/exercises', adminExerciseRoutes);
 
 app.use(errorHandler);
 
