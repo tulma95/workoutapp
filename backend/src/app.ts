@@ -1,3 +1,4 @@
+import path from 'path';
 import express from 'express';
 import cors from 'cors';
 import prisma from './lib/db';
@@ -38,6 +39,14 @@ app.use('/api/workouts', workoutRoutes);
 app.use('/api/plans', planRoutes);
 app.use('/api/admin/exercises', adminExerciseRoutes);
 app.use('/api/admin/plans', adminPlanRoutes);
+
+// Serve frontend static files and handle SPA routing
+const frontendPath = path.join(__dirname, '../../frontend/dist');
+app.use(express.static(frontendPath));
+app.get('{*path}', (req, res, next) => {
+  if (req.path.startsWith('/api/')) return next();
+  res.sendFile(path.join(frontendPath, 'index.html'));
+});
 
 app.use(errorHandler);
 

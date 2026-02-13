@@ -10,7 +10,7 @@ export default defineConfig({
   maxFailures: 1,
   timeout: 30000, // 30 seconds
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: process.env.BASE_URL || 'http://localhost:5173',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     navigationTimeout: 30000,
