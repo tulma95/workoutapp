@@ -7,6 +7,18 @@ datasource db {
   provider = "postgresql"
 }
 
+model Exercise {
+  id          Int      @id @default(autoincrement())
+  slug        String   @unique
+  name        String
+  muscleGroup String?  @map("muscle_group")
+  category    String   @default("compound")
+  isUpperBody Boolean  @default(false) @map("is_upper_body")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@map("exercises")
+}
+
 model User {
   id             Int      @id @default(autoincrement())
   email          String   @unique
