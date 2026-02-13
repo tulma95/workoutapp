@@ -5,7 +5,8 @@ source scripts/common.sh
 PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$PROJECT_ROOT"
 
-IMAGE_NAME="treenisofta"
+GHCR_USER="${GHCR_USER:?Set GHCR_USER to your GitHub username}"
+IMAGE_NAME="ghcr.io/$GHCR_USER/treenisofta"
 IMAGE_TAG="$(git rev-parse --short HEAD)"
 FULL_TAG="$IMAGE_NAME:$IMAGE_TAG"
 COMPOSE_FILE="$PROJECT_ROOT/docker-compose.test.yml"
@@ -76,10 +77,20 @@ run_e2e_tests() {
   echo "E2E tests passed."
 }
 
+push_image() {
+  echo ""
+  echo "=== Step 4: Pushing image to ghcr.io ==="
+  docker tag "$FULL_TAG" "$IMAGE_NAME:latest"
+  docker push "$FULL_TAG"
+  docker push "$IMAGE_NAME:latest"
+  echo "Pushed: $FULL_TAG and $IMAGE_NAME:latest"
+}
+
 main() {
   run_backend_tests
   build_image
   run_e2e_tests
+  push_image
   echo ""
   echo "=== Done ==="
   echo "Image ready: $FULL_TAG"
