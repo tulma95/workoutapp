@@ -1,22 +1,68 @@
-import { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router';
+import { useState, useEffect, FormEvent } from 'react';
+import { useNavigate, useLocation } from 'react-router';
 import { useAuth } from '../context/useAuth';
-import { setupTrainingMaxes } from '../api/trainingMaxes';
+import { setupTrainingMaxesFromExercises, ExerciseTM } from '../api/trainingMaxes';
+import { getCurrentPlan, type Exercise } from '../api/plans';
 import { convertToKg } from '../utils/weight';
 import { ErrorMessage } from '../components/ErrorMessage';
 import './SetupPage.css';
 
+interface LocationState {
+  missingTMs?: Exercise[];
+}
+
 export default function SetupPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
-  const [formData, setFormData] = useState({
-    bench: '',
-    squat: '',
-    ohp: '',
-    deadlift: '',
-  });
+  const [requiredExercises, setRequiredExercises] = useState<Exercise[]>([]);
+  const [formData, setFormData] = useState<Record<string, string>>({});
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch required exercises on mount
+  useEffect(() => {
+    async function loadRequiredExercises() {
+      try {
+        const state = location.state as LocationState | null;
+
+        // Check if we're in partial setup mode (from plan subscription with missing TMs)
+        if (state?.missingTMs && state.missingTMs.length > 0) {
+          setRequiredExercises(state.missingTMs);
+        } else {
+          // Full setup mode: fetch current plan and extract all required exercises
+          const plan = await getCurrentPlan();
+          if (!plan) {
+            setError('No active plan found. Please select a plan first.');
+            setIsLoading(false);
+            return;
+          }
+
+          // Extract unique TM exercises from plan days
+          const tmExerciseIds = new Set<number>();
+          const tmExercisesMap = new Map<number, Exercise>();
+
+          plan.days.forEach(day => {
+            day.exercises.forEach(planExercise => {
+              if (!tmExerciseIds.has(planExercise.tmExerciseId)) {
+                tmExerciseIds.add(planExercise.tmExerciseId);
+                tmExercisesMap.set(planExercise.tmExerciseId, planExercise.tmExercise);
+              }
+            });
+          });
+
+          const exercises = Array.from(tmExercisesMap.values());
+          setRequiredExercises(exercises);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load exercises');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadRequiredExercises();
+  }, [location.state]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -28,41 +74,31 @@ export default function SetupPage() {
     e.preventDefault();
     setError('');
 
-    // Client-side validation - parse values in user's unit
-    const benchInUserUnit = parseFloat(formData.bench);
-    const squatInUserUnit = parseFloat(formData.squat);
-    const ohpInUserUnit = parseFloat(formData.ohp);
-    const deadliftInUserUnit = parseFloat(formData.deadlift);
+    // Validate all required exercises have values
+    const exerciseTMs: ExerciseTM[] = [];
+    for (const exercise of requiredExercises) {
+      const value = formData[exercise.id.toString()];
+      if (!value) {
+        setError('All fields are required');
+        return;
+      }
 
-    if (
-      !formData.bench ||
-      !formData.squat ||
-      !formData.ohp ||
-      !formData.deadlift ||
-      benchInUserUnit <= 0 ||
-      squatInUserUnit <= 0 ||
-      ohpInUserUnit <= 0 ||
-      deadliftInUserUnit <= 0 ||
-      isNaN(benchInUserUnit) ||
-      isNaN(squatInUserUnit) ||
-      isNaN(ohpInUserUnit) ||
-      isNaN(deadliftInUserUnit)
-    ) {
-      setError('All fields must be positive numbers');
-      return;
+      const oneRepMaxInUserUnit = parseFloat(value);
+      if (isNaN(oneRepMaxInUserUnit) || oneRepMaxInUserUnit <= 0) {
+        setError('All fields must be positive numbers');
+        return;
+      }
+
+      exerciseTMs.push({
+        exerciseId: exercise.id,
+        oneRepMax: convertToKg(oneRepMaxInUserUnit, unit),
+      });
     }
 
     setIsLoading(true);
 
     try {
-      // Convert all values from user's unit to kg before sending to backend
-      await setupTrainingMaxes({
-        bench: convertToKg(benchInUserUnit, unit),
-        squat: convertToKg(squatInUserUnit, unit),
-        ohp: convertToKg(ohpInUserUnit, unit),
-        deadlift: convertToKg(deadliftInUserUnit, unit),
-      });
-
+      await setupTrainingMaxesFromExercises(exerciseTMs);
       // Redirect to dashboard on success
       navigate('/');
     } catch (err) {
@@ -74,6 +110,37 @@ export default function SetupPage() {
 
   const unit = user?.unitPreference || 'kg';
 
+  if (isLoading) {
+    return (
+      <div className="setup-page">
+        <div className="setup-container">
+          <p>Loading exercises...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (requiredExercises.length === 0) {
+    return (
+      <div className="setup-page">
+        <div className="setup-container">
+          <h1>No Exercises Found</h1>
+          <p className="setup-description">
+            Please select a workout plan first.
+          </p>
+          {error && <ErrorMessage message={error} />}
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => navigate('/select-plan')}
+          >
+            Select a Plan
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="setup-page">
       <div className="setup-container">
@@ -83,61 +150,23 @@ export default function SetupPage() {
         </p>
 
         <form onSubmit={handleSubmit} className="setup-form">
-          <div className="form-group">
-            <label htmlFor="bench">Bench Press ({unit})</label>
-            <input
-              type="number"
-              id="bench"
-              name="bench"
-              value={formData.bench}
-              onChange={handleInputChange}
-              placeholder={`Enter bench press 1RM (${unit})`}
-              step="0.1"
-              min="0"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="squat">Squat ({unit})</label>
-            <input
-              type="number"
-              id="squat"
-              name="squat"
-              value={formData.squat}
-              onChange={handleInputChange}
-              placeholder={`Enter squat 1RM (${unit})`}
-              step="0.1"
-              min="0"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="ohp">Overhead Press ({unit})</label>
-            <input
-              type="number"
-              id="ohp"
-              name="ohp"
-              value={formData.ohp}
-              onChange={handleInputChange}
-              placeholder={`Enter OHP 1RM (${unit})`}
-              step="0.1"
-              min="0"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="deadlift">Deadlift ({unit})</label>
-            <input
-              type="number"
-              id="deadlift"
-              name="deadlift"
-              value={formData.deadlift}
-              onChange={handleInputChange}
-              placeholder={`Enter deadlift 1RM (${unit})`}
-              step="0.1"
-              min="0"
-            />
-          </div>
+          {requiredExercises.map((exercise) => (
+            <div key={exercise.id} className="form-group">
+              <label htmlFor={`exercise-${exercise.id}`}>
+                {exercise.name} ({unit})
+              </label>
+              <input
+                type="number"
+                id={`exercise-${exercise.id}`}
+                name={exercise.id.toString()}
+                value={formData[exercise.id.toString()] || ''}
+                onChange={handleInputChange}
+                placeholder={`Enter ${exercise.name} 1RM (${unit})`}
+                step="0.1"
+                min="0"
+              />
+            </div>
+          ))}
 
           {error && <ErrorMessage message={error} />}
 

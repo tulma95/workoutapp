@@ -11,6 +11,11 @@ export type {
   TrainingMaxHistory,
 } from './schemas';
 
+export interface ExerciseTM {
+  exerciseId: number;
+  oneRepMax: number;
+}
+
 export async function getTrainingMaxes(): Promise<typeof SetupResponseSchema._type> {
   const data = await apiFetch('/training-maxes');
   return SetupResponseSchema.parse(data);
@@ -20,6 +25,14 @@ export async function setupTrainingMaxes(oneRepMaxes: typeof import('./schemas')
   const data = await apiFetch('/training-maxes/setup', {
     method: 'POST',
     body: JSON.stringify({ oneRepMaxes }),
+  });
+  return SetupResponseSchema.parse(data);
+}
+
+export async function setupTrainingMaxesFromExercises(exerciseTMs: ExerciseTM[]): Promise<typeof SetupResponseSchema._type> {
+  const data = await apiFetch('/training-maxes/setup', {
+    method: 'POST',
+    body: JSON.stringify({ exerciseTMs }),
   });
   return SetupResponseSchema.parse(data);
 }
