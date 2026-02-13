@@ -1,0 +1,159 @@
+.plan-selection-page {
+  padding: var(--space-md);
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.plan-selection-header {
+  margin-bottom: var(--space-xl);
+}
+
+.plan-selection-header h1 {
+  margin: 0 0 var(--space-sm) 0;
+  font-size: 1.5rem;
+  color: var(--text);
+}
+
+.plan-selection-header p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+.plan-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.plan-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--space-sm);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.plan-card-header h2 {
+  margin: 0 0 var(--space-sm) 0;
+  font-size: 1.25rem;
+  color: var(--text);
+}
+
+.plan-description {
+  margin: 0 0 var(--space-sm) 0;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.plan-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.days-per-week {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.plan-days {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.plan-day {
+  background-color: var(--bg);
+  padding: var(--space-md);
+  border-radius: var(--space-sm);
+}
+
+.day-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text);
+  margin-bottom: var(--space-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.day-exercises {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.exercise-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 0.875rem;
+}
+
+.tier-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 1.5rem;
+  padding: 0 var(--space-sm);
+  background-color: var(--primary);
+  color: white;
+  border-radius: var(--space-xs);
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.exercise-name {
+  color: var(--text);
+}
+
+.select-plan-button {
+  min-height: 3rem;
+  padding: var(--space-md);
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--space-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.select-plan-button:hover:not(:disabled) {
+  background-color: var(--primary-dark);
+}
+
+.select-plan-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.no-plans {
+  text-align: center;
+  padding: var(--space-xl);
+  color: var(--text-muted);
+}
+
+.retry-button {
+  min-height: 3rem;
+  padding: var(--space-md);
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--space-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: var(--space-md);
+}
+
+.retry-button:hover {
+  background-color: var(--primary-dark);
+}

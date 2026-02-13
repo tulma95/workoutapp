@@ -18,7 +18,7 @@ const WORKOUT_DAYS = [
 
 export default function DashboardPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, activePlanId, isLoading: authLoading } = useAuth();
   const [trainingMaxes, setTrainingMaxes] = useState<TrainingMax[]>([]);
   const [currentWorkout, setCurrentWorkout] = useState<{ dayNumber: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,8 +31,13 @@ export default function DashboardPage() {
   const unit = user?.unitPreference || 'kg';
 
   useEffect(() => {
+    // If user has no active plan, redirect to plan selection
+    if (activePlanId === null && !authLoading) {
+      navigate('/select-plan');
+      return;
+    }
     loadData();
-  }, [navigate]);
+  }, [navigate, activePlanId, authLoading]);
 
   async function loadData() {
     setIsLoading(true);
