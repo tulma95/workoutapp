@@ -9,7 +9,7 @@ import type { UnitPreference } from '../types';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const [unit, setUnit] = useState<UnitPreference>(user?.unitPreference || 'kg');
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -45,6 +45,8 @@ export default function SettingsPage() {
         method: 'PATCH',
         body: JSON.stringify({ unitPreference: newUnit }),
       });
+      // Refresh user data in AuthContext to pick up the new unit preference
+      await refreshUser();
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {

@@ -94,6 +94,7 @@ If no browser tools are available, note in your progress report that manual brow
 ## running tests
 
 Test can be ran using run_test.sh from root. If it doesnt work, fix
+Dont create redundant timeouts await page.waitForTimeout(500);
 
 ## Stop Condition
 

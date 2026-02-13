@@ -25,6 +25,7 @@ interface AuthContextValue {
     unitPreference: UnitPreference,
   ) => Promise<void>
   refreshActivePlan: () => Promise<void>
+  refreshUser: () => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null)
@@ -104,6 +105,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setActivePlanId(null)
   }, [])
 
+  const refreshUser = useCallback(async () => {
+    try {
+      const data = await apiFetch('/users/me')
+      setUser(data as User)
+    } catch (error) {
+      console.error('Failed to refresh user data:', error)
+    }
+  }, [])
+
   const value = useMemo(
     () => ({
       user,
@@ -114,8 +124,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       register,
       refreshActivePlan: fetchActivePlan,
+      refreshUser,
     }),
-    [user, isLoading, activePlanId, login, logout, register, fetchActivePlan],
+    [user, isLoading, activePlanId, login, logout, register, fetchActivePlan, refreshUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
