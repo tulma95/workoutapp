@@ -19,6 +19,35 @@ model Exercise {
   @@map("exercises")
 }
 
+model WorkoutPlan {
+  id           Int       @id @default(autoincrement())
+  slug         String    @unique
+  name         String
+  description  String?
+  daysPerWeek  Int       @map("days_per_week")
+  isPublic     Boolean   @default(true) @map("is_public")
+  isSystem     Boolean   @default(false) @map("is_system")
+  archivedAt   DateTime? @map("archived_at") @db.Timestamptz(3)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  days PlanDay[]
+
+  @@map("workout_plans")
+}
+
+model PlanDay {
+  id        Int     @id @default(autoincrement())
+  planId    Int     @map("plan_id")
+  dayNumber Int     @map("day_number")
+  name      String?
+
+  plan WorkoutPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, dayNumber])
+  @@map("plan_days")
+}
+
 model User {
   id             Int      @id @default(autoincrement())
   email          String   @unique
