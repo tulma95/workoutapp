@@ -33,7 +33,7 @@ function formatWorkout(
       id: number;
       workoutId: number;
       exerciseId: number;
-      exercise: { slug: string };
+      exercise: { slug: string; name: string };
       tier: string;
       setOrder: number;
       prescribedWeight: unknown;
@@ -52,7 +52,7 @@ function formatWorkout(
     status: workout.status as WorkoutStatus,
     sets: workout.sets.map((s) => ({
       ...s,
-      exercise: s.exercise.slug,
+      exercise: s.exercise.name,
       prescribedWeight: convertWeightToUserUnit(decimalToNumber(s.prescribedWeight), unit),
     })),
   };
@@ -294,7 +294,7 @@ export async function logSet(
 
   return {
     ...updated,
-    exercise: updated.exercise.slug,
+    exercise: updated.exercise.name,
     prescribedWeight: convertWeightToUserUnit(decimalToNumber(updated.prescribedWeight), user.unitPreference),
   };
 }
@@ -420,7 +420,7 @@ export async function completeWorkout(workoutId: number, userId: number) {
       });
 
       progressions.push({
-        exercise: exercise.slug,
+        exercise: exercise.name,
         previousTM: convertWeightToUserUnit(currentTMKg, user.unitPreference),
         newTM: convertWeightToUserUnit(newWeightKg, user.unitPreference),
         increase: convertWeightToUserUnit(increase, user.unitPreference),

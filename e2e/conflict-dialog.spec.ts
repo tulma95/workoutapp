@@ -59,7 +59,7 @@ test.describe('Conflict Dialog', () => {
     // Should navigate to Day 1 workout page
     await page.waitForURL(/\/workout\/\d+/, { timeout: 10000 })
     await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible()
-    await expect(page.getByText(/bench.*volume/i).first()).toBeVisible()
+    await expect(page.getByText(/bench press/i).first()).toBeVisible()
   })
 
   test('clicking Discard & Start New button in conflict dialog starts the new workout', async ({

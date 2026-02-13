@@ -221,9 +221,9 @@ describe('Workouts API - Plan-Driven Generation', () => {
       expect(t1Sets).toHaveLength(9);
       expect(t2Sets).toHaveLength(8);
 
-      // T1 should be bench-press, T2 should be ohp
-      expect(t1Sets[0].exercise).toBe('bench-press');
-      expect(t2Sets[0].exercise).toBe('ohp');
+      // T1 should be Bench Press, T2 should be Overhead Press
+      expect(t1Sets[0].exercise).toBe('Bench Press');
+      expect(t2Sets[0].exercise).toBe('Overhead Press');
 
       // Check progression flag is set correctly
       const progressionSets = res.body.sets.filter((s: { isProgression: boolean }) => s.isProgression);

@@ -108,6 +108,10 @@ If there are still stories with `passes: false`, end your response normally (ano
 
 !IMPORTANT! Remember to reponse normally if there is still stories which are not passing. You only care about the prd.json in `scripts/ralph.prd.json`
 
+## Sub agents
+
+- You can use sub agents with opus 4.6
+
 ## Important
 
 - Work on ONE story per iteration !IMPORTANT!

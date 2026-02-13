@@ -242,6 +242,20 @@ npx prisma db seed
 - Prisma CLI does NOT support npm workspace `-w` flag — must `cd backend` first
 - Export `DATABASE_URL` before running Prisma CLI commands
 
+## Known Gotchas
+
+### Stale dist/ artifacts
+The backend build (`tsc`) does NOT clean `dist/` before compiling. If a source file is moved (e.g., `src/types.ts` → `src/types/index.ts`), the old `dist/types.js` remains and shadows the new `dist/types/index.js` at runtime. The build script now runs `rm -rf dist && tsc` to prevent this. **Symptom**: `instanceof` checks fail with "Right-hand side of 'instanceof' is not an object" because the class is `undefined`.
+
+### React StrictMode double-fires useEffect
+In dev mode, React StrictMode runs effects twice. If a `useEffect` calls a backend endpoint that creates resources (like `POST /api/workouts`), it will create duplicate records. **Fix**: Use a `useRef` guard to prevent concurrent execution. The WorkoutPage uses `loadingRef` for this.
+
+### E2E debugging: check backend-test.log
+When E2E tests fail, always check `backend-test.log` in the project root. It contains all backend request/response logs during E2E execution. Filter with `grep -i "error\|500\|409"` to find API failures that the frontend swallows silently (e.g., "Failed to discard workout" hides the real 409/500 from the backend).
+
+### Exercise names vs slugs
+The workout API returns `exercise.name` (human-readable like "Bench Press") not `exercise.slug` (like "bench-press"). PlanDayExercise has `displayName` (like "Bench Volume") but that's only used on the dashboard day cards, not in workout sets.
+
 ## Ralph Post-Completion
 
 When Ralph finishes a task, read `progress.txt` to review what was done. Based on the progress, either create a new skill or add relevant insights into this CLAUDE.md if needed.

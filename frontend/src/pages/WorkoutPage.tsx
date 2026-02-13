@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { useAuth } from '../context/useAuth'
 import {
@@ -36,11 +36,17 @@ export default function WorkoutPage() {
 
   const dayNumber = parseInt(dayParam || '0', 10)
 
+  const loadingRef = useRef(false)
+
   useEffect(() => {
+    if (loadingRef.current) return
+    loadingRef.current = true
+
     async function loadWorkout() {
       if (!dayNumber) {
         setError('Invalid day number')
         setIsLoading(false)
+        loadingRef.current = false
         return
       }
 
@@ -62,6 +68,7 @@ export default function WorkoutPage() {
               dayNumber: currentWorkout.dayNumber,
             })
             setIsLoading(false)
+            loadingRef.current = false
             return
           }
         } else {
@@ -84,6 +91,7 @@ export default function WorkoutPage() {
                 dayNumber: startErr.dayNumber as number,
               })
               setIsLoading(false)
+              loadingRef.current = false
               return
             }
             throw startErr
@@ -93,6 +101,7 @@ export default function WorkoutPage() {
         setError(err instanceof Error ? err.message : 'Failed to load workout')
       } finally {
         setIsLoading(false)
+        loadingRef.current = false
       }
     }
 
@@ -215,11 +224,22 @@ export default function WorkoutPage() {
 
     try {
       await cancelWorkout(conflictWorkout.workoutId)
-      // Reload the page to start a new workout for the requested day
-      window.location.reload()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to discard workout')
       setConflictWorkout(null)
+      setIsLoading(true)
+      setError(null)
+      // Re-check for any remaining in-progress workouts before starting new
+      const remaining = await getCurrentWorkout()
+      if (remaining) {
+        // Another in-progress workout exists (e.g., from StrictMode double-fire)
+        await cancelWorkout(remaining.id)
+      }
+      const newWorkout = await startWorkout(dayNumber)
+      setWorkout(newWorkout)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to start new workout')
+      setConflictWorkout(null)
+    } finally {
+      setIsLoading(false)
     }
   }
 

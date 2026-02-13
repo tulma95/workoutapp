@@ -219,7 +219,7 @@ describe('Workout Completion - Plan-Driven', () => {
       expect(result.progressions).toHaveLength(1);
 
       const progression = result.progressions[0];
-      expect(progression.exercise).toBe('bench-press');
+      expect(progression.exercise).toBe('Bench Press');
       expect(progression.previousTM).toBe(90);
       expect(progression.newTM).toBe(92.5);
       expect(progression.increase).toBe(2.5);
@@ -237,10 +237,10 @@ describe('Workout Completion - Plan-Driven', () => {
 
       // Find progression sets
       const squatProgressionSet = workout.sets.find(
-        (s: { exercise: string; isProgression: boolean }) => s.exercise === 'squat' && s.isProgression,
+        (s: { exercise: string; isProgression: boolean }) => s.exercise === 'Squat' && s.isProgression,
       );
       const deadliftProgressionSet = workout.sets.find(
-        (s: { exercise: string; isProgression: boolean }) => s.exercise === 'deadlift' && s.isProgression,
+        (s: { exercise: string; isProgression: boolean }) => s.exercise === 'Deadlift' && s.isProgression,
       );
 
       expect(squatProgressionSet).toBeDefined();
@@ -259,8 +259,8 @@ describe('Workout Completion - Plan-Driven', () => {
       expect(result.progressions).toHaveLength(2);
 
       // Find progressions by exercise
-      const squatProg = result.progressions.find((p: { exercise: string }) => p.exercise === 'squat');
-      const deadliftProg = result.progressions.find((p: { exercise: string }) => p.exercise === 'deadlift');
+      const squatProg = result.progressions.find((p: { exercise: string }) => p.exercise === 'Squat');
+      const deadliftProg = result.progressions.find((p: { exercise: string }) => p.exercise === 'Deadlift');
 
       expect(squatProg).toBeDefined();
       expect(squatProg.previousTM).toBe(125); // 140 * 0.9 = 126, rounded to 125
