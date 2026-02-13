@@ -1,8 +1,24 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
+import { randomUUID } from 'crypto';
 import app from '../../../app';
 import prisma from '../../../lib/db';
 import bcrypt from 'bcrypt';
+
+const uid = randomUUID().slice(0, 8);
+
+const adminEmail = `admin-plans-${uid}@example.com`;
+const nonAdminEmail = `nonadmin-plans-${uid}@example.com`;
+
+const benchSlug = `bench-press-test-${uid}`;
+const squatSlug = `squat-test-${uid}`;
+const ohpSlug = `ohp-test-${uid}`;
+
+const testPlanSlug = `test-plan-${uid}`;
+const systemPlanSlug = `system-plan-test-${uid}`;
+const planToArchiveSlug = `plan-to-archive-${uid}`;
+const systemPlanArchiveSlug = `system-plan-archive-test-${uid}`;
+const forbiddenDeletePlanSlug = `forbidden-delete-plan-${uid}`;
 
 let adminToken: string;
 let nonAdminToken: string;
@@ -14,7 +30,7 @@ describe('Admin Plans routes', () => {
     // Create admin user
     await prisma.user.create({
       data: {
-        email: 'admin@plans.com',
+        email: adminEmail,
         passwordHash: await bcrypt.hash('password123', 10),
         displayName: 'Plan Admin',
         unitPreference: 'kg',
@@ -25,7 +41,7 @@ describe('Admin Plans routes', () => {
     // Create non-admin user
     await prisma.user.create({
       data: {
-        email: 'nonadmin@plans.com',
+        email: nonAdminEmail,
         passwordHash: await bcrypt.hash('password123', 10),
         displayName: 'Non-Admin User',
         unitPreference: 'kg',
@@ -36,19 +52,19 @@ describe('Admin Plans routes', () => {
     // Login as admin
     const adminLoginRes = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'admin@plans.com', password: 'password123' });
+      .send({ email: adminEmail, password: 'password123' });
     adminToken = adminLoginRes.body.accessToken;
 
     // Login as non-admin
     const nonAdminLoginRes = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'nonadmin@plans.com', password: 'password123' });
+      .send({ email: nonAdminEmail, password: 'password123' });
     nonAdminToken = nonAdminLoginRes.body.accessToken;
 
     // Create test exercises
     const bench = await prisma.exercise.create({
       data: {
-        slug: 'bench-press-test',
+        slug: benchSlug,
         name: 'Bench Press',
         muscleGroup: 'chest',
         category: 'compound',
@@ -58,7 +74,7 @@ describe('Admin Plans routes', () => {
 
     const squat = await prisma.exercise.create({
       data: {
-        slug: 'squat-test',
+        slug: squatSlug,
         name: 'Squat',
         muscleGroup: 'legs',
         category: 'compound',
@@ -68,7 +84,7 @@ describe('Admin Plans routes', () => {
 
     const ohp = await prisma.exercise.create({
       data: {
-        slug: 'ohp-test',
+        slug: ohpSlug,
         name: 'OHP',
         muscleGroup: 'shoulders',
         category: 'compound',
@@ -89,7 +105,7 @@ describe('Admin Plans routes', () => {
         .post('/api/admin/plans')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
-          slug: 'test-plan',
+          slug: testPlanSlug,
           name: 'Test Plan',
           description: 'A test workout plan',
           daysPerWeek: 2,
@@ -144,7 +160,7 @@ describe('Admin Plans routes', () => {
 
       expect(res.status).toBe(201);
       expect(res.body).toHaveProperty('id');
-      expect(res.body.slug).toBe('test-plan');
+      expect(res.body.slug).toBe(testPlanSlug);
       expect(res.body.name).toBe('Test Plan');
       expect(res.body.daysPerWeek).toBe(2);
       expect(res.body.days).toHaveLength(2);
@@ -172,7 +188,7 @@ describe('Admin Plans routes', () => {
         .post('/api/admin/plans')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
-          slug: 'test-plan',
+          slug: testPlanSlug,
           name: 'Duplicate Plan',
           daysPerWeek: 1,
           days: [
@@ -200,7 +216,7 @@ describe('Admin Plans routes', () => {
         .post('/api/admin/plans')
         .set('Authorization', `Bearer ${nonAdminToken}`)
         .send({
-          slug: 'forbidden-plan',
+          slug: `forbidden-plan-${uid}`,
           name: 'Forbidden Plan',
           daysPerWeek: 1,
           days: [],
@@ -214,7 +230,7 @@ describe('Admin Plans routes', () => {
       const res = await request(app)
         .post('/api/admin/plans')
         .send({
-          slug: 'no-auth-plan',
+          slug: `no-auth-plan-${uid}`,
           name: 'No Auth Plan',
           daysPerWeek: 1,
           days: [],
@@ -235,7 +251,7 @@ describe('Admin Plans routes', () => {
       expect(res.body.length).toBeGreaterThan(0);
 
       // Find the test plan we created
-      const plan = res.body.find((p: any) => p.slug === 'test-plan');
+      const plan = res.body.find((p: any) => p.slug === testPlanSlug);
       expect(plan).toBeDefined();
       expect(plan.subscriberCount).toBe(0);
       expect(plan.subscriptions).toBeUndefined();
@@ -250,7 +266,7 @@ describe('Admin Plans routes', () => {
       // Get the plan ID if not already set
       if (!testPlanId) {
         const plans = await prisma.workoutPlan.findFirst({
-          where: { slug: 'test-plan' },
+          where: { slug: testPlanSlug },
         });
         if (plans) {
           testPlanId = plans.id;
@@ -259,7 +275,7 @@ describe('Admin Plans routes', () => {
 
       // Get a test user to subscribe
       const user = await prisma.user.findUnique({
-        where: { email: 'nonadmin@plans.com' },
+        where: { email: nonAdminEmail },
       });
 
       if (user && testPlanId) {
@@ -277,7 +293,7 @@ describe('Admin Plans routes', () => {
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(200);
-      const plan = res.body.find((p: any) => p.slug === 'test-plan');
+      const plan = res.body.find((p: any) => p.slug === testPlanSlug);
       expect(plan).toBeDefined();
       expect(plan.subscriberCount).toBe(1);
     });
@@ -297,7 +313,7 @@ describe('Admin Plans routes', () => {
       // Get the test plan ID
       if (!testPlanId) {
         const plan = await prisma.workoutPlan.findFirst({
-          where: { slug: 'test-plan' },
+          where: { slug: testPlanSlug },
         });
         if (plan) {
           testPlanId = plan.id;
@@ -310,7 +326,7 @@ describe('Admin Plans routes', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.id).toBe(testPlanId);
-      expect(res.body.slug).toBe('test-plan');
+      expect(res.body.slug).toBe(testPlanSlug);
       expect(res.body.days).toHaveLength(2);
 
       // Verify nested days
@@ -319,7 +335,7 @@ describe('Admin Plans routes', () => {
 
       // Verify exercise details are included
       expect(res.body.days[0].exercises[0].exercise).toBeDefined();
-      expect(res.body.days[0].exercises[0].exercise.slug).toBe('bench-press-test');
+      expect(res.body.days[0].exercises[0].exercise.slug).toBe(benchSlug);
       expect(res.body.days[0].exercises[0].tmExercise).toBeDefined();
 
       // Verify progression rules are included
@@ -359,7 +375,7 @@ describe('Admin Plans routes', () => {
       // Get the test plan ID
       if (!testPlanId) {
         const plan = await prisma.workoutPlan.findFirst({
-          where: { slug: 'test-plan' },
+          where: { slug: testPlanSlug },
         });
         if (plan) {
           testPlanId = plan.id;
@@ -370,7 +386,7 @@ describe('Admin Plans routes', () => {
         .put(`/api/admin/plans/${testPlanId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
-          slug: 'test-plan',
+          slug: testPlanSlug,
           name: 'Updated Test Plan',
           description: 'Updated description',
           daysPerWeek: 3,
@@ -438,7 +454,7 @@ describe('Admin Plans routes', () => {
         .put('/api/admin/plans/999999')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
-          slug: 'nonexistent',
+          slug: `nonexistent-${uid}`,
           name: 'Non-existent',
           daysPerWeek: 1,
           days: [
@@ -465,7 +481,7 @@ describe('Admin Plans routes', () => {
       // Create a system plan
       const systemPlan = await prisma.workoutPlan.create({
         data: {
-          slug: 'system-plan-test',
+          slug: systemPlanSlug,
           name: 'System Plan',
           daysPerWeek: 1,
           isSystem: true,
@@ -484,7 +500,7 @@ describe('Admin Plans routes', () => {
         .put(`/api/admin/plans/${systemPlan.id}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
-          slug: 'new-slug',
+          slug: `new-slug-${uid}`,
           name: 'System Plan',
           daysPerWeek: 1,
           days: [
@@ -513,7 +529,7 @@ describe('Admin Plans routes', () => {
         .put(`/api/admin/plans/${testPlanId}`)
         .set('Authorization', `Bearer ${nonAdminToken}`)
         .send({
-          slug: 'test-plan',
+          slug: testPlanSlug,
           name: 'Should fail',
           daysPerWeek: 1,
           days: [],
@@ -529,7 +545,7 @@ describe('Admin Plans routes', () => {
       // Create a non-system plan to archive
       const planToArchive = await prisma.workoutPlan.create({
         data: {
-          slug: 'plan-to-archive',
+          slug: planToArchiveSlug,
           name: 'Plan To Archive',
           daysPerWeek: 1,
           isSystem: false,
@@ -554,7 +570,7 @@ describe('Admin Plans routes', () => {
       // Create a system plan
       const systemPlan = await prisma.workoutPlan.create({
         data: {
-          slug: 'system-plan-archive-test',
+          slug: systemPlanArchiveSlug,
           name: 'System Plan Archive Test',
           daysPerWeek: 1,
           isSystem: true,
@@ -583,7 +599,7 @@ describe('Admin Plans routes', () => {
       // Create a plan to attempt to delete
       const plan = await prisma.workoutPlan.create({
         data: {
-          slug: 'forbidden-delete-plan',
+          slug: forbiddenDeletePlanSlug,
           name: 'Forbidden Delete Plan',
           daysPerWeek: 1,
         },
@@ -603,7 +619,7 @@ describe('Admin Plans routes', () => {
       // Get the test plan ID
       if (!testPlanId) {
         const plan = await prisma.workoutPlan.findFirst({
-          where: { slug: 'test-plan' },
+          where: { slug: testPlanSlug },
         });
         if (plan) {
           testPlanId = plan.id;
@@ -647,7 +663,7 @@ describe('Admin Plans routes', () => {
       // Get the test plan ID
       if (!testPlanId) {
         const plan = await prisma.workoutPlan.findFirst({
-          where: { slug: 'test-plan' },
+          where: { slug: testPlanSlug },
         });
         if (plan) {
           testPlanId = plan.id;
@@ -690,7 +706,7 @@ describe('Admin Plans routes', () => {
       // Get the test plan ID
       if (!testPlanId) {
         const plan = await prisma.workoutPlan.findFirst({
-          where: { slug: 'test-plan' },
+          where: { slug: testPlanSlug },
         });
         if (plan) {
           testPlanId = plan.id;
@@ -715,7 +731,7 @@ describe('Admin Plans routes', () => {
       const benchRule = res.body.find((r: any) => r.exerciseId === exerciseIds.bench);
       expect(benchRule).toBeDefined();
       expect(benchRule.exercise).toBeDefined();
-      expect(benchRule.exercise.slug).toBe('bench-press-test');
+      expect(benchRule.exercise.slug).toBe(benchSlug);
     });
 
     it('returns 404 for non-existent plan', async () => {
@@ -736,7 +752,7 @@ describe('Admin Plans routes', () => {
       // Get the test plan ID
       if (!testPlanId) {
         const plan = await prisma.workoutPlan.findFirst({
-          where: { slug: 'test-plan' },
+          where: { slug: testPlanSlug },
         });
         if (plan) {
           testPlanId = plan.id;

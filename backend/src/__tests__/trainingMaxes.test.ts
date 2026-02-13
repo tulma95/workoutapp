@@ -1,7 +1,10 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
+import { randomUUID } from 'crypto';
 import app from '../app';
 import prisma from '../lib/db';
+
+const uid = randomUUID().slice(0, 8);
 
 describe('Training Maxes API', () => {
   let token: string;
@@ -11,7 +14,7 @@ describe('Training Maxes API', () => {
   beforeAll(async () => {
     // Register a kg user
     const res = await request(app).post('/api/auth/register').send({
-      email: 'tm-test@example.com',
+      email: `tm-test-${uid}@example.com`,
       password: 'password123',
       displayName: 'TM Test',
       unitPreference: 'kg',
@@ -20,7 +23,7 @@ describe('Training Maxes API', () => {
 
     // Register an lb user
     const lbRes = await request(app).post('/api/auth/register').send({
-      email: 'tm-lb@example.com',
+      email: `tm-lb-${uid}@example.com`,
       password: 'password123',
       displayName: 'LB Test',
       unitPreference: 'lb',
@@ -232,7 +235,7 @@ describe('Training Maxes API', () => {
 
     beforeAll(async () => {
       const res = await request(app).post('/api/auth/register').send({
-        email: 'tm-exercise-ids@example.com',
+        email: `tm-exids-${uid}@example.com`,
         password: 'password123',
         displayName: 'Exercise IDs Test',
         unitPreference: 'kg',
@@ -313,7 +316,7 @@ describe('Training Maxes API', () => {
 
     beforeAll(async () => {
       const res = await request(app).post('/api/auth/register').send({
-        email: 'tm-plan@example.com',
+        email: `tm-plan-${uid}@example.com`,
         password: 'password123',
         displayName: 'Plan Test User',
         unitPreference: 'kg',
@@ -325,7 +328,7 @@ describe('Training Maxes API', () => {
       const plan = await prisma.workoutPlan.create({
         data: {
           name: 'Test Plan',
-          slug: 'test-plan-tm',
+          slug: `test-plan-tm-${uid}`,
           description: 'Test plan for TM tests',
           daysPerWeek: 4,
           isPublic: true,
@@ -397,7 +400,7 @@ describe('Training Maxes API', () => {
     it('falls back to all TMs when no active plan', async () => {
       // Register a user without a plan
       const res = await request(app).post('/api/auth/register').send({
-        email: 'tm-no-plan@example.com',
+        email: `tm-noplan-${uid}@example.com`,
         password: 'password123',
         displayName: 'No Plan User',
         unitPreference: 'kg',

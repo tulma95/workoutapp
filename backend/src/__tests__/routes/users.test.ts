@@ -1,14 +1,16 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
+import { randomUUID } from 'crypto';
 import app from '../../app';
 
+const uid = randomUUID().slice(0, 8);
 let accessToken: string;
 
 describe('User routes', () => {
   beforeAll(async () => {
     const res = await request(app)
       .post('/api/auth/register')
-      .send({ email: 'userroute@example.com', password: 'password123', displayName: 'Test User', unitPreference: 'kg' });
+      .send({ email: `userroute-${uid}@example.com`, password: 'password123', displayName: 'Test User', unitPreference: 'kg' });
 
     accessToken = res.body.accessToken;
   });
@@ -20,7 +22,7 @@ describe('User routes', () => {
         .set('Authorization', `Bearer ${accessToken}`);
 
       expect(res.status).toBe(200);
-      expect(res.body).toHaveProperty('email', 'userroute@example.com');
+      expect(res.body).toHaveProperty('email', `userroute-${uid}@example.com`);
       expect(res.body).toHaveProperty('displayName', 'Test User');
       expect(res.body).not.toHaveProperty('passwordHash');
     });

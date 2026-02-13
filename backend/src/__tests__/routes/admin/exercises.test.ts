@@ -1,8 +1,11 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
+import { randomUUID } from 'crypto';
 import app from '../../../app';
 import prisma from '../../../lib/db';
 import bcrypt from 'bcrypt';
+
+const uid = randomUUID().slice(0, 8);
 
 let adminToken: string;
 let nonAdminToken: string;
@@ -13,7 +16,7 @@ describe('Admin Exercise routes', () => {
     // Create admin user
     const adminUser = await prisma.user.create({
       data: {
-        email: 'admin@example.com',
+        email: `admin-ex-${uid}@example.com`,
         passwordHash: await bcrypt.hash('password123', 10),
         displayName: 'Admin User',
         unitPreference: 'kg',
@@ -24,7 +27,7 @@ describe('Admin Exercise routes', () => {
     // Create non-admin user
     const nonAdminUser = await prisma.user.create({
       data: {
-        email: 'nonadmin@example.com',
+        email: `nonadmin-ex-${uid}@example.com`,
         passwordHash: await bcrypt.hash('password123', 10),
         displayName: 'Non-Admin User',
         unitPreference: 'kg',
@@ -35,13 +38,13 @@ describe('Admin Exercise routes', () => {
     // Login as admin
     const adminLoginRes = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'admin@example.com', password: 'password123' });
+      .send({ email: `admin-ex-${uid}@example.com`, password: 'password123' });
     adminToken = adminLoginRes.body.accessToken;
 
     // Login as non-admin
     const nonAdminLoginRes = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'nonadmin@example.com', password: 'password123' });
+      .send({ email: `nonadmin-ex-${uid}@example.com`, password: 'password123' });
     nonAdminToken = nonAdminLoginRes.body.accessToken;
   });
 
@@ -51,7 +54,7 @@ describe('Admin Exercise routes', () => {
         .post('/api/admin/exercises')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
-          slug: 'test-exercise',
+          slug: `test-exercise-${uid}`,
           name: 'Test Exercise',
           muscleGroup: 'chest',
           category: 'compound',
@@ -60,17 +63,29 @@ describe('Admin Exercise routes', () => {
 
       expect(res.status).toBe(201);
       expect(res.body).toHaveProperty('id');
-      expect(res.body.slug).toBe('test-exercise');
+      expect(res.body.slug).toBe(`test-exercise-${uid}`);
       expect(res.body.name).toBe('Test Exercise');
       testExerciseId = res.body.id;
     });
 
     it('returns 409 for duplicate slug', async () => {
+      const duplicateSlug = `duplicate-exercise-${uid}`;
+
+      // Create first exercise
+      await request(app)
+        .post('/api/admin/exercises')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          slug: duplicateSlug,
+          name: 'First Exercise',
+        });
+
+      // Attempt to create duplicate
       const res = await request(app)
         .post('/api/admin/exercises')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
-          slug: 'test-exercise',
+          slug: duplicateSlug,
           name: 'Duplicate Exercise',
         });
 
@@ -83,7 +98,7 @@ describe('Admin Exercise routes', () => {
         .post('/api/admin/exercises')
         .set('Authorization', `Bearer ${nonAdminToken}`)
         .send({
-          slug: 'forbidden-exercise',
+          slug: `forbidden-exercise-${uid}`,
           name: 'Forbidden Exercise',
         });
 
@@ -95,7 +110,7 @@ describe('Admin Exercise routes', () => {
       const res = await request(app)
         .post('/api/admin/exercises')
         .send({
-          slug: 'no-auth-exercise',
+          slug: `no-auth-exercise-${uid}`,
           name: 'No Auth Exercise',
         });
 
@@ -142,7 +157,7 @@ describe('Admin Exercise routes', () => {
       expect(res.status).toBe(200);
       expect(res.body.name).toBe('Updated Test Exercise');
       expect(res.body.muscleGroup).toBe('back');
-      expect(res.body.slug).toBe('test-exercise'); // unchanged
+      expect(res.body.slug).toBe(`test-exercise-${uid}`); // unchanged
     });
 
     it('returns 404 for non-existent exercise', async () => {
@@ -175,7 +190,7 @@ describe('Admin Exercise routes', () => {
       // Create an exercise and reference it in a plan
       const referencedExercise = await prisma.exercise.create({
         data: {
-          slug: 'referenced-exercise',
+          slug: `referenced-exercise-${uid}`,
           name: 'Referenced Exercise',
           category: 'compound',
         },
@@ -184,7 +199,7 @@ describe('Admin Exercise routes', () => {
       // Create a plan that references the exercise
       const plan = await prisma.workoutPlan.create({
         data: {
-          slug: 'test-plan',
+          slug: `test-plan-${uid}`,
           name: 'Test Plan',
           daysPerWeek: 1,
         },

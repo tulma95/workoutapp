@@ -1,7 +1,10 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
+import { randomUUID } from 'crypto';
 import app from '../app';
 import prisma from '../lib/db';
+
+const uid = randomUUID().slice(0, 8);
 
 describe('Workout Completion - Plan-Driven', () => {
   let token: string;
@@ -15,7 +18,7 @@ describe('Workout Completion - Plan-Driven', () => {
   beforeAll(async () => {
     // Register user
     const res = await request(app).post('/api/auth/register').send({
-      email: 'plan-completion-test@example.com',
+      email: `completion-${uid}@example.com`,
       password: 'password123',
       displayName: 'Plan Completion Test',
       unitPreference: 'kg',
@@ -35,7 +38,7 @@ describe('Workout Completion - Plan-Driven', () => {
     // Create a test plan with progression rules
     const plan = await prisma.workoutPlan.create({
       data: {
-        slug: 'test-plan-completion',
+        slug: `plan-completion-${uid}`,
         name: 'Test Plan for Completion',
         description: 'Test plan',
         daysPerWeek: 2,

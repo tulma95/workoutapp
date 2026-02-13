@@ -1,8 +1,27 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
+import { randomUUID } from 'crypto';
 import app from '../../app';
 import prisma from '../../lib/db';
 import bcrypt from 'bcrypt';
+
+const uid = randomUUID().slice(0, 8);
+
+const userEmail = `user-plans-${uid}@example.com`;
+
+const exerciseSlugs = {
+  bench: `bench-plans-${uid}`,
+  squat: `squat-plans-${uid}`,
+  ohp: `ohp-plans-${uid}`,
+  deadlift: `deadlift-plans-${uid}`,
+};
+
+const planSlugs = {
+  public: `public-plan-${uid}`,
+  archived: `archived-plan-${uid}`,
+  private: `private-plan-${uid}`,
+  another: `another-plan-${uid}`,
+};
 
 let userToken: string;
 let userId: number;
@@ -16,7 +35,7 @@ describe('Plans routes', () => {
     // Create test user
     const user = await prisma.user.create({
       data: {
-        email: 'user@plans.com',
+        email: userEmail,
         passwordHash: await bcrypt.hash('password123', 10),
         displayName: 'Test User',
         unitPreference: 'kg',
@@ -28,13 +47,13 @@ describe('Plans routes', () => {
     // Login
     const loginRes = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'user@plans.com', password: 'password123' });
+      .send({ email: userEmail, password: 'password123' });
     userToken = loginRes.body.accessToken;
 
     // Create test exercises
     const bench = await prisma.exercise.create({
       data: {
-        slug: 'bench-press-plans-test',
+        slug: exerciseSlugs.bench,
         name: 'Bench Press',
         muscleGroup: 'chest',
         category: 'compound',
@@ -44,7 +63,7 @@ describe('Plans routes', () => {
 
     const squat = await prisma.exercise.create({
       data: {
-        slug: 'squat-plans-test',
+        slug: exerciseSlugs.squat,
         name: 'Squat',
         muscleGroup: 'legs',
         category: 'compound',
@@ -54,7 +73,7 @@ describe('Plans routes', () => {
 
     const ohp = await prisma.exercise.create({
       data: {
-        slug: 'ohp-plans-test',
+        slug: exerciseSlugs.ohp,
         name: 'OHP',
         muscleGroup: 'shoulders',
         category: 'compound',
@@ -64,7 +83,7 @@ describe('Plans routes', () => {
 
     const deadlift = await prisma.exercise.create({
       data: {
-        slug: 'deadlift-plans-test',
+        slug: exerciseSlugs.deadlift,
         name: 'Deadlift',
         muscleGroup: 'back',
         category: 'compound',
@@ -82,7 +101,7 @@ describe('Plans routes', () => {
     // Create test public plan
     const publicPlan = await prisma.workoutPlan.create({
       data: {
-        slug: 'public-test-plan',
+        slug: planSlugs.public,
         name: 'Public Test Plan',
         description: 'A public test plan',
         daysPerWeek: 2,
@@ -152,7 +171,7 @@ describe('Plans routes', () => {
     // Create archived plan
     const archived = await prisma.workoutPlan.create({
       data: {
-        slug: 'archived-plan',
+        slug: planSlugs.archived,
         name: 'Archived Plan',
         daysPerWeek: 1,
         isPublic: true,
@@ -164,7 +183,7 @@ describe('Plans routes', () => {
     // Create private plan
     const privatePlan = await prisma.workoutPlan.create({
       data: {
-        slug: 'private-plan',
+        slug: planSlugs.private,
         name: 'Private Plan',
         daysPerWeek: 1,
         isPublic: false,
@@ -183,15 +202,15 @@ describe('Plans routes', () => {
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBeGreaterThanOrEqual(1);
 
-      const publicPlan = res.body.find((p: any) => p.slug === 'public-test-plan');
+      const publicPlan = res.body.find((p: any) => p.slug === planSlugs.public);
       expect(publicPlan).toBeDefined();
       expect(publicPlan.name).toBe('Public Test Plan');
       expect(publicPlan.days).toBeDefined();
       expect(publicPlan.days.length).toBe(2);
 
       // Should not include archived or private plans
-      expect(res.body.find((p: any) => p.slug === 'archived-plan')).toBeUndefined();
-      expect(res.body.find((p: any) => p.slug === 'private-plan')).toBeUndefined();
+      expect(res.body.find((p: any) => p.slug === planSlugs.archived)).toBeUndefined();
+      expect(res.body.find((p: any) => p.slug === planSlugs.private)).toBeUndefined();
     });
 
     it('requires authentication', async () => {
@@ -223,7 +242,7 @@ describe('Plans routes', () => {
 
       expect(res.status).toBe(200);
       expect(res.body).toBeDefined();
-      expect(res.body.slug).toBe('public-test-plan');
+      expect(res.body.slug).toBe(planSlugs.public);
       expect(res.body.days).toBeDefined();
       expect(res.body.days.length).toBe(2);
       expect(res.body.days[0].exercises).toBeDefined();
@@ -244,7 +263,7 @@ describe('Plans routes', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.id).toBe(testPlanId);
-      expect(res.body.slug).toBe('public-test-plan');
+      expect(res.body.slug).toBe(planSlugs.public);
       expect(res.body.name).toBe('Public Test Plan');
       expect(res.body.days).toBeDefined();
       expect(res.body.days.length).toBe(2);
@@ -328,14 +347,14 @@ describe('Plans routes', () => {
       expect(res.body.requiredExercises.length).toBe(3); // bench, squat, ohp
       expect(res.body.missingTMs).toBeDefined();
       expect(res.body.missingTMs.length).toBe(1); // ohp is missing
-      expect(res.body.missingTMs[0].slug).toBe('ohp-plans-test');
+      expect(res.body.missingTMs[0].slug).toBe(exerciseSlugs.ohp);
     });
 
     it('deactivates previous active plan when subscribing', async () => {
       // Create another plan
       const anotherPlan = await prisma.workoutPlan.create({
         data: {
-          slug: 'another-plan',
+          slug: planSlugs.another,
           name: 'Another Plan',
           daysPerWeek: 1,
           isPublic: true,

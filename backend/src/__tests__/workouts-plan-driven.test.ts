@@ -1,36 +1,19 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
+import { randomUUID } from 'crypto';
 import app from '../app';
 import prisma from '../lib/db';
 
 describe('Workouts API - Plan-Driven Generation', () => {
+  const uid = randomUUID().slice(0, 8);
   let token: string;
   let userId: number;
   let planId: number;
-  let adminToken: string;
 
   beforeAll(async () => {
-    // Create admin user
-    const adminUser = await prisma.user.create({
-      data: {
-        email: 'plan-workout-admin@example.com',
-        passwordHash: '$2b$10$dummyhash',
-        displayName: 'Admin',
-        unitPreference: 'kg',
-        isAdmin: true,
-      },
-    });
-
-    // Login admin
-    const adminLogin = await request(app).post('/api/auth/login').send({
-      email: 'plan-workout-admin@example.com',
-      password: 'password123',
-    });
-    adminToken = adminLogin.body.accessToken;
-
     // Register regular user
     const res = await request(app).post('/api/auth/register').send({
-      email: 'plan-workout-test@example.com',
+      email: `wk-test-${uid}@example.com`,
       password: 'password123',
       displayName: 'Plan Workout Test',
       unitPreference: 'kg',
@@ -87,7 +70,7 @@ describe('Workouts API - Plan-Driven Generation', () => {
     // Create test plan with minimal nSuns structure for Day 1
     const plan = await prisma.workoutPlan.create({
       data: {
-        slug: 'test-nsuns-4day',
+        slug: `nsuns-${uid}`,
         name: 'Test nSuns 4-Day LP',
         description: 'Test plan',
         daysPerWeek: 4,
@@ -227,14 +210,12 @@ describe('Workouts API - Plan-Driven Generation', () => {
 
       // Check progression flag is set correctly
       const progressionSets = res.body.sets.filter((s: { isProgression: boolean }) => s.isProgression);
-      // Day 1 has 1 progression set (65% AMRAP, last T1 set)
       expect(progressionSets).toHaveLength(1);
       expect(progressionSets[0].tier).toBe('T1');
       expect(progressionSets[0].isAmrap).toBe(true);
     });
 
     it('validates dayNumber against plan daysPerWeek', async () => {
-      // Cancel previous workout first
       const currentRes = await request(app)
         .get('/api/workouts/current')
         .set('Authorization', `Bearer ${token}`);
@@ -256,16 +237,14 @@ describe('Workouts API - Plan-Driven Generation', () => {
     });
 
     it('returns 400 when missing TMs for plan exercises', async () => {
-      // Create a new user without TMs
       const res = await request(app).post('/api/auth/register').send({
-        email: 'plan-no-tm@example.com',
+        email: `wk-notm-${uid}@example.com`,
         password: 'password123',
         displayName: 'No TM',
         unitPreference: 'kg',
       });
       const noTmUserId = res.body.user.id;
 
-      // Subscribe to plan
       await prisma.userPlan.create({
         data: {
           userId: noTmUserId,
@@ -274,7 +253,6 @@ describe('Workouts API - Plan-Driven Generation', () => {
         },
       });
 
-      // Try to start workout
       const workoutRes = await request(app)
         .post('/api/workouts')
         .set('Authorization', `Bearer ${res.body.accessToken}`)
@@ -285,7 +263,6 @@ describe('Workouts API - Plan-Driven Generation', () => {
     });
 
     it('creates workout with exerciseId and isProgression populated', async () => {
-      // Cancel previous workout first
       const currentRes = await request(app)
         .get('/api/workouts/current')
         .set('Authorization', `Bearer ${token}`);
@@ -296,7 +273,6 @@ describe('Workouts API - Plan-Driven Generation', () => {
           .set('Authorization', `Bearer ${token}`);
       }
 
-      // Start Day 1 (we only created Day 1 in test setup)
       const res = await request(app)
         .post('/api/workouts')
         .set('Authorization', `Bearer ${token}`)
@@ -304,7 +280,6 @@ describe('Workouts API - Plan-Driven Generation', () => {
 
       expect(res.status).toBe(201);
 
-      // Verify workout_sets have exerciseId and isProgression in DB
       const workout = await prisma.workout.findUnique({
         where: { id: res.body.id },
         include: { sets: true },
@@ -316,7 +291,6 @@ describe('Workouts API - Plan-Driven Generation', () => {
       const sets = workout!.sets;
       expect(sets.every((s) => s.exerciseId !== null)).toBe(true);
 
-      // Day 1 has 1 progression set (65% AMRAP, last T1 set)
       const progressionSets = sets.filter((s) => s.isProgression);
       expect(progressionSets).toHaveLength(1);
       expect(progressionSets[0].isProgression).toBe(true);
@@ -329,9 +303,8 @@ describe('Workouts API - Plan-Driven Generation', () => {
     let fallbackToken: string;
 
     beforeAll(async () => {
-      // Create user without subscribing to a plan
       const res = await request(app).post('/api/auth/register').send({
-        email: 'fallback-user@example.com',
+        email: `wk-fallback-${uid}@example.com`,
         password: 'password123',
         displayName: 'Fallback User',
         unitPreference: 'kg',
