@@ -7,10 +7,12 @@ export type Exercise = 'bench' | 'squat' | 'ohp' | 'deadlift';
 export interface JwtPayload {
   userId: number;
   email: string;
+  isAdmin: boolean;
 }
 
 export interface AuthRequest extends Request {
   userId?: number;
+  isAdmin?: boolean;
 }
 
 export class ExistingWorkoutError extends Error {

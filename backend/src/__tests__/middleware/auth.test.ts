@@ -19,14 +19,15 @@ function mockReqResNext(authHeader?: string) {
 }
 
 describe('authenticate middleware', () => {
-  it('passes with valid token and sets userId', () => {
-    const token = jwt.sign({ userId: 42, email: 'test@example.com' }, config.jwtSecret, { expiresIn: '1h' });
+  it('passes with valid token and sets userId and isAdmin', () => {
+    const token = jwt.sign({ userId: 42, email: 'test@example.com', isAdmin: true }, config.jwtSecret, { expiresIn: '1h' });
     const { req, res, next } = mockReqResNext(`Bearer ${token}`);
 
     authenticate(req, res, next);
 
     expect(next).toHaveBeenCalled();
     expect(req.userId).toBe(42);
+    expect(req.isAdmin).toBe(true);
     expect(res.status).not.toHaveBeenCalled();
   });
 

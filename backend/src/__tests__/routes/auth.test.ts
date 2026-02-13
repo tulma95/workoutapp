@@ -125,4 +125,35 @@ describe('Auth routes', () => {
       expect(res.body.error.code).toBe('TOKEN_INVALID');
     });
   });
+
+  describe('Admin field in responses', () => {
+    it('register returns isAdmin false for normal users', async () => {
+      const res = await request(app)
+        .post('/api/auth/register')
+        .send({ email: 'normaluser@example.com', password: 'password123', displayName: 'Normal User', unitPreference: 'kg' });
+
+      expect(res.status).toBe(201);
+      expect(res.body.user.isAdmin).toBe(false);
+
+      const decoded = jwt.verify(res.body.accessToken, config.jwtSecret) as { userId: number; email: string; isAdmin: boolean };
+      expect(decoded.isAdmin).toBe(false);
+    });
+
+    it('login returns isAdmin in user object and token', async () => {
+      await request(app)
+        .post('/api/auth/register')
+        .send({ email: 'checkadmin@example.com', password: 'password123', displayName: 'Check Admin', unitPreference: 'kg' });
+
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'checkadmin@example.com', password: 'password123' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.user).toHaveProperty('isAdmin');
+      expect(res.body.user.isAdmin).toBe(false);
+
+      const decoded = jwt.verify(res.body.accessToken, config.jwtSecret) as { userId: number; email: string; isAdmin: boolean };
+      expect(decoded.isAdmin).toBe(false);
+    });
+  });
 });

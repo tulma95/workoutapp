@@ -19,6 +19,7 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
   try {
     const decoded = jwt.verify(token, config.jwtSecret) as JwtPayload;
     req.userId = decoded.userId;
+    req.isAdmin = decoded.isAdmin;
     setUserId(decoded.userId);
     next();
   } catch {

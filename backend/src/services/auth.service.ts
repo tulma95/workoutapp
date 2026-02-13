@@ -8,15 +8,15 @@ const SALT_ROUNDS = 10;
 const ACCESS_TOKEN_EXPIRY = '24h';
 const REFRESH_TOKEN_EXPIRY = '30d';
 
-function signAccessToken(userId: number, email: string): string {
-  return jwt.sign({ userId, email }, config.jwtSecret, { expiresIn: ACCESS_TOKEN_EXPIRY });
+function signAccessToken(userId: number, email: string, isAdmin: boolean): string {
+  return jwt.sign({ userId, email, isAdmin }, config.jwtSecret, { expiresIn: ACCESS_TOKEN_EXPIRY });
 }
 
 function signRefreshToken(userId: number): string {
   return jwt.sign({ userId, type: 'refresh' }, config.jwtSecret, { expiresIn: REFRESH_TOKEN_EXPIRY });
 }
 
-function stripPasswordHash(user: { id: number; email: string; displayName: string; unitPreference: string; createdAt: Date; updatedAt: Date; passwordHash?: string }) {
+function stripPasswordHash(user: { id: number; email: string; displayName: string; unitPreference: string; isAdmin: boolean; createdAt: Date; updatedAt: Date; passwordHash?: string }) {
   const { passwordHash: _, ...safe } = user;
   return safe;
 }
@@ -30,7 +30,7 @@ export async function register(email: string, password: string, displayName: str
   logger.info('User registered', { email: user.email, userId: user.id });
 
   return {
-    accessToken: signAccessToken(user.id, user.email),
+    accessToken: signAccessToken(user.id, user.email, user.isAdmin),
     refreshToken: signRefreshToken(user.id),
     user: stripPasswordHash(user),
   };
@@ -54,7 +54,7 @@ export async function refreshTokens(refreshToken: string) {
   }
 
   return {
-    accessToken: signAccessToken(user.id, user.email),
+    accessToken: signAccessToken(user.id, user.email, user.isAdmin),
     refreshToken: signRefreshToken(user.id),
   };
 }
@@ -75,7 +75,7 @@ export async function login(email: string, password: string) {
   logger.info('User logged in', { email, userId: user.id });
 
   return {
-    accessToken: signAccessToken(user.id, user.email),
+    accessToken: signAccessToken(user.id, user.email, user.isAdmin),
     refreshToken: signRefreshToken(user.id),
     user: stripPasswordHash(user),
   };
