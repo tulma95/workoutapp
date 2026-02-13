@@ -1,12 +1,32 @@
 import { Outlet, Link, useLocation } from 'react-router';
+import { useAuth } from '../context/useAuth';
 
 export default function Layout() {
   const location = useLocation();
+  const { isAdmin } = useAuth();
 
   return (
     <div>
-      <header style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card)' }}>
+      <header style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>nSuns 4-Day LP</h1>
+        {isAdmin && (
+          <Link
+            to="/admin"
+            style={{
+              padding: '6px 12px',
+              borderRadius: '6px',
+              background: '#7c3aed',
+              color: 'white',
+              textDecoration: 'none',
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            ⚙️ Admin
+          </Link>
+        )}
       </header>
 
       <main className="container" style={{ paddingTop: '16px', paddingBottom: '72px' }}>
