@@ -1,0 +1,268 @@
+# Ralph Progress Log
+---
+## Codebase Patterns
+- Environment variables are exported by shell scripts, never loaded from .env files
+- All scripts source scripts/common.sh for shared helpers (ensure_dependencies)
+- Backend reads process.env directly without dotenv
+- prisma.config.ts reads process.env["DATABASE_URL"] without dotenv/config import
+- Checksum of package-lock.json stored at node_modules/.package-lock-checksum to detect stale dependencies
+- Prisma CLI does NOT support npm workspace `-w` flag — must `cd backend` then run `npx prisma generate` / `npx prisma migrate dev`
+- Use controlled components for complex stateful UI elements to avoid state reset issues
+- Show loading overlays instead of unmounting components during async operations
+- View Transition API requires TypeScript type declarations in vite-env.d.ts
+- Use document.startViewTransition() with feature detection for smooth animations
+- Prisma v7 uses prisma-client generator (not prisma-client-js), no url in schema.prisma datasource, connection URL in prisma.config.ts
+- Requires @prisma/adapter-pg adapter: new PrismaClient({ adapter: new PrismaPg({ connectionString }) })
+- Client generated to backend/src/generated/prisma/ (gitignored)
+- Export DATABASE_URL before running Prisma CLI commands (docker compose up -d required before migrations)
+- Admin routes follow pattern: authenticate + requireAdmin middleware at router level
+- Plan structure: WorkoutPlan -> PlanDay -> PlanDayExercise -> PlanSet (4 levels deep)
+- Plan-driven workout: check activePlan existence, branch to new logic vs fallback
+- Progression rule matching: exercise-specific rule takes precedence over category-based ('upper'/'lower')
+- Response format: plan-driven returns { progressions: [...] }, fallback returns { progression: {...} or null }
+- Dynamic forms: Use Record<string, string> for form state when field count is variable, keys are IDs
+- Pass data between routes via location.state (type with interface + cast location.state as Type)
+---
+## 2026-02-13 10:00 - US-101
+- Implemented isAdmin and activePlanId in frontend auth context
+- Files changed:
+  - frontend/src/api/schemas.ts: Added isAdmin field to UserSchema
+  - frontend/src/context/AuthContext.tsx: Added activePlanId state, fetches /api/plans/current on load/login/register
+- **Learnings for future iterations:**
+  - Backend auth responses already include isAdmin field from Part 1 - no backend changes needed
+  - GET /api/plans/current returns null if no active plan, must handle this case
+  - activePlanId is fetched asynchronously after user login/register, stored in context state
+  - useAuth hook automatically exposes all context values including isAdmin and activePlanId
+---
+## 2026-02-13 10:30 - US-102
+- Implemented Plan selection page for browsing and selecting workout plans
+- Files changed:
+  - frontend/src/api/plans.ts: Created API module with plan types and functions (getPlans, getCurrentPlan, subscribeToPlan)
+  - frontend/src/pages/PlanSelectionPage.tsx: Created plan selection UI with cards showing plan details
+  - frontend/src/pages/PlanSelectionPage.css: Styled plan cards, mobile-friendly layout
+  - frontend/src/App.tsx: Added /select-plan route
+  - frontend/src/pages/DashboardPage.tsx: Added redirect to /select-plan if no active plan
+- **Learnings for future iterations:**
+  - Plan API includes full nested structure: WorkoutPlan -> PlanDay -> PlanDayExercise with Exercise refs
+  - Subscribe endpoint returns missingTMs array - used to determine if setup page needed
+  - Dashboard uses auth context's activePlanId to check for active plan
+  - Auth context isLoading should be renamed to authLoading to avoid confusion with component state
+  - Navigation state can pass data between pages (e.g., missingTMs to setup page)
+---
+## 2026-02-13 12:00 - US-103
+- Implemented dynamic SetupPage that fetches required exercises from active plan
+- Files changed:
+  - frontend/src/api/trainingMaxes.ts: Added setupTrainingMaxesFromExercises function and ExerciseTM interface
+  - frontend/src/pages/SetupPage.tsx: Complete rewrite to support dynamic exercise loading and partial setup mode
+- **Learnings for future iterations:**
+  - SetupPage now requires an active plan - extracts unique TM exercises from plan.days[].exercises[].tmExercise
+  - Supports two modes: full setup (all plan exercises) and partial setup (only missing exercises via location state)
+  - Backend already supported new exerciseTMs format from Part 1 via union schema (accepts both old and new formats)
+  - New user flow changed: Register → Dashboard → /select-plan redirect → subscribe to plan → /setup (if missing TMs) → Dashboard
+  - Old E2E tests expect hardcoded flow (register → setup directly), need updating to match new plan-driven flow
+  - TypeScript: Using Record<string, string> for dynamic form state where keys are exercise IDs
+  - Location state typing: Use interface + type assertion for route state (e.g., missingTMs passed from plan subscription)
+  - Falls back gracefully when no plan: shows error message with button to navigate to /select-plan
+---
+## 2026-02-13 13:00 - US-104
+- Implemented dynamic DashboardPage with plan-driven workout day cards
+- Files changed:
+  - frontend/src/pages/DashboardPage.tsx: Removed WORKOUT_DAYS constant, fetch active plan, render days dynamically
+  - frontend/src/pages/DashboardPage.css: Added styles for current-plan-section
+- **Learnings for future iterations:**
+  - Dashboard fetches active plan in loadData() alongside TMs and current workout
+  - Workout cards are built from plan.days array - each day has exercises with tier (T1/T2)
+  - displayName takes precedence over exercise.name for card labels
+  - Added Current Plan section showing plan.name, plan.description, and Change button
+  - Redirect to /select-plan handled in loadData when plan is null (defensive check even though useEffect already redirects)
+  - Training maxes filtering by plan exercises not implemented - would require TM schema to use exerciseId instead of exercise slug string
+  - Using optional chaining on activePlan?.days in JSX to handle loading states
+---
+## 2026-02-13 14:00 - US-105
+- Implemented dynamic WorkoutPage with plan-driven progression support
+- Files changed:
+  - frontend/src/api/schemas.ts: Updated CompleteWorkoutResponseSchema to support both old (progression) and new (progressions) response formats
+  - frontend/src/pages/WorkoutPage.tsx: Removed hardcoded WORKOUT_DAYS and PROGRESSION_AMRAP_INDEX, extract exercise names from workout sets, use isProgression flag from API
+  - frontend/src/components/ProgressionBanner.tsx: Updated to accept progressions array while maintaining backward compatibility with single progression
+  - frontend/src/components/ProgressionBanner.css: Added progression-banner-container style for stacking multiple progressions
+- **Learnings for future iterations:**
+  - Backend returns different formats: plan-driven workouts have `{ progressions: Array }`, fallback workouts have `{ progression: Object | null }`
+  - Frontend schemas should use optional fields to support both formats during transition
+  - WorkoutSet schema includes isProgression boolean flag that replaces hardcoded AMRAP index logic
+  - Exercise names are stored in workout_sets.exercise field (currently string slugs, will use exerciseId in US-115)
+  - Day title extraction from plan data not yet implemented - using fallback "Day N" for now
+  - ProgressionBanner component made backward compatible to avoid breaking existing code during transition
+---
+## 2026-02-13 14:30 - US-106
+- Completed ProgressionBanner to handle multiple progressions
+- Files changed:
+  - frontend/src/components/ProgressionBanner.tsx: Enhanced to render array of progressions with color-coding
+- **Learnings for future iterations:**
+  - Color-coding requires conditional CSS class: progression-banner--success (green) for increases, progression-banner--neutral for no change
+  - Zero-increase progressions should still be displayed (not filtered out) but with neutral color
+  - Text "No change" is clearer than "+0 kg" for zero increases
+  - Component backward compatible: accepts both single `progression` prop and `progressions` array prop
+---
+## 2026-02-13 15:00 - US-107
+- Implemented Plan switch confirmation modal for warning users before changing plans
+- Files changed:
+  - frontend/src/components/PlanSwitchConfirmModal.tsx: Created modal component with warnings UI
+  - frontend/src/components/PlanSwitchConfirmModal.css: Styled modal with mobile-friendly touch targets
+  - frontend/src/pages/PlanSelectionPage.tsx: Integrated modal with plan switching logic
+  - .gitignore: Added .env to prevent committing environment variables
+- **Learnings for future iterations:**
+  - Plan switching requires checking activePlanId from auth context to determine if modal should show
+  - Modal needs to gather data from multiple sources: getCurrentPlan, getCurrentWorkout, getTrainingMaxes
+  - Exercise comparison done by comparing tmExerciseId sets between current and target plans
+  - Modal warnings use PlanSwitchWarnings interface with hasInProgressWorkout, newExercises, existingExercises
+  - TypeScript requires explicit type annotations for forEach callbacks to avoid implicit 'any' errors
+  - Frontend dev servers can be started without backend when testing UI-only features
+  - .env file should always be in .gitignore to prevent accidental credential commits
+  - Modal overlay uses stopPropagation on content div to prevent closing when clicking inside modal
+  - Color-coded warnings use CSS classes: warning-danger for critical warnings (workout discard)
+---
+## 2026-02-13 15:30 - US-108
+- Added Current Plan section to SettingsPage
+- Files changed:
+  - frontend/src/pages/SettingsPage.tsx: Added current plan display with Change/Browse Plans buttons
+- **Learnings for future iterations:**
+  - SettingsPage now fetches current plan on mount using getCurrentPlan()
+  - Two states handled: has plan (shows name, description, "Change Plan" button) vs no plan (shows "No plan selected", "Browse Plans" button)
+  - Uses separate loading state (planLoading) for plan fetch to avoid blocking other settings
+  - Consistent styling with existing settings sections using inline styles matching var(--bg-card), var(--text-muted)
+  - Navigate hook from react-router used for programmatic navigation to /select-plan
+  - No error shown if plan fetch fails - having no plan is a valid state
+---
+## 2026-02-13 16:00 - US-109
+- Implemented AdminRoute guard and AdminLayout with purple accent
+- Files changed:
+  - frontend/src/components/AdminRoute.tsx: Route guard checking isAdmin, redirects to /
+  - frontend/src/components/AdminLayout.tsx: Admin-specific layout with header and tab nav
+  - frontend/src/components/AdminLayout.css: Purple (#7c3aed) themed styling
+  - frontend/src/components/Layout.tsx: Added admin icon for admin users
+  - frontend/src/App.tsx: Added admin route structure with nested routes
+  - frontend/src/pages/admin/PlanListPage.tsx: Placeholder for plan management
+  - frontend/src/pages/admin/ExerciseListPage.tsx: Placeholder for exercise management
+- **Learnings for future iterations:**
+  - AdminRoute uses Navigate component with replace prop to redirect non-admins
+  - Returns null while auth isLoading to prevent flashing before redirect
+  - Admin routes use nested Routes within AdminLayout for subroutes (/admin/plans, /admin/exercises)
+  - Purple accent (#7c3aed) applied to header background, active tab border, admin button
+  - Tab navigation uses startsWith for Plans (matches /admin/plans/*) vs exact match for Exercises
+  - Admin icon in Layout header conditionally rendered based on isAdmin from useAuth
+  - Layout header updated to flexbox (justify-between) to align admin button to right
+  - Placeholder pages created in frontend/src/pages/admin/ directory structure
+  - Browser verification: non-admin redirect working correctly (attempted /admin → redirected to /select-plan)
+---
+## 2026-02-13 16:30 - US-110
+- Implemented Admin Exercise management page for CRUD operations
+- Files changed:
+  - frontend/src/api/exercises.ts: Created API module with Exercise types and CRUD functions
+  - frontend/src/components/ExerciseFormModal.tsx: Modal component with auto-slug generation
+  - frontend/src/components/ExerciseFormModal.css: Modal styling with mobile-friendly touch targets
+  - frontend/src/pages/admin/ExerciseListPage.tsx: Table view of exercises with edit/delete actions
+  - frontend/src/pages/admin/ExerciseListPage.css: Responsive table styling with color-coded badges
+- **Learnings for future iterations:**
+  - AuthContext uses 'accessToken' key in localStorage, not 'token' - admin API modules must use correct key
+  - Auto-slug generation in forms: track whether slug was manually edited with state flag to prevent overwriting user input
+  - Delete confirmation uses window.confirm() for simple dialogs (no custom modal needed for basic confirms)
+  - Color-coded badges improve UX: green for compound exercises, purple/blue for isolation, blue for upper, purple for lower
+  - Backend already has referential integrity check: deletes fail with CONFLICT error if exercise is used in a plan
+  - Table with emoji icons (✏️ 🗑️) for actions is mobile-friendly and clear without text labels
+  - Modal overlay pattern: stopPropagation on content div, click on overlay to close
+  - Admin routes were already set up in US-109, no routing changes needed
+  - Browser testing workflow: create admin user → set is_admin flag in DB → login → test CRUD operations
+---
+## 2026-02-13 17:00 - US-111
+- Implemented Admin Plan list page for viewing and managing workout plans
+- Files changed:
+  - frontend/src/api/adminPlans.ts: Created admin plan API module with getAdminPlans and archivePlan functions
+  - frontend/src/pages/admin/PlanListPage.tsx: Plan list component with card layout
+  - frontend/src/pages/admin/PlanListPage.css: Responsive styling with color-coded status badges
+- **Learnings for future iterations:**
+  - Backend GET /api/admin/plans returns plans with subscriberCount (computed from subscriptions.length)
+  - Status badges use multiple conditions: System (isSystem), Active (isPublic && !archived), Draft (!isPublic), Archived (archivedAt)
+  - Archive action is soft delete (sets archivedAt timestamp) via DELETE /api/admin/plans/:id
+  - System plans have isSystem flag and cannot be archived - backend returns 400 error
+  - Admin API calls must use 'accessToken' from localStorage (not 'token')
+  - Plan cards use Link wrapper for navigation, with nested button for archive action (stopPropagation to prevent navigation)
+  - Mobile-friendly: 48px minimum touch targets, responsive flex layout
+  - Archive confirmation uses window.confirm for simple UX (no custom modal needed for basic confirms)
+  - Backend routes already implemented in Part 1 - only frontend UI needed for this story
+---
+## 2026-02-13 18:00 - US-112
+- Implemented Admin Plan editor page for creating and editing workout plans with metadata and day structure
+- Files changed:
+  - frontend/src/api/adminPlans.ts: Extended with PlanWithDetails, CreatePlanInput types and getAdminPlan, createPlan, updatePlan functions
+  - frontend/src/pages/admin/PlanEditorPage.tsx: Complex editor component with metadata form, day tabs, exercise list
+  - frontend/src/pages/admin/PlanEditorPage.css: Comprehensive styling for nested forms and modals
+  - frontend/src/App.tsx: Fixed routes for /admin/plans/new and /admin/plans/:id to use PlanEditorPage
+- **Learnings for future iterations:**
+  - Complex nested state: EditorDay[] with EditorExercise[] array inside, each exercise has tempId for React keys before saving
+  - Auto-slug generation: track slugManuallyEdited state to prevent overwriting user's manual edits
+  - Dynamic day management: adjusting daysPerWeek adds/removes days array, resets activeDay if it exceeds new count
+  - Exercise reordering: use array swap for up/down buttons, re-number sortOrder sequentially after every move
+  - Modal picker pattern: searchable exercise list, click outside to close, stopPropagation on content div
+  - Validation before save: check all exercises have sets.length > 0, alert user with specific day/exercise info
+  - Backend API returns full nested structure after POST/PUT: WorkoutPlan -> days -> exercises -> sets
+  - isEditMode determined by presence of :id param in useParams
+  - Display name is optional field that overrides exercise.name on cards/UI (stored in planDayExercise.displayName)
+  - TM exercise selector defaults to same exercise but can reference different exercise's TM (e.g., Sumo DL uses Deadlift TM)
+  - Set scheme editing deferred to US-113 - "Edit Sets" button is placeholder, shows warning if no sets defined
+  - Used alert() for success messages instead of toast system - simpler for admin UI
+  - Exercise library fetched from GET /api/admin/exercises (uses getExercises from exercises API module)
+---
+## 2026-02-13 12:50 - US-113
+- Implemented Admin Set scheme editor modal for defining exercise set schemes
+- Files changed:
+  - frontend/src/components/SetSchemeEditorModal.tsx: Created modal component with table UI for set editing
+  - frontend/src/components/SetSchemeEditorModal.css: Styled modal with responsive table layout
+  - frontend/src/pages/admin/PlanEditorPage.tsx: Integrated modal, added state management for editing sets
+  - frontend/src/pages/admin/PlanListPage.tsx: Fixed react-router import (react-router-dom → react-router)
+- **Learnings for future iterations:**
+  - Percentage storage convention: display as whole numbers (0-100) for better UX, store as decimals (0-1) for backend compatibility
+  - Validation pattern: use window.confirm for warnings that allow user to proceed (e.g., multiple progression sets)
+  - Set renumbering: always renumber setOrder sequentially after add/remove operations to maintain consistency
+  - Modal pattern: pass initialSets to modal, return modified sets via onSave callback, parent handles state update
+  - React Router v7 package naming: project uses 'react-router' package, not 'react-router-dom' (legacy name)
+  - TypeScript errors from previous stories (Zod _type vs _output, missing isProgression field) exist but don't block new work
+  - Table inputs for numeric data: center-align text for better readability (percentage-input, reps-input classes)
+  - Mobile optimization: reduce input widths and font sizes, stack footer buttons vertically on small screens
+---
+## 2026-02-13 13:05 - US-114
+- Implemented Admin Progression rules editor for defining TM progression based on AMRAP performance
+- Files changed:
+  - frontend/src/api/adminPlans.ts: Added ProgressionRule type, updated PlanWithDetails, added setProgressionRules function
+  - frontend/src/components/ProgressionRulesEditor.tsx: Created editor component with table UI for rules
+  - frontend/src/components/ProgressionRulesEditor.css: Styled responsive table with mobile-friendly touch targets
+  - frontend/src/pages/admin/PlanEditorPage.tsx: Integrated ProgressionRulesEditor, added state management and save logic
+- **Learnings for future iterations:**
+  - Progression rules have three target modes: exercise-specific (exerciseId), category-based (category='upper'/'lower'), or no target (default)
+  - Target selection uses grouped dropdown: optgroup for categories vs exercise-specific rules
+  - Rules are saved separately via POST /api/admin/plans/:id/progression-rules after plan is saved
+  - Backend already includes progressionRules in GET /api/admin/plans/:id response with exercise refs
+  - EditorProgressionRule uses tempId for React keys before database IDs exist (same pattern as exercises/sets)
+  - Rules state managed independently from days/exercises state - passed to editor via onChange callback
+  - Backend tests all pass (233 tests), E2E tests fail due to US-103 flow changes (expected, will be fixed separately)
+  - Typecheck passes without errors
+  - Component placed at bottom of PlanEditorPage after day structure section for logical flow
+---
+## 2026-02-13 13:20 - US-115
+- Removed all hardcoded nSuns references and made app fully plan-driven
+- Files changed:
+  - Deleted backend/src/lib/nsuns.ts and backend/src/lib/progression.ts
+  - Deleted fallback workout tests (workoutCompletion.test.ts, workouts.test.ts)
+  - Deleted hardcoded Exercise type from frontend/src/types.ts and backend/src/types/index.ts
+  - Created migration to migrate exercise string to exerciseId and drop exercise columns
+  - Updated workout.service.ts: removed fallback logic, requires active plan, uses exerciseId only
+  - Updated trainingMax.service.ts: removed hardcoded exercises, uses exerciseId, includes exercise relation in responses
+  - Updated routes to validate exercises against database
+  - Updated frontend schemas: added isProgression field, changed _type to _output
+  - Updated tests to match plan-driven behavior
+- **Learnings for future iterations:**
+  - Migration needed to be idempotent (IF EXISTS, IF NOT EXISTS) for test database compatibility
+  - TM/workout responses need to include exercise relation and map to slug for API compatibility
+  - Removing fallback logic requires updating tests to expect plan-required behavior
+  - All workout/TM operations now require an active plan - no hardcoded fallback
+  - Frontend Zod schemas use _output not _type in newer Zod versions
+---
