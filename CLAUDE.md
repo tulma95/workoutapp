@@ -1,14 +1,14 @@
-# nSuns 4-Day LP Workout Tracker
+# Workout Tracker (Plan-Driven)
 
 ## Project Overview
 
-A workout tracking application for the nSuns 4-Day Linear Progression program. Users register, enter 1 Rep Maxes, and the app generates workouts with auto-calculated weights. Training maxes update automatically based on AMRAP performance.
+A workout tracking application supporting configurable training plans. Ships with nSuns 4-Day LP as the default plan. Users register, subscribe to a plan, enter 1 Rep Maxes for the plan's exercises, and the app generates workouts with auto-calculated weights. Training maxes update automatically based on AMRAP performance and plan-specific progression rules.
 
 ## Tech Stack
 
-- **Backend**: Express.js + TypeScript, Prisma (ORM + migrations), bcrypt + jsonwebtoken, zod, vitest + supertest
-- **Frontend**: React + TypeScript, Vite, React Router v6, plain CSS
-- **E2E**: Playwright
+- **Backend**: Express.js + TypeScript, Prisma v7 (ORM + migrations), bcrypt + jsonwebtoken, zod, vitest + supertest
+- **Frontend**: React + TypeScript, Vite, React Router v7 (`react-router` package, not `react-router-dom`), plain CSS with rem units
+- **E2E**: Playwright (parallel execution, 4 workers dev / 2 CI)
 - **Database**: PostgreSQL latest (Dockerized via docker-compose)
 - **Package manager**: npm workspaces (monorepo: `backend/`, `frontend/`)
 - **Node**: v22 (`.nvmrc`)
@@ -17,17 +17,38 @@ A workout tracking application for the nSuns 4-Day Linear Progression program. U
 
 - Monorepo with npm workspaces
 - Backend on port 3001, frontend Vite dev server on 5173 with `/api` proxy
-- JWT auth (token in localStorage, `Authorization: Bearer` header)
+- JWT auth (`accessToken` in localStorage, `Authorization: Bearer` header)
 - Weights stored internally in **kg**, converted to lb at display layer
 - Training maxes are **append-only** rows (latest `effective_date` = current TM, older rows = history)
+- **Plan-driven**: All workout generation and progression requires an active plan subscription (no hardcoded fallback)
+- **Environment variables**: Exported by shell scripts (`start_local_env.sh`, `run_test.sh`), never loaded from .env files. Backend reads `process.env` directly without dotenv.
 
-## nSuns 4-Day LP Program
+## Plan System
 
-### Training Maxes
+### How Plans Work
 
-4 lifts tracked: **Bench, Squat, OHP, Deadlift**. TM = 90% of 1RM.
+- **WorkoutPlan** defines the program: name, slug, days per week, system flag
+- **PlanDay** defines each training day with exercises
+- **PlanDayExercise** links exercises to days with tier (T1/T2), display name, TM exercise reference, sort order
+- **PlanSet** defines set schemes: percentage, reps, isAmrap, isProgression per exercise per day
+- **PlanProgressionRule** defines TM increases: minReps/maxReps ranges with increase amounts, can be exercise-specific or category-based (upper/lower)
+- **UserPlan** tracks user subscriptions with isActive flag
 
-### Day Structure
+### User Flow
+
+Register -> Dashboard -> /select-plan redirect -> subscribe to plan -> /setup (if missing TMs) -> Dashboard -> start workouts
+
+### Progression
+
+- Each plan defines its own progression rules (not hardcoded)
+- Progression sets marked with `isProgression: true` in PlanSet
+- Rule matching: exercise-specific rule takes precedence over category-based ('upper'/'lower')
+- Category determined by `exercise.isUpperBody`: true = 'upper', false = 'lower'
+- Completing a workout can produce multiple progressions (one per progression set)
+
+## Default nSuns 4-Day LP Plan
+
+Seeded via `backend/prisma/seed.ts`. 4 lifts tracked: Bench, Squat, OHP, Deadlift. TM = 90% of 1RM.
 
 | Day | T1 (9 sets)             | T2 (8 sets)                         |
 | --- | ----------------------- | ----------------------------------- |
@@ -36,121 +57,131 @@ A workout tracking application for the nSuns 4-Day Linear Progression program. U
 | 3   | Bench Heavy (Bench TM)  | Close Grip Bench (Bench TM, 40-60%) |
 | 4   | Deadlift (Deadlift TM)  | Front Squat (Squat TM, 35-55%)      |
 
-### T1 Set Schemes (% of TM)
-
-- **Bench Volume (Day 1)**: 65%x8, 75%x6, 85%x4, 85%x4, 85%x4, 80%x5, 75%x6, 70%x7, **65%x8+**
-- **Squat (Day 2)**: 75%x5, 85%x3, **95%x1+**, 90%x3, 85%x3, 80%x3, 75%x5, 70%x5, 65%x5+
-- **Bench Heavy (Day 3)**: 75%x5, 85%x3, **95%x1+**, 90%x3, 85%x5, 80%x3, 75%x5, 70%x3, 65%x5+
-- **Deadlift (Day 4)**: 75%x5, 85%x3, **95%x1+**, 90%x3, 85%x3, 80%x3, 75%x3, 70%x3, 65%x3+
-
-Bold = **progression AMRAP** (highest-% AMRAP set, used for TM adjustment).
-
-### T2 Set Schemes (% of parent T1's TM)
-
-- **OHP** (OHP TM): 50%x6, 60%x5, 70%x3, 70%x5, 70%x7, 70%x4, 70%x6, 70%x8
-- **Sumo Deadlift** (Deadlift TM): 50%x5, 60%x5, 70%x3, 70%x5, 70%x7, 70%x4, 70%x6, 70%x8
-- **Close Grip Bench** (Bench TM): 40%x6, 50%x5, 60%x3, 60%x5, 60%x7, 60%x4, 60%x6, 60%x8
-- **Front Squat** (Squat TM): 35%x5, 45%x5, 55%x3, 55%x5, 55%x7, 55%x4, 55%x6, 55%x8
-
-### Progression Rules
-
-Based on reps achieved in the T1 **progression AMRAP** set:
-
-| AMRAP Reps | TM Increase         |
-| ---------- | ------------------- |
-| 0-1        | No increase         |
-| 2-3        | +2.5kg / +5lb       |
-| 4-5        | +2.5-5kg / +5-10lb  |
-| 5+         | +5-7.5kg / +10-15lb |
-
 ### Weight Rounding
 
 Round calculated weights to nearest **2.5kg** or **5lb** depending on user preference.
 
 ## Database Schema
 
-### users
+### Core Tables
 
-`id, email (unique), password_hash, display_name, unit_preference ('kg'/'lb'), created_at, updated_at`
+- **users**: `id, email (unique), password_hash, display_name, unit_preference ('kg'/'lb'), is_admin (default false), created_at, updated_at`
+- **exercises**: `id, name, slug (unique), category, is_compound, is_upper_body, created_at, updated_at`
+- **training_maxes** (append-only): `id, user_id (FK), exercise, exercise_id (FK exercises), weight (kg), effective_date, created_at` - Unique constraint: (user_id, exercise, effective_date)
+- **workouts**: `id, user_id (FK), day_number, plan_day_id (FK plan_days), status ('in_progress'/'completed'/'discarded'), completed_at, created_at`
+- **workout_sets**: `id, workout_id (FK CASCADE), exercise, exercise_id (FK exercises), tier ('T1'/'T2'), set_order, prescribed_weight (kg), prescribed_reps, is_amrap, is_progression, actual_reps (nullable), completed, created_at`
 
-### training_maxes (append-only)
+### Plan Tables
 
-`id, user_id (FK), exercise ('bench'/'squat'/'ohp'/'deadlift'), weight (kg), effective_date, created_at`
-
-- Unique constraint: (user_id, exercise, effective_date)
-- Current TM = row with latest effective_date per exercise
-
-### workouts
-
-`id, user_id (FK), day_number (1-4), status ('in_progress'/'completed'), completed_at, created_at`
-
-### workout_sets
-
-`id, workout_id (FK CASCADE), exercise, tier ('T1'/'T2'), set_order (1-9), prescribed_weight (kg), prescribed_reps, is_amrap, actual_reps (nullable), completed, created_at`
+- **workout_plans**: `id, name, slug (unique), description, days_per_week, is_public, is_system, archived_at, created_at, updated_at`
+- **plan_days**: `id, plan_id (FK CASCADE), day_number, name` - Unique: (plan_id, day_number)
+- **plan_day_exercises**: `id, plan_day_id (FK CASCADE), exercise_id (FK), tm_exercise_id (FK), tier ('T1'/'T2'), display_name, sort_order`
+- **plan_sets**: `id, plan_day_exercise_id (FK CASCADE), set_order, percentage (Decimal 5,4), reps, is_amrap, is_progression`
+- **plan_progression_rules**: `id, plan_id (FK CASCADE), exercise_id (FK, nullable), category ('upper'/'lower', nullable), min_reps, max_reps, increase_amount (kg)`
+- **user_plans**: `id, user_id (FK), plan_id (FK CASCADE), is_active, started_at, ended_at`
 
 ## API Endpoints
 
 ### Public
 
 - `POST /api/auth/register` - `{ email, password, displayName, unitPreference }`
-- `POST /api/auth/login` - `{ email, password }` → `{ token, user }`
+- `POST /api/auth/login` - `{ email, password }` -> `{ accessToken, refreshToken, user }`
 
 ### Protected (JWT required)
 
 - `GET /api/users/me` | `PATCH /api/users/me`
-- `GET /api/training-maxes` - current TMs for all 4 lifts
-- `POST /api/training-maxes/setup` - `{ oneRepMaxes: { bench, squat, ohp, deadlift } }` → TM = 90% \* 1RM
+- `GET /api/training-maxes` - current TMs (plan-aware: returns TMs for active plan exercises)
+- `POST /api/training-maxes/setup` - accepts both `{ oneRepMaxes }` and `{ exerciseTMs: [{ exerciseId, oneRepMax }] }`
 - `PATCH /api/training-maxes/:exercise` - manual TM override
 - `GET /api/training-maxes/:exercise/history`
-- `POST /api/workouts` - `{ dayNumber }` → generates all sets from current TMs
+- `POST /api/workouts` - `{ dayNumber }` -> generates sets from active plan + TMs
 - `GET /api/workouts/current` - in-progress workout (or null)
 - `GET /api/workouts/:id`
 - `PATCH /api/workouts/:id/sets/:setId` - `{ actualReps, completed }`
-- `POST /api/workouts/:id/complete` - applies progression, returns TM changes
+- `POST /api/workouts/:id/complete` - applies progression, returns `{ progressions: [...] }`
+- `DELETE /api/workouts/:id` - soft-delete (sets status to 'discarded')
 - `GET /api/workouts/history?page=1&limit=10`
+- `GET /api/workouts/calendar?year=2026&month=2` - calendar view (must be before /:id route)
+
+### Plan Endpoints (JWT required)
+
+- `GET /api/plans` - list public, non-archived plans
+- `GET /api/plans/current` - user's active plan (or null)
+- `GET /api/plans/:id` - plan detail with full nested structure
+- `POST /api/plans/:id/subscribe` - subscribe to plan, returns `{ userPlan, requiredExercises, missingTMs }`
+
+### Admin Endpoints (JWT + isAdmin required)
+
+- `GET/POST /api/admin/exercises` - list/create exercises
+- `PATCH/DELETE /api/admin/exercises/:id` - update/delete exercises (delete fails if referenced by a plan)
+- `GET/POST /api/admin/plans` - list/create plans (full nested structure in one transaction)
+- `GET/PUT/DELETE /api/admin/plans/:id` - get/update/archive plans (system plans cannot be archived)
+- `POST /api/admin/plans/:id/progression-rules` - replace progression rules for a plan
 
 ## Key Business Logic
 
 ### Starting a Workout (`POST /api/workouts`)
 
-1. Look up current TMs for the day's exercises
-2. Generate sets using program definition (nsuns.ts) + TMs
-3. Calculate actual weights: `round(TM * percentage)` using user's unit rounding
-4. Insert workout + all workout_sets rows
-5. Return full workout with sets
+1. Require active plan subscription
+2. Load PlanDay with exercises and sets for the requested dayNumber
+3. Look up current TMs for each exercise's tmExerciseId
+4. Calculate weights: `round(TM * percentage)` using plan set schemes
+5. Insert workout + workout_sets with exerciseId and isProgression from plan
+6. Return full workout with sets
 
 ### Completing a Workout (`POST /api/workouts/:id/complete`)
 
-1. Find the T1 AMRAP set with the **highest percentage** (this is the progression set)
-2. Read `actual_reps` from that set
-3. Calculate TM increase using progression rules
-4. If increase > 0, insert new `training_maxes` row with updated weight
-5. Mark workout as completed
-6. Return progression result
+1. Find all sets with `isProgression: true`
+2. For each progression set: look up exercise, find matching progression rule
+3. Rule matching: exercise-specific first, then category fallback (upper/lower)
+4. Calculate TM increase from matched rule based on actual_reps
+5. Insert new training_maxes rows if increase > 0
+6. Return `{ progressions: [...] }` array (multiple possible per workout)
 
-### Key Insight: Progression AMRAP Selection
+### Canceling a Workout (`DELETE /api/workouts/:id`)
 
-- Days 2, 3, 4 have TWO T1 AMRAP sets (95%x1+ and a lighter final AMRAP)
-- Day 1 has ONE T1 AMRAP (65%x8+)
-- Always use the **highest percentage AMRAP** for progression calculation
+- Soft delete: sets status to 'discarded' (not hard delete)
+- Discarded workouts excluded from history, calendar, and current workout queries
 
 ## Frontend Structure
 
 ### Pages
 
 - `LoginPage` / `RegisterPage` - auth forms
-- `SetupPage` - enter 4 x 1RM inputs (shown once, redirected if no TMs)
-- `DashboardPage` - 4 workout day cards, current TMs, next workout highlighted
-- `WorkoutPage` - active session: T1 + T2 set lists, tap to complete, AMRAP input, completion → progression banner
-- `HistoryPage` - paginated past workouts with expandable details
+- `PlanSelectionPage` - browse and subscribe to workout plans
+- `SetupPage` - dynamic 1RM inputs based on active plan's exercises (supports partial setup for missing TMs)
+- `DashboardPage` - plan-driven workout day cards, current TMs, current plan section
+- `WorkoutPage` - active session with conflict dialog for duplicate workouts
+- `HistoryPage` - calendar view (WorkoutCalendar) + workout detail (WorkoutDetail) with View Transition animations
+- `SettingsPage` - unit preference, current plan display
+
+### Admin Pages (purple accent, /admin/*)
+
+- `PlanListPage` - list/archive plans
+- `PlanEditorPage` - create/edit plans with day structure, exercise picker, set scheme editor
+- `ExerciseListPage` - CRUD exercises
 
 ### Key Components
 
-- `Layout` - mobile shell with bottom nav (Dashboard, History, Settings)
+- `Layout` - mobile shell with bottom nav (Dashboard, History, Settings) + admin icon for admins
+- `AdminLayout` - purple (#7c3aed) themed layout with Plans/Exercises tabs
+- `WorkoutCalendar` - controlled component, Monday-first calendar with workout indicators
+- `WorkoutDetail` - read-only workout display with set data
 - `SetRow` - single set: weight, reps, completion toggle
 - `AmrapInput` - +/- stepper for mobile-friendly rep entry
-- `ProgressionBanner` - color-coded TM change display after completion
-- `WorkoutCard` - day summary card for dashboard
+- `ProgressionBanner` - supports both single and array progressions
+- `ConflictDialog` - modal for duplicate workout resolution (continue/discard)
+- `LoadingSpinner` / `ErrorMessage` - shared UI state components
+
+### Frontend Patterns
+
+- **Zod schemas**: All API responses validated at runtime via `frontend/src/api/schemas.ts`
+- **Weight conversion**: All display uses `formatWeight()` from `frontend/src/utils/weight.ts`. Backend always stores kg.
+- **CSS**: rem units on 8-point grid, custom properties in `global.css`, border widths stay as px
+- **Touch targets**: All interactive elements min 44px (3rem)
+- **View Transitions**: `document.startViewTransition()` with feature detection for calendar navigation
+- **Controlled components**: Complex stateful UI (e.g., WorkoutCalendar) uses props not internal state to prevent reset on re-render
+- **Loading overlays**: Keep components mounted during loading, use opacity + pointer-events: none instead of unmounting
 
 ## Testing
 
@@ -159,18 +190,24 @@ Always write tests for new code.
 - **Backend integration tests**: Run against a real PostgreSQL test database (port 5433). No `vi.mock` for DB, config, or bcrypt — use real modules.
 - **Test infrastructure**: `./run_test.sh` handles the full lifecycle: starts test Postgres container, runs migrations, runs backend vitest tests, starts dev servers, runs Playwright E2E tests, cleans up.
 - **Test isolation**: Backend `vitest.config.ts` uses `fileParallelism: false` and `setup.ts` truncates all tables in `beforeAll` per test file.
-- **E2E tests**: Playwright for end-to-end user flows (registration, login, workout session, progression). Test files located in `e2e/`, configuration in `playwright.config.ts` at project root.
+- **E2E tests**: Playwright for end-to-end user flows (registration, login, workout session, progression). Test files located in `e2e/`, configuration in `playwright.config.ts` at project root. Parallel execution with `crypto.randomUUID()` for unique test users.
 - **Do not write frontend unit tests.** All frontend testing is done via Playwright E2E tests.
 - Run tests before committing: `npm test` or `./run_test.sh`
+- If tests fail, fix code or test and then you can commit. Never skip tests if they fail
+- **Backend typecheck**: `npm run build -w backend` (no separate typecheck script)
+- **Frontend typecheck**: `cd frontend && npx tsc --noEmit`
 
 ## Design Decisions
 
-- **Weights in kg internally**: Avoids precision loss from repeated lb↔kg conversions. Convert once at display layer.
+- **Weights in kg internally**: Avoids precision loss from repeated lb<>kg conversions. Convert once at display layer.
 - **Append-only training_maxes**: Free progression history. Current TM = `ORDER BY effective_date DESC LIMIT 1`.
-- **Hardcoded exercises in nsuns.ts**: Fixed 4-day program, no need for dynamic exercises table.
+- **Plan-driven architecture**: All workout generation uses plan data (exercises, sets, progression rules). No hardcoded exercise logic.
+- **Seed script for default plan**: nSuns 4-Day LP defined in `backend/prisma/seed.ts` with idempotent upsert logic.
 - **Prisma ORM**: Type-safe database client, declarative schema with migrations, auto-generated types.
-- **No CSS framework**: ~10 components total, plain CSS with custom properties is simpler.
-- **T2 exercises reference parent TM**: No separate T2 training maxes. OHP has its own TM; Sumo Dead uses Deadlift TM; CG Bench uses Bench TM; Front Squat uses Squat TM.
+- **No CSS framework**: Plain CSS with custom properties and rem units on 8-point grid.
+- **Soft-delete workouts**: Canceled workouts set to 'discarded' status, preserving data integrity.
+- **No dotenv**: Environment variables exported by shell scripts. Backend reads `process.env` directly.
+- **Percentages as decimals**: Stored as Decimal(5,4) in DB (e.g., 0.6500 for 65%).
 
 ## Commands
 
@@ -179,28 +216,37 @@ Always write tests for new code.
 ./start_local_env.sh      # Creates/attaches to tmux session 'treenisofta'
 
 # Or start services manually:
-# Start Postgres
 docker compose up -d
-
-# Install dependencies
 npm install
-
-# Run migrations
-npx prisma migrate dev -w backend
-
-# Dev servers
+cd backend && npx prisma generate && npx prisma migrate dev && cd ..
 npm run dev -w backend    # Express on :3001
 npm run dev -w frontend   # Vite on :5173
 
 # Run tests (starts test DB, migrates, runs backend + E2E tests, cleans up)
 npm test                  # or ./run_test.sh directly
+
+# Prisma commands (MUST run from backend/ directory, not workspace flag)
+cd backend
+npx prisma generate
+npx prisma migrate dev
+npx prisma db seed
 ```
+
+## Prisma v7 Notes
+
+- Uses `prisma-client` generator (not `prisma-client-js`)
+- No `url` in `schema.prisma` datasource; connection URL goes in `prisma.config.ts`
+- Requires `@prisma/adapter-pg`: `new PrismaClient({ adapter: new PrismaPg({ connectionString }) })`
+- Client generated to `backend/src/generated/prisma/` (gitignored)
+- Seed config in `prisma.config.ts` (`migrations.seed` field), not `package.json`
+- Prisma CLI does NOT support npm workspace `-w` flag — must `cd backend` first
+- Export `DATABASE_URL` before running Prisma CLI commands
 
 ## Ralph Post-Completion
 
 When Ralph finishes a task, read `progress.txt` to review what was done. Based on the progress, either create a new skill or add relevant insights into this CLAUDE.md if needed.
 
-## Environment Variables (.env)
+## Environment Variables
 
 ```
 DATABASE_URL=postgresql://treenisofta:treenisofta_dev@localhost:5432/treenisofta
@@ -208,6 +254,8 @@ JWT_SECRET=change-me-in-production
 PORT=3001
 NODE_ENV=development
 ```
+
+These are exported by `start_local_env.sh` and `run_test.sh`. No .env files.
 
 Dont use typescript-code-review skill
 
