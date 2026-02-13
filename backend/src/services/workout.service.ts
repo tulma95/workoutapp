@@ -381,6 +381,133 @@ export async function completeWorkout(workoutId: number, userId: number) {
     return null;
   }
 
+  // Check if workout is plan-driven (has planDayId)
+  if (workout.planDayId) {
+    // Plan-driven progression logic
+    const progressionSets = workout.sets.filter((s) => s.isProgression && s.actualReps !== null);
+
+    const progressions: Array<{
+      exercise: string;
+      previousTM: number;
+      newTM: number;
+      increase: number;
+    }> = [];
+
+    for (const progressionSet of progressionSets) {
+      if (progressionSet.exerciseId === null) continue;
+
+      // Get the exercise details
+      const exercise = await prisma.exercise.findUnique({
+        where: { id: progressionSet.exerciseId },
+      });
+      if (!exercise) continue;
+
+      // Get the plan (via planDay) to access progression rules
+      const planDay = await prisma.planDay.findUnique({
+        where: { id: workout.planDayId },
+        include: {
+          plan: {
+            include: {
+              progressionRules: true,
+            },
+          },
+        },
+      });
+      if (!planDay) continue;
+
+      // Find matching progression rule
+      // Priority: exercise-specific rule first, then category-based rule
+      let matchingRule = planDay.plan.progressionRules.find(
+        (rule) =>
+          rule.exerciseId === exercise.id &&
+          progressionSet.actualReps! >= rule.minReps &&
+          progressionSet.actualReps! <= rule.maxReps,
+      );
+
+      if (!matchingRule) {
+        // Fallback to category-based rule
+        const category = exercise.isUpperBody ? 'upper' : 'lower';
+        matchingRule = planDay.plan.progressionRules.find(
+          (rule) =>
+            rule.category === category &&
+            progressionSet.actualReps! >= rule.minReps &&
+            progressionSet.actualReps! <= rule.maxReps,
+        );
+      }
+
+      if (!matchingRule) continue;
+
+      const increase = decimalToNumber(matchingRule.increase);
+      if (increase <= 0) continue;
+
+      // Get current TM for this exercise
+      const currentTMRow = await prisma.trainingMax.findFirst({
+        where: {
+          userId,
+          OR: [{ exerciseId: exercise.id }, { exercise: exercise.slug }],
+        },
+        orderBy: { effectiveDate: 'desc' },
+      });
+
+      if (!currentTMRow) continue;
+
+      const currentTMKg = decimalToNumber(currentTMRow.weight);
+      const newWeightKg = currentTMKg + increase;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Create new TM row with both exercise string and exerciseId
+      await prisma.trainingMax.upsert({
+        where: {
+          userId_exercise_effectiveDate: {
+            userId,
+            exercise: exercise.slug,
+            effectiveDate: today,
+          },
+        },
+        update: { weight: newWeightKg, exerciseId: exercise.id },
+        create: {
+          userId,
+          exercise: exercise.slug,
+          exerciseId: exercise.id,
+          weight: newWeightKg,
+          effectiveDate: today,
+        },
+      });
+
+      logger.info('TM progression (plan-driven)', {
+        exercise: exercise.slug,
+        previousTM: currentTMKg,
+        newTM: newWeightKg,
+        increase,
+      });
+
+      progressions.push({
+        exercise: exercise.slug,
+        previousTM: convertWeightToUserUnit(currentTMKg, user.unitPreference),
+        newTM: convertWeightToUserUnit(newWeightKg, user.unitPreference),
+        increase: convertWeightToUserUnit(increase, user.unitPreference),
+      });
+    }
+
+    // Mark workout completed
+    const completed = await prisma.workout.update({
+      where: { id: workoutId },
+      data: { status: 'completed', completedAt: new Date() },
+      include: { sets: { orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }] } },
+    });
+
+    logger.info('Workout completed (plan-driven)', {
+      workoutId,
+      dayNumber: workout.dayNumber,
+      userId,
+      progressionCount: progressions.length,
+    });
+
+    return { workout: formatWorkout(completed, user.unitPreference), progressions };
+  }
+
+  // FALLBACK: Old hardcoded logic for workouts without planDayId
   const day = NSUNS_4DAY[workout.dayNumber - 1];
 
   // Find the progression AMRAP: highest percentage AMRAP set in T1
@@ -440,7 +567,7 @@ export async function completeWorkout(workoutId: number, userId: number) {
           },
         });
 
-        logger.info('TM progression', { exercise, previousTM: currentTMKg, newTM: newWeightKg, increase });
+        logger.info('TM progression (fallback)', { exercise, previousTM: currentTMKg, newTM: newWeightKg, increase });
 
         // Convert to user's unit for response
         progression = {
@@ -453,7 +580,7 @@ export async function completeWorkout(workoutId: number, userId: number) {
     }
   }
 
-  logger.info('Workout completed', { workoutId, dayNumber: workout.dayNumber, userId });
+  logger.info('Workout completed (fallback)', { workoutId, dayNumber: workout.dayNumber, userId });
 
   // Mark workout completed
   const completed = await prisma.workout.update({
