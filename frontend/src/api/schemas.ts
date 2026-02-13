@@ -63,6 +63,7 @@ export const UserSchema = z.object({
   email: z.string(),
   displayName: z.string(),
   unitPreference: z.enum(['kg', 'lb']),
+  isAdmin: z.boolean(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
