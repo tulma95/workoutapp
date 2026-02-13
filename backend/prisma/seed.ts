@@ -536,6 +536,57 @@ async function main() {
   }
 
   console.log(`✓ Seeded nSuns 4-Day LP plan with 4 days, 8 exercises, and all sets`);
+
+  console.log('Seeding nSuns progression rules...');
+
+  // Delete existing progression rules for this plan (idempotent)
+  await prisma.planProgressionRule.deleteMany({
+    where: { planId: plan.id },
+  });
+
+  // Upper body progression rules (category='upper')
+  const upperRules = [
+    { minReps: 0, maxReps: 1, increase: 0 },
+    { minReps: 2, maxReps: 3, increase: 2.5 },
+    { minReps: 4, maxReps: 5, increase: 2.5 },
+    { minReps: 6, maxReps: 99, increase: 5 },
+  ];
+
+  // Lower body progression rules (category='lower')
+  const lowerRules = [
+    { minReps: 0, maxReps: 1, increase: 0 },
+    { minReps: 2, maxReps: 3, increase: 5 },
+    { minReps: 4, maxReps: 5, increase: 5 },
+    { minReps: 6, maxReps: 99, increase: 7.5 },
+  ];
+
+  // Create upper body rules
+  for (const rule of upperRules) {
+    await prisma.planProgressionRule.create({
+      data: {
+        planId: plan.id,
+        category: 'upper',
+        minReps: rule.minReps,
+        maxReps: rule.maxReps,
+        increase: rule.increase,
+      },
+    });
+  }
+
+  // Create lower body rules
+  for (const rule of lowerRules) {
+    await prisma.planProgressionRule.create({
+      data: {
+        planId: plan.id,
+        category: 'lower',
+        minReps: rule.minReps,
+        maxReps: rule.maxReps,
+        increase: rule.increase,
+      },
+    });
+  }
+
+  console.log(`✓ Seeded ${upperRules.length + lowerRules.length} progression rules (${upperRules.length} upper, ${lowerRules.length} lower)`);
 }
 
 main()
