@@ -50,7 +50,9 @@ export const ProgressionResultSchema = z.object({
 
 export const CompleteWorkoutResponseSchema = z.object({
   workout: WorkoutSchema,
-  progression: ProgressionResultSchema.nullable(),
+  // Support both old (fallback) and new (plan-driven) formats
+  progression: ProgressionResultSchema.nullable().optional(),
+  progressions: z.array(ProgressionResultSchema).optional(),
 });
 
 export const WorkoutCalendarResponseSchema = z.object({

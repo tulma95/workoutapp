@@ -4,36 +4,55 @@ import type { UnitPreference } from '../types';
 import './ProgressionBanner.css';
 
 interface ProgressionBannerProps {
-  progression: {
+  // Support both old (single progression) and new (array) formats
+  progression?: {
     exercise: string;
     previousTM: number;
     newTM: number;
     increase: number;
   } | null;
+  progressions?: Array<{
+    exercise: string;
+    previousTM: number;
+    newTM: number;
+    increase: number;
+  }>;
   unit: UnitPreference;
 }
 
-export const ProgressionBanner: React.FC<ProgressionBannerProps> = ({ progression, unit }) => {
-  if (!progression || progression.increase === 0) {
+export const ProgressionBanner: React.FC<ProgressionBannerProps> = ({ progression, progressions, unit }) => {
+  // Normalize to array format
+  const progressionArray = progressions || (progression ? [progression] : []);
+
+  // Filter out zero-increase progressions
+  const validProgressions = progressionArray.filter((p) => p.increase !== 0);
+
+  if (validProgressions.length === 0) {
     return (
       <div className="progression-banner progression-banner--neutral">
-        No TM change this session
+        No TM changes this session
       </div>
     );
   }
 
-  const exerciseName = formatExerciseName(progression.exercise);
-
-  // Convert and round the increase value for display
-  const increaseInUserUnit = roundWeight(convertWeight(progression.increase, unit), unit);
-  const increaseStr = increaseInUserUnit > 0 ? `+${increaseInUserUnit} ${unit}` : `${increaseInUserUnit} ${unit}`;
-
-  // Format the new TM
-  const newTMFormatted = formatWeight(progression.newTM, unit);
-
   return (
-    <div className="progression-banner progression-banner--success">
-      {exerciseName} TM {increaseStr}! New TM: {newTMFormatted}
+    <div className="progression-banner-container">
+      {validProgressions.map((prog, index) => {
+        const exerciseName = formatExerciseName(prog.exercise);
+
+        // Convert and round the increase value for display
+        const increaseInUserUnit = roundWeight(convertWeight(prog.increase, unit), unit);
+        const increaseStr = increaseInUserUnit > 0 ? `+${increaseInUserUnit} ${unit}` : `${increaseInUserUnit} ${unit}`;
+
+        // Format the new TM
+        const newTMFormatted = formatWeight(prog.newTM, unit);
+
+        return (
+          <div key={index} className="progression-banner progression-banner--success">
+            {exerciseName} TM {increaseStr}! New TM: {newTMFormatted}
+          </div>
+        );
+      })}
     </div>
   );
 };

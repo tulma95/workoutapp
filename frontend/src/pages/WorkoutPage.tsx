@@ -18,21 +18,6 @@ import { ErrorMessage } from '../components/ErrorMessage';
 import { ConflictDialog } from '../components/ConflictDialog';
 import './WorkoutPage.css';
 
-const WORKOUT_DAYS = [
-  { day: 1, t1: 'Bench Volume', t2: 'OHP' },
-  { day: 2, t1: 'Squat', t2: 'Sumo Deadlift' },
-  { day: 3, t1: 'Bench Heavy', t2: 'Close Grip Bench' },
-  { day: 4, t1: 'Deadlift', t2: 'Front Squat' },
-];
-
-// Progression AMRAP set index (0-based) for each day
-const PROGRESSION_AMRAP_INDEX: Record<number, number> = {
-  1: 8, // Day 1: set 9 (65% x 8+)
-  2: 2, // Day 2: set 3 (95% x 1+)
-  3: 2, // Day 3: set 3 (95% x 1+)
-  4: 2, // Day 4: set 3 (95% x 1+)
-};
-
 export default function WorkoutPage() {
   const { dayNumber: dayParam } = useParams<{ dayNumber: string }>();
   const navigate = useNavigate();
@@ -40,18 +25,17 @@ export default function WorkoutPage() {
   const [workout, setWorkout] = useState<Workout | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [progression, setProgression] = useState<ProgressionResult | null>(null);
+  const [progressions, setProgressions] = useState<ProgressionResult[]>([]);
   const [isCompleting, setIsCompleting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
   const [conflictWorkout, setConflictWorkout] = useState<{ workoutId: number; dayNumber: number } | null>(null);
 
   const dayNumber = parseInt(dayParam || '0', 10);
-  const dayInfo = WORKOUT_DAYS.find((d) => d.day === dayNumber);
 
   useEffect(() => {
     async function loadWorkout() {
-      if (!dayNumber || !dayInfo) {
+      if (!dayNumber) {
         setError('Invalid day number');
         setIsLoading(false);
         return;
@@ -110,7 +94,7 @@ export default function WorkoutPage() {
     }
 
     loadWorkout();
-  }, [dayNumber, dayInfo]);
+  }, [dayNumber]);
 
   const handleSetComplete = async (setId: number) => {
     if (!workout) return;
@@ -163,14 +147,14 @@ export default function WorkoutPage() {
   const handleCompleteWorkout = async () => {
     if (!workout) return;
 
-    // Find the progression AMRAP set (highest % AMRAP in T1)
-    const t1Sets = workout.sets.filter((s) => s.tier === 'T1');
-    const progressionAmrapIndex = PROGRESSION_AMRAP_INDEX[dayNumber];
-    const progressionSet = t1Sets[progressionAmrapIndex];
+    // Find progression sets (sets marked with isProgression flag)
+    const progressionSets = workout.sets.filter((s) => s.isProgression);
 
-    if (progressionSet && progressionSet.actualReps === null) {
+    // Warn if any progression set has no reps logged
+    const missingReps = progressionSets.some((s) => s.actualReps === null);
+    if (missingReps && progressionSets.length > 0) {
       const confirmed = window.confirm(
-        'You haven\'t entered reps for the progression AMRAP set. Complete workout without progression?'
+        'You haven\'t entered reps for all progression sets. Complete workout without full progression tracking?'
       );
       if (!confirmed) return;
     }
@@ -179,7 +163,9 @@ export default function WorkoutPage() {
 
     try {
       const result = await completeWorkout(workout.id);
-      setProgression(result.progression);
+      // Handle both old format (progression) and new format (progressions array)
+      const progressionArray = result.progressions || (result.progression ? [result.progression] : []);
+      setProgressions(progressionArray);
       setIsCompleted(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to complete workout');
@@ -235,14 +221,6 @@ export default function WorkoutPage() {
     navigate('/');
   };
 
-  if (!dayInfo) {
-    return (
-      <div className="workout-page">
-        <ErrorMessage message="Invalid day number" />
-      </div>
-    );
-  }
-
   if (conflictWorkout) {
     return (
       <>
@@ -287,11 +265,18 @@ export default function WorkoutPage() {
   const t2Sets = workout.sets.filter((s) => s.tier === 'T2');
   const unit = user?.unitPreference || 'kg';
 
+  // Extract exercise names from workout sets
+  const t1ExerciseName = t1Sets.length > 0 ? t1Sets[0].exercise : 'T1';
+  const t2ExerciseName = t2Sets.length > 0 ? t2Sets[0].exercise : 'T2';
+
+  // Use day title from workout or fallback to "Day N"
+  const dayTitle = `Day ${dayNumber}`;
+
   if (isCompleted) {
     return (
       <div className="workout-page">
         <h1>Workout Complete!</h1>
-        <ProgressionBanner progression={progression} unit={unit} />
+        <ProgressionBanner progressions={progressions} unit={unit} />
         <button onClick={handleBackToDashboard} className="btn-primary">
           Back to Dashboard
         </button>
@@ -301,10 +286,10 @@ export default function WorkoutPage() {
 
   return (
     <div className="workout-page">
-      <h1>Day {dayNumber} - {dayInfo.t1}</h1>
+      <h1>{dayTitle}</h1>
 
       <section className="workout-section">
-        <h2 className="workout-section__title">T1: {dayInfo.t1}</h2>
+        <h2 className="workout-section__title">T1: {t1ExerciseName}</h2>
         <div className="workout-section__sets">
           {t1Sets.map((set, index) => (
             <SetRow
@@ -324,7 +309,7 @@ export default function WorkoutPage() {
       </section>
 
       <section className="workout-section">
-        <h2 className="workout-section__title">T2: {dayInfo.t2}</h2>
+        <h2 className="workout-section__title">T2: {t2ExerciseName}</h2>
         <div className="workout-section__sets">
           {t2Sets.map((set, index) => (
             <SetRow
