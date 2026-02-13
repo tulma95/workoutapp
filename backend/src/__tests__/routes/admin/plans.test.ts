@@ -291,4 +291,310 @@ describe('Admin Plans routes', () => {
       expect(res.body.error.code).toBe('FORBIDDEN');
     });
   });
+
+  describe('GET /api/admin/plans/:id', () => {
+    it('returns full plan structure with nested data', async () => {
+      // Get the test plan ID
+      if (!testPlanId) {
+        const plan = await prisma.workoutPlan.findFirst({
+          where: { slug: 'test-plan' },
+        });
+        if (plan) {
+          testPlanId = plan.id;
+        }
+      }
+
+      const res = await request(app)
+        .get(`/api/admin/plans/${testPlanId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.id).toBe(testPlanId);
+      expect(res.body.slug).toBe('test-plan');
+      expect(res.body.days).toHaveLength(2);
+
+      // Verify nested days
+      expect(res.body.days[0].exercises).toBeDefined();
+      expect(res.body.days[0].exercises[0].sets).toBeDefined();
+
+      // Verify exercise details are included
+      expect(res.body.days[0].exercises[0].exercise).toBeDefined();
+      expect(res.body.days[0].exercises[0].exercise.slug).toBe('bench-press-test');
+      expect(res.body.days[0].exercises[0].tmExercise).toBeDefined();
+
+      // Verify progression rules are included
+      expect(res.body.progressionRules).toBeDefined();
+    });
+
+    it('returns 404 for non-existent plan', async () => {
+      const res = await request(app)
+        .get('/api/admin/plans/999999')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(404);
+      expect(res.body.error.code).toBe('NOT_FOUND');
+    });
+
+    it('returns 400 for invalid plan ID', async () => {
+      const res = await request(app)
+        .get('/api/admin/plans/invalid')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('BAD_REQUEST');
+    });
+
+    it('returns 403 for non-admin user', async () => {
+      const res = await request(app)
+        .get(`/api/admin/plans/${testPlanId}`)
+        .set('Authorization', `Bearer ${nonAdminToken}`);
+
+      expect(res.status).toBe(403);
+      expect(res.body.error.code).toBe('FORBIDDEN');
+    });
+  });
+
+  describe('PUT /api/admin/plans/:id', () => {
+    it('updates plan successfully', async () => {
+      // Get the test plan ID
+      if (!testPlanId) {
+        const plan = await prisma.workoutPlan.findFirst({
+          where: { slug: 'test-plan' },
+        });
+        if (plan) {
+          testPlanId = plan.id;
+        }
+      }
+
+      const res = await request(app)
+        .put(`/api/admin/plans/${testPlanId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          slug: 'test-plan',
+          name: 'Updated Test Plan',
+          description: 'Updated description',
+          daysPerWeek: 3,
+          isPublic: false,
+          days: [
+            {
+              dayNumber: 1,
+              name: 'Updated Day 1',
+              exercises: [
+                {
+                  exerciseId: exerciseIds.bench,
+                  tier: 'T1',
+                  sortOrder: 1,
+                  tmExerciseId: exerciseIds.bench,
+                  sets: [
+                    { setOrder: 1, percentage: 0.80, reps: 4, isAmrap: false, isProgression: false },
+                  ],
+                },
+              ],
+            },
+            {
+              dayNumber: 2,
+              name: 'New Day 2',
+              exercises: [
+                {
+                  exerciseId: exerciseIds.squat,
+                  tier: 'T1',
+                  sortOrder: 1,
+                  tmExerciseId: exerciseIds.squat,
+                  sets: [
+                    { setOrder: 1, percentage: 0.70, reps: 5 },
+                  ],
+                },
+              ],
+            },
+            {
+              dayNumber: 3,
+              name: 'New Day 3',
+              exercises: [
+                {
+                  exerciseId: exerciseIds.ohp,
+                  tier: 'T1',
+                  sortOrder: 1,
+                  tmExerciseId: exerciseIds.ohp,
+                  sets: [
+                    { setOrder: 1, percentage: 0.65, reps: 6 },
+                  ],
+                },
+              ],
+            },
+          ],
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.name).toBe('Updated Test Plan');
+      expect(res.body.description).toBe('Updated description');
+      expect(res.body.daysPerWeek).toBe(3);
+      expect(res.body.isPublic).toBe(false);
+      expect(res.body.days).toHaveLength(3);
+      expect(res.body.days[0].name).toBe('Updated Day 1');
+    });
+
+    it('returns 404 for non-existent plan', async () => {
+      const res = await request(app)
+        .put('/api/admin/plans/999999')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          slug: 'nonexistent',
+          name: 'Non-existent',
+          daysPerWeek: 1,
+          days: [
+            {
+              dayNumber: 1,
+              exercises: [
+                {
+                  exerciseId: exerciseIds.bench,
+                  tier: 'T1',
+                  sortOrder: 1,
+                  tmExerciseId: exerciseIds.bench,
+                  sets: [{ setOrder: 1, percentage: 0.75, reps: 5 }],
+                },
+              ],
+            },
+          ],
+        });
+
+      expect(res.status).toBe(404);
+      expect(res.body.error.code).toBe('NOT_FOUND');
+    });
+
+    it('prevents changing slug of system plan', async () => {
+      // Create a system plan
+      const systemPlan = await prisma.workoutPlan.create({
+        data: {
+          slug: 'system-plan-test',
+          name: 'System Plan',
+          daysPerWeek: 1,
+          isSystem: true,
+        },
+      });
+
+      // Create a day for it
+      await prisma.planDay.create({
+        data: {
+          planId: systemPlan.id,
+          dayNumber: 1,
+        },
+      });
+
+      const res = await request(app)
+        .put(`/api/admin/plans/${systemPlan.id}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          slug: 'new-slug',
+          name: 'System Plan',
+          daysPerWeek: 1,
+          days: [
+            {
+              dayNumber: 1,
+              exercises: [
+                {
+                  exerciseId: exerciseIds.bench,
+                  tier: 'T1',
+                  sortOrder: 1,
+                  tmExerciseId: exerciseIds.bench,
+                  sets: [{ setOrder: 1, percentage: 0.75, reps: 5 }],
+                },
+              ],
+            },
+          ],
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('BAD_REQUEST');
+      expect(res.body.error.message).toContain('slug');
+    });
+
+    it('returns 403 for non-admin user', async () => {
+      const res = await request(app)
+        .put(`/api/admin/plans/${testPlanId}`)
+        .set('Authorization', `Bearer ${nonAdminToken}`)
+        .send({
+          slug: 'test-plan',
+          name: 'Should fail',
+          daysPerWeek: 1,
+          days: [],
+        });
+
+      expect(res.status).toBe(403);
+      expect(res.body.error.code).toBe('FORBIDDEN');
+    });
+  });
+
+  describe('DELETE /api/admin/plans/:id', () => {
+    it('archives plan successfully', async () => {
+      // Create a non-system plan to archive
+      const planToArchive = await prisma.workoutPlan.create({
+        data: {
+          slug: 'plan-to-archive',
+          name: 'Plan To Archive',
+          daysPerWeek: 1,
+          isSystem: false,
+        },
+      });
+
+      const res = await request(app)
+        .delete(`/api/admin/plans/${planToArchive.id}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.archivedAt).not.toBeNull();
+
+      // Verify plan was archived in database
+      const archived = await prisma.workoutPlan.findUnique({
+        where: { id: planToArchive.id },
+      });
+      expect(archived?.archivedAt).not.toBeNull();
+    });
+
+    it('prevents archiving system plan', async () => {
+      // Create a system plan
+      const systemPlan = await prisma.workoutPlan.create({
+        data: {
+          slug: 'system-plan-archive-test',
+          name: 'System Plan Archive Test',
+          daysPerWeek: 1,
+          isSystem: true,
+        },
+      });
+
+      const res = await request(app)
+        .delete(`/api/admin/plans/${systemPlan.id}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('BAD_REQUEST');
+      expect(res.body.error.message).toContain('system');
+    });
+
+    it('returns 404 for non-existent plan', async () => {
+      const res = await request(app)
+        .delete('/api/admin/plans/999999')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(404);
+      expect(res.body.error.code).toBe('NOT_FOUND');
+    });
+
+    it('returns 403 for non-admin user', async () => {
+      // Create a plan to attempt to delete
+      const plan = await prisma.workoutPlan.create({
+        data: {
+          slug: 'forbidden-delete-plan',
+          name: 'Forbidden Delete Plan',
+          daysPerWeek: 1,
+        },
+      });
+
+      const res = await request(app)
+        .delete(`/api/admin/plans/${plan.id}`)
+        .set('Authorization', `Bearer ${nonAdminToken}`);
+
+      expect(res.status).toBe(403);
+      expect(res.body.error.code).toBe('FORBIDDEN');
+    });
+  });
 });

@@ -150,4 +150,220 @@ router.get('/', async (_req: AuthRequest, res: Response) => {
   res.json(plansWithCount);
 });
 
+router.get('/:id', async (req: AuthRequest, res: Response) => {
+  const id = parseInt(req.params.id as string, 10);
+
+  if (isNaN(id)) {
+    res.status(400).json({
+      error: { code: 'BAD_REQUEST', message: 'Invalid plan ID' }
+    });
+    return;
+  }
+
+  const plan = await prisma.workoutPlan.findUnique({
+    where: { id },
+    include: {
+      days: {
+        include: {
+          exercises: {
+            include: {
+              exercise: true,
+              tmExercise: true,
+              sets: {
+                orderBy: { setOrder: 'asc' },
+              },
+            },
+            orderBy: { sortOrder: 'asc' },
+          },
+        },
+        orderBy: { dayNumber: 'asc' },
+      },
+      progressionRules: {
+        include: {
+          exercise: true,
+        },
+        orderBy: { id: 'asc' },
+      },
+    },
+  });
+
+  if (!plan) {
+    res.status(404).json({
+      error: { code: 'NOT_FOUND', message: 'Plan not found' }
+    });
+    return;
+  }
+
+  res.json(plan);
+});
+
+const updatePlanSchema = z.object({
+  slug: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string().optional(),
+  daysPerWeek: z.number().int().min(1),
+  isPublic: z.boolean().optional(),
+  days: z.array(planDaySchema).min(1),
+});
+
+router.put('/:id', validate(updatePlanSchema), async (req: AuthRequest, res: Response) => {
+  const id = parseInt(req.params.id as string, 10);
+
+  if (isNaN(id)) {
+    res.status(400).json({
+      error: { code: 'BAD_REQUEST', message: 'Invalid plan ID' }
+    });
+    return;
+  }
+
+  const { slug, name, description, daysPerWeek, isPublic, days } = req.body;
+
+  // Check if plan exists
+  const existingPlan = await prisma.workoutPlan.findUnique({
+    where: { id },
+  });
+
+  if (!existingPlan) {
+    res.status(404).json({
+      error: { code: 'NOT_FOUND', message: 'Plan not found' }
+    });
+    return;
+  }
+
+  // Cannot change slug of system plans
+  if (existingPlan.isSystem && existingPlan.slug !== slug) {
+    res.status(400).json({
+      error: { code: 'BAD_REQUEST', message: 'Cannot change slug of system plan' }
+    });
+    return;
+  }
+
+  try {
+    const plan = await prisma.$transaction(async (tx) => {
+      // Delete old days (cascade will delete exercises and sets)
+      await tx.planDay.deleteMany({
+        where: { planId: id },
+      });
+
+      // Update the plan
+      await tx.workoutPlan.update({
+        where: { id },
+        data: {
+          slug,
+          name,
+          description,
+          daysPerWeek,
+          isPublic: isPublic ?? existingPlan.isPublic,
+        },
+      });
+
+      // Create new days with exercises and sets
+      for (const day of days) {
+        const createdDay = await tx.planDay.create({
+          data: {
+            planId: id,
+            dayNumber: day.dayNumber,
+            name: day.name,
+          },
+        });
+
+        for (const exercise of day.exercises) {
+          const createdExercise = await tx.planDayExercise.create({
+            data: {
+              planDayId: createdDay.id,
+              exerciseId: exercise.exerciseId,
+              tier: exercise.tier,
+              sortOrder: exercise.sortOrder,
+              tmExerciseId: exercise.tmExerciseId,
+              displayName: exercise.displayName,
+            },
+          });
+
+          for (const set of exercise.sets) {
+            await tx.planSet.create({
+              data: {
+                planDayExerciseId: createdExercise.id,
+                setOrder: set.setOrder,
+                percentage: set.percentage,
+                reps: set.reps,
+                isAmrap: set.isAmrap ?? false,
+                isProgression: set.isProgression ?? false,
+              },
+            });
+          }
+        }
+      }
+
+      // Return the full plan structure
+      return await tx.workoutPlan.findUnique({
+        where: { id },
+        include: {
+          days: {
+            include: {
+              exercises: {
+                include: {
+                  sets: {
+                    orderBy: { setOrder: 'asc' },
+                  },
+                },
+                orderBy: { sortOrder: 'asc' },
+              },
+            },
+            orderBy: { dayNumber: 'asc' },
+          },
+        },
+      });
+    });
+
+    res.json(plan);
+  } catch (error: any) {
+    if (error.code === 'P2002') {
+      res.status(409).json({
+        error: { code: 'CONFLICT', message: 'Plan with this slug already exists' }
+      });
+      return;
+    }
+    throw error;
+  }
+});
+
+router.delete('/:id', async (req: AuthRequest, res: Response) => {
+  const id = parseInt(req.params.id as string, 10);
+
+  if (isNaN(id)) {
+    res.status(400).json({
+      error: { code: 'BAD_REQUEST', message: 'Invalid plan ID' }
+    });
+    return;
+  }
+
+  const plan = await prisma.workoutPlan.findUnique({
+    where: { id },
+  });
+
+  if (!plan) {
+    res.status(404).json({
+      error: { code: 'NOT_FOUND', message: 'Plan not found' }
+    });
+    return;
+  }
+
+  // Cannot archive system plans
+  if (plan.isSystem) {
+    res.status(400).json({
+      error: { code: 'BAD_REQUEST', message: 'Cannot archive system plan' }
+    });
+    return;
+  }
+
+  const archivedPlan = await prisma.workoutPlan.update({
+    where: { id },
+    data: {
+      archivedAt: new Date(),
+    },
+  });
+
+  res.json(archivedPlan);
+});
+
 export default router;
