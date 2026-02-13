@@ -342,4 +342,75 @@ test.describe('Workout Session', () => {
     // nSuns Day 1 T2 has 8 sets total (all regular, no AMRAP)
     expect(t2CheckboxCount).toBe(8);
   });
+
+  test('TM progression after workout: completing Day 1 with good AMRAP performance increases Bench TM on dashboard', async ({ setupCompletePage }) => {
+    const { page } = setupCompletePage;
+
+    // Wait for dashboard to load
+    await page.waitForSelector('text=Training Maxes');
+
+    // Find the Bench TM card by looking for "Bench-press" text
+    // The structure is: title "Bench-press", then below it "90 kg" or "90 lb"
+    await expect(page.getByText('Bench-press')).toBeVisible();
+
+    // Get all text content within the Training Maxes section and extract Bench TM
+    // Look for text that contains both "Bench" and a number with unit
+    const tmSection = page.locator('text=Training Maxes').locator('..');
+    const tmSectionText = await tmSection.textContent();
+
+    // Extract initial Bench TM using a more flexible pattern
+    // The page shows "Bench-press" on one line and "90 kg" on the next
+    const benchCardText = await page.locator('text=Bench-press').locator('..').textContent();
+    const initialBenchTMMatch = benchCardText?.match(/(\d+(?:\.\d+)?)\s*(kg|lb)/);
+    expect(initialBenchTMMatch).toBeTruthy();
+    const initialBenchTM = parseFloat(initialBenchTMMatch![1]);
+    const unit = initialBenchTMMatch![2];
+
+    // Start Day 1 workout (Bench Volume + OHP)
+    await page.getByRole('button', { name: /start workout/i }).first().click();
+    await page.waitForURL(/\/workout\/1/);
+
+    // Wait for the workout to load
+    await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('checkbox').first()).toBeVisible({ timeout: 15000 });
+
+    // Enter 10 reps in the AMRAP set (Day 1 T1 has 1 AMRAP set - the 9th set at 65%)
+    // According to nSuns progression: 10+ reps should trigger +5kg TM increase for upper body
+    const amrapInput = page.getByRole('spinbutton').first();
+    await amrapInput.fill('10');
+
+    // Complete the workout
+    await page.getByRole('button', { name: /complete workout/i }).click();
+
+    // Wait for completion to process and verify progression banner appears
+    await expect(page.getByText(/progression|increase|bench.*\+/i)).toBeVisible({ timeout: 5000 });
+
+    // Verify the progression banner shows a TM increase for Bench
+    // Should show something like "Bench Press: +5kg" or similar
+    await expect(page.getByText(/bench/i).filter({ hasText: /\+/ })).toBeVisible();
+
+    // Click Back to Dashboard
+    await page.getByRole('button', { name: /back to dashboard|dashboard/i }).click();
+    await page.waitForURL('/');
+
+    // Wait for dashboard to reload
+    await page.waitForSelector('text=Training Maxes');
+    await expect(page.getByText('Bench-press')).toBeVisible();
+
+    // Find the new Bench TM value
+    const newBenchCardText = await page.locator('text=Bench-press').locator('..').textContent();
+    const newBenchTMMatch = newBenchCardText?.match(/(\d+(?:\.\d+)?)\s*(kg|lb)/);
+    expect(newBenchTMMatch).toBeTruthy();
+    const newBenchTM = parseFloat(newBenchTMMatch![1]);
+
+    // Verify the TM increased
+    expect(newBenchTM).toBeGreaterThan(initialBenchTM);
+
+    // Expected increase: +5kg (or ~11lb if in lb mode)
+    // setupCompletePage sets Bench 1RM to 100kg (TM = 90kg)
+    // After 10+ AMRAP reps: 90kg + 5kg = 95kg
+    const expectedIncrease = unit === 'kg' ? 5 : 11; // 5kg ≈ 11lb
+    const actualIncrease = newBenchTM - initialBenchTM;
+    expect(actualIncrease).toBeCloseTo(expectedIncrease, 0);
+  });
 });
