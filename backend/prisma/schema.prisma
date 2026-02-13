@@ -16,6 +16,9 @@ model Exercise {
   isUpperBody Boolean  @default(false) @map("is_upper_body")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
+  planDayExercises   PlanDayExercise[] @relation("exercise")
+  tmPlanDayExercises PlanDayExercise[] @relation("tmExerciseRef")
+
   @@map("exercises")
 }
 
@@ -42,10 +45,44 @@ model PlanDay {
   dayNumber Int     @map("day_number")
   name      String?
 
-  plan WorkoutPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  plan      WorkoutPlan       @relation(fields: [planId], references: [id], onDelete: Cascade)
+  exercises PlanDayExercise[]
 
   @@unique([planId, dayNumber])
   @@map("plan_days")
+}
+
+model PlanDayExercise {
+  id           Int     @id @default(autoincrement())
+  planDayId    Int     @map("plan_day_id")
+  exerciseId   Int     @map("exercise_id")
+  tier         String
+  sortOrder    Int     @map("sort_order")
+  tmExerciseId Int     @map("tm_exercise_id")
+  displayName  String? @map("display_name")
+
+  planDay    PlanDay   @relation(fields: [planDayId], references: [id], onDelete: Cascade)
+  exercise   Exercise  @relation("exercise", fields: [exerciseId], references: [id])
+  tmExercise Exercise  @relation("tmExerciseRef", fields: [tmExerciseId], references: [id])
+  sets       PlanSet[]
+
+  @@unique([planDayId, sortOrder])
+  @@map("plan_day_exercises")
+}
+
+model PlanSet {
+  id                 Int     @id @default(autoincrement())
+  planDayExerciseId  Int     @map("plan_day_exercise_id")
+  setOrder           Int     @map("set_order")
+  percentage         Decimal @db.Decimal(5, 4)
+  reps               Int
+  isAmrap            Boolean @default(false) @map("is_amrap")
+  isProgression      Boolean @default(false) @map("is_progression")
+
+  planDayExercise PlanDayExercise @relation(fields: [planDayExerciseId], references: [id], onDelete: Cascade)
+
+  @@unique([planDayExerciseId, setOrder])
+  @@map("plan_sets")
 }
 
 model User {
