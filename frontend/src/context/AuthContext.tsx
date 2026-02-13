@@ -24,6 +24,7 @@ interface AuthContextValue {
     displayName: string,
     unitPreference: UnitPreference,
   ) => Promise<void>
+  refreshActivePlan: () => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null)
@@ -33,43 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const [activePlanId, setActivePlanId] = useState<number | null>(null)
 
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken')
-    if (!token) {
-      setIsLoading(false)
-      return
-    }
-
-    apiFetch('/users/me')
-      .then(async (data) => {
-        setUser(data as User)
-        // Fetch active plan
-        try {
-          const plan = await apiFetch('/plans/current')
-          if (plan && typeof plan === 'object' && 'id' in plan) {
-            setActivePlanId(plan.id as number)
-          } else {
-            setActivePlanId(null)
-          }
-        } catch {
-          setActivePlanId(null)
-        }
-      })
-      .catch(() => {
-        localStorage.removeItem('accessToken')
-        localStorage.removeItem('refreshToken')
-      })
-      .finally(() => {
-        setIsLoading(false)
-      })
-  }, [])
-
-  const login = useCallback(async (email: string, password: string) => {
-    const result = await authApi.login(email, password)
-    localStorage.setItem('accessToken', result.accessToken)
-    localStorage.setItem('refreshToken', result.refreshToken)
-    setUser(result.user)
-    // Fetch active plan
+  const fetchActivePlan = useCallback(async () => {
     try {
       const plan = await apiFetch('/plans/current')
       if (plan && typeof plan === 'object' && 'id' in plan) {
@@ -81,6 +46,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setActivePlanId(null)
     }
   }, [])
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken')
+    if (!token) {
+      setIsLoading(false)
+      return
+    }
+
+    apiFetch('/users/me')
+      .then(async (data) => {
+        setUser(data as User)
+        await fetchActivePlan()
+      })
+      .catch(() => {
+        localStorage.removeItem('accessToken')
+        localStorage.removeItem('refreshToken')
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
+  }, [fetchActivePlan])
+
+  const login = useCallback(async (email: string, password: string) => {
+    const result = await authApi.login(email, password)
+    localStorage.setItem('accessToken', result.accessToken)
+    localStorage.setItem('refreshToken', result.refreshToken)
+    setUser(result.user)
+    await fetchActivePlan()
+  }, [fetchActivePlan])
 
   const register = useCallback(
     async (
@@ -98,19 +92,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('accessToken', result.accessToken)
       localStorage.setItem('refreshToken', result.refreshToken)
       setUser(result.user)
-      // Fetch active plan
-      try {
-        const plan = await apiFetch('/plans/current')
-        if (plan && typeof plan === 'object' && 'id' in plan) {
-          setActivePlanId(plan.id as number)
-        } else {
-          setActivePlanId(null)
-        }
-      } catch {
-        setActivePlanId(null)
-      }
+      await fetchActivePlan()
     },
-    [],
+    [fetchActivePlan],
   )
 
   const logout = useCallback(() => {
@@ -128,11 +112,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       activePlanId,
       login,
       logout,
-      register
+      register,
+      refreshActivePlan: fetchActivePlan,
     }),
-    [user, isLoading, activePlanId, login, logout, register],
+    [user, isLoading, activePlanId, login, logout, register, fetchActivePlan],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
-

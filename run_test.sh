@@ -72,7 +72,11 @@ if [ $TEST_EXIT_CODE -ne 0 ]; then
   exit $TEST_EXIT_CODE
 fi
 
-echo "Backend tests passed. Starting servers for E2E tests..."
+echo "Backend tests passed. Re-seeding database for E2E tests..."
+cd "$PROJECT_ROOT/backend"
+DATABASE_URL="$TEST_DB_URL" npx tsx prisma/seed.ts
+
+echo "Starting servers for E2E tests..."
 
 # Kill any existing processes on ports 3001 and 5173
 echo "Checking for processes on ports 3001 and 5173..."

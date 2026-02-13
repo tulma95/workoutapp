@@ -337,14 +337,6 @@ describe('Workouts API - Plan-Driven Generation', () => {
         unitPreference: 'kg',
       });
       fallbackToken = res.body.accessToken;
-
-      // Set up TMs using old format
-      await request(app)
-        .post('/api/training-maxes/setup')
-        .set('Authorization', `Bearer ${fallbackToken}`)
-        .send({
-          oneRepMaxes: { bench: 100, squat: 140, ohp: 60, deadlift: 180 },
-        });
     });
 
     it('requires active plan when starting a workout', async () => {
@@ -357,7 +349,7 @@ describe('Workouts API - Plan-Driven Generation', () => {
       expect(res.body.error.message).toContain('No active workout plan');
     });
 
-    it('returns empty array from getCurrentTMs when no active plan', async () => {
+    it('returns empty array from getCurrentTMs when no TMs set', async () => {
       const res = await request(app)
         .get('/api/training-maxes')
         .set('Authorization', `Bearer ${fallbackToken}`);

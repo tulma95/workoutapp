@@ -1,5 +1,12 @@
 import { test, expect } from '@playwright/test';
 
+/** After registration, user lands on /select-plan. Select the first plan to proceed to /setup. */
+async function selectPlanAfterRegistration(page: import('@playwright/test').Page) {
+  await page.waitForURL('/select-plan');
+  await page.click('button:has-text("Select Plan")');
+  await page.waitForURL('/setup');
+}
+
 test.describe('Unit Conversion', () => {
   test('register a user with unitPreference lb, set up 1RM values in lb, verify setup page accepts lb values', async ({ page }) => {
     const timestamp = Date.now();
@@ -18,18 +25,18 @@ test.describe('Unit Conversion', () => {
 
     await page.click('button[type="submit"]');
 
-    // After successful registration, user should be redirected to setup page
-    await page.waitForURL('/setup');
+    // After registration, select a plan first
+    await selectPlanAfterRegistration(page);
 
     // Verify unit label shows "lb" on setup page
-    const benchLabel = await page.locator('label[for="bench"]').textContent();
+    const benchLabel = await page.getByLabel(/Bench Press/i).locator('..').locator('label').textContent();
     expect(benchLabel).toContain('lb');
 
-    // Fill in 1RM values in lb
-    await page.fill('input[name="bench"]', '225'); // ~100kg
-    await page.fill('input[name="squat"]', '315'); // ~140kg
-    await page.fill('input[name="ohp"]', '135'); // ~60kg
-    await page.fill('input[name="deadlift"]', '405'); // ~180kg
+    // Fill in 1RM values in lb using label selectors (input names are numeric IDs)
+    await page.getByLabel(/Bench Press/i).fill('225');
+    await page.getByLabel(/^Squat/i).fill('315');
+    await page.getByLabel(/Overhead Press/i).fill('135');
+    await page.getByLabel(/^Deadlift/i).fill('405');
 
     // Submit form
     await page.click('button[type="submit"]');
@@ -54,13 +61,13 @@ test.describe('Unit Conversion', () => {
     await page.fill('#displayName', displayName);
     await page.click('input[type="radio"][value="lb"]');
     await page.click('button[type="submit"]');
-    await page.waitForURL('/setup');
+    await selectPlanAfterRegistration(page);
 
     // Fill in 1RM values in lb
-    await page.fill('input[name="bench"]', '225');
-    await page.fill('input[name="squat"]', '315');
-    await page.fill('input[name="ohp"]', '135');
-    await page.fill('input[name="deadlift"]', '405');
+    await page.getByLabel(/Bench Press/i).fill('225');
+    await page.getByLabel(/^Squat/i).fill('315');
+    await page.getByLabel(/Overhead Press/i).fill('135');
+    await page.getByLabel(/^Deadlift/i).fill('405');
     await page.click('button[type="submit"]');
     await page.waitForURL('/');
 
@@ -70,7 +77,7 @@ test.describe('Unit Conversion', () => {
     await startButton.click();
 
     // Wait for workout page
-    await page.waitForURL('/workout/1');
+    await page.waitForURL(/\/workout\/\d+/);
 
     // Day 1 Bench TM calculation: 225 lb * 0.9 = 202.5 lb
     // Set 1: 65% of 202.5 = 131.625 lb, rounded to nearest 5 = 130 lb
@@ -101,20 +108,20 @@ test.describe('Unit Conversion', () => {
     await page.fill('#displayName', displayName);
     await page.click('input[type="radio"][value="lb"]');
     await page.click('button[type="submit"]');
-    await page.waitForURL('/setup');
+    await selectPlanAfterRegistration(page);
 
     // Fill in 1RM values in lb
-    await page.fill('input[name="bench"]', '220');
-    await page.fill('input[name="squat"]', '310');
-    await page.fill('input[name="ohp"]', '130');
-    await page.fill('input[name="deadlift"]', '400');
+    await page.getByLabel(/Bench Press/i).fill('220');
+    await page.getByLabel(/^Squat/i).fill('310');
+    await page.getByLabel(/Overhead Press/i).fill('130');
+    await page.getByLabel(/^Deadlift/i).fill('400');
     await page.click('button[type="submit"]');
     await page.waitForURL('/');
 
     // Verify Training Maxes section shows lb values
     const benchTM = await page.locator('.tm-item:has-text("Bench")').locator('.tm-weight').textContent();
     const squatTM = await page.locator('.tm-item:has-text("Squat")').locator('.tm-weight').textContent();
-    const ohpTM = await page.locator('.tm-item:has-text("OHP")').locator('.tm-weight').textContent();
+    const ohpTM = await page.locator('.tm-item:has-text("OHP"), .tm-item:has-text("Overhead")').locator('.tm-weight').textContent();
     const deadliftTM = await page.locator('.tm-item:has-text("Deadlift")').locator('.tm-weight').textContent();
 
     // All TMs should show "lb" unit

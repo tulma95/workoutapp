@@ -21,6 +21,10 @@ npx prisma generate
 echo "Running database migrations..."
 npx prisma migrate dev
 
+# Seed the database
+echo "Seeding database..."
+npx tsx prisma/seed.ts
+
 # Start backend dev server
 echo "Starting backend dev server..."
 cd "$SCRIPT_DIR"

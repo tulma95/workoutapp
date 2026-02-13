@@ -49,24 +49,24 @@ export async function getCurrentTMs(userId: number) {
     },
   });
 
-  if (!activePlan) {
-    // No active plan - return empty array
-    return [];
-  }
+  // Build filter: if user has active plan, only return TMs for plan exercises
+  const exerciseFilter: { in: number[] } | undefined = activePlan
+    ? {
+        in: Array.from(
+          new Set(
+            activePlan.plan.days.flatMap((day) =>
+              day.exercises.map((ex) => ex.tmExerciseId),
+            ),
+          ),
+        ),
+      }
+    : undefined;
 
-  // Get unique TM exercise IDs from plan
-  const tmExerciseIds = new Set<number>();
-  for (const day of activePlan.plan.days) {
-    for (const ex of day.exercises) {
-      tmExerciseIds.add(ex.tmExerciseId);
-    }
-  }
-
-  // Fetch TMs for all required exercises (most recent TM per exercise)
+  // Fetch TMs (most recent per exercise)
   const tmRecords = await prisma.trainingMax.findMany({
     where: {
       userId,
-      exerciseId: { in: Array.from(tmExerciseIds) },
+      ...(exerciseFilter ? { exerciseId: exerciseFilter } : {}),
     },
     include: {
       exercise: true,

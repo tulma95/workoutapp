@@ -289,10 +289,12 @@ export async function logSet(
   const updated = await prisma.workoutSet.update({
     where: { id: setId },
     data: updateData,
+    include: { exercise: true },
   });
 
   return {
     ...updated,
+    exercise: updated.exercise.slug,
     prescribedWeight: convertWeightToUserUnit(decimalToNumber(updated.prescribedWeight), user.unitPreference),
   };
 }

@@ -33,7 +33,9 @@ export const test = base.extend<{
     await page.fill('#displayName', user.displayName);
     await page.click('button[type="submit"]');
 
-    // Wait for redirect to setup page (authenticated users with no TMs)
+    // After registration, user must select a plan first
+    await page.waitForURL('/select-plan');
+    await page.click('button:has-text("Select Plan")');
     await page.waitForURL('/setup');
 
     // Provide the authenticated page and user to the test
@@ -43,11 +45,11 @@ export const test = base.extend<{
   setupCompletePage: async ({ authenticatedPage }, use) => {
     const { page, user } = authenticatedPage;
 
-    // Fill in 1RM values (in kg)
-    await page.fill('input[name="bench"]', '100');
-    await page.fill('input[name="squat"]', '140');
-    await page.fill('input[name="ohp"]', '60');
-    await page.fill('input[name="deadlift"]', '180');
+    // Fill in 1RM values (in kg) using label selectors (input names are numeric IDs)
+    await page.getByLabel(/Bench Press/i).fill('100');
+    await page.getByLabel(/^Squat/i).fill('140');
+    await page.getByLabel(/Overhead Press/i).fill('60');
+    await page.getByLabel(/^Deadlift/i).fill('180');
 
     // Submit form
     await page.click('button[type="submit"]');

@@ -1,4 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
+
+/** After registration, user lands on /select-plan. Select the first plan to proceed to /setup. */
+async function selectPlanAfterRegistration(page: Page) {
+  await page.waitForURL('/select-plan');
+  await page.click('button:has-text("Select Plan")');
+  await page.waitForURL('/setup');
+}
 
 test.describe('Authentication', () => {
   test('register a new user with valid credentials -> redirected to setup page', async ({ page }) => {
@@ -14,8 +21,8 @@ test.describe('Authentication', () => {
     await page.fill('#displayName', displayName);
     await page.click('button[type="submit"]');
 
-    // After successful registration, user should be redirected to setup page
-    await page.waitForURL('/setup');
+    // After registration, user must select a plan before reaching setup
+    await selectPlanAfterRegistration(page);
     expect(page.url()).toContain('/setup');
   });
 
@@ -31,7 +38,7 @@ test.describe('Authentication', () => {
     await page.fill('#password', password);
     await page.fill('#displayName', displayName);
     await page.click('button[type="submit"]');
-    await page.waitForURL('/setup');
+    await selectPlanAfterRegistration(page);
 
     // Logout
     await page.goto('/login');
@@ -61,9 +68,9 @@ test.describe('Authentication', () => {
     await page.fill('#password', password);
     await page.fill('#displayName', displayName);
     await page.click('button[type="submit"]');
-    await page.waitForURL('/setup');
+    await selectPlanAfterRegistration(page);
 
-    // Logout by going to login page (simpler than clicking logout)
+    // Logout by going to login page
     await page.goto('/login');
 
     // Login with valid credentials
@@ -88,7 +95,7 @@ test.describe('Authentication', () => {
     await page.fill('#password', password);
     await page.fill('#displayName', displayName);
     await page.click('button[type="submit"]');
-    await page.waitForURL('/setup');
+    await selectPlanAfterRegistration(page);
 
     // Go to login
     await page.goto('/login');
@@ -116,7 +123,7 @@ test.describe('Authentication', () => {
     await page.fill('#password', password);
     await page.fill('#displayName', displayName);
     await page.click('button[type="submit"]');
-    await page.waitForURL('/setup');
+    await selectPlanAfterRegistration(page);
 
     // Find and click logout button
     const logoutButton = page.locator('button:has-text("Logout"), a:has-text("Logout"), button:has-text("Log out"), a:has-text("Log out")');

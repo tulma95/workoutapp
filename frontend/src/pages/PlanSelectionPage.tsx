@@ -11,7 +11,7 @@ import './PlanSelectionPage.css';
 
 export default function PlanSelectionPage() {
   const navigate = useNavigate();
-  const { activePlanId } = useAuth();
+  const { activePlanId, refreshActivePlan } = useAuth();
   const [plans, setPlans] = useState<WorkoutPlan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -129,6 +129,7 @@ export default function PlanSelectionPage() {
     setError('');
     try {
       const result = await subscribeToPlan(planId);
+      await refreshActivePlan();
 
       // If there are missing TMs, navigate to setup with the missing exercises
       if (result.missingTMs.length > 0) {

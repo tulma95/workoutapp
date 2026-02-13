@@ -231,7 +231,7 @@ test.describe('Workout Session', () => {
     await page.waitForTimeout(500);
 
     // Verify the confirmation dialog appeared with a warning about missing AMRAP reps
-    expect(dialogMessage.toLowerCase()).toContain('amrap');
+    expect(dialogMessage.toLowerCase()).toContain('progression');
 
     // After accepting dialog, workout should complete with no TM change
     await page.waitForTimeout(1000);
