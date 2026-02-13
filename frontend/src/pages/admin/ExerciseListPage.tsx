@@ -1,8 +1,147 @@
+import { useState, useEffect } from 'react';
+import { Exercise, getExercises, createExercise, updateExercise, deleteExercise, CreateExerciseInput, UpdateExerciseInput } from '../../api/exercises';
+import { ExerciseFormModal } from '../../components/ExerciseFormModal';
+import './ExerciseListPage.css';
+
 export default function ExerciseListPage() {
+  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
+
+  useEffect(() => {
+    loadExercises();
+  }, []);
+
+  const loadExercises = async () => {
+    setLoading(true);
+    try {
+      const data = await getExercises();
+      setExercises(data);
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreate = () => {
+    setEditingExercise(null);
+    setShowModal(true);
+  };
+
+  const handleEdit = (exercise: Exercise) => {
+    setEditingExercise(exercise);
+    setShowModal(true);
+  };
+
+  const handleSubmit = async (input: CreateExerciseInput | UpdateExerciseInput) => {
+    if (editingExercise) {
+      await updateExercise(editingExercise.id, input);
+    } else {
+      await createExercise(input as CreateExerciseInput);
+    }
+    await loadExercises();
+  };
+
+  const handleDelete = async (exercise: Exercise) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${exercise.name}"? This action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await deleteExercise(exercise.id);
+      await loadExercises();
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="exercise-list-page">
+        <div className="loading">Loading exercises...</div>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <h2>Exercises</h2>
-      <p>Exercise management coming soon...</p>
+    <div className="exercise-list-page">
+      <div className="page-header">
+        <h1>Exercise Library</h1>
+        <button className="btn-primary" onClick={handleCreate}>
+          + Add Exercise
+        </button>
+      </div>
+
+      {exercises.length === 0 ? (
+        <div className="empty-state">
+          <p>No exercises yet. Create your first exercise to get started.</p>
+          <button className="btn-primary" onClick={handleCreate}>
+            + Add Exercise
+          </button>
+        </div>
+      ) : (
+        <div className="exercise-table-container">
+          <table className="exercise-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Slug</th>
+                <th>Muscle Group</th>
+                <th>Category</th>
+                <th>Body Region</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {exercises.map((exercise) => (
+                <tr key={exercise.id}>
+                  <td className="exercise-name">{exercise.name}</td>
+                  <td className="exercise-slug">{exercise.slug}</td>
+                  <td>{exercise.muscleGroup || '—'}</td>
+                  <td>
+                    <span className={`badge badge-${exercise.category}`}>
+                      {exercise.category}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`badge badge-${exercise.isUpperBody ? 'upper' : 'lower'}`}>
+                      {exercise.isUpperBody ? 'Upper' : 'Lower'}
+                    </span>
+                  </td>
+                  <td className="exercise-actions">
+                    <button
+                      className="btn-icon"
+                      onClick={() => handleEdit(exercise)}
+                      title="Edit"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      className="btn-icon btn-danger"
+                      onClick={() => handleDelete(exercise)}
+                      title="Delete"
+                    >
+                      🗑️
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {showModal && (
+        <ExerciseFormModal
+          exercise={editingExercise}
+          onClose={() => setShowModal(false)}
+          onSubmit={handleSubmit}
+        />
+      )}
     </div>
   );
 }
