@@ -24,10 +24,7 @@ export const ProgressionBanner: React.FC<ProgressionBannerProps> = ({ progressio
   // Normalize to array format
   const progressionArray = progressions || (progression ? [progression] : []);
 
-  // Filter out zero-increase progressions
-  const validProgressions = progressionArray.filter((p) => p.increase !== 0);
-
-  if (validProgressions.length === 0) {
+  if (progressionArray.length === 0) {
     return (
       <div className="progression-banner progression-banner--neutral">
         No TM changes this session
@@ -37,18 +34,21 @@ export const ProgressionBanner: React.FC<ProgressionBannerProps> = ({ progressio
 
   return (
     <div className="progression-banner-container">
-      {validProgressions.map((prog, index) => {
+      {progressionArray.map((prog, index) => {
         const exerciseName = formatExerciseName(prog.exercise);
 
         // Convert and round the increase value for display
         const increaseInUserUnit = roundWeight(convertWeight(prog.increase, unit), unit);
-        const increaseStr = increaseInUserUnit > 0 ? `+${increaseInUserUnit} ${unit}` : `${increaseInUserUnit} ${unit}`;
+        const increaseStr = increaseInUserUnit > 0 ? `+${increaseInUserUnit} ${unit}` : increaseInUserUnit === 0 ? 'No change' : `${increaseInUserUnit} ${unit}`;
 
         // Format the new TM
         const newTMFormatted = formatWeight(prog.newTM, unit);
 
+        // Color-coded: green for increase, neutral for no change
+        const bannerClass = prog.increase > 0 ? 'progression-banner--success' : 'progression-banner--neutral';
+
         return (
-          <div key={index} className="progression-banner progression-banner--success">
+          <div key={index} className={`progression-banner ${bannerClass}`}>
             {exerciseName} TM {increaseStr}! New TM: {newTMFormatted}
           </div>
         );
