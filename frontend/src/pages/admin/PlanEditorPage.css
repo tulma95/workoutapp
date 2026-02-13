@@ -1,0 +1,466 @@
+.plan-editor-page {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.plan-editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.plan-editor-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+
+.btn-save-plan {
+  background: var(--admin-accent, #7c3aed);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  min-height: 48px;
+}
+
+.btn-save-plan:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btn-save-plan:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.plan-editor-loading,
+.plan-editor-error {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--text-muted);
+}
+
+.plan-editor-error {
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.plan-metadata-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-row {
+  margin-bottom: 1rem;
+}
+
+.form-row label {
+  display: block;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.form-row input,
+.form-row textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 48px;
+}
+
+.form-row textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-row-inline {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.form-row-inline label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.form-row-inline input[type="number"] {
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 1rem;
+  width: 100px;
+  min-height: 48px;
+}
+
+.checkbox-label {
+  display: flex;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.day-tabs-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.day-tabs {
+  display: flex;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.day-tab {
+  padding: 1rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+  min-height: 48px;
+}
+
+.day-tab:hover {
+  background: var(--bg-card);
+}
+
+.day-tab--active {
+  color: var(--admin-accent, #7c3aed);
+  border-bottom-color: var(--admin-accent, #7c3aed);
+}
+
+.day-editor {
+  padding: 1.5rem;
+}
+
+.day-name-input {
+  margin-bottom: 1.5rem;
+}
+
+.day-name-input label {
+  display: block;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.day-name-input input {
+  width: 100%;
+  max-width: 400px;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 1rem;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 48px;
+}
+
+.exercises-section {
+  margin-top: 1.5rem;
+}
+
+.exercises-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.exercises-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  color: var(--text-primary);
+}
+
+.btn-add-exercise {
+  background: var(--admin-accent, #7c3aed);
+  color: white;
+  padding: 0.625rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  min-height: 40px;
+}
+
+.btn-add-exercise:hover {
+  opacity: 0.9;
+}
+
+.exercises-empty {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+.exercise-row {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.exercise-row-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.exercise-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.exercise-row-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.exercise-row-actions button {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  min-height: 32px;
+  min-width: 32px;
+}
+
+.exercise-row-actions button:hover:not(:disabled) {
+  background: var(--bg-card);
+}
+
+.exercise-row-actions button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.exercise-row-actions .btn-remove {
+  border-color: #dc2626;
+  color: #dc2626;
+}
+
+.exercise-row-actions .btn-remove:hover {
+  background: #fef2f2;
+}
+
+.exercise-row-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.exercise-row-fields label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.exercise-row-fields select,
+.exercise-row-fields input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 40px;
+}
+
+.exercise-sets-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.exercise-sets-info .warning {
+  color: #ea580c;
+  font-weight: 500;
+}
+
+.btn-edit-sets {
+  background: transparent;
+  color: var(--admin-accent, #7c3aed);
+  border: 1px solid var(--admin-accent, #7c3aed);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 0.875rem;
+  min-height: 40px;
+}
+
+.btn-edit-sets:hover {
+  background: rgba(124, 58, 237, 0.1);
+}
+
+.exercise-picker-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.exercise-picker-content {
+  background: var(--bg-card);
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.exercise-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.exercise-picker-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text-primary);
+}
+
+.exercise-picker-header button {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  min-height: 32px;
+  min-width: 32px;
+}
+
+.exercise-search {
+  margin: 1rem 1.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 1rem;
+  width: calc(100% - 3rem);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 48px;
+}
+
+.exercise-picker-list {
+  overflow-y: auto;
+  padding: 0 1.5rem 1rem;
+  flex: 1;
+}
+
+.exercise-picker-item {
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  min-height: 48px;
+}
+
+.exercise-picker-item:hover {
+  background: var(--bg-primary);
+  border-color: var(--admin-accent, #7c3aed);
+}
+
+.exercise-picker-item-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.exercise-picker-item-meta {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.exercise-category {
+  text-transform: capitalize;
+}
+
+@media (max-width: 768px) {
+  .plan-editor-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .form-row-inline {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .form-row-inline input[type="number"] {
+    width: 100%;
+  }
+
+  .exercise-row-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .day-tabs {
+    justify-content: flex-start;
+  }
+}

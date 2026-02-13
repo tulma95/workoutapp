@@ -13,6 +13,7 @@ import SetupPage from './pages/SetupPage'
 import WorkoutPage from './pages/WorkoutPage'
 import PlanSelectionPage from './pages/PlanSelectionPage'
 import PlanListPage from './pages/admin/PlanListPage'
+import PlanEditorPage from './pages/admin/PlanEditorPage'
 import ExerciseListPage from './pages/admin/ExerciseListPage'
 
 function App() {
@@ -49,8 +50,8 @@ function App() {
                   <AdminLayout>
                     <Routes>
                       <Route path="plans" element={<PlanListPage />} />
-                      <Route path="plans/new" element={<PlanListPage />} />
-                      <Route path="plans/:id" element={<PlanListPage />} />
+                      <Route path="plans/new" element={<PlanEditorPage />} />
+                      <Route path="plans/:id" element={<PlanEditorPage />} />
                       <Route path="exercises" element={<ExerciseListPage />} />
                     </Routes>
                   </AdminLayout>
