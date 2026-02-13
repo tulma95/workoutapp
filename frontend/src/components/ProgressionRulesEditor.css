@@ -1,0 +1,145 @@
+.progression-rules-editor {
+  margin-top: 32px;
+  padding: 20px;
+  background: var(--bg-card);
+  border-radius: 12px;
+}
+
+.progression-rules-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.progression-rules-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--text-primary);
+}
+
+.btn-add-rule {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  min-height: 40px;
+}
+
+.btn-add-rule:hover {
+  opacity: 0.9;
+}
+
+.progression-rules-table-wrapper {
+  overflow-x: auto;
+  margin-bottom: 16px;
+}
+
+.progression-rules-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.progression-rules-table th {
+  text-align: left;
+  padding: 12px;
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  border-bottom: 2px solid var(--border);
+}
+
+.progression-rules-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.progression-rules-table tr:last-child td {
+  border-bottom: none;
+}
+
+.target-select,
+.reps-input,
+.increase-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.target-select {
+  min-width: 200px;
+}
+
+.reps-input,
+.increase-input {
+  text-align: center;
+  max-width: 100px;
+}
+
+.btn-remove-rule {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px 8px;
+  min-height: 32px;
+  min-width: 32px;
+}
+
+.btn-remove-rule:hover {
+  opacity: 0.7;
+}
+
+.progression-rules-info {
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border-left: 3px solid var(--primary);
+}
+
+.progression-rules-info p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.progression-rules-info strong {
+  color: var(--text-primary);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .progression-rules-table {
+    font-size: 13px;
+  }
+
+  .progression-rules-table th,
+  .progression-rules-table td {
+    padding: 8px 4px;
+  }
+
+  .target-select {
+    min-width: 140px;
+    font-size: 13px;
+  }
+
+  .reps-input,
+  .increase-input {
+    max-width: 60px;
+    font-size: 13px;
+  }
+
+  .btn-add-rule {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+}

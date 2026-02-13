@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { getAdminPlan, createPlan, updatePlan, PlanDayExerciseInput, PlanDayInput, PlanSet } from '../../api/adminPlans';
+import { getAdminPlan, createPlan, updatePlan, setProgressionRules, PlanDayExerciseInput, PlanDayInput, PlanSet, ProgressionRule } from '../../api/adminPlans';
 import { getExercises, Exercise } from '../../api/exercises';
 import SetSchemeEditorModal from '../../components/SetSchemeEditorModal';
+import ProgressionRulesEditor from '../../components/ProgressionRulesEditor';
 import './PlanEditorPage.css';
 
 interface EditorExercise extends PlanDayExerciseInput {
@@ -11,6 +12,15 @@ interface EditorExercise extends PlanDayExerciseInput {
 
 interface EditorDay extends Omit<PlanDayInput, 'exercises'> {
   exercises: EditorExercise[];
+}
+
+interface EditorProgressionRule {
+  tempId: string;
+  exerciseId?: number;
+  category?: string;
+  minReps: number;
+  maxReps: number;
+  increase: number;
 }
 
 export default function PlanEditorPage() {
@@ -29,6 +39,9 @@ export default function PlanEditorPage() {
   // Days and exercises
   const [days, setDays] = useState<EditorDay[]>([]);
   const [activeDay, setActiveDay] = useState(1);
+
+  // Progression rules
+  const [progressionRules, setProgressionRules] = useState<EditorProgressionRule[]>([]);
 
   // Exercise library
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -99,6 +112,17 @@ export default function PlanEditorPage() {
         })),
       }));
       setDays(editorDays);
+
+      // Convert progression rules
+      const editorRules: EditorProgressionRule[] = plan.progressionRules.map((rule, idx) => ({
+        tempId: rule.id ? `rule-${rule.id}` : `rule-${Date.now()}-${idx}`,
+        exerciseId: rule.exerciseId,
+        category: rule.category,
+        minReps: rule.minReps,
+        maxReps: rule.maxReps,
+        increase: rule.increase,
+      }));
+      setProgressionRules(editorRules);
     } catch (err: any) {
       setError(err.message || 'Failed to load plan');
     } finally {
@@ -328,13 +352,33 @@ export default function PlanEditorPage() {
     };
 
     try {
+      let planId: number;
+
       if (isEditMode && id) {
         await updatePlan(parseInt(id, 10), payload);
+        planId = parseInt(id, 10);
         alert('Plan updated successfully');
       } else {
         const created = await createPlan(payload);
+        planId = created.id;
         alert('Plan created successfully');
-        navigate(`/admin/plans/${created.id}`);
+      }
+
+      // Save progression rules if there are any
+      if (progressionRules.length > 0) {
+        const rulesPayload = progressionRules.map(rule => ({
+          exerciseId: rule.exerciseId,
+          category: rule.category,
+          minReps: rule.minReps,
+          maxReps: rule.maxReps,
+          increase: rule.increase,
+        }));
+
+        await setProgressionRules(planId, rulesPayload);
+      }
+
+      if (!isEditMode) {
+        navigate(`/admin/plans/${planId}`);
       }
     } catch (err: any) {
       setError(err.message || 'Failed to save plan');
@@ -609,6 +653,12 @@ export default function PlanEditorPage() {
           </div>
         </div>
       )}
+
+      <ProgressionRulesEditor
+        initialRules={progressionRules as ProgressionRule[]}
+        exercises={exercises}
+        onChange={setProgressionRules}
+      />
 
       {editingSets && (
         <SetSchemeEditorModal

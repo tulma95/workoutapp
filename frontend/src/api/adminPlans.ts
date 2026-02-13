@@ -36,6 +36,16 @@ export interface CreatePlanInput {
   days: PlanDayInput[];
 }
 
+export interface ProgressionRule {
+  id?: number;
+  exerciseId?: number;
+  category?: string;
+  minReps: number;
+  maxReps: number;
+  increase: number;
+  exercise?: Exercise;
+}
+
 export interface PlanWithDetails extends WorkoutPlan {
   days: Array<{
     id: number;
@@ -63,6 +73,7 @@ export interface PlanWithDetails extends WorkoutPlan {
       }>;
     }>;
   }>;
+  progressionRules: ProgressionRule[];
 }
 
 export async function getAdminPlans(): Promise<AdminPlanListItem[]> {
@@ -146,5 +157,25 @@ export async function archivePlan(planId: number): Promise<void> {
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.error?.message || 'Failed to archive plan');
+  }
+}
+
+export async function setProgressionRules(
+  planId: number,
+  rules: Omit<ProgressionRule, 'id' | 'exercise'>[]
+): Promise<void> {
+  const token = localStorage.getItem('accessToken');
+  const response = await fetch(`/api/admin/plans/${planId}/progression-rules`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ rules }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error?.message || 'Failed to save progression rules');
   }
 }
