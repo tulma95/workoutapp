@@ -243,4 +243,53 @@ test.describe('Workout Session', () => {
     // Verify "Back to Dashboard" button appears
     await expect(page.getByRole('button', { name: /back to dashboard|dashboard/i })).toBeVisible();
   });
+
+  test('resuming an in-progress workout by clicking the same day again loads existing workout with completed sets preserved', async ({ setupCompletePage }) => {
+    const { page } = setupCompletePage;
+
+    // Wait for dashboard to load
+    await page.waitForSelector('text=Training Maxes');
+
+    // Start Day 1 workout
+    await page.getByRole('button', { name: /start workout/i }).first().click();
+    await page.waitForURL(/\/workout\/1/);
+
+    // Wait for the workout to load
+    await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
+
+    // Complete 2 sets by clicking their checkboxes
+    const firstCheckbox = page.getByRole('checkbox').nth(0);
+    const secondCheckbox = page.getByRole('checkbox').nth(1);
+
+    await firstCheckbox.click();
+    await expect(firstCheckbox).toBeChecked();
+
+    await secondCheckbox.click();
+    await expect(secondCheckbox).toBeChecked();
+
+    // Wait for state to persist
+    await page.waitForTimeout(500);
+
+    // Navigate back to dashboard
+    await page.goto('/');
+    await page.waitForSelector('text=Training Maxes');
+
+    // The button text should now say "Continue Workout" since Day 1 is in progress
+    // Click it to resume the workout (should NOT show conflict dialog for same day)
+    await page.getByRole('button', { name: /continue workout|start workout/i }).first().click();
+    await page.waitForURL(/\/workout\/1/);
+
+    // Wait for the workout to load
+    await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
+
+    // Verify the previously completed sets are still checked
+    const resumedFirstCheckbox = page.getByRole('checkbox').nth(0);
+    const resumedSecondCheckbox = page.getByRole('checkbox').nth(1);
+
+    await expect(resumedFirstCheckbox).toBeChecked();
+    await expect(resumedSecondCheckbox).toBeChecked();
+
+    // Verify no conflict dialog appeared (dialog should have "Workout in Progress" heading if it did)
+    await expect(page.getByRole('heading', { name: /workout in progress/i })).not.toBeVisible();
+  });
 });
