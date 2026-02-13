@@ -366,4 +366,91 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
   res.json(archivedPlan);
 });
 
+const progressionRuleSchema = z.object({
+  exerciseId: z.number().int().optional(),
+  category: z.string().optional(),
+  minReps: z.number().int().min(0),
+  maxReps: z.number().int().min(0),
+  increase: z.number().min(0),
+});
+
+const setProgressionRulesSchema = z.object({
+  rules: z.array(progressionRuleSchema).min(1),
+});
+
+router.post('/:id/progression-rules', validate(setProgressionRulesSchema), async (req: AuthRequest, res: Response) => {
+  const id = parseInt(req.params.id as string, 10);
+
+  if (isNaN(id)) {
+    res.status(400).json({
+      error: { code: 'BAD_REQUEST', message: 'Invalid plan ID' }
+    });
+    return;
+  }
+
+  const { rules } = req.body;
+
+  // Check if plan exists
+  const plan = await prisma.workoutPlan.findUnique({
+    where: { id },
+  });
+
+  if (!plan) {
+    res.status(404).json({
+      error: { code: 'NOT_FOUND', message: 'Plan not found' }
+    });
+    return;
+  }
+
+  // Validate exerciseId references if provided
+  const exerciseIds = rules
+    .map((rule: any) => rule.exerciseId)
+    .filter((id: number | undefined): id is number => id !== undefined);
+
+  if (exerciseIds.length > 0) {
+    const uniqueExerciseIds: number[] = Array.from(new Set(exerciseIds));
+    const exercises = await prisma.exercise.findMany({
+      where: { id: { in: uniqueExerciseIds } },
+    });
+
+    if (exercises.length !== uniqueExerciseIds.length) {
+      res.status(400).json({
+        error: { code: 'BAD_REQUEST', message: 'One or more exerciseId references do not exist' }
+      });
+      return;
+    }
+  }
+
+  // Replace rules in a transaction
+  const updatedRules = await prisma.$transaction(async (tx) => {
+    // Delete existing rules
+    await tx.planProgressionRule.deleteMany({
+      where: { planId: id },
+    });
+
+    // Create new rules
+    const createdRules = [];
+    for (const rule of rules) {
+      const createdRule = await tx.planProgressionRule.create({
+        data: {
+          planId: id,
+          exerciseId: rule.exerciseId,
+          category: rule.category,
+          minReps: rule.minReps,
+          maxReps: rule.maxReps,
+          increase: rule.increase,
+        },
+        include: {
+          exercise: true,
+        },
+      });
+      createdRules.push(createdRule);
+    }
+
+    return createdRules;
+  });
+
+  res.json(updatedRules);
+});
+
 export default router;

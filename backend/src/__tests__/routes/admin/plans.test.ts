@@ -597,4 +597,204 @@ describe('Admin Plans routes', () => {
       expect(res.body.error.code).toBe('FORBIDDEN');
     });
   });
+
+  describe('POST /api/admin/plans/:id/progression-rules', () => {
+    it('sets progression rules successfully', async () => {
+      // Get the test plan ID
+      if (!testPlanId) {
+        const plan = await prisma.workoutPlan.findFirst({
+          where: { slug: 'test-plan' },
+        });
+        if (plan) {
+          testPlanId = plan.id;
+        }
+      }
+
+      const res = await request(app)
+        .post(`/api/admin/plans/${testPlanId}/progression-rules`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          rules: [
+            { category: 'upper', minReps: 0, maxReps: 1, increase: 0 },
+            { category: 'upper', minReps: 2, maxReps: 3, increase: 2.5 },
+            { category: 'upper', minReps: 4, maxReps: 5, increase: 2.5 },
+            { category: 'upper', minReps: 6, maxReps: 99, increase: 5 },
+            { category: 'lower', minReps: 0, maxReps: 1, increase: 0 },
+            { category: 'lower', minReps: 2, maxReps: 3, increase: 5 },
+            { category: 'lower', minReps: 4, maxReps: 5, increase: 5 },
+            { category: 'lower', minReps: 6, maxReps: 99, increase: 7.5 },
+          ],
+        });
+
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body).toHaveLength(8);
+
+      // Verify first rule
+      const upperZeroRule = res.body.find((r: any) => r.category === 'upper' && r.minReps === 0);
+      expect(upperZeroRule).toBeDefined();
+      expect(upperZeroRule.maxReps).toBe(1);
+      expect(parseFloat(upperZeroRule.increase)).toBe(0);
+
+      // Verify lower body rule
+      const lowerRule = res.body.find((r: any) => r.category === 'lower' && r.minReps === 2);
+      expect(lowerRule).toBeDefined();
+      expect(lowerRule.maxReps).toBe(3);
+      expect(parseFloat(lowerRule.increase)).toBe(5);
+    });
+
+    it('replaces existing progression rules', async () => {
+      // Get the test plan ID
+      if (!testPlanId) {
+        const plan = await prisma.workoutPlan.findFirst({
+          where: { slug: 'test-plan' },
+        });
+        if (plan) {
+          testPlanId = plan.id;
+        }
+      }
+
+      // First set of rules
+      await request(app)
+        .post(`/api/admin/plans/${testPlanId}/progression-rules`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          rules: [
+            { category: 'upper', minReps: 0, maxReps: 10, increase: 2.5 },
+          ],
+        });
+
+      // Replace with new rules
+      const res = await request(app)
+        .post(`/api/admin/plans/${testPlanId}/progression-rules`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          rules: [
+            { category: 'lower', minReps: 0, maxReps: 10, increase: 5 },
+          ],
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(1);
+      expect(res.body[0].category).toBe('lower');
+
+      // Verify old rules are deleted
+      const allRules = await prisma.planProgressionRule.findMany({
+        where: { planId: testPlanId },
+      });
+      expect(allRules).toHaveLength(1);
+      expect(allRules[0].category).toBe('lower');
+    });
+
+    it('sets exercise-specific progression rules', async () => {
+      // Get the test plan ID
+      if (!testPlanId) {
+        const plan = await prisma.workoutPlan.findFirst({
+          where: { slug: 'test-plan' },
+        });
+        if (plan) {
+          testPlanId = plan.id;
+        }
+      }
+
+      const res = await request(app)
+        .post(`/api/admin/plans/${testPlanId}/progression-rules`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          rules: [
+            { exerciseId: exerciseIds.bench, minReps: 0, maxReps: 3, increase: 2.5 },
+            { exerciseId: exerciseIds.bench, minReps: 4, maxReps: 99, increase: 5 },
+            { category: 'upper', minReps: 0, maxReps: 99, increase: 2.5 },
+          ],
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(3);
+
+      // Verify exercise-specific rule
+      const benchRule = res.body.find((r: any) => r.exerciseId === exerciseIds.bench);
+      expect(benchRule).toBeDefined();
+      expect(benchRule.exercise).toBeDefined();
+      expect(benchRule.exercise.slug).toBe('bench-press-test');
+    });
+
+    it('returns 404 for non-existent plan', async () => {
+      const res = await request(app)
+        .post('/api/admin/plans/999999/progression-rules')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          rules: [
+            { category: 'upper', minReps: 0, maxReps: 10, increase: 2.5 },
+          ],
+        });
+
+      expect(res.status).toBe(404);
+      expect(res.body.error.code).toBe('NOT_FOUND');
+    });
+
+    it('returns 400 for invalid exerciseId reference', async () => {
+      // Get the test plan ID
+      if (!testPlanId) {
+        const plan = await prisma.workoutPlan.findFirst({
+          where: { slug: 'test-plan' },
+        });
+        if (plan) {
+          testPlanId = plan.id;
+        }
+      }
+
+      const res = await request(app)
+        .post(`/api/admin/plans/${testPlanId}/progression-rules`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          rules: [
+            { exerciseId: 999999, minReps: 0, maxReps: 10, increase: 2.5 },
+          ],
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('BAD_REQUEST');
+      expect(res.body.error.message).toContain('exerciseId');
+    });
+
+    it('returns 400 for invalid plan ID', async () => {
+      const res = await request(app)
+        .post('/api/admin/plans/invalid/progression-rules')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          rules: [
+            { category: 'upper', minReps: 0, maxReps: 10, increase: 2.5 },
+          ],
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('BAD_REQUEST');
+    });
+
+    it('returns 403 for non-admin user', async () => {
+      const res = await request(app)
+        .post(`/api/admin/plans/${testPlanId}/progression-rules`)
+        .set('Authorization', `Bearer ${nonAdminToken}`)
+        .send({
+          rules: [
+            { category: 'upper', minReps: 0, maxReps: 10, increase: 2.5 },
+          ],
+        });
+
+      expect(res.status).toBe(403);
+      expect(res.body.error.code).toBe('FORBIDDEN');
+    });
+
+    it('returns 401 without token', async () => {
+      const res = await request(app)
+        .post(`/api/admin/plans/${testPlanId}/progression-rules`)
+        .send({
+          rules: [
+            { category: 'upper', minReps: 0, maxReps: 10, increase: 2.5 },
+          ],
+        });
+
+      expect(res.status).toBe(401);
+    });
+  });
 });
