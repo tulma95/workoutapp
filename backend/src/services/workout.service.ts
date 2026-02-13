@@ -73,6 +73,176 @@ export async function startWorkout(userId: number, dayNumber: number) {
     throw new Error('BAD_REQUEST: User not found');
   }
 
+  // Check if user has an active plan
+  const activePlan = await prisma.userPlan.findFirst({
+    where: { userId, isActive: true },
+    include: {
+      plan: true,
+    },
+  });
+
+  // If user has active plan, use plan-driven generation
+  if (activePlan) {
+    // Validate dayNumber against plan's daysPerWeek
+    if (dayNumber < 1 || dayNumber > activePlan.plan.daysPerWeek) {
+      throw new Error(
+        `BAD_REQUEST: Invalid day number ${dayNumber}. Plan has ${activePlan.plan.daysPerWeek} days per week.`,
+      );
+    }
+
+    // Now load the specific day with exercises
+    const planDay = await prisma.planDay.findFirst({
+      where: {
+        planId: activePlan.plan.id,
+        dayNumber,
+      },
+      include: {
+        exercises: {
+          include: {
+            exercise: true,
+            tmExercise: true,
+            sets: {
+              orderBy: { setOrder: 'asc' },
+            },
+          },
+          orderBy: { sortOrder: 'asc' },
+        },
+      },
+    });
+
+    if (!planDay) {
+      throw new Error(`BAD_REQUEST: Plan day ${dayNumber} not found`);
+    }
+
+    // Collect unique tmExercise IDs
+    const tmExerciseIds = new Set<number>();
+    for (const exercise of planDay.exercises) {
+      tmExerciseIds.add(exercise.tmExerciseId);
+    }
+
+    // Fetch current TMs for these exercises (try by exerciseId first, fallback to exercise string)
+    const tmRecords = await prisma.trainingMax.findMany({
+      where: {
+        userId,
+        OR: [
+          { exerciseId: { in: Array.from(tmExerciseIds) } },
+          {
+            exercise: {
+              in: Array.from(tmExerciseIds)
+                .map((id) => {
+                  const ex = planDay.exercises.find((e) => e.tmExerciseId === id);
+                  return ex?.tmExercise.slug;
+                })
+                .filter((s): s is string => s !== undefined),
+            },
+          },
+        ],
+      },
+      orderBy: { effectiveDate: 'desc' },
+    });
+
+    // Build TM map by exerciseId
+    const tmMapById: Record<number, number> = {};
+    for (const tmExId of tmExerciseIds) {
+      // Find TM record for this exercise ID
+      const tmRecord = tmRecords.find(
+        (tm) =>
+          tm.exerciseId === tmExId ||
+          tm.exercise === planDay.exercises.find((e) => e.tmExerciseId === tmExId)?.tmExercise.slug,
+      );
+      if (tmRecord) {
+        tmMapById[tmExId] = decimalToNumber(tmRecord.weight);
+      }
+    }
+
+    // Verify all required TMs are present
+    for (const tmExId of tmExerciseIds) {
+      if (tmMapById[tmExId] === undefined) {
+        const exercise = planDay.exercises.find((e) => e.tmExerciseId === tmExId)?.tmExercise;
+        throw new Error(`BAD_REQUEST: Training max not set for ${exercise?.name || 'exercise'}`);
+      }
+    }
+
+    // Generate sets from plan structure
+    const setsToCreate: Array<{
+      exercise: string;
+      exerciseId: number;
+      tier: string;
+      setOrder: number;
+      prescribedWeight: number;
+      prescribedReps: number;
+      isAmrap: boolean;
+      isProgression: boolean;
+    }> = [];
+
+    for (const planDayExercise of planDay.exercises) {
+      const tm = tmMapById[planDayExercise.tmExerciseId];
+      for (const planSet of planDayExercise.sets) {
+        const percentage = decimalToNumber(planSet.percentage);
+        const weight = roundWeight(tm * percentage, 'kg');
+        setsToCreate.push({
+          exercise: planDayExercise.exercise.slug,
+          exerciseId: planDayExercise.exerciseId,
+          tier: planDayExercise.tier,
+          setOrder: planSet.setOrder,
+          prescribedWeight: weight,
+          prescribedReps: planSet.reps,
+          isAmrap: planSet.isAmrap,
+          isProgression: planSet.isProgression,
+        });
+      }
+    }
+
+    // Create workout + sets in transaction
+    const workout = await prisma.$transaction(async (tx) => {
+      const w = await tx.workout.create({
+        data: {
+          userId,
+          dayNumber,
+          status: 'in_progress',
+          planDayId: planDay.id,
+        },
+      });
+
+      for (const set of setsToCreate) {
+        await tx.workoutSet.create({
+          data: {
+            workoutId: w.id,
+            exercise: set.exercise,
+            exerciseId: set.exerciseId,
+            tier: set.tier,
+            setOrder: set.setOrder,
+            prescribedWeight: set.prescribedWeight,
+            prescribedReps: set.prescribedReps,
+            isAmrap: set.isAmrap,
+            isProgression: set.isProgression,
+          },
+        });
+      }
+
+      return tx.workout.findUniqueOrThrow({
+        where: { id: w.id },
+        include: { sets: { orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }] } },
+      });
+    });
+
+    logger.info('Workout started (plan-driven)', {
+      dayNumber,
+      userId,
+      workoutId: workout.id,
+      planId: activePlan.plan.id,
+      planSlug: activePlan.plan.slug,
+    });
+
+    return formatWorkout(workout, user.unitPreference);
+  }
+
+  // FALLBACK: Old hardcoded nSuns logic for users without active plan
+  // Validate dayNumber for hardcoded 4-day program
+  if (dayNumber < 1 || dayNumber > 4) {
+    throw new Error('BAD_REQUEST: Invalid day number. Must be 1-4.');
+  }
+
   // Get current TMs (note: getCurrentTMs now returns weights in user's unit, but we need kg for calculations)
   const tmsInUserUnit = await getCurrentTMs(userId);
   if (tmsInUserUnit.length < 4) {
@@ -130,7 +300,7 @@ export async function startWorkout(userId: number, dayNumber: number) {
     });
   });
 
-  logger.info('Workout started', { dayNumber, userId, workoutId: workout.id });
+  logger.info('Workout started (fallback)', { dayNumber, userId, workoutId: workout.id });
 
   return formatWorkout(workout, user.unitPreference);
 }

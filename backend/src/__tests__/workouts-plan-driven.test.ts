@@ -1,0 +1,395 @@
+import { describe, it, expect, beforeAll } from 'vitest';
+import request from 'supertest';
+import app from '../app';
+import prisma from '../lib/db';
+
+describe('Workouts API - Plan-Driven Generation', () => {
+  let token: string;
+  let userId: number;
+  let planId: number;
+  let adminToken: string;
+
+  beforeAll(async () => {
+    // Create admin user
+    const adminUser = await prisma.user.create({
+      data: {
+        email: 'plan-workout-admin@example.com',
+        passwordHash: '$2b$10$dummyhash',
+        displayName: 'Admin',
+        unitPreference: 'kg',
+        isAdmin: true,
+      },
+    });
+
+    // Login admin
+    const adminLogin = await request(app).post('/api/auth/login').send({
+      email: 'plan-workout-admin@example.com',
+      password: 'password123',
+    });
+    adminToken = adminLogin.body.accessToken;
+
+    // Register regular user
+    const res = await request(app).post('/api/auth/register').send({
+      email: 'plan-workout-test@example.com',
+      password: 'password123',
+      displayName: 'Plan Workout Test',
+      unitPreference: 'kg',
+    });
+    token = res.body.accessToken;
+    userId = res.body.user.id;
+
+    // Create test exercises (these should already exist from setup.ts)
+    const benchExercise = await prisma.exercise.upsert({
+      where: { slug: 'bench-press' },
+      update: {},
+      create: {
+        slug: 'bench-press',
+        name: 'Bench Press',
+        muscleGroup: 'chest',
+        category: 'compound',
+        isUpperBody: true,
+      },
+    });
+    const squatExercise = await prisma.exercise.upsert({
+      where: { slug: 'squat' },
+      update: {},
+      create: {
+        slug: 'squat',
+        name: 'Squat',
+        muscleGroup: 'legs',
+        category: 'compound',
+        isUpperBody: false,
+      },
+    });
+    const ohpExercise = await prisma.exercise.upsert({
+      where: { slug: 'ohp' },
+      update: {},
+      create: {
+        slug: 'ohp',
+        name: 'Overhead Press',
+        muscleGroup: 'shoulders',
+        category: 'compound',
+        isUpperBody: true,
+      },
+    });
+    const deadliftExercise = await prisma.exercise.upsert({
+      where: { slug: 'deadlift' },
+      update: {},
+      create: {
+        slug: 'deadlift',
+        name: 'Deadlift',
+        muscleGroup: 'back',
+        category: 'compound',
+        isUpperBody: false,
+      },
+    });
+
+    // Create test plan with minimal nSuns structure for Day 1
+    const plan = await prisma.workoutPlan.create({
+      data: {
+        slug: 'test-nsuns-4day',
+        name: 'Test nSuns 4-Day LP',
+        description: 'Test plan',
+        daysPerWeek: 4,
+        isPublic: true,
+        isSystem: false,
+      },
+    });
+
+    planId = plan.id;
+
+    // Create Day 1: Bench Volume + OHP
+    const day1 = await prisma.planDay.create({
+      data: {
+        planId: plan.id,
+        dayNumber: 1,
+        name: 'Bench Volume & OHP',
+      },
+    });
+
+    // T1: Bench Volume (9 sets)
+    const t1Exercise = await prisma.planDayExercise.create({
+      data: {
+        planDayId: day1.id,
+        exerciseId: benchExercise.id,
+        tier: 'T1',
+        sortOrder: 1,
+        tmExerciseId: benchExercise.id,
+        displayName: 'Bench Volume',
+      },
+    });
+
+    // T1 sets for Day 1
+    const t1Sets = [
+      { percentage: 0.65, reps: 8, isAmrap: false, isProgression: false },
+      { percentage: 0.75, reps: 6, isAmrap: false, isProgression: false },
+      { percentage: 0.85, reps: 4, isAmrap: false, isProgression: false },
+      { percentage: 0.85, reps: 4, isAmrap: false, isProgression: false },
+      { percentage: 0.85, reps: 4, isAmrap: false, isProgression: false },
+      { percentage: 0.80, reps: 5, isAmrap: false, isProgression: false },
+      { percentage: 0.75, reps: 6, isAmrap: false, isProgression: false },
+      { percentage: 0.70, reps: 7, isAmrap: false, isProgression: false },
+      { percentage: 0.65, reps: 8, isAmrap: true, isProgression: true },
+    ];
+
+    for (let i = 0; i < t1Sets.length; i++) {
+      await prisma.planSet.create({
+        data: {
+          planDayExerciseId: t1Exercise.id,
+          setOrder: i + 1,
+          ...t1Sets[i],
+        },
+      });
+    }
+
+    // T2: OHP (8 sets)
+    const t2Exercise = await prisma.planDayExercise.create({
+      data: {
+        planDayId: day1.id,
+        exerciseId: ohpExercise.id,
+        tier: 'T2',
+        sortOrder: 2,
+        tmExerciseId: ohpExercise.id,
+      },
+    });
+
+    // T2 sets
+    const t2Sets = [
+      { percentage: 0.50, reps: 6 },
+      { percentage: 0.60, reps: 5 },
+      { percentage: 0.70, reps: 3 },
+      { percentage: 0.70, reps: 5 },
+      { percentage: 0.70, reps: 7 },
+      { percentage: 0.70, reps: 4 },
+      { percentage: 0.70, reps: 6 },
+      { percentage: 0.70, reps: 8 },
+    ];
+
+    for (let i = 0; i < t2Sets.length; i++) {
+      await prisma.planSet.create({
+        data: {
+          planDayExerciseId: t2Exercise.id,
+          setOrder: i + 1,
+          percentage: t2Sets[i].percentage,
+          reps: t2Sets[i].reps,
+          isAmrap: false,
+          isProgression: false,
+        },
+      });
+    }
+
+    // Subscribe user to plan
+    await prisma.userPlan.create({
+      data: {
+        userId,
+        planId: plan.id,
+        isActive: true,
+      },
+    });
+
+    // Set up TMs using new exerciseTMs format
+    await request(app)
+      .post('/api/training-maxes/setup')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        exerciseTMs: [
+          { exerciseId: benchExercise.id, oneRepMax: 100 }, // TM = 90kg
+          { exerciseId: squatExercise.id, oneRepMax: 140 }, // TM = 126kg
+          { exerciseId: ohpExercise.id, oneRepMax: 60 }, // TM = 54kg
+          { exerciseId: deadliftExercise.id, oneRepMax: 180 }, // TM = 162kg
+        ],
+      });
+  });
+
+  describe('POST /api/workouts - plan-driven', () => {
+    it('creates workout from plan structure with correct sets', async () => {
+      const res = await request(app)
+        .post('/api/workouts')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ dayNumber: 1 });
+
+      expect(res.status).toBe(201);
+      expect(res.body.dayNumber).toBe(1);
+      expect(res.body.status).toBe('in_progress');
+
+      // Day 1 should have 9 T1 + 8 T2 = 17 sets
+      expect(res.body.sets).toHaveLength(17);
+
+      const t1Sets = res.body.sets.filter((s: { tier: string }) => s.tier === 'T1');
+      const t2Sets = res.body.sets.filter((s: { tier: string }) => s.tier === 'T2');
+
+      expect(t1Sets).toHaveLength(9);
+      expect(t2Sets).toHaveLength(8);
+
+      // T1 should be bench-press, T2 should be ohp
+      expect(t1Sets[0].exercise).toBe('bench-press');
+      expect(t2Sets[0].exercise).toBe('ohp');
+
+      // Check progression flag is set correctly
+      const progressionSets = res.body.sets.filter((s: { isProgression: boolean }) => s.isProgression);
+      // Day 1 has 1 progression set (65% AMRAP, last T1 set)
+      expect(progressionSets).toHaveLength(1);
+      expect(progressionSets[0].tier).toBe('T1');
+      expect(progressionSets[0].isAmrap).toBe(true);
+    });
+
+    it('validates dayNumber against plan daysPerWeek', async () => {
+      // Cancel previous workout first
+      const currentRes = await request(app)
+        .get('/api/workouts/current')
+        .set('Authorization', `Bearer ${token}`);
+
+      if (currentRes.body) {
+        await request(app)
+          .delete(`/api/workouts/${currentRes.body.id}`)
+          .set('Authorization', `Bearer ${token}`);
+      }
+
+      const res = await request(app)
+        .post('/api/workouts')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ dayNumber: 5 });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.message).toContain('Invalid day number 5');
+      expect(res.body.error.message).toContain('4 days per week');
+    });
+
+    it('returns 400 when missing TMs for plan exercises', async () => {
+      // Create a new user without TMs
+      const res = await request(app).post('/api/auth/register').send({
+        email: 'plan-no-tm@example.com',
+        password: 'password123',
+        displayName: 'No TM',
+        unitPreference: 'kg',
+      });
+      const noTmUserId = res.body.user.id;
+
+      // Subscribe to plan
+      await prisma.userPlan.create({
+        data: {
+          userId: noTmUserId,
+          planId: planId,
+          isActive: true,
+        },
+      });
+
+      // Try to start workout
+      const workoutRes = await request(app)
+        .post('/api/workouts')
+        .set('Authorization', `Bearer ${res.body.accessToken}`)
+        .send({ dayNumber: 1 });
+
+      expect(workoutRes.status).toBe(400);
+      expect(workoutRes.body.error.message).toContain('Training max not set');
+    });
+
+    it('creates workout with exerciseId and isProgression populated', async () => {
+      // Cancel previous workout first
+      const currentRes = await request(app)
+        .get('/api/workouts/current')
+        .set('Authorization', `Bearer ${token}`);
+
+      if (currentRes.body) {
+        await request(app)
+          .delete(`/api/workouts/${currentRes.body.id}`)
+          .set('Authorization', `Bearer ${token}`);
+      }
+
+      // Start Day 1 (we only created Day 1 in test setup)
+      const res = await request(app)
+        .post('/api/workouts')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ dayNumber: 1 });
+
+      expect(res.status).toBe(201);
+
+      // Verify workout_sets have exerciseId and isProgression in DB
+      const workout = await prisma.workout.findUnique({
+        where: { id: res.body.id },
+        include: { sets: true },
+      });
+
+      expect(workout).not.toBeNull();
+      expect(workout!.planDayId).not.toBeNull();
+
+      const sets = workout!.sets;
+      expect(sets.every((s) => s.exerciseId !== null)).toBe(true);
+
+      // Day 1 has 1 progression set (65% AMRAP, last T1 set)
+      const progressionSets = sets.filter((s) => s.isProgression);
+      expect(progressionSets).toHaveLength(1);
+      expect(progressionSets[0].isProgression).toBe(true);
+      expect(progressionSets[0].tier).toBe('T1');
+      expect(progressionSets[0].isAmrap).toBe(true);
+    });
+  });
+
+  describe('Backward compatibility - fallback to hardcoded logic', () => {
+    let fallbackToken: string;
+
+    beforeAll(async () => {
+      // Create user without subscribing to a plan
+      const res = await request(app).post('/api/auth/register').send({
+        email: 'fallback-user@example.com',
+        password: 'password123',
+        displayName: 'Fallback User',
+        unitPreference: 'kg',
+      });
+      fallbackToken = res.body.accessToken;
+
+      // Set up TMs using old format
+      await request(app)
+        .post('/api/training-maxes/setup')
+        .set('Authorization', `Bearer ${fallbackToken}`)
+        .send({
+          oneRepMaxes: { bench: 100, squat: 140, ohp: 60, deadlift: 180 },
+        });
+    });
+
+    it('uses hardcoded nSuns logic when no active plan', async () => {
+      const res = await request(app)
+        .post('/api/workouts')
+        .set('Authorization', `Bearer ${fallbackToken}`)
+        .send({ dayNumber: 3 });
+
+      expect(res.status).toBe(201);
+      expect(res.body.dayNumber).toBe(3);
+      expect(res.body.sets).toHaveLength(17);
+
+      // Verify workout was created without planDayId
+      const workout = await prisma.workout.findUnique({
+        where: { id: res.body.id },
+      });
+
+      expect(workout).not.toBeNull();
+      expect(workout!.planDayId).toBeNull();
+
+      // Old format uses short exercise names
+      const t1Sets = res.body.sets.filter((s: { tier: string }) => s.tier === 'T1');
+      expect(t1Sets[0].exercise).toBe('bench');
+    });
+
+    it('validates dayNumber max 4 for hardcoded logic', async () => {
+      // Cancel previous workout first
+      const currentRes = await request(app)
+        .get('/api/workouts/current')
+        .set('Authorization', `Bearer ${fallbackToken}`);
+
+      if (currentRes.body) {
+        await request(app)
+          .delete(`/api/workouts/${currentRes.body.id}`)
+          .set('Authorization', `Bearer ${fallbackToken}`);
+      }
+
+      const res = await request(app)
+        .post('/api/workouts')
+        .set('Authorization', `Bearer ${fallbackToken}`)
+        .send({ dayNumber: 5 });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.message).toContain('Invalid day number');
+      expect(res.body.error.message).toContain('Must be 1-4');
+    });
+  });
+});

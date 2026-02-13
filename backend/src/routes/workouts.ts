@@ -10,7 +10,7 @@ const router = Router();
 router.use(authenticate);
 
 const startSchema = z.object({
-  dayNumber: z.number().int().min(1).max(4),
+  dayNumber: z.number().int().min(1),
 });
 
 router.post('/', validate(startSchema), async (req: AuthRequest, res: Response) => {
