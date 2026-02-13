@@ -206,6 +206,7 @@ export default function WorkoutPage() {
 
   const handleContinueExisting = () => {
     if (!conflictWorkout) return
+    setConflictWorkout(null)
     navigate(`/workout/${conflictWorkout.dayNumber}`)
   }
 
