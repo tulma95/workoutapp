@@ -41,7 +41,7 @@ test.describe('Conflict Dialog', () => {
     await clickDayButton(page, 2)
 
     // Wait for conflict dialog to appear - should mention "Day 1"
-    await expect(page.getByText(/day 1/i)).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText(/you have a day 1 workout/i)).toBeVisible({ timeout: 5000 })
   })
 
   test('clicking Continue button in conflict dialog navigates to existing workout', async ({
