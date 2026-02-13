@@ -347,49 +347,23 @@ describe('Workouts API - Plan-Driven Generation', () => {
         });
     });
 
-    it('uses hardcoded nSuns logic when no active plan', async () => {
+    it('requires active plan when starting a workout', async () => {
       const res = await request(app)
         .post('/api/workouts')
         .set('Authorization', `Bearer ${fallbackToken}`)
         .send({ dayNumber: 3 });
 
-      expect(res.status).toBe(201);
-      expect(res.body.dayNumber).toBe(3);
-      expect(res.body.sets).toHaveLength(17);
-
-      // Verify workout was created without planDayId
-      const workout = await prisma.workout.findUnique({
-        where: { id: res.body.id },
-      });
-
-      expect(workout).not.toBeNull();
-      expect(workout!.planDayId).toBeNull();
-
-      // Old format uses short exercise names
-      const t1Sets = res.body.sets.filter((s: { tier: string }) => s.tier === 'T1');
-      expect(t1Sets[0].exercise).toBe('bench');
+      expect(res.status).toBe(400);
+      expect(res.body.error.message).toContain('No active workout plan');
     });
 
-    it('validates dayNumber max 4 for hardcoded logic', async () => {
-      // Cancel previous workout first
-      const currentRes = await request(app)
-        .get('/api/workouts/current')
+    it('returns empty array from getCurrentTMs when no active plan', async () => {
+      const res = await request(app)
+        .get('/api/training-maxes')
         .set('Authorization', `Bearer ${fallbackToken}`);
 
-      if (currentRes.body) {
-        await request(app)
-          .delete(`/api/workouts/${currentRes.body.id}`)
-          .set('Authorization', `Bearer ${fallbackToken}`);
-      }
-
-      const res = await request(app)
-        .post('/api/workouts')
-        .set('Authorization', `Bearer ${fallbackToken}`)
-        .send({ dayNumber: 5 });
-
-      expect(res.status).toBe(400);
-      expect(res.body.error.message).toContain('Invalid day number');
-      expect(res.body.error.message).toContain('Must be 1-4');
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual([]);
     });
   });
 });

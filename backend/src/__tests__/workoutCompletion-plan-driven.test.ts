@@ -340,12 +340,11 @@ describe('Workout Completion - Plan-Driven', () => {
 
       // Fetch the newly created TM directly from DB
       const tm = await prisma.trainingMax.findFirst({
-        where: { userId, exercise: 'bench-press' },
+        where: { userId, exerciseId: benchExId },
         orderBy: { effectiveDate: 'desc' },
       });
 
       expect(tm).toBeDefined();
-      expect(tm!.exercise).toBe('bench-press');
       expect(tm!.exerciseId).toBe(benchExId);
     });
   });

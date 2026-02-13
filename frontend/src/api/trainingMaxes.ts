@@ -16,12 +16,12 @@ export interface ExerciseTM {
   oneRepMax: number;
 }
 
-export async function getTrainingMaxes(): Promise<typeof SetupResponseSchema._type> {
+export async function getTrainingMaxes(): Promise<typeof SetupResponseSchema._output> {
   const data = await apiFetch('/training-maxes');
   return SetupResponseSchema.parse(data);
 }
 
-export async function setupTrainingMaxes(oneRepMaxes: typeof import('./schemas').OneRepMaxesSchema._type): Promise<typeof SetupResponseSchema._type> {
+export async function setupTrainingMaxes(oneRepMaxes: typeof import('./schemas').OneRepMaxesSchema._output): Promise<typeof SetupResponseSchema._output> {
   const data = await apiFetch('/training-maxes/setup', {
     method: 'POST',
     body: JSON.stringify({ oneRepMaxes }),
@@ -29,7 +29,7 @@ export async function setupTrainingMaxes(oneRepMaxes: typeof import('./schemas')
   return SetupResponseSchema.parse(data);
 }
 
-export async function setupTrainingMaxesFromExercises(exerciseTMs: ExerciseTM[]): Promise<typeof SetupResponseSchema._type> {
+export async function setupTrainingMaxesFromExercises(exerciseTMs: ExerciseTM[]): Promise<typeof SetupResponseSchema._output> {
   const data = await apiFetch('/training-maxes/setup', {
     method: 'POST',
     body: JSON.stringify({ exerciseTMs }),
@@ -37,7 +37,7 @@ export async function setupTrainingMaxesFromExercises(exerciseTMs: ExerciseTM[])
   return SetupResponseSchema.parse(data);
 }
 
-export async function updateTrainingMax(exercise: string, weight: number): Promise<typeof TrainingMaxSchema._type> {
+export async function updateTrainingMax(exercise: string, weight: number): Promise<typeof TrainingMaxSchema._output> {
   const data = await apiFetch(`/training-maxes/${exercise}`, {
     method: 'PATCH',
     body: JSON.stringify({ weight }),
@@ -45,7 +45,7 @@ export async function updateTrainingMax(exercise: string, weight: number): Promi
   return TrainingMaxSchema.parse(data);
 }
 
-export async function getTrainingMaxHistory(exercise: string): Promise<typeof TrainingMaxHistorySchema._type> {
+export async function getTrainingMaxHistory(exercise: string): Promise<typeof TrainingMaxHistorySchema._output> {
   const data = await apiFetch(`/training-maxes/${exercise}/history`);
   return TrainingMaxHistorySchema.parse(data);
 }

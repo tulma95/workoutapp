@@ -10,6 +10,7 @@ export const WorkoutSetSchema = z.object({
   prescribedWeight: z.number(),
   prescribedReps: z.number(),
   isAmrap: z.boolean(),
+  isProgression: z.boolean().optional(),
   actualReps: z.number().nullable(),
   completed: z.boolean(),
   createdAt: z.string(),

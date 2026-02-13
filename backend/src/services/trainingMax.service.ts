@@ -3,8 +3,6 @@ import { roundWeight } from '../lib/weightRounding';
 import { logger } from '../lib/logger';
 
 const LB_TO_KG = 2.20462;
-const EXERCISES = ['bench', 'squat', 'ohp', 'deadlift'] as const;
-const EXERCISE_SLUGS = ['bench-press', 'squat', 'ohp', 'deadlift'] as const;
 
 function toKg(weight: number, unit: string): number {
   return unit === 'lb' ? weight / LB_TO_KG : weight;
@@ -51,86 +49,44 @@ export async function getCurrentTMs(userId: number) {
     },
   });
 
-  let exercisesToFetch: string[] = [];
-  if (activePlan) {
-    // Get unique TM exercises from plan
-    const tmExerciseSet = new Set<string>();
-    for (const day of activePlan.plan.days) {
-      for (const ex of day.exercises) {
-        tmExerciseSet.add(ex.tmExercise.slug);
-      }
-    }
-    exercisesToFetch = Array.from(tmExerciseSet);
-  } else {
-    // Fall back to all 4 core exercises (try both old short names and new slugs)
-    exercisesToFetch = [...EXERCISES, ...EXERCISE_SLUGS];
+  if (!activePlan) {
+    // No active plan - return empty array
+    return [];
   }
 
-  const results = await Promise.all(
-    exercisesToFetch.map(async (exercise) => {
-      const tm = await prisma.trainingMax.findFirst({
-        where: { userId, exercise },
-        orderBy: { effectiveDate: 'desc' },
-      });
-      return tm;
-    }),
-  );
+  // Get unique TM exercise IDs from plan
+  const tmExerciseIds = new Set<number>();
+  for (const day of activePlan.plan.days) {
+    for (const ex of day.exercises) {
+      tmExerciseIds.add(ex.tmExerciseId);
+    }
+  }
 
-  // Deduplicate by exercise slug (in case both 'bench' and 'bench-press' exist)
-  const seenExercises = new Set<string>();
-  const deduplicated = results.filter((tm): tm is NonNullable<typeof tm> => {
-    if (!tm) return false;
-    if (seenExercises.has(tm.exercise)) return false;
-    seenExercises.add(tm.exercise);
+  // Fetch TMs for all required exercises (most recent TM per exercise)
+  const tmRecords = await prisma.trainingMax.findMany({
+    where: {
+      userId,
+      exerciseId: { in: Array.from(tmExerciseIds) },
+    },
+    include: {
+      exercise: true,
+    },
+    orderBy: { effectiveDate: 'desc' },
+  });
+
+  // Deduplicate by exerciseId (take only the most recent TM for each exercise)
+  const seenExerciseIds = new Set<number>();
+  const deduplicated = tmRecords.filter((tm) => {
+    if (seenExerciseIds.has(tm.exerciseId)) return false;
+    seenExerciseIds.add(tm.exerciseId);
     return true;
   });
 
   return deduplicated.map((tm) => ({
     ...tm,
+    exercise: tm.exercise.slug,
     weight: convertWeightToUserUnit(decimalToNumber(tm.weight), user.unitPreference),
   }));
-}
-
-export async function setupFromOneRepMaxes(
-  userId: number,
-  oneRepMaxes: Record<string, number>,
-  unit: string,
-) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  logger.info('TM setup from 1RMs', { userId, exercises: Object.keys(oneRepMaxes), unit });
-
-  const created = await Promise.all(
-    EXERCISES.map(async (exercise) => {
-      const orm = oneRepMaxes[exercise];
-      const ormKg = toKg(orm, unit);
-      const tm = roundWeight(ormKg * 0.9, 'kg');
-
-      const row = await prisma.trainingMax.upsert({
-        where: {
-          userId_exercise_effectiveDate: {
-            userId,
-            exercise,
-            effectiveDate: today,
-          },
-        },
-        update: { weight: tm },
-        create: {
-          userId,
-          exercise,
-          weight: tm,
-          effectiveDate: today,
-        },
-      });
-      return {
-        ...row,
-        weight: convertWeightToUserUnit(decimalToNumber(row.weight), unit)
-      };
-    }),
-  );
-
-  return created;
 }
 
 export async function setupFromExerciseTMs(
@@ -143,44 +99,33 @@ export async function setupFromExerciseTMs(
 
   logger.info('TM setup from exercise IDs', { userId, exerciseIds: exerciseTMs.map(e => e.exerciseId), unit });
 
-  // Fetch all exercises by IDs
-  const exerciseIds = exerciseTMs.map(e => e.exerciseId);
-  const exercises = await prisma.exercise.findMany({
-    where: { id: { in: exerciseIds } },
-  });
-
-  // Map exerciseId -> slug
-  const exerciseMap = new Map(exercises.map(e => [e.id, e.slug]));
-
   const created = await Promise.all(
     exerciseTMs.map(async ({ exerciseId, oneRepMax }) => {
-      const exerciseSlug = exerciseMap.get(exerciseId);
-      if (!exerciseSlug) {
-        throw new Error(`Exercise not found: ${exerciseId}`);
-      }
-
       const ormKg = toKg(oneRepMax, unit);
       const tm = roundWeight(ormKg * 0.9, 'kg');
 
       const row = await prisma.trainingMax.upsert({
         where: {
-          userId_exercise_effectiveDate: {
+          userId_exerciseId_effectiveDate: {
             userId,
-            exercise: exerciseSlug,
+            exerciseId,
             effectiveDate: today,
           },
         },
-        update: { weight: tm, exerciseId },
+        update: { weight: tm },
         create: {
           userId,
-          exercise: exerciseSlug,
           exerciseId,
           weight: tm,
           effectiveDate: today,
         },
+        include: {
+          exercise: true,
+        },
       });
       return {
         ...row,
+        exercise: row.exercise.slug,
         weight: convertWeightToUserUnit(decimalToNumber(row.weight), unit)
       };
     }),
@@ -191,51 +136,72 @@ export async function setupFromExerciseTMs(
 
 export async function updateTM(
   userId: number,
-  exercise: string,
+  exerciseSlug: string,
   weight: number,
   unit: string,
 ) {
-  logger.info('Manual TM update', { userId, exercise, weight, unit });
+  logger.info('Manual TM update', { userId, exerciseSlug, weight, unit });
+
+  // Look up exerciseId from slug
+  const exercise = await prisma.exercise.findUnique({ where: { slug: exerciseSlug } });
+  if (!exercise) {
+    throw new Error(`Exercise not found: ${exerciseSlug}`);
+  }
+
   const weightKg = roundWeight(toKg(weight, unit), 'kg');
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   const row = await prisma.trainingMax.upsert({
     where: {
-      userId_exercise_effectiveDate: {
+      userId_exerciseId_effectiveDate: {
         userId,
-        exercise,
+        exerciseId: exercise.id,
         effectiveDate: today,
       },
     },
     update: { weight: weightKg },
     create: {
       userId,
-      exercise,
+      exerciseId: exercise.id,
       weight: weightKg,
       effectiveDate: today,
+    },
+    include: {
+      exercise: true,
     },
   });
 
   return {
     ...row,
+    exercise: row.exercise.slug,
     weight: convertWeightToUserUnit(decimalToNumber(row.weight), unit)
   };
 }
 
-export async function getHistory(userId: number, exercise: string) {
+export async function getHistory(userId: number, exerciseSlug: string) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {
     return [];
   }
 
+  // Look up exerciseId from slug
+  const exercise = await prisma.exercise.findUnique({ where: { slug: exerciseSlug } });
+  if (!exercise) {
+    return [];
+  }
+
   const rows = await prisma.trainingMax.findMany({
-    where: { userId, exercise },
+    where: { userId, exerciseId: exercise.id },
+    include: {
+      exercise: true,
+    },
     orderBy: { effectiveDate: 'desc' },
   });
 
   return rows.map((row) => ({
     ...row,
+    exercise: row.exercise.slug,
     weight: convertWeightToUserUnit(decimalToNumber(row.weight), user.unitPreference),
   }));
 }

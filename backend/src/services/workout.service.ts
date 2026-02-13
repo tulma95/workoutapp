@@ -1,7 +1,4 @@
 import prisma from '../lib/db';
-import { generateWorkoutSets, NSUNS_4DAY } from '../lib/nsuns';
-import { calculateProgression } from '../lib/progression';
-import { getCurrentTMs } from './trainingMax.service';
 import { roundWeight } from '../lib/weightRounding';
 import type { WorkoutStatus } from '../types';
 import { ExistingWorkoutError } from '../types';
@@ -35,12 +32,14 @@ function formatWorkout(
     sets: Array<{
       id: number;
       workoutId: number;
-      exercise: string;
+      exerciseId: number;
+      exercise: { slug: string };
       tier: string;
       setOrder: number;
       prescribedWeight: unknown;
       prescribedReps: number;
       isAmrap: boolean;
+      isProgression?: boolean;
       actualReps: number | null;
       completed: boolean;
       createdAt: Date;
@@ -53,6 +52,7 @@ function formatWorkout(
     status: workout.status as WorkoutStatus,
     sets: workout.sets.map((s) => ({
       ...s,
+      exercise: s.exercise.slug,
       prescribedWeight: convertWeightToUserUnit(decimalToNumber(s.prescribedWeight), unit),
     })),
   };
@@ -120,36 +120,19 @@ export async function startWorkout(userId: number, dayNumber: number) {
       tmExerciseIds.add(exercise.tmExerciseId);
     }
 
-    // Fetch current TMs for these exercises (try by exerciseId first, fallback to exercise string)
+    // Fetch current TMs for these exercises
     const tmRecords = await prisma.trainingMax.findMany({
       where: {
         userId,
-        OR: [
-          { exerciseId: { in: Array.from(tmExerciseIds) } },
-          {
-            exercise: {
-              in: Array.from(tmExerciseIds)
-                .map((id) => {
-                  const ex = planDay.exercises.find((e) => e.tmExerciseId === id);
-                  return ex?.tmExercise.slug;
-                })
-                .filter((s): s is string => s !== undefined),
-            },
-          },
-        ],
+        exerciseId: { in: Array.from(tmExerciseIds) },
       },
       orderBy: { effectiveDate: 'desc' },
     });
 
-    // Build TM map by exerciseId
+    // Build TM map by exerciseId (take most recent TM for each exercise)
     const tmMapById: Record<number, number> = {};
     for (const tmExId of tmExerciseIds) {
-      // Find TM record for this exercise ID
-      const tmRecord = tmRecords.find(
-        (tm) =>
-          tm.exerciseId === tmExId ||
-          tm.exercise === planDay.exercises.find((e) => e.tmExerciseId === tmExId)?.tmExercise.slug,
-      );
+      const tmRecord = tmRecords.find((tm) => tm.exerciseId === tmExId);
       if (tmRecord) {
         tmMapById[tmExId] = decimalToNumber(tmRecord.weight);
       }
@@ -165,7 +148,6 @@ export async function startWorkout(userId: number, dayNumber: number) {
 
     // Generate sets from plan structure
     const setsToCreate: Array<{
-      exercise: string;
       exerciseId: number;
       tier: string;
       setOrder: number;
@@ -181,7 +163,6 @@ export async function startWorkout(userId: number, dayNumber: number) {
         const percentage = decimalToNumber(planSet.percentage);
         const weight = roundWeight(tm * percentage, 'kg');
         setsToCreate.push({
-          exercise: planDayExercise.exercise.slug,
           exerciseId: planDayExercise.exerciseId,
           tier: planDayExercise.tier,
           setOrder: planSet.setOrder,
@@ -208,7 +189,6 @@ export async function startWorkout(userId: number, dayNumber: number) {
         await tx.workoutSet.create({
           data: {
             workoutId: w.id,
-            exercise: set.exercise,
             exerciseId: set.exerciseId,
             tier: set.tier,
             setOrder: set.setOrder,
@@ -222,11 +202,16 @@ export async function startWorkout(userId: number, dayNumber: number) {
 
       return tx.workout.findUniqueOrThrow({
         where: { id: w.id },
-        include: { sets: { orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }] } },
+        include: {
+          sets: {
+            orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }],
+            include: { exercise: true }
+          }
+        },
       });
     });
 
-    logger.info('Workout started (plan-driven)', {
+    logger.info('Workout started', {
       dayNumber,
       userId,
       workoutId: workout.id,
@@ -237,72 +222,8 @@ export async function startWorkout(userId: number, dayNumber: number) {
     return formatWorkout(workout, user.unitPreference);
   }
 
-  // FALLBACK: Old hardcoded nSuns logic for users without active plan
-  // Validate dayNumber for hardcoded 4-day program
-  if (dayNumber < 1 || dayNumber > 4) {
-    throw new Error('BAD_REQUEST: Invalid day number. Must be 1-4.');
-  }
-
-  // Get current TMs (note: getCurrentTMs now returns weights in user's unit, but we need kg for calculations)
-  const tmsInUserUnit = await getCurrentTMs(userId);
-  if (tmsInUserUnit.length < 4) {
-    throw new Error('BAD_REQUEST: Training maxes not set for all exercises');
-  }
-
-  // Get raw TMs in kg for calculations
-  const rawTms = await Promise.all(
-    ['bench', 'squat', 'ohp', 'deadlift'].map(async (exercise) => {
-      const tm = await prisma.trainingMax.findFirst({
-        where: { userId, exercise },
-        orderBy: { effectiveDate: 'desc' },
-      });
-      return tm ? { exercise, weight: decimalToNumber(tm.weight) } : null;
-    }),
-  );
-
-  const tmMap: Record<string, number> = {};
-  for (const tm of rawTms) {
-    if (tm) {
-      tmMap[tm.exercise] = tm.weight;
-    }
-  }
-
-  // Generate sets (always use 'kg' for storage rounding)
-  const sets = generateWorkoutSets(dayNumber, tmMap, 'kg');
-
-  // Create workout + sets in transaction
-  const workout = await prisma.$transaction(async (tx) => {
-    const w = await tx.workout.create({
-      data: {
-        userId,
-        dayNumber,
-        status: 'in_progress',
-      },
-    });
-
-    for (const set of sets) {
-      await tx.workoutSet.create({
-        data: {
-          workoutId: w.id,
-          exercise: set.exercise,
-          tier: set.tier,
-          setOrder: set.setOrder,
-          prescribedWeight: set.prescribedWeight,
-          prescribedReps: set.prescribedReps,
-          isAmrap: set.isAmrap,
-        },
-      });
-    }
-
-    return tx.workout.findUniqueOrThrow({
-      where: { id: w.id },
-      include: { sets: { orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }] } },
-    });
-  });
-
-  logger.info('Workout started (fallback)', { dayNumber, userId, workoutId: workout.id });
-
-  return formatWorkout(workout, user.unitPreference);
+  // No active plan - user must select a plan first
+  throw new Error('BAD_REQUEST: No active workout plan. Please select a plan first.');
 }
 
 export async function getCurrentWorkout(userId: number) {
@@ -313,7 +234,12 @@ export async function getCurrentWorkout(userId: number) {
 
   const workout = await prisma.workout.findFirst({
     where: { userId, status: 'in_progress' },
-    include: { sets: { orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }] } },
+    include: {
+      sets: {
+        orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }],
+        include: { exercise: true }
+      }
+    },
   });
 
   return workout ? formatWorkout(workout, user.unitPreference) : null;
@@ -327,7 +253,12 @@ export async function getWorkout(workoutId: number, userId: number) {
 
   const workout = await prisma.workout.findFirst({
     where: { id: workoutId, userId },
-    include: { sets: { orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }] } },
+    include: {
+      sets: {
+        orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }],
+        include: { exercise: true }
+      }
+    },
   });
 
   return workout ? formatWorkout(workout, user.unitPreference) : null;
@@ -375,7 +306,12 @@ export async function completeWorkout(workoutId: number, userId: number) {
   // Find workout with sets, verify ownership
   const workout = await prisma.workout.findFirst({
     where: { id: workoutId, userId },
-    include: { sets: { orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }] } },
+    include: {
+      sets: {
+        orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }],
+        include: { exercise: true }
+      }
+    },
   });
   if (!workout) {
     return null;
@@ -444,7 +380,7 @@ export async function completeWorkout(workoutId: number, userId: number) {
       const currentTMRow = await prisma.trainingMax.findFirst({
         where: {
           userId,
-          OR: [{ exerciseId: exercise.id }, { exercise: exercise.slug }],
+          exerciseId: exercise.id,
         },
         orderBy: { effectiveDate: 'desc' },
       });
@@ -456,19 +392,18 @@ export async function completeWorkout(workoutId: number, userId: number) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      // Create new TM row with both exercise string and exerciseId
+      // Create new TM row
       await prisma.trainingMax.upsert({
         where: {
-          userId_exercise_effectiveDate: {
+          userId_exerciseId_effectiveDate: {
             userId,
-            exercise: exercise.slug,
+            exerciseId: exercise.id,
             effectiveDate: today,
           },
         },
-        update: { weight: newWeightKg, exerciseId: exercise.id },
+        update: { weight: newWeightKg },
         create: {
           userId,
-          exercise: exercise.slug,
           exerciseId: exercise.id,
           weight: newWeightKg,
           effectiveDate: today,
@@ -494,10 +429,15 @@ export async function completeWorkout(workoutId: number, userId: number) {
     const completed = await prisma.workout.update({
       where: { id: workoutId },
       data: { status: 'completed', completedAt: new Date() },
-      include: { sets: { orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }] } },
+      include: {
+        sets: {
+          orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }],
+          include: { exercise: true }
+        }
+      },
     });
 
-    logger.info('Workout completed (plan-driven)', {
+    logger.info('Workout completed', {
       workoutId,
       dayNumber: workout.dayNumber,
       userId,
@@ -507,89 +447,22 @@ export async function completeWorkout(workoutId: number, userId: number) {
     return { workout: formatWorkout(completed, user.unitPreference), progressions };
   }
 
-  // FALLBACK: Old hardcoded logic for workouts without planDayId
-  const day = NSUNS_4DAY[workout.dayNumber - 1];
-
-  // Find the progression AMRAP: highest percentage AMRAP set in T1
-  let maxPct = 0;
-  let progressionSetOrder = 0;
-  for (let i = 0; i < day.t1.sets.length; i++) {
-    const scheme = day.t1.sets[i];
-    if (scheme.isAmrap && scheme.percentage > maxPct) {
-      maxPct = scheme.percentage;
-      progressionSetOrder = i + 1; // 1-based
-    }
-  }
-
-  // Find the actual workout set matching the progression AMRAP
-  const progressionSet = workout.sets.find(
-    (s) => s.tier === 'T1' && s.setOrder === progressionSetOrder && s.isAmrap,
-  );
-
-  let progression: {
-    exercise: string;
-    previousTM: number;
-    newTM: number;
-    increase: number;
-  } | null = null;
-
-  if (progressionSet && progressionSet.actualReps !== null) {
-    const exercise = day.t1.tmExercise as 'bench' | 'squat' | 'ohp' | 'deadlift';
-    const { increase } = calculateProgression(progressionSet.actualReps, exercise);
-
-    if (increase > 0) {
-      // Get current TM for this exercise in kg (stored value)
-      const currentTMRow = await prisma.trainingMax.findFirst({
-        where: { userId, exercise },
-        orderBy: { effectiveDate: 'desc' },
-      });
-
-      if (currentTMRow) {
-        const currentTMKg = decimalToNumber(currentTMRow.weight);
-        const newWeightKg = currentTMKg + increase;
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        await prisma.trainingMax.upsert({
-          where: {
-            userId_exercise_effectiveDate: {
-              userId,
-              exercise,
-              effectiveDate: today,
-            },
-          },
-          update: { weight: newWeightKg },
-          create: {
-            userId,
-            exercise,
-            weight: newWeightKg,
-            effectiveDate: today,
-          },
-        });
-
-        logger.info('TM progression (fallback)', { exercise, previousTM: currentTMKg, newTM: newWeightKg, increase });
-
-        // Convert to user's unit for response
-        progression = {
-          exercise,
-          previousTM: convertWeightToUserUnit(currentTMKg, user.unitPreference),
-          newTM: convertWeightToUserUnit(newWeightKg, user.unitPreference),
-          increase: convertWeightToUserUnit(increase, user.unitPreference),
-        };
-      }
-    }
-  }
-
-  logger.info('Workout completed (fallback)', { workoutId, dayNumber: workout.dayNumber, userId });
-
-  // Mark workout completed
+  // No plan day ID - this workout was created without a plan (legacy data)
+  // Mark it as completed without progression
   const completed = await prisma.workout.update({
     where: { id: workoutId },
     data: { status: 'completed', completedAt: new Date() },
-    include: { sets: { orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }] } },
+    include: {
+      sets: {
+        orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }],
+        include: { exercise: true }
+      }
+    },
   });
 
-  return { workout: formatWorkout(completed, user.unitPreference), progression };
+  logger.info('Workout completed (no plan)', { workoutId, dayNumber: workout.dayNumber, userId });
+
+  return { workout: formatWorkout(completed, user.unitPreference), progressions: [] };
 }
 
 export async function getHistory(userId: number, page: number, limit: number) {
@@ -609,7 +482,12 @@ export async function getHistory(userId: number, page: number, limit: number) {
       orderBy: { completedAt: 'desc' },
       skip: (page - 1) * limit,
       take: limit,
-      include: { sets: { orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }] } },
+      include: {
+        sets: {
+          orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }],
+          include: { exercise: true }
+        }
+      },
     }),
     prisma.workout.count({
       where: { userId, status: 'completed' },

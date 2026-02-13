@@ -8,8 +8,6 @@ import * as trainingMaxService from '../services/trainingMax.service';
 
 const router = Router();
 
-const VALID_EXERCISES = ['bench', 'squat', 'ohp', 'deadlift'] as const;
-
 router.use(authenticate);
 
 router.get('/', async (req: AuthRequest, res: Response) => {
@@ -17,16 +15,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
   res.json(tms);
 });
 
-const setupSchemaOld = z.object({
-  oneRepMaxes: z.object({
-    bench: z.number().positive(),
-    squat: z.number().positive(),
-    ohp: z.number().positive(),
-    deadlift: z.number().positive(),
-  }),
-});
-
-const setupSchemaNew = z.object({
+const setupSchema = z.object({
   exerciseTMs: z.array(
     z.object({
       exerciseId: z.number().int().positive(),
@@ -35,8 +24,6 @@ const setupSchemaNew = z.object({
   ).min(1),
 });
 
-const setupSchema = z.union([setupSchemaOld, setupSchemaNew]);
-
 router.post('/setup', validate(setupSchema), async (req: AuthRequest, res: Response) => {
   const user = await prisma.user.findUnique({ where: { id: req.userId } });
   if (!user) {
@@ -44,22 +31,11 @@ router.post('/setup', validate(setupSchema), async (req: AuthRequest, res: Respo
     return;
   }
 
-  let tms;
-  if ('oneRepMaxes' in req.body) {
-    // Old format
-    tms = await trainingMaxService.setupFromOneRepMaxes(
-      req.userId!,
-      req.body.oneRepMaxes,
-      user.unitPreference,
-    );
-  } else {
-    // New format
-    tms = await trainingMaxService.setupFromExerciseTMs(
-      req.userId!,
-      req.body.exerciseTMs,
-      user.unitPreference,
-    );
-  }
+  const tms = await trainingMaxService.setupFromExerciseTMs(
+    req.userId!,
+    req.body.exerciseTMs,
+    user.unitPreference,
+  );
   res.status(201).json(tms);
 });
 
@@ -69,9 +45,12 @@ const updateSchema = z.object({
 
 router.patch('/:exercise', validate(updateSchema), async (req: AuthRequest, res: Response) => {
   const exercise = req.params.exercise as string;
-  if (!VALID_EXERCISES.includes(exercise as (typeof VALID_EXERCISES)[number])) {
+
+  // Validate that the exercise exists in the database
+  const exerciseRecord = await prisma.exercise.findUnique({ where: { slug: exercise } });
+  if (!exerciseRecord) {
     res.status(400).json({
-      error: { code: 'INVALID_EXERCISE', message: `Invalid exercise: ${exercise}. Must be one of: ${VALID_EXERCISES.join(', ')}` },
+      error: { code: 'INVALID_EXERCISE', message: `Invalid exercise: ${exercise}` },
     });
     return;
   }
@@ -88,9 +67,12 @@ router.patch('/:exercise', validate(updateSchema), async (req: AuthRequest, res:
 
 router.get('/:exercise/history', async (req: AuthRequest, res: Response) => {
   const exercise = req.params.exercise as string;
-  if (!VALID_EXERCISES.includes(exercise as (typeof VALID_EXERCISES)[number])) {
+
+  // Validate that the exercise exists in the database
+  const exerciseRecord = await prisma.exercise.findUnique({ where: { slug: exercise } });
+  if (!exerciseRecord) {
     res.status(400).json({
-      error: { code: 'INVALID_EXERCISE', message: `Invalid exercise: ${exercise}. Must be one of: ${VALID_EXERCISES.join(', ')}` },
+      error: { code: 'INVALID_EXERCISE', message: `Invalid exercise: ${exercise}` },
     });
     return;
   }

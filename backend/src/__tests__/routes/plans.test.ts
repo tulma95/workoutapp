@@ -301,7 +301,6 @@ describe('Plans routes', () => {
       await prisma.trainingMax.create({
         data: {
           userId,
-          exercise: 'bench',
           exerciseId: exerciseIds.bench,
           weight: 100,
           effectiveDate: new Date(),
@@ -311,7 +310,6 @@ describe('Plans routes', () => {
       await prisma.trainingMax.create({
         data: {
           userId,
-          exercise: 'squat',
           exerciseId: exerciseIds.squat,
           weight: 120,
           effectiveDate: new Date(),

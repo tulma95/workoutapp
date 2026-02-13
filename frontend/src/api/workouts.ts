@@ -15,7 +15,7 @@ export type {
   CompleteWorkoutResponse,
 } from './schemas';
 
-export async function startWorkout(dayNumber: number): Promise<typeof WorkoutSchema._type> {
+export async function startWorkout(dayNumber: number): Promise<typeof WorkoutSchema._output> {
   const data = await apiFetch('/workouts', {
     method: 'POST',
     body: JSON.stringify({ dayNumber }),
@@ -23,12 +23,12 @@ export async function startWorkout(dayNumber: number): Promise<typeof WorkoutSch
   return WorkoutSchema.parse(data);
 }
 
-export async function getCurrentWorkout(): Promise<typeof WorkoutSchema._type | null> {
+export async function getCurrentWorkout(): Promise<typeof WorkoutSchema._output | null> {
   const data = await apiFetch('/workouts/current');
   return data === null ? null : WorkoutSchema.parse(data);
 }
 
-export async function getWorkout(id: number): Promise<typeof WorkoutSchema._type> {
+export async function getWorkout(id: number): Promise<typeof WorkoutSchema._output> {
   const data = await apiFetch(`/workouts/${id}`);
   return WorkoutSchema.parse(data);
 }
@@ -37,7 +37,7 @@ export async function logSet(
   workoutId: number,
   setId: number,
   data: { actualReps?: number; completed?: boolean }
-): Promise<typeof WorkoutSetSchema._type> {
+): Promise<typeof WorkoutSetSchema._output> {
   const result = await apiFetch(`/workouts/${workoutId}/sets/${setId}`, {
     method: 'PATCH',
     body: JSON.stringify(data),
@@ -45,7 +45,7 @@ export async function logSet(
   return WorkoutSetSchema.parse(result);
 }
 
-export async function completeWorkout(id: number): Promise<typeof CompleteWorkoutResponseSchema._type> {
+export async function completeWorkout(id: number): Promise<typeof CompleteWorkoutResponseSchema._output> {
   const data = await apiFetch(`/workouts/${id}/complete`, {
     method: 'POST',
   });
@@ -55,7 +55,7 @@ export async function completeWorkout(id: number): Promise<typeof CompleteWorkou
 export async function getWorkoutHistory(
   page: number = 1,
   limit: number = 10
-): Promise<typeof WorkoutHistoryItemSchema._type[]> {
+): Promise<typeof WorkoutHistoryItemSchema._output[]> {
   const data = await apiFetch(`/workouts/history?page=${page}&limit=${limit}`);
   return (data as unknown[]).map((item) => WorkoutHistoryItemSchema.parse(item));
 }
@@ -69,7 +69,7 @@ export async function cancelWorkout(id: number): Promise<void> {
 export async function getWorkoutCalendar(
   year: number,
   month: number
-): Promise<{ workouts: typeof WorkoutCalendarResponseSchema._type['workouts'] }> {
+): Promise<{ workouts: typeof WorkoutCalendarResponseSchema._output['workouts'] }> {
   const data = await apiFetch(`/workouts/calendar?year=${year}&month=${month}`);
   return WorkoutCalendarResponseSchema.parse(data);
 }
