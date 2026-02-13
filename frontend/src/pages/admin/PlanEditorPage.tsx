@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { getAdminPlan, createPlan, updatePlan, setProgressionRules, PlanDayExerciseInput, PlanDayInput, PlanSet, ProgressionRule } from '../../api/adminPlans';
+import { getAdminPlan, createPlan, updatePlan, setProgressionRules as saveProgressionRules, PlanDayExerciseInput, PlanDayInput, PlanSet, ProgressionRule } from '../../api/adminPlans';
 import { getExercises, Exercise } from '../../api/exercises';
 import SetSchemeEditorModal from '../../components/SetSchemeEditorModal';
 import ProgressionRulesEditor from '../../components/ProgressionRulesEditor';
@@ -374,7 +374,7 @@ export default function PlanEditorPage() {
           increase: rule.increase,
         }));
 
-        await setProgressionRules(planId, rulesPayload);
+        await saveProgressionRules(planId, rulesPayload);
       }
 
       if (!isEditMode) {
