@@ -292,4 +292,54 @@ test.describe('Workout Session', () => {
     // Verify no conflict dialog appeared (dialog should have "Workout in Progress" heading if it did)
     await expect(page.getByRole('heading', { name: /workout in progress/i })).not.toBeVisible();
   });
+
+  test('nSuns plan-driven workout has correct set counts: 9 T1 sets and 8 T2 sets for Day 1', async ({ setupCompletePage }) => {
+    const { page } = setupCompletePage;
+
+    // Wait for dashboard to load
+    await page.waitForSelector('text=Training Maxes');
+
+    // Start Day 1 workout
+    await page.getByRole('button', { name: /start workout/i }).first().click();
+    await page.waitForURL(/\/workout\/1/);
+
+    // Wait for the workout to load - checkboxes will appear when sets are rendered
+    await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('checkbox').first()).toBeVisible({ timeout: 15000 });
+
+    // Find T1 section by heading "T1: <exercise name>"
+    const t1Section = page.locator('.workout-section').filter({
+      has: page.getByRole('heading', { name: /^T1:/i }),
+    });
+
+    // Find T2 section by heading "T2: <exercise name>"
+    const t2Section = page.locator('.workout-section').filter({
+      has: page.getByRole('heading', { name: /^T2:/i }),
+    });
+
+    // Wait for sections to be visible
+    await expect(t1Section).toBeVisible();
+    await expect(t2Section).toBeVisible();
+
+    // Count checkboxes in T1 section (non-AMRAP sets) + spinbuttons (AMRAP sets)
+    const t1Checkboxes = t1Section.getByRole('checkbox');
+    const t1AmrapInputs = t1Section.getByRole('spinbutton');
+
+    // Wait for at least one element to exist
+    await expect(t1Checkboxes.first()).toBeVisible();
+
+    const t1CheckboxCount = await t1Checkboxes.count();
+    const t1AmrapCount = await t1AmrapInputs.count();
+    const t1TotalSets = t1CheckboxCount + t1AmrapCount;
+
+    // nSuns Day 1 T1 has 9 sets total (8 regular + 1 AMRAP)
+    expect(t1TotalSets).toBe(9);
+
+    // Count checkboxes in T2 section (should be all non-AMRAP)
+    const t2Checkboxes = t2Section.getByRole('checkbox');
+    const t2CheckboxCount = await t2Checkboxes.count();
+
+    // nSuns Day 1 T2 has 8 sets total (all regular, no AMRAP)
+    expect(t2CheckboxCount).toBe(8);
+  });
 });
