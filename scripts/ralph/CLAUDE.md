@@ -104,7 +104,7 @@ If ALL stories are complete and passing, reply with:
 
 If there are still stories with `passes: false`, end your response normally (another iteration will pick up the next story).
 
-!IMPORTANT! Remember to reponse normally if there is still stories which are not passing
+!IMPORTANT! Remember to reponse normally if there is still stories which are not passing. You only care about the prd.json in `scripts/ralph.prd.json`
 
 ## Important
 
