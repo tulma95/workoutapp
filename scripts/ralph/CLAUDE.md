@@ -101,7 +101,7 @@ After completing a user story, check if ALL stories have `passes: true`.
 
 If ALL stories are complete and passing, reply with:
 <promise>COMPLETE</promise>
-Dont say <promise>COMPLETE</promise> out loud if there is still stories not passing, but remember to say something so the new iteration begins
+Dont say <promise>COMPLETE</promise> out loud if there is still stories not passing, but remember to output something so the new iteration begins
 
 If there are still stories with `passes: false`, end your response normally (another iteration will pick up the next story).
 
