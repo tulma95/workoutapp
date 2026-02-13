@@ -1,10 +1,12 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
 import app from '../app';
+import prisma from '../lib/db';
 
 describe('Training Maxes API', () => {
   let token: string;
   let lbToken: string;
+  let exerciseIds: { bench: number; squat: number; ohp: number; deadlift: number };
 
   beforeAll(async () => {
     // Register a kg user
@@ -24,6 +26,19 @@ describe('Training Maxes API', () => {
       unitPreference: 'lb',
     });
     lbToken = lbRes.body.accessToken;
+
+    // Get exercise IDs for new format tests
+    const exercises = await prisma.exercise.findMany({
+      where: {
+        slug: { in: ['bench-press', 'squat', 'ohp', 'deadlift'] },
+      },
+    });
+    exerciseIds = {
+      bench: exercises.find(e => e.slug === 'bench-press')!.id,
+      squat: exercises.find(e => e.slug === 'squat')!.id,
+      ohp: exercises.find(e => e.slug === 'ohp')!.id,
+      deadlift: exercises.find(e => e.slug === 'deadlift')!.id,
+    };
   });
 
   describe('GET /api/training-maxes', () => {
@@ -195,6 +210,175 @@ describe('Training Maxes API', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(400);
+    });
+  });
+
+  describe('POST /api/training-maxes/setup with exerciseTMs format', () => {
+    let newUserToken: string;
+    let newUserId: number;
+
+    beforeAll(async () => {
+      // Register a new user for exerciseTMs format tests
+      const res = await request(app).post('/api/auth/register').send({
+        email: 'tm-exercise-ids@example.com',
+        password: 'password123',
+        displayName: 'Exercise IDs Test',
+        unitPreference: 'kg',
+      });
+      newUserToken = res.body.accessToken;
+      newUserId = res.body.user.id;
+    });
+
+    it('creates TMs from exerciseTMs array with exercise IDs', async () => {
+      const res = await request(app)
+        .post('/api/training-maxes/setup')
+        .set('Authorization', `Bearer ${newUserToken}`)
+        .send({
+          exerciseTMs: [
+            { exerciseId: exerciseIds.bench, oneRepMax: 100 },
+            { exerciseId: exerciseIds.squat, oneRepMax: 140 },
+            { exerciseId: exerciseIds.ohp, oneRepMax: 60 },
+            { exerciseId: exerciseIds.deadlift, oneRepMax: 180 },
+          ],
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body).toHaveLength(4);
+
+      // Verify exercise_id and exercise fields are both set
+      const benchTM = res.body.find((tm: any) => tm.exercise === 'bench-press');
+      expect(benchTM).toBeDefined();
+      expect(benchTM.exerciseId).toBe(exerciseIds.bench);
+      expect(benchTM.weight).toBe(90); // 100 * 0.9 = 90
+
+      const squatTM = res.body.find((tm: any) => tm.exercise === 'squat');
+      expect(squatTM).toBeDefined();
+      expect(squatTM.exerciseId).toBe(exerciseIds.squat);
+      expect(squatTM.weight).toBe(125); // 140 * 0.9 = 126 → rounded to 125
+    });
+
+    it('returns TMs via GET after setup with exerciseTMs', async () => {
+      const res = await request(app)
+        .get('/api/training-maxes')
+        .set('Authorization', `Bearer ${newUserToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(4);
+
+      // Verify exerciseId is populated
+      for (const tm of res.body) {
+        expect(tm.exerciseId).toBeDefined();
+        expect(typeof tm.exerciseId).toBe('number');
+      }
+    });
+
+    it('rejects invalid exercise ID', async () => {
+      const res = await request(app)
+        .post('/api/training-maxes/setup')
+        .set('Authorization', `Bearer ${newUserToken}`)
+        .send({
+          exerciseTMs: [
+            { exerciseId: 99999, oneRepMax: 100 },
+          ],
+        });
+
+      expect(res.status).toBe(500); // Should throw error for non-existent exercise
+    });
+
+    it('rejects empty exerciseTMs array', async () => {
+      const res = await request(app)
+        .post('/api/training-maxes/setup')
+        .set('Authorization', `Bearer ${newUserToken}`)
+        .send({
+          exerciseTMs: [],
+        });
+
+      expect(res.status).toBe(400);
+    });
+  });
+
+  describe('GET /api/training-maxes with active plan', () => {
+    let planUserToken: string;
+    let planUserId: number;
+    let testPlanId: number;
+
+    beforeAll(async () => {
+      // Register a new user for plan-aware tests
+      const res = await request(app).post('/api/auth/register').send({
+        email: 'tm-plan@example.com',
+        password: 'password123',
+        displayName: 'Plan Test User',
+        unitPreference: 'kg',
+      });
+      planUserToken = res.body.accessToken;
+      planUserId = res.body.user.id;
+
+      // Subscribe to the nSuns plan (should be seeded)
+      const plan = await prisma.workoutPlan.findUnique({
+        where: { slug: 'nsuns-4day-lp' },
+      });
+      if (plan) {
+        testPlanId = plan.id;
+        await request(app)
+          .post(`/api/plans/${plan.id}/subscribe`)
+          .set('Authorization', `Bearer ${planUserToken}`);
+      }
+    });
+
+    it('returns TMs for plan exercises when user has active plan', async () => {
+      // Set up TMs using exerciseTMs format
+      await request(app)
+        .post('/api/training-maxes/setup')
+        .set('Authorization', `Bearer ${planUserToken}`)
+        .send({
+          exerciseTMs: [
+            { exerciseId: exerciseIds.bench, oneRepMax: 100 },
+            { exerciseId: exerciseIds.squat, oneRepMax: 140 },
+            { exerciseId: exerciseIds.ohp, oneRepMax: 60 },
+            { exerciseId: exerciseIds.deadlift, oneRepMax: 180 },
+          ],
+        });
+
+      const res = await request(app)
+        .get('/api/training-maxes')
+        .set('Authorization', `Bearer ${planUserToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.length).toBeGreaterThan(0);
+
+      // Should include TMs for bench, squat, ohp, deadlift (nSuns plan exercises)
+      const exercises = res.body.map((tm: any) => tm.exercise);
+      expect(exercises).toContain('bench-press');
+      expect(exercises).toContain('squat');
+      expect(exercises).toContain('ohp');
+      expect(exercises).toContain('deadlift');
+    });
+
+    it('falls back to hardcoded exercises when no active plan', async () => {
+      // Register a user without a plan
+      const res = await request(app).post('/api/auth/register').send({
+        email: 'tm-no-plan@example.com',
+        password: 'password123',
+        displayName: 'No Plan User',
+        unitPreference: 'kg',
+      });
+      const noPlanToken = res.body.accessToken;
+
+      // Set up TMs
+      await request(app)
+        .post('/api/training-maxes/setup')
+        .set('Authorization', `Bearer ${noPlanToken}`)
+        .send({
+          oneRepMaxes: { bench: 100, squat: 140, ohp: 60, deadlift: 180 },
+        });
+
+      // GET should return 4 hardcoded exercises
+      const getRes = await request(app)
+        .get('/api/training-maxes')
+        .set('Authorization', `Bearer ${noPlanToken}`);
+
+      expect(getRes.status).toBe(200);
+      expect(getRes.body).toHaveLength(4);
     });
   });
 });

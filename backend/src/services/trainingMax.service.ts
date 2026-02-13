@@ -4,6 +4,7 @@ import { logger } from '../lib/logger';
 
 const LB_TO_KG = 2.20462;
 const EXERCISES = ['bench', 'squat', 'ohp', 'deadlift'] as const;
+const EXERCISE_SLUGS = ['bench-press', 'squat', 'ohp', 'deadlift'] as const;
 
 function toKg(weight: number, unit: string): number {
   return unit === 'lb' ? weight / LB_TO_KG : weight;
@@ -30,8 +31,43 @@ export async function getCurrentTMs(userId: number) {
     return [];
   }
 
+  // Check if user has an active plan
+  const activePlan = await prisma.userPlan.findFirst({
+    where: { userId, isActive: true },
+    include: {
+      plan: {
+        include: {
+          days: {
+            include: {
+              exercises: {
+                include: {
+                  tmExercise: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  let exercisesToFetch: string[] = [];
+  if (activePlan) {
+    // Get unique TM exercises from plan
+    const tmExerciseSet = new Set<string>();
+    for (const day of activePlan.plan.days) {
+      for (const ex of day.exercises) {
+        tmExerciseSet.add(ex.tmExercise.slug);
+      }
+    }
+    exercisesToFetch = Array.from(tmExerciseSet);
+  } else {
+    // Fall back to all 4 core exercises (try both old short names and new slugs)
+    exercisesToFetch = [...EXERCISES, ...EXERCISE_SLUGS];
+  }
+
   const results = await Promise.all(
-    EXERCISES.map(async (exercise) => {
+    exercisesToFetch.map(async (exercise) => {
       const tm = await prisma.trainingMax.findFirst({
         where: { userId, exercise },
         orderBy: { effectiveDate: 'desc' },
@@ -40,12 +76,19 @@ export async function getCurrentTMs(userId: number) {
     }),
   );
 
-  return results
-    .filter((tm) => tm !== null)
-    .map((tm) => ({
-      ...tm,
-      weight: convertWeightToUserUnit(decimalToNumber(tm.weight), user.unitPreference),
-    }));
+  // Deduplicate by exercise slug (in case both 'bench' and 'bench-press' exist)
+  const seenExercises = new Set<string>();
+  const deduplicated = results.filter((tm): tm is NonNullable<typeof tm> => {
+    if (!tm) return false;
+    if (seenExercises.has(tm.exercise)) return false;
+    seenExercises.add(tm.exercise);
+    return true;
+  });
+
+  return deduplicated.map((tm) => ({
+    ...tm,
+    weight: convertWeightToUserUnit(decimalToNumber(tm.weight), user.unitPreference),
+  }));
 }
 
 export async function setupFromOneRepMaxes(
@@ -76,6 +119,62 @@ export async function setupFromOneRepMaxes(
         create: {
           userId,
           exercise,
+          weight: tm,
+          effectiveDate: today,
+        },
+      });
+      return {
+        ...row,
+        weight: convertWeightToUserUnit(decimalToNumber(row.weight), unit)
+      };
+    }),
+  );
+
+  return created;
+}
+
+export async function setupFromExerciseTMs(
+  userId: number,
+  exerciseTMs: Array<{ exerciseId: number; oneRepMax: number }>,
+  unit: string,
+) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  logger.info('TM setup from exercise IDs', { userId, exerciseIds: exerciseTMs.map(e => e.exerciseId), unit });
+
+  // Fetch all exercises by IDs
+  const exerciseIds = exerciseTMs.map(e => e.exerciseId);
+  const exercises = await prisma.exercise.findMany({
+    where: { id: { in: exerciseIds } },
+  });
+
+  // Map exerciseId -> slug
+  const exerciseMap = new Map(exercises.map(e => [e.id, e.slug]));
+
+  const created = await Promise.all(
+    exerciseTMs.map(async ({ exerciseId, oneRepMax }) => {
+      const exerciseSlug = exerciseMap.get(exerciseId);
+      if (!exerciseSlug) {
+        throw new Error(`Exercise not found: ${exerciseId}`);
+      }
+
+      const ormKg = toKg(oneRepMax, unit);
+      const tm = roundWeight(ormKg * 0.9, 'kg');
+
+      const row = await prisma.trainingMax.upsert({
+        where: {
+          userId_exercise_effectiveDate: {
+            userId,
+            exercise: exerciseSlug,
+            effectiveDate: today,
+          },
+        },
+        update: { weight: tm, exerciseId },
+        create: {
+          userId,
+          exercise: exerciseSlug,
+          exerciseId,
           weight: tm,
           effectiveDate: today,
         },

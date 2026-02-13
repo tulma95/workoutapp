@@ -17,7 +17,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
   res.json(tms);
 });
 
-const setupSchema = z.object({
+const setupSchemaOld = z.object({
   oneRepMaxes: z.object({
     bench: z.number().positive(),
     squat: z.number().positive(),
@@ -26,6 +26,17 @@ const setupSchema = z.object({
   }),
 });
 
+const setupSchemaNew = z.object({
+  exerciseTMs: z.array(
+    z.object({
+      exerciseId: z.number().int().positive(),
+      oneRepMax: z.number().positive(),
+    })
+  ).min(1),
+});
+
+const setupSchema = z.union([setupSchemaOld, setupSchemaNew]);
+
 router.post('/setup', validate(setupSchema), async (req: AuthRequest, res: Response) => {
   const user = await prisma.user.findUnique({ where: { id: req.userId } });
   if (!user) {
@@ -33,11 +44,22 @@ router.post('/setup', validate(setupSchema), async (req: AuthRequest, res: Respo
     return;
   }
 
-  const tms = await trainingMaxService.setupFromOneRepMaxes(
-    req.userId!,
-    req.body.oneRepMaxes,
-    user.unitPreference,
-  );
+  let tms;
+  if ('oneRepMaxes' in req.body) {
+    // Old format
+    tms = await trainingMaxService.setupFromOneRepMaxes(
+      req.userId!,
+      req.body.oneRepMaxes,
+      user.unitPreference,
+    );
+  } else {
+    // New format
+    tms = await trainingMaxService.setupFromExerciseTMs(
+      req.userId!,
+      req.body.exerciseTMs,
+      user.unitPreference,
+    );
+  }
   res.status(201).json(tms);
 });
 
