@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import { getAdminPlans, archivePlan, AdminPlanListItem } from '../../api/adminPlans';
 import './PlanListPage.css';
 

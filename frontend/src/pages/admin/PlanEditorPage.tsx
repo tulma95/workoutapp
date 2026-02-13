@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { getAdminPlan, createPlan, updatePlan, PlanDayExerciseInput, PlanDayInput } from '../../api/adminPlans';
+import { useParams, useNavigate } from 'react-router';
+import { getAdminPlan, createPlan, updatePlan, PlanDayExerciseInput, PlanDayInput, PlanSet } from '../../api/adminPlans';
 import { getExercises, Exercise } from '../../api/exercises';
+import SetSchemeEditorModal from '../../components/SetSchemeEditorModal';
 import './PlanEditorPage.css';
 
 interface EditorExercise extends PlanDayExerciseInput {
@@ -33,6 +34,13 @@ export default function PlanEditorPage() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [showExercisePicker, setShowExercisePicker] = useState(false);
   const [exerciseSearch, setExerciseSearch] = useState('');
+
+  // Set scheme editor
+  const [editingSets, setEditingSets] = useState<{
+    dayNumber: number;
+    tempId: string;
+    exerciseName: string;
+  } | null>(null);
 
   // Loading/error states
   const [loading, setLoading] = useState(isEditMode);
@@ -243,6 +251,44 @@ export default function PlanEditorPage() {
         exercises: reordered.map((ex, i) => ({ ...ex, sortOrder: i + 1 })),
       };
     }));
+  }
+
+  function openSetSchemeEditor(dayNumber: number, tempId: string) {
+    const day = days.find(d => d.dayNumber === dayNumber);
+    const exercise = day?.exercises.find(ex => ex.tempId === tempId);
+    if (!exercise) return;
+
+    const exerciseData = exercises.find(e => e.id === exercise.exerciseId);
+    if (!exerciseData) return;
+
+    setEditingSets({
+      dayNumber,
+      tempId,
+      exerciseName: exerciseData.name,
+    });
+  }
+
+  function saveSetScheme(sets: PlanSet[]) {
+    if (!editingSets) return;
+
+    const { dayNumber, tempId } = editingSets;
+
+    setDays(days.map(day => {
+      if (day.dayNumber !== dayNumber) return day;
+
+      return {
+        ...day,
+        exercises: day.exercises.map(ex =>
+          ex.tempId === tempId ? { ...ex, sets } : ex
+        ),
+      };
+    }));
+
+    setEditingSets(null);
+  }
+
+  function closeSetSchemeEditor() {
+    setEditingSets(null);
   }
 
   async function handleSave() {
@@ -513,7 +559,10 @@ export default function PlanEditorPage() {
                       ) : (
                         <span className="warning">⚠️ No sets defined</span>
                       )}
-                      <button className="btn-edit-sets">
+                      <button
+                        className="btn-edit-sets"
+                        onClick={() => openSetSchemeEditor(activeDay, ex.tempId)}
+                      >
                         Edit Sets
                       </button>
                     </div>
@@ -559,6 +608,20 @@ export default function PlanEditorPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {editingSets && (
+        <SetSchemeEditorModal
+          exerciseName={editingSets.exerciseName}
+          initialSets={
+            days
+              .find(d => d.dayNumber === editingSets.dayNumber)
+              ?.exercises.find(ex => ex.tempId === editingSets.tempId)
+              ?.sets || []
+          }
+          onSave={saveSetScheme}
+          onClose={closeSetSchemeEditor}
+        />
       )}
     </div>
   );
