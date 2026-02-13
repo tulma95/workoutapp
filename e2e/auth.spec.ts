@@ -111,22 +111,39 @@ test.describe('Authentication', () => {
     await expect(errorMessage).toContainText(/invalid.*credentials|password|incorrect/i);
   });
 
-  test.skip('logout -> redirected to login page', async ({ page }) => {
+  test('logout -> redirected to login page', async ({ page }) => {
     const timestamp = Date.now();
     const email = `logout-${timestamp}@example.com`;
     const password = 'ValidPassword123';
     const displayName = 'Logout Test User';
 
-    // Register and login
+    // Register
     await page.goto('/register');
     await page.fill('#email', email);
     await page.fill('#password', password);
     await page.fill('#displayName', displayName);
     await page.click('button[type="submit"]');
+
+    // Select plan
     await selectPlanAfterRegistration(page);
 
-    // Find and click logout button
-    const logoutButton = page.locator('button:has-text("Logout"), a:has-text("Logout"), button:has-text("Log out"), a:has-text("Log out")');
+    // Setup TMs (fill in 1RM values)
+    await page.getByLabel(/Bench Press/i).fill('100');
+    await page.getByLabel(/^Squat/i).fill('140');
+    await page.getByLabel(/Overhead Press/i).fill('60');
+    await page.getByLabel(/^Deadlift/i).fill('180');
+    await page.click('button[type="submit"]');
+
+    // Wait for redirect to dashboard
+    await page.waitForURL('/', { timeout: 10000 });
+
+    // Navigate to settings via bottom nav
+    await page.click('a[href="/settings"]');
+    await page.waitForURL('/settings');
+
+    // Find and click logout button on settings page
+    const logoutButton = page.getByRole('button', { name: /log out/i });
+    await expect(logoutButton).toBeVisible();
     await logoutButton.click();
 
     // Should redirect to login page
