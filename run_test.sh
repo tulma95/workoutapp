@@ -138,9 +138,13 @@ for i in $(seq 1 30); do
   sleep 1
 done
 
+# Ensure Playwright browsers are installed
+echo "Ensuring Playwright browsers are installed..."
+cd "$PROJECT_ROOT"
+npx playwright install --with-deps chromium 2>/dev/null || npx playwright install chromium
+
 # Run Playwright E2E tests
 echo "Running Playwright E2E tests..."
-cd "$PROJECT_ROOT"
 E2E_EXIT_CODE=0
 npx playwright test || E2E_EXIT_CODE=$?
 

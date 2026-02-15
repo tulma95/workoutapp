@@ -117,7 +117,6 @@ describe('Admin Plans routes', () => {
               exercises: [
                 {
                   exerciseId: exerciseIds.bench,
-                  tier: 'T1',
                   sortOrder: 1,
                   tmExerciseId: exerciseIds.bench,
                   displayName: 'Bench Press',
@@ -129,7 +128,6 @@ describe('Admin Plans routes', () => {
                 },
                 {
                   exerciseId: exerciseIds.ohp,
-                  tier: 'T2',
                   sortOrder: 2,
                   tmExerciseId: exerciseIds.ohp,
                   sets: [
@@ -145,7 +143,6 @@ describe('Admin Plans routes', () => {
               exercises: [
                 {
                   exerciseId: exerciseIds.squat,
-                  tier: 'T1',
                   sortOrder: 1,
                   tmExerciseId: exerciseIds.squat,
                   sets: [
@@ -197,7 +194,6 @@ describe('Admin Plans routes', () => {
               exercises: [
                 {
                   exerciseId: exerciseIds.bench,
-                  tier: 'T1',
                   sortOrder: 1,
                   tmExerciseId: exerciseIds.bench,
                   sets: [{ setOrder: 1, percentage: 0.75, reps: 5 }],
@@ -398,7 +394,6 @@ describe('Admin Plans routes', () => {
               exercises: [
                 {
                   exerciseId: exerciseIds.bench,
-                  tier: 'T1',
                   sortOrder: 1,
                   tmExerciseId: exerciseIds.bench,
                   sets: [
@@ -413,7 +408,6 @@ describe('Admin Plans routes', () => {
               exercises: [
                 {
                   exerciseId: exerciseIds.squat,
-                  tier: 'T1',
                   sortOrder: 1,
                   tmExerciseId: exerciseIds.squat,
                   sets: [
@@ -428,7 +422,6 @@ describe('Admin Plans routes', () => {
               exercises: [
                 {
                   exerciseId: exerciseIds.ohp,
-                  tier: 'T1',
                   sortOrder: 1,
                   tmExerciseId: exerciseIds.ohp,
                   sets: [
@@ -463,7 +456,6 @@ describe('Admin Plans routes', () => {
               exercises: [
                 {
                   exerciseId: exerciseIds.bench,
-                  tier: 'T1',
                   sortOrder: 1,
                   tmExerciseId: exerciseIds.bench,
                   sets: [{ setOrder: 1, percentage: 0.75, reps: 5 }],
@@ -509,7 +501,6 @@ describe('Admin Plans routes', () => {
               exercises: [
                 {
                   exerciseId: exerciseIds.bench,
-                  tier: 'T1',
                   sortOrder: 1,
                   tmExerciseId: exerciseIds.bench,
                   sets: [{ setOrder: 1, percentage: 0.75, reps: 5 }],
