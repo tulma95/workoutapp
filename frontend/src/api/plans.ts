@@ -13,7 +13,6 @@ export interface PlanDayExercise {
   id: number;
   planDayId: number;
   exerciseId: number;
-  tier: string;
   sortOrder: number;
   tmExerciseId: number;
   displayName: string | null;

@@ -5,7 +5,7 @@ export const WorkoutSetSchema = z.object({
   id: z.number(),
   workoutId: z.number(),
   exercise: z.string(),
-  tier: z.string(),
+  exerciseOrder: z.number(),
   setOrder: z.number(),
   prescribedWeight: z.number(),
   prescribedReps: z.number(),

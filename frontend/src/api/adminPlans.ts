@@ -14,7 +14,6 @@ export interface PlanSet {
 
 export interface PlanDayExerciseInput {
   exerciseId: number;
-  tier: string;
   sortOrder: number;
   tmExerciseId: number;
   displayName?: string;
@@ -56,7 +55,6 @@ export interface PlanWithDetails extends WorkoutPlan {
       id: number;
       planDayId: number;
       exerciseId: number;
-      tier: string;
       sortOrder: number;
       tmExerciseId: number;
       displayName: string | null;
