@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../context/useAuth';
 import { ErrorMessage } from '../components/ErrorMessage';
+import './AuthForm.css';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -29,12 +30,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="container" style={{ paddingTop: '48px' }}>
-      <h1 style={{ textAlign: 'center', marginBottom: '32px' }}>Log In</h1>
+    <div className="container auth-page">
+      <h1>Log In</h1>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <form onSubmit={handleSubmit} className="auth-form">
         <div>
-          <label htmlFor="email" style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>Email</label>
+          <label htmlFor="email">Email</label>
           <input
             id="email"
             type="email"
@@ -45,7 +46,7 @@ export default function LoginPage() {
         </div>
 
         <div>
-          <label htmlFor="password" style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>Password</label>
+          <label htmlFor="password">Password</label>
           <input
             id="password"
             type="password"
@@ -62,7 +63,7 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <p style={{ textAlign: 'center', marginTop: '24px' }}>
+      <p className="auth-page__footer">
         Don't have an account? <Link to="/register">Register</Link>
       </p>
     </div>

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../context/useAuth';
 import { ErrorMessage } from '../components/ErrorMessage';
 import type { UnitPreference } from '../types';
+import './AuthForm.css';
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -38,12 +39,12 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="container" style={{ paddingTop: '48px' }}>
-      <h1 style={{ textAlign: 'center', marginBottom: '32px' }}>Create Account</h1>
+    <div className="container auth-page">
+      <h1>Create Account</h1>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <form onSubmit={handleSubmit} className="auth-form">
         <div>
-          <label htmlFor="email" style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>Email</label>
+          <label htmlFor="email">Email</label>
           <input
             id="email"
             type="email"
@@ -54,7 +55,7 @@ export default function RegisterPage() {
         </div>
 
         <div>
-          <label htmlFor="password" style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>Password</label>
+          <label htmlFor="password">Password</label>
           <input
             id="password"
             type="password"
@@ -70,12 +71,12 @@ export default function RegisterPage() {
             required
           />
           {passwordError && (
-            <p style={{ color: 'var(--danger)', margin: '4px 0 0', fontSize: '14px' }}>{passwordError}</p>
+            <p className="auth-form__error">{passwordError}</p>
           )}
         </div>
 
         <div>
-          <label htmlFor="displayName" style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>Display Name</label>
+          <label htmlFor="displayName">Display Name</label>
           <input
             id="displayName"
             type="text"
@@ -86,9 +87,9 @@ export default function RegisterPage() {
         </div>
 
         <div>
-          <span style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Unit Preference</span>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+          <span className="auth-form__label">Unit Preference</span>
+          <div className="auth-form__unit-options">
+            <label className="auth-form__unit-label">
               <input
                 type="radio"
                 name="unitPreference"
@@ -98,7 +99,7 @@ export default function RegisterPage() {
               />
               kg
             </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+            <label className="auth-form__unit-label">
               <input
                 type="radio"
                 name="unitPreference"
@@ -118,7 +119,7 @@ export default function RegisterPage() {
         </button>
       </form>
 
-      <p style={{ textAlign: 'center', marginTop: '24px' }}>
+      <p className="auth-page__footer">
         Already have an account? <Link to="/login">Log in</Link>
       </p>
     </div>

@@ -1,0 +1,57 @@
+.auth-page {
+  padding-top: 3rem;
+}
+
+.auth-page h1 {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.auth-form > div > label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
+.auth-form__label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.auth-form__error {
+  color: var(--danger);
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+}
+
+.auth-form__unit-options {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.auth-form__unit-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  min-height: 2.75rem;
+}
+
+.auth-form__unit-label input[type="radio"] {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.auth-page__footer {
+  text-align: center;
+  margin-top: 1.5rem;
+}
