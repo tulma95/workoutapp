@@ -25,15 +25,7 @@ export default function ProgressionRulesEditor({
 }: ProgressionRulesEditorProps) {
   const [rules, setRules] = useState<EditorRule[]>(() => {
     if (initialRules.length === 0) {
-      // Default: one empty rule
-      return [
-        {
-          tempId: `rule-${Date.now()}`,
-          minReps: 0,
-          maxReps: 1,
-          increase: 0,
-        },
-      ];
+      return [];
     }
     return initialRules.map((rule, idx) => ({
       tempId: rule.id ? `rule-${rule.id}` : `rule-${Date.now()}-${idx}`,
@@ -72,9 +64,9 @@ export default function ProgressionRulesEditor({
   function addRule() {
     const newRule: EditorRule = {
       tempId: `rule-${Date.now()}-${Math.random()}`,
-      minReps: 0,
-      maxReps: 1,
-      increase: 0,
+      minReps: 1,
+      maxReps: 5,
+      increase: 2.5,
     };
     const updated = [...rules, newRule];
     setRules(updated);
@@ -96,6 +88,11 @@ export default function ProgressionRulesEditor({
         </button>
       </div>
 
+      {rules.length === 0 ? (
+        <div className="progression-rules-empty">
+          No progression rules defined. Click "+ Add Rule" to configure how training maxes increase.
+        </div>
+      ) : (
       <div className="progression-rules-table-wrapper">
         <table className="progression-rules-table">
           <thead>
@@ -188,6 +185,7 @@ export default function ProgressionRulesEditor({
           </tbody>
         </table>
       </div>
+      )}
 
       <div className="progression-rules-info">
         <p>
