@@ -34,7 +34,7 @@ function formatWorkout(
       workoutId: number;
       exerciseId: number;
       exercise: { slug: string; name: string };
-      tier: string;
+      exerciseOrder: number;
       setOrder: number;
       prescribedWeight: unknown;
       prescribedReps: number;
@@ -149,7 +149,7 @@ export async function startWorkout(userId: number, dayNumber: number) {
     // Generate sets from plan structure
     const setsToCreate: Array<{
       exerciseId: number;
-      tier: string;
+      exerciseOrder: number;
       setOrder: number;
       prescribedWeight: number;
       prescribedReps: number;
@@ -164,7 +164,7 @@ export async function startWorkout(userId: number, dayNumber: number) {
         const weight = roundWeight(tm * percentage, 'kg');
         setsToCreate.push({
           exerciseId: planDayExercise.exerciseId,
-          tier: planDayExercise.tier,
+          exerciseOrder: planDayExercise.sortOrder,
           setOrder: planSet.setOrder,
           prescribedWeight: weight,
           prescribedReps: planSet.reps,
@@ -190,7 +190,7 @@ export async function startWorkout(userId: number, dayNumber: number) {
           data: {
             workoutId: w.id,
             exerciseId: set.exerciseId,
-            tier: set.tier,
+            exerciseOrder: set.exerciseOrder,
             setOrder: set.setOrder,
             prescribedWeight: set.prescribedWeight,
             prescribedReps: set.prescribedReps,
@@ -204,7 +204,7 @@ export async function startWorkout(userId: number, dayNumber: number) {
         where: { id: w.id },
         include: {
           sets: {
-            orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }],
+            orderBy: [{ exerciseOrder: 'asc' }, { setOrder: 'asc' }],
             include: { exercise: true }
           }
         },
@@ -236,7 +236,7 @@ export async function getCurrentWorkout(userId: number) {
     where: { userId, status: 'in_progress' },
     include: {
       sets: {
-        orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }],
+        orderBy: [{ exerciseOrder: 'asc' }, { setOrder: 'asc' }],
         include: { exercise: true }
       }
     },
@@ -255,7 +255,7 @@ export async function getWorkout(workoutId: number, userId: number) {
     where: { id: workoutId, userId },
     include: {
       sets: {
-        orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }],
+        orderBy: [{ exerciseOrder: 'asc' }, { setOrder: 'asc' }],
         include: { exercise: true }
       }
     },
@@ -310,7 +310,7 @@ export async function completeWorkout(workoutId: number, userId: number) {
     where: { id: workoutId, userId },
     include: {
       sets: {
-        orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }],
+        orderBy: [{ exerciseOrder: 'asc' }, { setOrder: 'asc' }],
         include: { exercise: true }
       }
     },
@@ -433,7 +433,7 @@ export async function completeWorkout(workoutId: number, userId: number) {
       data: { status: 'completed', completedAt: new Date() },
       include: {
         sets: {
-          orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }],
+          orderBy: [{ exerciseOrder: 'asc' }, { setOrder: 'asc' }],
           include: { exercise: true }
         }
       },
@@ -456,7 +456,7 @@ export async function completeWorkout(workoutId: number, userId: number) {
     data: { status: 'completed', completedAt: new Date() },
     include: {
       sets: {
-        orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }],
+        orderBy: [{ exerciseOrder: 'asc' }, { setOrder: 'asc' }],
         include: { exercise: true }
       }
     },
@@ -486,7 +486,7 @@ export async function getHistory(userId: number, page: number, limit: number) {
       take: limit,
       include: {
         sets: {
-          orderBy: [{ tier: 'asc' }, { setOrder: 'asc' }],
+          orderBy: [{ exerciseOrder: 'asc' }, { setOrder: 'asc' }],
           include: { exercise: true }
         }
       },
