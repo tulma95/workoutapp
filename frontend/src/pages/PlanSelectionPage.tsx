@@ -193,7 +193,6 @@ export default function PlanSelectionPage() {
                   <div className="day-exercises">
                     {day.exercises.map((ex) => (
                       <div key={ex.id} className="exercise-item">
-                        <span className="tier-badge">{ex.tier}</span>
                         <span className="exercise-name">
                           {ex.displayName || ex.exercise.name}
                         </span>

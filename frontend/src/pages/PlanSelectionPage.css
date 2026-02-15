@@ -95,20 +95,6 @@
   font-size: 0.875rem;
 }
 
-.tier-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 2rem;
-  height: 1.5rem;
-  padding: 0 var(--space-sm);
-  background-color: var(--primary);
-  color: white;
-  border-radius: var(--space-xs);
-  font-weight: 600;
-  font-size: 0.75rem;
-}
-
 .exercise-name {
   color: var(--text);
 }

@@ -98,7 +98,6 @@ export default function PlanEditorPage() {
         exercises: day.exercises.map(ex => ({
           tempId: `ex-${ex.id}`,
           exerciseId: ex.exerciseId,
-          tier: ex.tier,
           sortOrder: ex.sortOrder,
           tmExerciseId: ex.tmExerciseId,
           displayName: ex.displayName || undefined,
@@ -197,7 +196,6 @@ export default function PlanEditorPage() {
     const newExercise: EditorExercise = {
       tempId: `ex-${Date.now()}-${Math.random()}`,
       exerciseId: exercise.id,
-      tier: 'T1',
       sortOrder: currentDay.exercises.length + 1,
       tmExerciseId: exercise.id, // default to same exercise
       sets: [],
@@ -550,19 +548,6 @@ export default function PlanEditorPage() {
                     </div>
 
                     <div className="exercise-row-fields">
-                      <label>
-                        Tier
-                        <select
-                          value={ex.tier}
-                          onChange={(e) =>
-                            updateExerciseField(activeDay, ex.tempId, 'tier', e.target.value)
-                          }
-                        >
-                          <option value="T1">T1</option>
-                          <option value="T2">T2</option>
-                        </select>
-                      </label>
-
                       <label>
                         TM Exercise
                         <select
