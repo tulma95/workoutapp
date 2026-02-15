@@ -72,7 +72,13 @@ if [ $TEST_EXIT_CODE -ne 0 ]; then
   exit $TEST_EXIT_CODE
 fi
 
-echo "Backend tests passed. Re-seeding database for E2E tests..."
+echo "Backend tests passed. Cleaning database for E2E tests..."
+# Truncate all tables (except migrations) and reset auto-increment IDs
+# so only seed data exists — prevents leftover test plans from confusing E2E tests
+docker compose -f "$COMPOSE_FILE" exec -T postgres-test psql -U treenisofta -d treenisofta_test -c \
+  "TRUNCATE users, exercises, workout_plans, training_maxes, workouts, workout_sets, plan_days, plan_day_exercises, plan_sets, plan_progression_rules, user_plans RESTART IDENTITY CASCADE"
+
+echo "Re-seeding database for E2E tests..."
 cd "$PROJECT_ROOT/backend"
 DATABASE_URL="$TEST_DB_URL" npx tsx prisma/seed.ts
 

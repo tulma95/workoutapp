@@ -1,4 +1,4 @@
-import { test as base, type Page } from '@playwright/test';
+import { test as base, expect, type Page } from '@playwright/test';
 
 interface User {
   email: string;
@@ -44,6 +44,10 @@ export const test = base.extend<{
 
   setupCompletePage: async ({ authenticatedPage }, use) => {
     const { page, user } = authenticatedPage;
+
+    // Wait for setup form to be fully loaded with all exercise fields
+    await page.getByRole('heading', { name: /enter your 1 rep maxes/i }).waitFor();
+    await expect(page.locator('.form-group')).toHaveCount(4);
 
     // Fill in 1RM values (in kg) using label selectors (input names are numeric IDs)
     await page.getByLabel(/Bench Press/i).fill('100');

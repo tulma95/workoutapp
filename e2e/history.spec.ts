@@ -137,7 +137,7 @@ test.describe('Workout History', () => {
 
     // Verify exercise names are shown (Day 1 is Bench Volume and OHP)
     await expect(page.getByText(/bench/i).first()).toBeVisible();
-    await expect(page.getByText(/ohp/i).first()).toBeVisible();
+    await expect(page.getByText(/overhead press/i).first()).toBeVisible();
 
     // Verify set data is shown with weights
     // Day 1 Bench Volume uses percentages of bench TM (90kg from setup fixture)

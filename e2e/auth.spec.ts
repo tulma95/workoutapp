@@ -5,6 +5,9 @@ async function selectPlanAfterRegistration(page: Page) {
   await page.waitForURL('/select-plan');
   await page.click('button:has-text("Select Plan")');
   await page.waitForURL('/setup');
+  // Wait for setup form to be fully loaded with all exercise fields
+  await expect(page.getByRole('heading', { name: /enter your 1 rep maxes/i })).toBeVisible();
+  await expect(page.locator('.form-group')).toHaveCount(4);
 }
 
 test.describe('Authentication', () => {
