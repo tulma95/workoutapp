@@ -1,7 +1,7 @@
 import { test, expect } from './fixtures';
 
 test.describe('Workout Session', () => {
-  test('starting a workout from the dashboard shows T1 and T2 sections with correct exercise names and set counts', async ({ setupCompletePage }) => {
+  test('starting a workout from the dashboard shows exercise sections with correct set counts', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
 
     // Wait for dashboard to load
@@ -14,7 +14,7 @@ test.describe('Workout Session', () => {
     await page.waitForURL(/\/workout\/1/);
 
     // Wait for the workout to load - checkboxes will appear when sets are rendered
-    // Day 1: 9 T1 sets (8 regular + 1 AMRAP) + 8 T2 sets (all regular) = 16 checkboxes + 1 AMRAP input
+    // Day 1: first exercise has 9 sets (8 regular + 1 AMRAP), second exercise has 8 sets (all regular) = 16 checkboxes + 1 AMRAP input
     const firstCheckbox = page.getByRole('checkbox').first();
     await expect(firstCheckbox).toBeVisible({ timeout: 15000 });
 
@@ -78,9 +78,8 @@ test.describe('Workout Session', () => {
     // Wait for the workout to load
     await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
 
-    // Day 1 T1 AMRAP is set 9 (65% x 8+)
+    // Day 1 first exercise AMRAP is set 9 (65% x 8+)
     // Find the AMRAP input (spinbutton role for number inputs)
-    // There should be only one AMRAP set for Day 1 T1
     const amrapInput = page.getByRole('spinbutton').first();
 
     // Verify initial state (should be empty or show placeholder)
@@ -293,7 +292,7 @@ test.describe('Workout Session', () => {
     await expect(page.getByRole('heading', { name: /workout in progress/i })).not.toBeVisible();
   });
 
-  test('nSuns plan-driven workout has correct set counts: 9 T1 sets and 8 T2 sets for Day 1', async ({ setupCompletePage }) => {
+  test('nSuns plan-driven workout has correct set counts: 9 sets for first exercise and 8 for second exercise on Day 1', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
 
     // Wait for dashboard to load
@@ -307,40 +306,36 @@ test.describe('Workout Session', () => {
     await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
     await expect(page.getByRole('checkbox').first()).toBeVisible({ timeout: 15000 });
 
-    // Find T1 section by heading "T1: <exercise name>"
-    const t1Section = page.locator('.workout-section').filter({
-      has: page.getByRole('heading', { name: /^T1:/i }),
-    });
+    // Find first exercise section (Bench Press)
+    const firstExerciseSection = page.locator('.workout-section').first();
 
-    // Find T2 section by heading "T2: <exercise name>"
-    const t2Section = page.locator('.workout-section').filter({
-      has: page.getByRole('heading', { name: /^T2:/i }),
-    });
+    // Find second exercise section (OHP)
+    const secondExerciseSection = page.locator('.workout-section').nth(1);
 
     // Wait for sections to be visible
-    await expect(t1Section).toBeVisible();
-    await expect(t2Section).toBeVisible();
+    await expect(firstExerciseSection).toBeVisible();
+    await expect(secondExerciseSection).toBeVisible();
 
-    // Count checkboxes in T1 section (non-AMRAP sets) + spinbuttons (AMRAP sets)
-    const t1Checkboxes = t1Section.getByRole('checkbox');
-    const t1AmrapInputs = t1Section.getByRole('spinbutton');
+    // Count checkboxes in first exercise section (non-AMRAP sets) + spinbuttons (AMRAP sets)
+    const firstExerciseCheckboxes = firstExerciseSection.getByRole('checkbox');
+    const firstExerciseAmrapInputs = firstExerciseSection.getByRole('spinbutton');
 
     // Wait for at least one element to exist
-    await expect(t1Checkboxes.first()).toBeVisible();
+    await expect(firstExerciseCheckboxes.first()).toBeVisible();
 
-    const t1CheckboxCount = await t1Checkboxes.count();
-    const t1AmrapCount = await t1AmrapInputs.count();
-    const t1TotalSets = t1CheckboxCount + t1AmrapCount;
+    const firstExerciseCheckboxCount = await firstExerciseCheckboxes.count();
+    const firstExerciseAmrapCount = await firstExerciseAmrapInputs.count();
+    const firstExerciseTotalSets = firstExerciseCheckboxCount + firstExerciseAmrapCount;
 
-    // nSuns Day 1 T1 has 9 sets total (8 regular + 1 AMRAP)
-    expect(t1TotalSets).toBe(9);
+    // nSuns Day 1 first exercise (Bench Volume) has 9 sets total (8 regular + 1 AMRAP)
+    expect(firstExerciseTotalSets).toBe(9);
 
-    // Count checkboxes in T2 section (should be all non-AMRAP)
-    const t2Checkboxes = t2Section.getByRole('checkbox');
-    const t2CheckboxCount = await t2Checkboxes.count();
+    // Count checkboxes in second exercise section (should be all non-AMRAP)
+    const secondExerciseCheckboxes = secondExerciseSection.getByRole('checkbox');
+    const secondExerciseCheckboxCount = await secondExerciseCheckboxes.count();
 
-    // nSuns Day 1 T2 has 8 sets total (all regular, no AMRAP)
-    expect(t2CheckboxCount).toBe(8);
+    // nSuns Day 1 second exercise (OHP) has 8 sets total (all regular, no AMRAP)
+    expect(secondExerciseCheckboxCount).toBe(8);
   });
 
   test('TM progression after workout: completing Day 1 with good AMRAP performance increases Bench TM on dashboard', async ({ setupCompletePage }) => {
@@ -374,7 +369,7 @@ test.describe('Workout Session', () => {
     await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
     await expect(page.getByRole('checkbox').first()).toBeVisible({ timeout: 15000 });
 
-    // Enter 10 reps in the AMRAP set (Day 1 T1 has 1 AMRAP set - the 9th set at 65%)
+    // Enter 10 reps in the AMRAP set (Day 1 first exercise has 1 AMRAP set - the 9th set at 65%)
     // According to nSuns progression: 10+ reps should trigger +5kg TM increase for upper body
     const amrapInput = page.getByRole('spinbutton').first();
     await amrapInput.fill('10');
