@@ -16,6 +16,9 @@ export default function SetSchemeEditorModal({
   onClose,
 }: SetSchemeEditorModalProps) {
   const [sets, setSets] = useState<PlanSet[]>([]);
+  const [bulkCount, setBulkCount] = useState(5);
+  const [bulkPercentage, setBulkPercentage] = useState(50);
+  const [bulkReps, setBulkReps] = useState(10);
 
   useEffect(() => {
     // Clone initial sets with proper ordering
@@ -36,6 +39,21 @@ export default function SetSchemeEditorModal({
       isProgression: false,
     };
     setSets([...sets, newSet]);
+  }
+
+  function bulkAddSets() {
+    const startOrder = sets.length + 1;
+    const newSets: PlanSet[] = [];
+    for (let i = 0; i < bulkCount; i++) {
+      newSets.push({
+        setOrder: startOrder + i,
+        percentage: bulkPercentage / 100,
+        reps: bulkReps,
+        isAmrap: false,
+        isProgression: false,
+      });
+    }
+    setSets([...sets, ...newSets]);
   }
 
   function removeSet(setOrder: number) {
@@ -62,13 +80,7 @@ export default function SetSchemeEditorModal({
       if (!confirmed) return;
     }
 
-    // Convert percentage inputs (whole numbers 0-100) to decimals (0.0000-1.0000)
-    const normalizedSets = sets.map(set => ({
-      ...set,
-      percentage: set.percentage / 100,
-    }));
-
-    onSave(normalizedSets);
+    onSave(sets);
   }
 
   return (
@@ -80,6 +92,30 @@ export default function SetSchemeEditorModal({
         </div>
 
         <div className="set-scheme-body">
+          <div className="bulk-add-row">
+            <label>
+              Add
+              <input type="number" min="1" max="20" value={bulkCount}
+                onChange={(e) => setBulkCount(parseInt(e.target.value, 10) || 1)}
+                className="bulk-input" />
+            </label>
+            <label>
+              sets at
+              <input type="number" min="0" max="100" value={bulkPercentage}
+                onChange={(e) => setBulkPercentage(parseInt(e.target.value, 10) || 0)}
+                className="bulk-input" />
+              %
+            </label>
+            <label>
+              for
+              <input type="number" min="1" max="100" value={bulkReps}
+                onChange={(e) => setBulkReps(parseInt(e.target.value, 10) || 1)}
+                className="bulk-input" />
+              reps
+            </label>
+            <button onClick={bulkAddSets} className="btn-bulk-add">+ Add</button>
+          </div>
+
           {sets.length === 0 ? (
             <div className="sets-empty">
               No sets defined. Click "Add Set" to get started.
@@ -93,7 +129,7 @@ export default function SetSchemeEditorModal({
                     <th>% of TM</th>
                     <th>Reps</th>
                     <th>AMRAP</th>
-                    <th>Prog</th>
+                    <th title="Mark which set determines training max progression">Progression</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -109,7 +145,7 @@ export default function SetSchemeEditorModal({
                           step="1"
                           value={Math.round(set.percentage * 100)}
                           onChange={(e) =>
-                            updateSet(set.setOrder, 'percentage', parseFloat(e.target.value) || 0)
+                            updateSet(set.setOrder, 'percentage', (parseFloat(e.target.value) || 0) / 100)
                           }
                           className="percentage-input"
                         />
