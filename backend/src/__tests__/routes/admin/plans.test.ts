@@ -171,10 +171,10 @@ describe('Admin Plans routes', () => {
       expect(res.body.days[0].exercises).toHaveLength(2);
 
       // Verify exercises are ordered by sortOrder
-      expect(res.body.days[0].exercises[0].tier).toBe('T1');
-      expect(res.body.days[0].exercises[1].tier).toBe('T2');
+      expect(res.body.days[0].exercises[0].sortOrder).toBe(1);
+      expect(res.body.days[0].exercises[1].sortOrder).toBe(2);
 
-      // Verify sets for T1 exercise
+      // Verify sets for first exercise
       expect(res.body.days[0].exercises[0].sets).toHaveLength(3);
       expect(parseFloat(res.body.days[0].exercises[0].sets[0].percentage)).toBeCloseTo(0.75, 4);
       expect(res.body.days[0].exercises[0].sets[0].reps).toBe(5);

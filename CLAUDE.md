@@ -29,7 +29,7 @@ A workout tracking application supporting configurable training plans. Ships wit
 
 - **WorkoutPlan** defines the program: name, slug, days per week, system flag
 - **PlanDay** defines each training day with exercises
-- **PlanDayExercise** links exercises to days with tier (T1/T2), display name, TM exercise reference, sort order
+- **PlanDayExercise** links exercises to days with display name, TM exercise reference, sort order
 - **PlanSet** defines set schemes: percentage, reps, isAmrap, isProgression per exercise per day
 - **PlanProgressionRule** defines TM increases: minReps/maxReps ranges with increase amounts, can be exercise-specific or category-based (upper/lower)
 - **UserPlan** tracks user subscriptions with isActive flag
@@ -50,8 +50,8 @@ Register -> Dashboard -> /select-plan redirect -> subscribe to plan -> /setup (i
 
 Seeded via `backend/prisma/seed.ts`. 4 lifts tracked: Bench, Squat, OHP, Deadlift. TM = 90% of 1RM.
 
-| Day | T1 (9 sets)             | T2 (8 sets)                         |
-| --- | ----------------------- | ----------------------------------- |
+| Day | Primary (9 sets)        | Secondary (8 sets)                   |
+| --- | ----------------------- | ------------------------------------ |
 | 1   | Bench Volume (Bench TM) | OHP (OHP TM, 50-70%)                |
 | 2   | Squat (Squat TM)        | Sumo Deadlift (Deadlift TM, 50-70%) |
 | 3   | Bench Heavy (Bench TM)  | Close Grip Bench (Bench TM, 40-60%) |
@@ -69,13 +69,13 @@ Round calculated weights to nearest **2.5kg** or **5lb** depending on user prefe
 - **exercises**: `id, name, slug (unique), category, is_compound, is_upper_body, created_at, updated_at`
 - **training_maxes** (append-only): `id, user_id (FK), exercise, exercise_id (FK exercises), weight (kg), effective_date, created_at` - Unique constraint: (user_id, exercise, effective_date)
 - **workouts**: `id, user_id (FK), day_number, plan_day_id (FK plan_days), status ('in_progress'/'completed'/'discarded'), completed_at, created_at`
-- **workout_sets**: `id, workout_id (FK CASCADE), exercise, exercise_id (FK exercises), tier ('T1'/'T2'), set_order, prescribed_weight (kg), prescribed_reps, is_amrap, is_progression, actual_reps (nullable), completed, created_at`
+- **workout_sets**: `id, workout_id (FK CASCADE), exercise, exercise_id (FK exercises), exercise_order (Int), set_order, prescribed_weight (kg), prescribed_reps, is_amrap, is_progression, actual_reps (nullable), completed, created_at`
 
 ### Plan Tables
 
 - **workout_plans**: `id, name, slug (unique), description, days_per_week, is_public, is_system, archived_at, created_at, updated_at`
 - **plan_days**: `id, plan_id (FK CASCADE), day_number, name` - Unique: (plan_id, day_number)
-- **plan_day_exercises**: `id, plan_day_id (FK CASCADE), exercise_id (FK), tm_exercise_id (FK), tier ('T1'/'T2'), display_name, sort_order`
+- **plan_day_exercises**: `id, plan_day_id (FK CASCADE), exercise_id (FK), tm_exercise_id (FK), display_name, sort_order`
 - **plan_sets**: `id, plan_day_exercise_id (FK CASCADE), set_order, percentage (Decimal 5,4), reps, is_amrap, is_progression`
 - **plan_progression_rules**: `id, plan_id (FK CASCADE), exercise_id (FK, nullable), category ('upper'/'lower', nullable), min_reps, max_reps, increase_amount (kg)`
 - **user_plans**: `id, user_id (FK), plan_id (FK CASCADE), is_active, started_at, ended_at`
