@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router';
+import { useParams, useNavigate, useBlocker } from 'react-router';
 import { getAdminPlan, createPlan, updatePlan, setProgressionRules as saveProgressionRules, PlanDayExerciseInput, PlanDayInput, PlanSet, ProgressionRule } from '../../api/adminPlans';
 import { getExercises, Exercise } from '../../api/exercises';
 import SetSchemeEditorModal from '../../components/SetSchemeEditorModal';
@@ -63,6 +63,9 @@ export default function PlanEditorPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [isDirty, setIsDirty] = useState(false);
+
+  const blocker = useBlocker(isDirty);
 
   useEffect(() => {
     loadExercises();
@@ -73,6 +76,17 @@ export default function PlanEditorPage() {
       initializeNewPlan();
     }
   }, [id]);
+
+  useEffect(() => {
+    if (!isDirty) return;
+
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      e.preventDefault();
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
 
   async function loadExercises() {
     try {
@@ -155,6 +169,7 @@ export default function PlanEditorPage() {
 
   function handleNameChange(value: string) {
     setName(value);
+    setIsDirty(true);
     if (!slugManuallyEdited) {
       setSlug(generateSlug(value));
     }
@@ -163,11 +178,13 @@ export default function PlanEditorPage() {
   function handleSlugChange(value: string) {
     setSlug(value);
     setSlugManuallyEdited(true);
+    setIsDirty(true);
   }
 
   function handleDaysPerWeekChange(value: number) {
     const newDaysPerWeek = Math.max(1, Math.min(7, value));
     setDaysPerWeek(newDaysPerWeek);
+    setIsDirty(true);
 
     // Adjust days array
     if (newDaysPerWeek > days.length) {
@@ -192,6 +209,7 @@ export default function PlanEditorPage() {
     setDays(days.map(day =>
       day.dayNumber === dayNumber ? { ...day, name: value } : day
     ));
+    setIsDirty(true);
   }
 
   function addExerciseToDay(exercise: Exercise) {
@@ -214,6 +232,7 @@ export default function PlanEditorPage() {
 
     setShowExercisePicker(false);
     setExerciseSearch('');
+    setIsDirty(true);
   }
 
   function removeExercise(dayNumber: number, tempId: string) {
@@ -236,6 +255,7 @@ export default function PlanEditorPage() {
         exercises: filtered.map((ex, idx) => ({ ...ex, sortOrder: idx + 1 })),
       };
     }));
+    setIsDirty(true);
   }
 
   function updateExerciseField(
@@ -253,6 +273,7 @@ export default function PlanEditorPage() {
         ),
       };
     }));
+    setIsDirty(true);
   }
 
   function moveExerciseUp(dayNumber: number, tempId: string) {
@@ -270,6 +291,7 @@ export default function PlanEditorPage() {
         exercises: reordered.map((ex, i) => ({ ...ex, sortOrder: i + 1 })),
       };
     }));
+    setIsDirty(true);
   }
 
   function moveExerciseDown(dayNumber: number, tempId: string) {
@@ -287,6 +309,7 @@ export default function PlanEditorPage() {
         exercises: reordered.map((ex, i) => ({ ...ex, sortOrder: i + 1 })),
       };
     }));
+    setIsDirty(true);
   }
 
   function openSetSchemeEditor(dayNumber: number, tempId: string) {
@@ -321,6 +344,7 @@ export default function PlanEditorPage() {
     }));
 
     setEditingSets(null);
+    setIsDirty(true);
   }
 
   function closeSetSchemeEditor() {
@@ -382,10 +406,12 @@ export default function PlanEditorPage() {
         await updatePlan(parseInt(id, 10), payload);
         planId = parseInt(id, 10);
         toast.success('Plan updated successfully');
+        setIsDirty(false);
       } else {
         const created = await createPlan(payload);
         planId = created.id;
         toast.success('Plan created successfully');
+        setIsDirty(false);
       }
 
       // Save progression rules if there are any
@@ -477,7 +503,7 @@ export default function PlanEditorPage() {
             Description
             <textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => { setDescription(e.target.value); setIsDirty(true); }}
               placeholder="Describe this workout plan..."
               rows={3}
             />
@@ -500,7 +526,7 @@ export default function PlanEditorPage() {
             <input
               type="checkbox"
               checked={isPublic}
-              onChange={(e) => setIsPublic(e.target.checked)}
+              onChange={(e) => { setIsPublic(e.target.checked); setIsDirty(true); }}
             />
             <span>Public (visible to users)</span>
           </label>
@@ -717,7 +743,7 @@ export default function PlanEditorPage() {
       <ProgressionRulesEditor
         initialRules={progressionRules as ProgressionRule[]}
         exercises={exercises}
-        onChange={setProgressionRules}
+        onChange={(rules) => { setProgressionRules(rules); setIsDirty(true); }}
       />
 
       <div className="sticky-save-bar">
@@ -742,6 +768,23 @@ export default function PlanEditorPage() {
           onSave={saveSetScheme}
           onClose={closeSetSchemeEditor}
         />
+      )}
+
+      {blocker.state === 'blocked' && (
+        <div className="unsaved-modal" onClick={() => blocker.reset()}>
+          <div className="unsaved-modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Unsaved Changes</h3>
+            <p>You have unsaved changes. Leave without saving?</p>
+            <div className="unsaved-modal-actions">
+              <button className="btn-stay" onClick={() => blocker.reset()}>
+                Stay
+              </button>
+              <button className="btn-leave" onClick={() => blocker.proceed()}>
+                Leave
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

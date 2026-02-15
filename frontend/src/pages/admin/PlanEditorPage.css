@@ -523,6 +523,66 @@
   padding: 0.25rem 0;
 }
 
+/* Unsaved changes modal */
+.unsaved-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.unsaved-modal-content {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 400px;
+  width: 90%;
+}
+
+.unsaved-modal-content h3 {
+  margin: 0 0 0.75rem;
+  color: var(--text-primary);
+}
+
+.unsaved-modal-content p {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.unsaved-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.btn-stay {
+  background: var(--admin-accent, #7c3aed);
+  color: white;
+  padding: 0.625rem 1.25rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  min-height: 40px;
+}
+
+.btn-leave {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  min-height: 40px;
+}
+
 /* Copy sets dropdown */
 .copy-sets-select {
   padding: 0.375rem;
