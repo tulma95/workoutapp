@@ -21,7 +21,6 @@ const planSetSchema = z.object({
 
 const planDayExerciseSchema = z.object({
   exerciseId: z.number().int(),
-  tier: z.string().min(1),
   sortOrder: z.number().int().min(1),
   tmExerciseId: z.number().int(),
   displayName: z.string().optional(),
@@ -74,7 +73,6 @@ router.post('/', validate(createPlanSchema), async (req: AuthRequest, res: Respo
             data: {
               planDayId: createdDay.id,
               exerciseId: exercise.exerciseId,
-              tier: exercise.tier,
               sortOrder: exercise.sortOrder,
               tmExerciseId: exercise.tmExerciseId,
               displayName: exercise.displayName,
@@ -272,7 +270,6 @@ router.put('/:id', validate(updatePlanSchema), async (req: AuthRequest, res: Res
             data: {
               planDayId: createdDay.id,
               exerciseId: exercise.exerciseId,
-              tier: exercise.tier,
               sortOrder: exercise.sortOrder,
               tmExerciseId: exercise.tmExerciseId,
               displayName: exercise.displayName,

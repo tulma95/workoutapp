@@ -242,7 +242,6 @@ async function main() {
     data: {
       planDayId: day1.id,
       exerciseId: exerciseMap.get('bench-press')!,
-      tier: 'T1',
       sortOrder: 1,
       tmExerciseId: exerciseMap.get('bench-press')!,
       displayName: 'Bench Volume',
@@ -276,7 +275,6 @@ async function main() {
     data: {
       planDayId: day1.id,
       exerciseId: exerciseMap.get('ohp')!,
-      tier: 'T2',
       sortOrder: 2,
       tmExerciseId: exerciseMap.get('ohp')!,
     },
@@ -319,7 +317,6 @@ async function main() {
     data: {
       planDayId: day2.id,
       exerciseId: exerciseMap.get('squat')!,
-      tier: 'T1',
       sortOrder: 1,
       tmExerciseId: exerciseMap.get('squat')!,
     },
@@ -352,7 +349,6 @@ async function main() {
     data: {
       planDayId: day2.id,
       exerciseId: exerciseMap.get('sumo-deadlift')!,
-      tier: 'T2',
       sortOrder: 2,
       tmExerciseId: exerciseMap.get('deadlift')!,
     },
@@ -395,7 +391,6 @@ async function main() {
     data: {
       planDayId: day3.id,
       exerciseId: exerciseMap.get('bench-press')!,
-      tier: 'T1',
       sortOrder: 1,
       tmExerciseId: exerciseMap.get('bench-press')!,
       displayName: 'Bench Heavy',
@@ -429,7 +424,6 @@ async function main() {
     data: {
       planDayId: day3.id,
       exerciseId: exerciseMap.get('close-grip-bench')!,
-      tier: 'T2',
       sortOrder: 2,
       tmExerciseId: exerciseMap.get('bench-press')!,
     },
@@ -472,7 +466,6 @@ async function main() {
     data: {
       planDayId: day4.id,
       exerciseId: exerciseMap.get('deadlift')!,
-      tier: 'T1',
       sortOrder: 1,
       tmExerciseId: exerciseMap.get('deadlift')!,
     },
@@ -505,7 +498,6 @@ async function main() {
     data: {
       planDayId: day4.id,
       exerciseId: exerciseMap.get('front-squat')!,
-      tier: 'T2',
       sortOrder: 2,
       tmExerciseId: exerciseMap.get('squat')!,
     },
