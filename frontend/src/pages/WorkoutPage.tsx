@@ -288,13 +288,18 @@ export default function WorkoutPage() {
     )
   }
 
-  const t1Sets = workout.sets.filter((s) => s.tier === 'T1')
-  const t2Sets = workout.sets.filter((s) => s.tier === 'T2')
   const unit = user?.unitPreference || 'kg'
 
-  // Extract exercise names from workout sets
-  const t1ExerciseName = t1Sets.length > 0 ? t1Sets[0].exercise : 'T1'
-  const t2ExerciseName = t2Sets.length > 0 ? t2Sets[0].exercise : 'T2'
+  // Group sets by exercise, preserving exerciseOrder
+  const exerciseGroups: Array<{ exercise: string; sets: typeof workout.sets }> = []
+  for (const set of workout.sets) {
+    const last = exerciseGroups[exerciseGroups.length - 1]
+    if (last && last.exercise === set.exercise) {
+      last.sets.push(set)
+    } else {
+      exerciseGroups.push({ exercise: set.exercise, sets: [set] })
+    }
+  }
 
   // Use day title from workout or fallback to "Day N"
   const dayTitle = `Day ${dayNumber}`
@@ -315,12 +320,11 @@ export default function WorkoutPage() {
     <div className="workout-page">
       <h1>{dayTitle}</h1>
 
-      <section className="workout-section">
-        <h2 className="workout-section__title">T1: {t1ExerciseName}</h2>
-        <div className="workout-section__sets">
-          {t1Sets.map((set, index) => {
-            // console.log(set)
-            return (
+      {exerciseGroups.map((group) => (
+        <section key={group.exercise} className="workout-section">
+          <h2 className="workout-section__title">{group.exercise}</h2>
+          <div className="workout-section__sets">
+            {group.sets.map((set, index) => (
               <SetRow
                 key={set.id}
                 setNumber={index + 1}
@@ -335,30 +339,10 @@ export default function WorkoutPage() {
                   handleAmrapRepsChange(set.id, reps)
                 }
               />
-            )
-          })}
-        </div>
-      </section>
-
-      <section className="workout-section">
-        <h2 className="workout-section__title">T2: {t2ExerciseName}</h2>
-        <div className="workout-section__sets">
-          {t2Sets.map((set, index) => (
-            <SetRow
-              key={set.id}
-              setNumber={index + 1}
-              weight={set.prescribedWeight}
-              reps={set.prescribedReps}
-              isAmrap={set.isAmrap}
-              completed={set.completed}
-              actualReps={set.actualReps}
-              unit={unit}
-              onComplete={() => handleSetComplete(set.id)}
-              onAmrapRepsChange={(reps) => handleAmrapRepsChange(set.id, reps)}
-            />
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      ))}
 
       <div className="workout-actions">
         <button
