@@ -115,7 +115,6 @@ describe('Plans routes', () => {
                 create: [
                   {
                     exerciseId: bench.id,
-                    tier: 'T1',
                     sortOrder: 1,
                     tmExerciseId: bench.id,
                     sets: {
@@ -128,7 +127,6 @@ describe('Plans routes', () => {
                   },
                   {
                     exerciseId: ohp.id,
-                    tier: 'T2',
                     sortOrder: 2,
                     tmExerciseId: ohp.id,
                     sets: {
@@ -148,7 +146,6 @@ describe('Plans routes', () => {
                 create: [
                   {
                     exerciseId: squat.id,
-                    tier: 'T1',
                     sortOrder: 1,
                     tmExerciseId: squat.id,
                     sets: {
@@ -366,8 +363,7 @@ describe('Plans routes', () => {
                   create: [
                     {
                       exerciseId: exerciseIds.deadlift,
-                      tier: 'T1',
-                      sortOrder: 1,
+                        sortOrder: 1,
                       tmExerciseId: exerciseIds.deadlift,
                       sets: {
                         create: [

@@ -217,7 +217,6 @@ describe('Admin Exercise routes', () => {
           planDayId: planDay.id,
           exerciseId: referencedExercise.id,
           tmExerciseId: referencedExercise.id,
-          tier: 'T1',
           sortOrder: 1,
         },
       });

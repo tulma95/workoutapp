@@ -78,7 +78,6 @@ describe('Workout Completion - Plan-Driven', () => {
         planDayId: day1.id,
         exerciseId: benchExId,
         tmExerciseId: benchExId,
-        tier: 'T1',
         sortOrder: 1,
       },
     });
@@ -113,7 +112,6 @@ describe('Workout Completion - Plan-Driven', () => {
         planDayId: day2.id,
         exerciseId: squatExId,
         tmExerciseId: squatExId,
-        tier: 'T1',
         sortOrder: 1,
       },
     });
@@ -123,7 +121,6 @@ describe('Workout Completion - Plan-Driven', () => {
         planDayId: day2.id,
         exerciseId: deadliftExId,
         tmExerciseId: deadliftExId,
-        tier: 'T2',
         sortOrder: 2,
       },
     });
@@ -205,8 +202,8 @@ describe('Workout Completion - Plan-Driven', () => {
 
       // Find the progression set (95% AMRAP, setOrder=3)
       const progressionSet = workout.sets.find(
-        (s: { tier: string; setOrder: number; isAmrap: boolean; isProgression: boolean }) =>
-          s.tier === 'T1' && s.setOrder === 3 && s.isProgression,
+        (s: { exerciseOrder: number; setOrder: number; isAmrap: boolean; isProgression: boolean }) =>
+          s.exerciseOrder === 1 && s.setOrder === 3 && s.isProgression,
       );
       expect(progressionSet).toBeDefined();
 
@@ -292,7 +289,7 @@ describe('Workout Completion - Plan-Driven', () => {
 
       const workout = await startAndGetWorkout(1);
       const progressionSet = workout.sets.find(
-        (s: { tier: string; setOrder: number; isProgression: boolean }) => s.tier === 'T1' && s.isProgression,
+        (s: { exerciseOrder: number; setOrder: number; isProgression: boolean }) => s.exerciseOrder === 1 && s.isProgression,
       );
 
       // Log 0 reps

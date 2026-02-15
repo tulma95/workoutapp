@@ -95,7 +95,6 @@ describe('Workouts API - Plan-Driven Generation', () => {
       data: {
         planDayId: day1.id,
         exerciseId: benchExercise.id,
-        tier: 'T1',
         sortOrder: 1,
         tmExerciseId: benchExercise.id,
         displayName: 'Bench Volume',
@@ -130,7 +129,6 @@ describe('Workouts API - Plan-Driven Generation', () => {
       data: {
         planDayId: day1.id,
         exerciseId: ohpExercise.id,
-        tier: 'T2',
         sortOrder: 2,
         tmExerciseId: ohpExercise.id,
       },
@@ -198,8 +196,8 @@ describe('Workouts API - Plan-Driven Generation', () => {
       // Day 1 should have 9 T1 + 8 T2 = 17 sets
       expect(res.body.sets).toHaveLength(17);
 
-      const t1Sets = res.body.sets.filter((s: { tier: string }) => s.tier === 'T1');
-      const t2Sets = res.body.sets.filter((s: { tier: string }) => s.tier === 'T2');
+      const t1Sets = res.body.sets.filter((s: { exerciseOrder: number }) => s.exerciseOrder === 1);
+      const t2Sets = res.body.sets.filter((s: { exerciseOrder: number }) => s.exerciseOrder === 2);
 
       expect(t1Sets).toHaveLength(9);
       expect(t2Sets).toHaveLength(8);
@@ -211,7 +209,7 @@ describe('Workouts API - Plan-Driven Generation', () => {
       // Check progression flag is set correctly
       const progressionSets = res.body.sets.filter((s: { isProgression: boolean }) => s.isProgression);
       expect(progressionSets).toHaveLength(1);
-      expect(progressionSets[0].tier).toBe('T1');
+      expect(progressionSets[0].exerciseOrder).toBe(1);
       expect(progressionSets[0].isAmrap).toBe(true);
     });
 
@@ -294,7 +292,7 @@ describe('Workouts API - Plan-Driven Generation', () => {
       const progressionSets = sets.filter((s) => s.isProgression);
       expect(progressionSets).toHaveLength(1);
       expect(progressionSets[0].isProgression).toBe(true);
-      expect(progressionSets[0].tier).toBe('T1');
+      expect(progressionSets[0].exerciseOrder).toBe(1);
       expect(progressionSets[0].isAmrap).toBe(true);
     });
   });

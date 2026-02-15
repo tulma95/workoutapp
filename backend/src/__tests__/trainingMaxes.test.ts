@@ -339,8 +339,8 @@ describe('Training Maxes API', () => {
                 name: 'Day 1',
                 exercises: {
                   create: [
-                    { exerciseId: exerciseIds.bench, tmExerciseId: exerciseIds.bench, tier: 'T1', sortOrder: 1 },
-                    { exerciseId: exerciseIds.ohp, tmExerciseId: exerciseIds.ohp, tier: 'T2', sortOrder: 2 },
+                    { exerciseId: exerciseIds.bench, tmExerciseId: exerciseIds.bench, sortOrder: 1 },
+                    { exerciseId: exerciseIds.ohp, tmExerciseId: exerciseIds.ohp, sortOrder: 2 },
                   ],
                 },
               },
@@ -349,8 +349,8 @@ describe('Training Maxes API', () => {
                 name: 'Day 2',
                 exercises: {
                   create: [
-                    { exerciseId: exerciseIds.squat, tmExerciseId: exerciseIds.squat, tier: 'T1', sortOrder: 1 },
-                    { exerciseId: exerciseIds.deadlift, tmExerciseId: exerciseIds.deadlift, tier: 'T2', sortOrder: 2 },
+                    { exerciseId: exerciseIds.squat, tmExerciseId: exerciseIds.squat, sortOrder: 1 },
+                    { exerciseId: exerciseIds.deadlift, tmExerciseId: exerciseIds.deadlift, sortOrder: 2 },
                   ],
                 },
               },
