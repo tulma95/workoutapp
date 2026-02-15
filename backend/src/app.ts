@@ -12,7 +12,10 @@ import adminPlanRoutes from './routes/admin/plans';
 import { errorHandler } from './middleware/errorHandler';
 import { requestContext } from './middleware/requestContext';
 import { requestLogger } from './middleware/requestLogger';
+import { authenticate } from './middleware/auth';
+import { config } from './config';
 import { logger } from './lib/logger';
+import type { AuthRequest } from './types';
 
 const app = express();
 
@@ -39,6 +42,17 @@ app.use('/api/workouts', workoutRoutes);
 app.use('/api/plans', planRoutes);
 app.use('/api/admin/exercises', adminExerciseRoutes);
 app.use('/api/admin/plans', adminPlanRoutes);
+
+// Test/dev-only endpoint to promote current user to admin
+if (config.nodeEnv === 'test' || config.nodeEnv === 'development') {
+  app.post('/api/dev/promote-admin', authenticate, async (req: AuthRequest, res) => {
+    await prisma.user.update({
+      where: { id: req.userId },
+      data: { isAdmin: true },
+    });
+    res.json({ ok: true });
+  });
+}
 
 // Serve frontend static files and handle SPA routing
 const frontendPath = path.join(__dirname, '../../frontend/dist');
