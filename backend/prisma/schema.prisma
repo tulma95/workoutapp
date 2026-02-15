@@ -62,7 +62,6 @@ model PlanDayExercise {
   id           Int     @id @default(autoincrement())
   planDayId    Int     @map("plan_day_id")
   exerciseId   Int     @map("exercise_id")
-  tier         String
   sortOrder    Int     @map("sort_order")
   tmExerciseId Int     @map("tm_exercise_id")
   displayName  String? @map("display_name")
@@ -143,7 +142,7 @@ model WorkoutSet {
   id               Int      @id @default(autoincrement())
   workoutId        Int      @map("workout_id")
   exerciseId       Int      @map("exercise_id")
-  tier             String
+  exerciseOrder    Int      @map("exercise_order")
   setOrder         Int      @map("set_order")
   prescribedWeight Decimal  @db.Decimal(6, 2) @map("prescribed_weight")
   prescribedReps   Int      @map("prescribed_reps")
@@ -156,7 +155,7 @@ model WorkoutSet {
   workout  Workout  @relation(fields: [workoutId], references: [id], onDelete: Cascade)
   exercise Exercise @relation(fields: [exerciseId], references: [id])
 
-  @@index([workoutId, tier, setOrder])
+  @@index([workoutId, exerciseOrder, setOrder])
   @@map("workout_sets")
 }
 
