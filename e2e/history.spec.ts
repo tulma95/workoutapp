@@ -28,7 +28,7 @@ test.describe('Workout History', () => {
     const { page } = setupCompletePage;
 
     // Wait for dashboard to load
-    await page.waitForSelector('text=Training Maxes');
+    await page.waitForSelector('text=Workout Days');
 
     // Click History nav link
     await page.getByRole('link', { name: /history/i }).click();
@@ -56,7 +56,7 @@ test.describe('Workout History', () => {
     const { page } = setupCompletePage;
 
     // Navigate to history page
-    await page.waitForSelector('text=Training Maxes');
+    await page.waitForSelector('text=Workout Days');
     await page.getByRole('link', { name: /history/i }).click();
     await page.waitForURL('/history');
 
@@ -78,7 +78,7 @@ test.describe('Workout History', () => {
     const { page } = setupCompletePage;
 
     // Wait for dashboard
-    await page.waitForSelector('text=Training Maxes');
+    await page.waitForSelector('text=Workout Days');
 
     // Complete Day 1 workout
     await completeWorkout(page, 1, 10);
@@ -107,7 +107,7 @@ test.describe('Workout History', () => {
     const { page } = setupCompletePage;
 
     // Wait for dashboard
-    await page.waitForSelector('text=Training Maxes');
+    await page.waitForSelector('text=Workout Days');
 
     // Complete Day 1 workout
     await completeWorkout(page, 1, 10);
@@ -148,7 +148,7 @@ test.describe('Workout History', () => {
     const { page } = setupCompletePage;
 
     // Wait for dashboard to load
-    await page.waitForSelector('text=Training Maxes');
+    await page.waitForSelector('text=Workout Days');
 
     // Complete Day 1 workout
     await completeWorkout(page, 1, 10);
@@ -195,7 +195,7 @@ test.describe('Workout History', () => {
     const { page } = setupCompletePage;
 
     // Navigate to history page
-    await page.waitForSelector('text=Training Maxes');
+    await page.waitForSelector('text=Workout Days');
     await page.getByRole('link', { name: /history/i }).click();
     await page.waitForURL('/history');
 

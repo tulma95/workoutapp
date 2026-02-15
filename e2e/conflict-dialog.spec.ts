@@ -11,7 +11,7 @@ async function clickDayButton(page: Page, dayNumber: number) {
 
 /** Start a Day 1 workout from dashboard and wait for it to load */
 async function startDay1Workout(page: Page) {
-  await page.waitForSelector('text=Training Maxes')
+  await page.waitForSelector('text=Workout Days')
   await clickDayButton(page, 1)
   await page.waitForURL(/\/workout\/\d+/)
   await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 })
@@ -21,7 +21,7 @@ async function startDay1Workout(page: Page) {
 /** Navigate back to dashboard and click Day 2, triggering conflict dialog */
 async function triggerConflictDialog(page: Page) {
   await page.goto('/')
-  await page.waitForSelector('text=Training Maxes')
+  await page.waitForSelector('text=Workout Days')
   await clickDayButton(page, 2)
   await expect(
     page.getByRole('heading', { name: /workout in progress/i }),
@@ -37,7 +37,7 @@ test.describe('Conflict Dialog', () => {
 
     // Navigate back to dashboard and try to start Day 2
     await page.goto('/')
-    await page.waitForSelector('text=Training Maxes')
+    await page.waitForSelector('text=Workout Days')
     await clickDayButton(page, 2)
 
     // Wait for conflict dialog to appear - should mention "Day 1"
@@ -95,6 +95,6 @@ test.describe('Conflict Dialog', () => {
 
     // Should navigate back to dashboard
     await page.waitForURL('/')
-    await expect(page.getByText(/training maxes/i)).toBeVisible()
+    await expect(page.getByText(/workout days/i)).toBeVisible()
   })
 })

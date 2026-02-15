@@ -99,7 +99,7 @@ test.describe('Unit Conversion', () => {
     expect(weightValue).toBeLessThanOrEqual(135);
   });
 
-  test('lb user dashboard shows TMs in lb', async ({ page }) => {
+  test('lb user settings shows TMs in lb', async ({ page }) => {
     const timestamp = Date.now();
     const email = `lb-dashboard-${timestamp}@example.com`;
     const password = 'ValidPassword123';
@@ -122,6 +122,11 @@ test.describe('Unit Conversion', () => {
     await page.click('button[type="submit"]');
     await page.waitForURL('/');
 
+    // Navigate to settings to check TMs
+    await page.click('a[href="/settings"]');
+    await page.waitForURL('/settings');
+    await page.waitForSelector('text=Training Maxes');
+
     // Verify Training Maxes section shows lb values
     const benchTM = await page.locator('.tm-item:has-text("Bench")').locator('.tm-weight').textContent();
     const squatTM = await page.locator('.tm-item:has-text("Squat")').locator('.tm-weight').textContent();
@@ -135,10 +140,6 @@ test.describe('Unit Conversion', () => {
     expect(deadliftTM).toContain('lb');
 
     // Verify TMs are 90% of 1RMs and rounded to nearest 5
-    // Bench: 220 * 0.9 = 198, rounded to 200 lb
-    // Squat: 310 * 0.9 = 279, rounded to 280 lb
-    // OHP: 130 * 0.9 = 117, rounded to 115 lb
-    // Deadlift: 400 * 0.9 = 360 lb
     const benchValue = parseInt(benchTM?.match(/\d+/)?.[0] || '0');
     const squatValue = parseInt(squatTM?.match(/\d+/)?.[0] || '0');
     const ohpValue = parseInt(ohpTM?.match(/\d+/)?.[0] || '0');
@@ -168,18 +169,15 @@ test.describe('Unit Conversion', () => {
 
     // setupCompletePage registers user with kg (default), subscribes to plan, and sets up TMs
     // Initial state: user is on dashboard with kg units
+    await page.waitForSelector('text=Workout Days');
+
+    // Navigate to settings to verify initial kg TMs and switch unit
+    await page.click('a[href="/settings"]');
+    await page.waitForURL('/settings');
     await page.waitForSelector('text=Training Maxes');
 
     // Verify initial state shows kg
     await expect(page.locator('text=Bench-press').locator('..')).toContainText('kg');
-
-    // Navigate to settings
-    await page.click('a[href="/settings"]');
-    await page.waitForURL('/settings');
-
-    // Verify we're on kg initially
-    const kgButton = page.getByRole('button', { name: 'kg' });
-    await expect(kgButton).toBeVisible();
 
     // Switch to lb
     await page.getByRole('button', { name: 'lb' }).click();
@@ -191,8 +189,7 @@ test.describe('Unit Conversion', () => {
     await page.click('a[href="/"]');
     await page.waitForURL('/');
 
-    //Start a workout to verify workout weights are displayed in lb
-    // Workout page will fetch fresh user data and display weights accordingly
+    // Start a workout to verify workout weights are displayed in lb
     await page.getByRole('button', { name: /start workout/i }).first().click();
     await page.waitForURL(/\/workout\/1/);
     await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
@@ -212,17 +209,9 @@ test.describe('Unit Conversion', () => {
     // Verify weight is rounded to nearest 5 lb
     expect(firstSetWeight % 5).toBe(0);
 
-    // Navigate back to dashboard and verify TMs are displayed in lb
-    await page.goto('/');
+    // Navigate to settings and verify TMs are displayed in lb
+    await page.goto('/settings');
     await page.waitForSelector('text=Training Maxes', { timeout: 10000 });
-
-    // The dashboard should now show lb (may need reload for AuthContext to update)
-    // Check if lb appears - if not, reload and check again
-    const haslb = await page.locator('text=Bench-press').locator('..').textContent().then(t => t?.includes('lb'));
-    if (!haslb) {
-      await page.reload();
-      await page.waitForSelector('text=Training Maxes');
-    }
 
     // Verify TMs are displayed in lb
     await expect(page.locator('text=Bench-press').locator('..')).toContainText('lb', { timeout: 5000 });

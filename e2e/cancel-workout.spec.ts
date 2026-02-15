@@ -5,7 +5,7 @@ test.describe('Cancel Workout', () => {
     const { page } = setupCompletePage;
 
     // Wait for dashboard to load
-    await page.waitForSelector('text=Training Maxes');
+    await page.waitForSelector('text=Workout Days');
 
     // Start Day 1 workout
     await page.getByRole('button', { name: /start workout/i }).first().click();
@@ -30,14 +30,14 @@ test.describe('Cancel Workout', () => {
     await page.waitForURL('/', { timeout: 5000 });
 
     // Verify we're on the dashboard
-    await expect(page.getByText('Training Maxes')).toBeVisible();
+    await expect(page.getByText('Workout Days')).toBeVisible();
   });
 
   test('cancel workout returns success response', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
 
     // Wait for dashboard to load
-    await page.waitForSelector('text=Training Maxes');
+    await page.waitForSelector('text=Workout Days');
 
     // Start Day 1 workout
     await page.getByRole('button', { name: /start workout/i }).first().click();
@@ -70,7 +70,7 @@ test.describe('Cancel Workout', () => {
     await page.waitForURL('/', { timeout: 10000 });
 
     // Verify we're back on the dashboard
-    await page.waitForSelector('text=Training Maxes');
+    await page.waitForSelector('text=Workout Days');
     expect(page.url()).toMatch(/\/$/);
   });
 
@@ -78,7 +78,7 @@ test.describe('Cancel Workout', () => {
     const { page } = setupCompletePage;
 
     // Wait for dashboard to load
-    await page.waitForSelector('text=Training Maxes');
+    await page.waitForSelector('text=Workout Days');
 
     // Start Day 1 workout
     await page.getByRole('button', { name: /start workout/i }).first().click();

@@ -9,13 +9,12 @@ test.describe('Dashboard', () => {
     await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
 
     // Check all 4 day cards exist with correct exercises
-    // Use .first() for exercise names that appear both in TM list and workout cards
     await expect(page.getByRole('heading', { name: /^day 1$/i })).toBeVisible();
     await expect(page.getByText(/bench volume/i)).toBeVisible();
-    await expect(page.getByText(/^ohp$/i).first()).toBeVisible();
+    await expect(page.getByText(/overhead press/i)).toBeVisible();
 
     await expect(page.getByRole('heading', { name: /^day 2$/i })).toBeVisible();
-    await expect(page.getByText(/^squat$/i).first()).toBeVisible();
+    await expect(page.getByText(/^squat$/i)).toBeVisible();
     await expect(page.getByText(/sumo deadlift/i)).toBeVisible();
 
     await expect(page.getByRole('heading', { name: /^day 3$/i })).toBeVisible();
@@ -23,12 +22,17 @@ test.describe('Dashboard', () => {
     await expect(page.getByText(/close grip bench/i)).toBeVisible();
 
     await expect(page.getByRole('heading', { name: /^day 4$/i })).toBeVisible();
-    await expect(page.getByText(/^deadlift$/i).first()).toBeVisible();
+    await expect(page.getByText(/^deadlift$/i)).toBeVisible();
     await expect(page.getByText(/front squat/i)).toBeVisible();
   });
 
-  test('shows current TM values for all 4 exercises', async ({ setupCompletePage }) => {
+  test('shows current TM values for all 4 exercises on settings page', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
+
+    // Navigate to settings to see TMs
+    await page.click('a[href="/settings"]');
+    await page.waitForURL('/settings');
+    await page.waitForSelector('text=Training Maxes');
 
     // Expected TMs from 1RMs: bench 100, squat 140, ohp 60, deadlift 180
     // TM = 90% of 1RM, rounded to 2.5kg

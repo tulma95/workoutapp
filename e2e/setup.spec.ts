@@ -42,8 +42,13 @@ test.describe('Training Max Setup', () => {
     await page.waitForURL('/', { timeout: 10000 });
     expect(page.url()).toContain('/');
 
-    // Wait for Training Maxes section to load
-    await page.waitForSelector('text=Training Maxes', { timeout: 5000 });
+    // Wait for dashboard to load
+    await page.waitForSelector('text=Workout Days', { timeout: 5000 });
+
+    // Navigate to settings to verify TMs
+    await page.click('a[href="/settings"]');
+    await page.waitForURL('/settings');
+    await page.waitForSelector('text=Training Maxes');
 
     // Calculate expected TMs (90% of 1RMs, rounded to 2.5kg)
     const expectedTMs = {
@@ -53,7 +58,7 @@ test.describe('Training Max Setup', () => {
       deadlift: Math.round((oneRepMaxes.deadlift * 0.9) / 2.5) * 2.5, // 162.5
     };
 
-    // Verify TMs are displayed on dashboard
+    // Verify TMs are displayed on settings page
     const pageContent = await page.textContent('body');
     expect(pageContent).toContain(expectedTMs.bench.toString());
     expect(pageContent).toContain(expectedTMs.squat.toString());
@@ -61,21 +66,22 @@ test.describe('Training Max Setup', () => {
     expect(pageContent).toContain(expectedTMs.deadlift.toString());
   });
 
-  test('editing a TM from the dashboard updates the displayed value', async ({ setupCompletePage }) => {
+  test('editing a TM from settings updates the displayed value', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
 
     // User should be on dashboard with TMs already set up
     expect(page.url()).toContain('/');
 
-    // Wait for Training Maxes section to load
+    // Navigate to settings to edit TMs
+    await page.click('a[href="/settings"]');
+    await page.waitForURL('/settings');
     await page.waitForSelector('text=Training Maxes', { timeout: 5000 });
 
     // Initial TM for bench should be 90kg (90% of 100kg)
     let pageContent = await page.textContent('body');
     expect(pageContent).toContain('90');
 
-    // Find and click the Edit button for Bench (look for Edit button near "Bench" text)
-    // We'll use a more specific selector since getByRole might not find it easily
+    // Find and click the Edit button for Bench
     const benchEditButton = page.locator('button', { hasText: 'Edit' }).first();
     await benchEditButton.click();
 
