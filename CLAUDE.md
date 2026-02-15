@@ -170,7 +170,10 @@ Round calculated weights to nearest **2.5kg** or **5lb** depending on user prefe
 - `SetRow` - single set: weight, reps, completion toggle
 - `AmrapInput` - +/- stepper for mobile-friendly rep entry
 - `ProgressionBanner` - supports both single and array progressions
-- `ConflictDialog` - modal for duplicate workout resolution (continue/discard)
+- `ConflictDialog` - duplicate workout resolution (continue/discard)
+- `ExerciseFormModal` - admin create/edit exercise form
+- `SetSchemeEditorModal` - admin set scheme editor (bulk add, percentage/reps/AMRAP/progression per set)
+- `PlanSwitchConfirmModal` - plan switch warnings (in-progress workout, new/existing TMs)
 - `LoadingSpinner` / `ErrorMessage` - shared UI state components
 
 ### Frontend Patterns
@@ -182,6 +185,7 @@ Round calculated weights to nearest **2.5kg** or **5lb** depending on user prefe
 - **View Transitions**: `document.startViewTransition()` with feature detection for calendar navigation
 - **Controlled components**: Complex stateful UI (e.g., WorkoutCalendar) uses props not internal state to prevent reset on re-render
 - **Loading overlays**: Keep components mounted during loading, use opacity + pointer-events: none instead of unmounting
+- **Modals**: Use native `<dialog>` element with `showModal()`. Dialog fills viewport (transparent background), visual content in inner `__content` div. Gives free backdrop, focus trapping, and Escape key handling. Listen for `close` event to sync parent state.
 
 ## Testing
 
