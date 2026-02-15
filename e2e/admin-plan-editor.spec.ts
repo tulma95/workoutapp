@@ -483,14 +483,20 @@ test.describe('Admin Plan Editor', () => {
     await admin.addExercise('Bench');
     await admin.addSets(1, 3, 65, 5);
 
-    // Dismiss confirmation — exercise stays
-    admin.page.once('dialog', (dialog) => dialog.dismiss());
+    // Click delete — custom confirm dialog appears
     await admin.removeExerciseButton(1).click();
+    const dialog = admin.page.locator('.confirm-dialog__content');
+    await expect(dialog).toBeVisible();
+
+    // Dismiss confirmation — exercise stays
+    await dialog.getByRole('button', { name: /cancel/i }).click();
+    await expect(dialog).not.toBeVisible();
     await expect(admin.exerciseRows).toHaveCount(1);
 
-    // Accept confirmation — exercise removed
-    admin.page.once('dialog', (dialog) => dialog.accept());
+    // Click delete again and accept — exercise removed
     await admin.removeExerciseButton(1).click();
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole('button', { name: /delete/i }).click();
     await expect(admin.exerciseRows).toHaveCount(0);
   });
 
@@ -502,12 +508,10 @@ test.describe('Admin Plan Editor', () => {
 
     await admin.addExercise('Bench');
 
-    let dialogFired = false;
-    admin.page.once('dialog', () => { dialogFired = true; });
-
     await admin.removeExerciseButton(1).click();
+    // Should be removed immediately with no dialog
     await expect(admin.exerciseRows).toHaveCount(0);
-    expect(dialogFired).toBe(false);
+    await expect(admin.page.locator('.confirm-dialog__content')).not.toBeVisible();
   });
 
   // 13. Exercise reorder visibility

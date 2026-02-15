@@ -16,6 +16,7 @@ import { ProgressionBanner } from '../components/ProgressionBanner'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { ConflictDialog } from '../components/ConflictDialog'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import './WorkoutPage.css'
 
 export default function WorkoutPage() {
@@ -29,6 +30,8 @@ export default function WorkoutPage() {
   const [isCompleting, setIsCompleting] = useState(false)
   const [isCompleted, setIsCompleted] = useState(false)
   const [isCanceling, setIsCanceling] = useState(false)
+  const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [conflictWorkout, setConflictWorkout] = useState<{
     workoutId: number
     dayNumber: number
@@ -163,23 +166,22 @@ export default function WorkoutPage() {
   const handleCompleteWorkout = async () => {
     if (!workout) return
 
-    // Find progression sets (sets marked with isProgression flag)
     const progressionSets = workout.sets.filter((s) => s.isProgression)
-
-    // Warn if any progression set has no reps logged
     const missingReps = progressionSets.some((s) => s.actualReps === null)
     if (missingReps && progressionSets.length > 0) {
-      const confirmed = window.confirm(
-        "You haven't entered reps for all progression sets. Complete workout without full progression tracking?",
-      )
-      if (!confirmed) return
+      setShowCompleteConfirm(true)
+      return
     }
 
+    await doCompleteWorkout()
+  }
+
+  const doCompleteWorkout = async () => {
+    setShowCompleteConfirm(false)
     setIsCompleting(true)
 
     try {
-      const result = await completeWorkout(workout.id)
-      // Handle both old format (progression) and new format (progressions array)
+      const result = await completeWorkout(workout!.id)
       const progressionArray =
         result.progressions || (result.progression ? [result.progression] : [])
       setProgressions(progressionArray)
@@ -197,19 +199,17 @@ export default function WorkoutPage() {
     navigate('/')
   }
 
-  const handleCancelWorkout = async () => {
+  const handleCancelWorkout = () => {
     if (!workout) return
+    setShowCancelConfirm(true)
+  }
 
-    const confirmed = window.confirm(
-      'Cancel this workout? All progress will be lost.',
-    )
-
-    if (!confirmed) return
-
+  const doCancelWorkout = async () => {
+    setShowCancelConfirm(false)
     setIsCanceling(true)
 
     try {
-      await cancelWorkout(workout.id)
+      await cancelWorkout(workout!.id)
       navigate('/')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to cancel workout')
@@ -364,6 +364,26 @@ export default function WorkoutPage() {
           {isCanceling ? 'Canceling...' : 'Cancel Workout'}
         </button>
       </div>
+
+      <ConfirmDialog
+        open={showCompleteConfirm}
+        title="Missing Progression Reps"
+        message="You haven't entered reps for all progression sets. Complete workout without full progression tracking?"
+        confirmLabel="Complete Anyway"
+        variant="danger"
+        onConfirm={doCompleteWorkout}
+        onCancel={() => setShowCompleteConfirm(false)}
+      />
+
+      <ConfirmDialog
+        open={showCancelConfirm}
+        title="Cancel Workout"
+        message="Cancel this workout? All progress will be lost."
+        confirmLabel="Cancel Workout"
+        variant="danger"
+        onConfirm={doCancelWorkout}
+        onCancel={() => setShowCancelConfirm(false)}
+      />
     </div>
   )
 }

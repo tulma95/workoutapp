@@ -4,6 +4,7 @@ import { getAdminPlan, createPlan, updatePlan, setProgressionRules as saveProgre
 import { getExercises, Exercise } from '../../api/exercises';
 import SetSchemeEditorModal from '../../components/SetSchemeEditorModal';
 import ProgressionRulesEditor from '../../components/ProgressionRulesEditor';
+import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { useToast } from '../../components/Toast';
 import './PlanEditorPage.css';
 
@@ -68,6 +69,7 @@ export default function PlanEditorPage() {
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [isDirty, setIsDirtyState] = useState(false);
   const isDirtyRef = useRef(false);
+  const [removingExercise, setRemovingExercise] = useState<{ dayNumber: number; tempId: string; setCount: number } | null>(null);
 
   function setIsDirty(value: boolean) {
     isDirtyRef.current = value;
@@ -269,12 +271,15 @@ export default function PlanEditorPage() {
     const exercise = day?.exercises.find(ex => ex.tempId === tempId);
 
     if (exercise && exercise.sets.length > 0) {
-      const confirmed = window.confirm(
-        `This exercise has ${exercise.sets.length} sets configured. Delete it?`
-      );
-      if (!confirmed) return;
+      setRemovingExercise({ dayNumber, tempId, setCount: exercise.sets.length });
+      return;
     }
 
+    doRemoveExercise(dayNumber, tempId);
+  }
+
+  function doRemoveExercise(dayNumber: number, tempId: string) {
+    setRemovingExercise(null);
     setDays(days.map(d => {
       if (d.dayNumber !== dayNumber) return d;
 
@@ -808,6 +813,18 @@ export default function PlanEditorPage() {
           onClose={closeSetSchemeEditor}
         />
       )}
+
+      <ConfirmDialog
+        open={removingExercise !== null}
+        title="Delete Exercise"
+        message={`This exercise has ${removingExercise?.setCount ?? 0} sets configured. Delete it?`}
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={() => {
+          if (removingExercise) doRemoveExercise(removingExercise.dayNumber, removingExercise.tempId);
+        }}
+        onCancel={() => setRemovingExercise(null)}
+      />
 
       {blocker.state === 'blocked' && (
         <div className="unsaved-modal" onClick={() => blocker.reset()}>

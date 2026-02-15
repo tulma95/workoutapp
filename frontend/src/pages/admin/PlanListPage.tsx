@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { getAdminPlans, archivePlan, AdminPlanListItem } from '../../api/adminPlans';
+import { ConfirmDialog } from '../../components/ConfirmDialog';
 import './PlanListPage.css';
 
 export default function PlanListPage() {
   const [plans, setPlans] = useState<AdminPlanListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [archiving, setArchiving] = useState<{ id: number; name: string } | null>(null);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,15 +28,19 @@ export default function PlanListPage() {
   }
 
   async function handleArchive(planId: number, planName: string) {
-    if (!window.confirm(`Are you sure you want to archive "${planName}"? Users subscribed to this plan will lose access.`)) {
-      return;
-    }
+    setArchiving({ id: planId, name: planName });
+  }
+
+  async function doArchive() {
+    if (!archiving) return;
+    const { id } = archiving;
+    setArchiving(null);
 
     try {
-      await archivePlan(planId);
+      await archivePlan(id);
       await loadPlans();
     } catch (error: any) {
-      alert(error.message || 'Failed to archive plan');
+      setAlertMessage(error.message || 'Failed to archive plan');
     }
   }
 
@@ -108,6 +115,26 @@ export default function PlanListPage() {
           </div>
         ))}
       </div>
+
+      <ConfirmDialog
+        open={archiving !== null}
+        title="Archive Plan"
+        message={`Are you sure you want to archive "${archiving?.name}"? Users subscribed to this plan will lose access.`}
+        confirmLabel="Archive"
+        variant="danger"
+        onConfirm={doArchive}
+        onCancel={() => setArchiving(null)}
+      />
+
+      <ConfirmDialog
+        open={alertMessage !== null}
+        title="Error"
+        message={alertMessage || ''}
+        confirmLabel="OK"
+        showCancel={false}
+        onConfirm={() => setAlertMessage(null)}
+        onCancel={() => setAlertMessage(null)}
+      />
     </div>
   );
 }

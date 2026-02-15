@@ -14,22 +14,17 @@ test.describe('Cancel Workout', () => {
     // Wait for the workout to load
     await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
 
-    // Set up dialog handler to accept the confirmation
-    let dialogMessage = '';
-    page.on('dialog', async (dialog) => {
-      dialogMessage = dialog.message();
-      await dialog.accept();
-    });
-
     // Click "Cancel Workout" button
     await page.getByRole('button', { name: /cancel workout/i }).click();
 
-    // Give time for dialog to appear
-    await page.waitForTimeout(500);
+    // Verify the custom confirm dialog appeared with warning text
+    const dialog = page.locator('.confirm-dialog__content');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator('.confirm-dialog__message')).toContainText(/cancel/i);
+    await expect(dialog.locator('.confirm-dialog__message')).toContainText(/progress/i);
 
-    // Verify the confirmation dialog appeared with warning text
-    expect(dialogMessage.toLowerCase()).toContain('cancel');
-    expect(dialogMessage.toLowerCase()).toContain('progress');
+    // Click confirm button in the dialog
+    await dialog.getByRole('button', { name: /cancel workout/i }).click();
 
     // Wait for redirect to dashboard
     await page.waitForURL('/', { timeout: 5000 });
@@ -51,19 +46,17 @@ test.describe('Cancel Workout', () => {
     // Wait for the workout to load
     await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
 
-    // Set up dialog handler to accept the cancel confirmation
-    page.on('dialog', async (dialog) => {
-      await dialog.accept();
-    });
-
     // Set up a promise to wait for the DELETE request to complete
     const deleteResponsePromise = page.waitForResponse(
       response => response.url().includes('/api/workouts/') && response.request().method() === 'DELETE',
       { timeout: 10000 }
     );
 
-    // Cancel the workout
+    // Click cancel and confirm in the dialog
     await page.getByRole('button', { name: /cancel workout/i }).click();
+    const dialog = page.locator('.confirm-dialog__content');
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole('button', { name: /cancel workout/i }).click();
 
     // Wait for the DELETE request to complete
     const deleteResponse = await deleteResponsePromise;
@@ -94,16 +87,15 @@ test.describe('Cancel Workout', () => {
     // Wait for the workout to load
     await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
 
-    // Set up dialog handler to DISMISS the confirmation
-    page.on('dialog', async (dialog) => {
-      await dialog.dismiss();
-    });
-
     // Click "Cancel Workout" button
     await page.getByRole('button', { name: /cancel workout/i }).click();
 
-    // Give time for dialog to appear and be dismissed
-    await page.waitForTimeout(500);
+    // Verify the custom confirm dialog appeared
+    const dialog = page.locator('.confirm-dialog__content');
+    await expect(dialog).toBeVisible();
+
+    // Click the Cancel button (dismiss) in the dialog
+    await dialog.getByRole('button', { name: /^cancel$/i }).click();
 
     // Verify we're still on the workout page (URL should not change)
     expect(page.url()).toMatch(/\/workout\/\d+/);

@@ -213,27 +213,18 @@ test.describe('Workout Session', () => {
     // Wait for the workout to load
     await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
 
-    // Set up dialog handler to accept the confirmation
-    // window.confirm() will be used to warn about missing AMRAP reps
-    let dialogMessage = '';
-    page.on('dialog', async (dialog) => {
-      dialogMessage = dialog.message();
-      await dialog.accept();
-    });
-
     // DO NOT enter AMRAP reps - leave it empty
 
     // Click "Complete Workout" button
     await page.getByRole('button', { name: /complete workout/i }).click();
 
-    // Give time for dialog to appear
-    await page.waitForTimeout(500);
+    // Verify the custom confirm dialog appeared with a warning about missing progression reps
+    const dialog = page.locator('.confirm-dialog__content');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator('.confirm-dialog__message')).toContainText(/progression/i);
 
-    // Verify the confirmation dialog appeared with a warning about missing AMRAP reps
-    expect(dialogMessage.toLowerCase()).toContain('progression');
-
-    // After accepting dialog, workout should complete with no TM change
-    await page.waitForTimeout(1000);
+    // Accept the dialog to complete anyway
+    await dialog.getByRole('button', { name: /complete anyway/i }).click();
 
     // Verify completion screen shows
     // Should show "No TM change" or similar message

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Exercise, getExercises, createExercise, updateExercise, deleteExercise, CreateExerciseInput, UpdateExerciseInput } from '../../api/exercises';
 import { ExerciseFormModal } from '../../components/ExerciseFormModal';
+import { ConfirmDialog } from '../../components/ConfirmDialog';
 import './ExerciseListPage.css';
 
 export default function ExerciseListPage() {
@@ -8,6 +9,8 @@ export default function ExerciseListPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
+  const [deletingExercise, setDeletingExercise] = useState<Exercise | null>(null);
 
   useEffect(() => {
     loadExercises();
@@ -19,7 +22,7 @@ export default function ExerciseListPage() {
       const data = await getExercises();
       setExercises(data);
     } catch (error: any) {
-      alert(error.message);
+      setAlertMessage(error.message);
     } finally {
       setLoading(false);
     }
@@ -45,17 +48,19 @@ export default function ExerciseListPage() {
   };
 
   const handleDelete = async (exercise: Exercise) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${exercise.name}"? This action cannot be undone.`
-    );
+    setDeletingExercise(exercise);
+  };
 
-    if (!confirmed) return;
+  const doDelete = async () => {
+    if (!deletingExercise) return;
+    const exercise = deletingExercise;
+    setDeletingExercise(null);
 
     try {
       await deleteExercise(exercise.id);
       await loadExercises();
     } catch (error: any) {
-      alert(error.message);
+      setAlertMessage(error.message);
     }
   };
 
@@ -184,6 +189,26 @@ export default function ExerciseListPage() {
           onSubmit={handleSubmit}
         />
       )}
+
+      <ConfirmDialog
+        open={deletingExercise !== null}
+        title="Delete Exercise"
+        message={`Are you sure you want to delete "${deletingExercise?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={doDelete}
+        onCancel={() => setDeletingExercise(null)}
+      />
+
+      <ConfirmDialog
+        open={alertMessage !== null}
+        title="Error"
+        message={alertMessage || ''}
+        confirmLabel="OK"
+        showCancel={false}
+        onConfirm={() => setAlertMessage(null)}
+        onCancel={() => setAlertMessage(null)}
+      />
     </div>
   );
 }

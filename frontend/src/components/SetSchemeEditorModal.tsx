@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { PlanSet } from '../api/adminPlans';
+import { ConfirmDialog } from './ConfirmDialog';
 import './SetSchemeEditorModal.css';
 
 interface SetSchemeEditorModalProps {
@@ -17,6 +18,7 @@ export default function SetSchemeEditorModal({
 }: SetSchemeEditorModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [sets, setSets] = useState<PlanSet[]>([]);
+  const [showProgressionWarning, setShowProgressionWarning] = useState(false);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -60,13 +62,15 @@ export default function SetSchemeEditorModal({
   function handleSave() {
     const progressionCount = sets.filter(s => s.isProgression).length;
     if (progressionCount > 1) {
-      const confirmed = window.confirm(
-        `Warning: Multiple sets (${progressionCount}) are marked as progression sets. ` +
-        `Typically only one set should be marked for progression. Continue anyway?`
-      );
-      if (!confirmed) return;
+      setShowProgressionWarning(true);
+      return;
     }
 
+    onSave(sets);
+  }
+
+  function doSaveWithWarning() {
+    setShowProgressionWarning(false);
     onSave(sets);
   }
 
@@ -179,6 +183,15 @@ export default function SetSchemeEditorModal({
             </button>
           </div>
         </div>
+
+        <ConfirmDialog
+          open={showProgressionWarning}
+          title="Multiple Progression Sets"
+          message={`Warning: ${sets.filter(s => s.isProgression).length} sets are marked as progression sets. Typically only one set should be marked for progression. Continue anyway?`}
+          confirmLabel="Continue"
+          onConfirm={doSaveWithWarning}
+          onCancel={() => setShowProgressionWarning(false)}
+        />
       </div>
     </dialog>
   );
