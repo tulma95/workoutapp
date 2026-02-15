@@ -56,6 +56,25 @@ export default function DashboardPage() {
         return;
       }
 
+      // Check if all plan exercises have TMs set
+      const existingTMSlugs = new Set(tms.map(tm => tm.exercise));
+      const tmExercisesMap = new Map<number, { slug: string; exercise: typeof plan.days[0]['exercises'][0]['tmExercise'] }>();
+      for (const day of plan.days) {
+        for (const ex of day.exercises) {
+          if (!tmExercisesMap.has(ex.tmExerciseId)) {
+            tmExercisesMap.set(ex.tmExerciseId, { slug: ex.tmExercise.slug, exercise: ex.tmExercise });
+          }
+        }
+      }
+      const missingTMs = Array.from(tmExercisesMap.values())
+        .filter(({ slug }) => !existingTMSlugs.has(slug))
+        .map(({ exercise }) => exercise);
+
+      if (missingTMs.length > 0) {
+        navigate('/setup', { state: { missingTMs } });
+        return;
+      }
+
       setActivePlan(plan);
       setTrainingMaxes(tms);
       setCurrentWorkout(workout);
