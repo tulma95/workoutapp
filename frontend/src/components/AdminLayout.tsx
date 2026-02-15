@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router';
 import type { ReactNode } from 'react';
+import { ToastProvider } from './Toast';
 import './AdminLayout.css';
 
 interface AdminLayoutProps {
@@ -13,6 +14,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const isExercisesActive = location.pathname === '/admin/exercises';
 
   return (
+    <ToastProvider>
     <div className="admin-layout">
       <header className="admin-header">
         <div className="admin-header-content">
@@ -40,5 +42,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
       <main className="admin-main">{children}</main>
     </div>
+    </ToastProvider>
   );
 }
