@@ -51,6 +51,9 @@ export default function PlanEditorPage() {
   const [showExercisePicker, setShowExercisePicker] = useState(false);
   const [exerciseSearch, setExerciseSearch] = useState('');
 
+  // Exercise picker dialog
+  const exercisePickerRef = useRef<HTMLDialogElement>(null);
+
   // Set scheme editor
   const [editingSets, setEditingSets] = useState<{
     dayNumber: number;
@@ -72,6 +75,26 @@ export default function PlanEditorPage() {
   }
 
   const blocker = useBlocker(() => isDirtyRef.current);
+
+  useEffect(() => {
+    const dialog = exercisePickerRef.current;
+    if (!dialog) return;
+
+    if (showExercisePicker) {
+      dialog.showModal();
+    } else {
+      dialog.close();
+    }
+  }, [showExercisePicker]);
+
+  useEffect(() => {
+    const dialog = exercisePickerRef.current;
+    if (!dialog) return;
+
+    const handleClose = () => setShowExercisePicker(false);
+    dialog.addEventListener('close', handleClose);
+    return () => dialog.removeEventListener('close', handleClose);
+  }, []);
 
   useEffect(() => {
     loadExercises();
@@ -719,41 +742,42 @@ export default function PlanEditorPage() {
         )}
       </div>
 
-      {showExercisePicker && (
-        <div className="exercise-picker-modal" onClick={() => setShowExercisePicker(false)}>
-          <div className="exercise-picker-content" onClick={(e) => e.stopPropagation()}>
-            <div className="exercise-picker-header">
-              <h3>Add Exercise</h3>
-              <button onClick={() => setShowExercisePicker(false)}>×</button>
-            </div>
+      <dialog
+        ref={exercisePickerRef}
+        className="exercise-picker-dialog"
+        onClick={(e) => { if (e.target === exercisePickerRef.current) setShowExercisePicker(false); }}
+      >
+        <div className="exercise-picker-content">
+          <div className="exercise-picker-header">
+            <h3>Add Exercise</h3>
+            <button onClick={() => setShowExercisePicker(false)}>×</button>
+          </div>
 
-            <input
-              type="text"
-              className="exercise-search"
-              placeholder="Search exercises..."
-              value={exerciseSearch}
-              onChange={(e) => setExerciseSearch(e.target.value)}
-              autoFocus
-            />
+          <input
+            type="text"
+            className="exercise-search"
+            placeholder="Search exercises..."
+            value={exerciseSearch}
+            onChange={(e) => setExerciseSearch(e.target.value)}
+          />
 
-            <div className="exercise-picker-list">
-              {filteredExercises.map((ex) => (
-                <button
-                  key={ex.id}
-                  className="exercise-picker-item"
-                  onClick={() => addExerciseToDay(ex)}
-                >
-                  <div className="exercise-picker-item-name">{ex.name}</div>
-                  <div className="exercise-picker-item-meta">
-                    {ex.muscleGroup && <span>{ex.muscleGroup}</span>}
-                    <span className="exercise-category">{ex.category}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
+          <div className="exercise-picker-list">
+            {filteredExercises.map((ex) => (
+              <button
+                key={ex.id}
+                className="exercise-picker-item"
+                onClick={() => addExerciseToDay(ex)}
+              >
+                <div className="exercise-picker-item-name">{ex.name}</div>
+                <div className="exercise-picker-item-meta">
+                  {ex.muscleGroup && <span>{ex.muscleGroup}</span>}
+                  <span className="exercise-category">{ex.category}</span>
+                </div>
+              </button>
+            ))}
           </div>
         </div>
-      )}
+      </dialog>
 
       <ProgressionRulesEditor
         initialRules={progressionRules as ProgressionRule[]}

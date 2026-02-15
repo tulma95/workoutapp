@@ -17,9 +17,6 @@ export default function SetSchemeEditorModal({
 }: SetSchemeEditorModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [sets, setSets] = useState<PlanSet[]>([]);
-  const [bulkCount, setBulkCount] = useState(5);
-  const [bulkPercentage, setBulkPercentage] = useState(50);
-  const [bulkReps, setBulkReps] = useState(10);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -41,29 +38,11 @@ export default function SetSchemeEditorModal({
   }, [initialSets]);
 
   function addSet() {
-    const newSet: PlanSet = {
-      setOrder: sets.length + 1,
-      percentage: 0,
-      reps: 0,
-      isAmrap: false,
-      isProgression: false,
-    };
+    const lastSet = sets[sets.length - 1];
+    const newSet: PlanSet = lastSet
+      ? { ...lastSet, setOrder: sets.length + 1, isAmrap: false, isProgression: false }
+      : { setOrder: 1, percentage: 0, reps: 0, isAmrap: false, isProgression: false };
     setSets([...sets, newSet]);
-  }
-
-  function bulkAddSets() {
-    const startOrder = sets.length + 1;
-    const newSets: PlanSet[] = [];
-    for (let i = 0; i < bulkCount; i++) {
-      newSets.push({
-        setOrder: startOrder + i,
-        percentage: bulkPercentage / 100,
-        reps: bulkReps,
-        isAmrap: false,
-        isProgression: false,
-      });
-    }
-    setSets([...sets, ...newSets]);
   }
 
   function removeSet(setOrder: number) {
@@ -106,30 +85,6 @@ export default function SetSchemeEditorModal({
         </div>
 
         <div className="set-scheme-body">
-          <div className="bulk-add-row">
-            <label>
-              Add
-              <input type="number" min="1" max="20" value={bulkCount}
-                onChange={(e) => setBulkCount(parseInt(e.target.value, 10) || 1)}
-                className="bulk-input" />
-            </label>
-            <label>
-              sets at
-              <input type="number" min="0" max="100" value={bulkPercentage}
-                onChange={(e) => setBulkPercentage(parseInt(e.target.value, 10) || 0)}
-                className="bulk-input" />
-              %
-            </label>
-            <label>
-              for
-              <input type="number" min="1" max="100" value={bulkReps}
-                onChange={(e) => setBulkReps(parseInt(e.target.value, 10) || 1)}
-                className="bulk-input" />
-              reps
-            </label>
-            <button onClick={bulkAddSets} className="btn-bulk-add">+ Add</button>
-          </div>
-
           {sets.length === 0 ? (
             <div className="sets-empty">
               No sets defined. Click "Add Set" to get started.
@@ -139,11 +94,11 @@ export default function SetSchemeEditorModal({
               <table className="sets-table">
                 <thead>
                   <tr>
-                    <th>Set</th>
-                    <th>% of TM</th>
+                    <th>#</th>
+                    <th>%</th>
                     <th>Reps</th>
                     <th>AMRAP</th>
-                    <th title="Mark which set determines training max progression">Progression</th>
+                    <th title="Mark which set determines training max progression">Prog</th>
                     <th></th>
                   </tr>
                 </thead>

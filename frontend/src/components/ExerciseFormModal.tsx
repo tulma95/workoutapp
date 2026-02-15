@@ -28,6 +28,7 @@ export function ExerciseFormModal({ exercise, onClose, onSubmit }: ExerciseFormM
   const [isUpperBody, setIsUpperBody] = useState(exercise?.isUpperBody ?? true);
   const [autoSlug, setAutoSlug] = useState(!exercise);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -52,9 +53,10 @@ export function ExerciseFormModal({ exercise, onClose, onSubmit }: ExerciseFormM
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
 
     if (!name.trim() || !slug.trim()) {
-      alert('Name and slug are required');
+      setError('Name and slug are required');
       return;
     }
 
@@ -70,8 +72,8 @@ export function ExerciseFormModal({ exercise, onClose, onSubmit }: ExerciseFormM
 
       await onSubmit(input);
       onClose();
-    } catch (error: any) {
-      alert(error.message);
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setSubmitting(false);
     }
@@ -101,7 +103,6 @@ export function ExerciseFormModal({ exercise, onClose, onSubmit }: ExerciseFormM
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Bench Press"
               required
-              autoFocus
             />
           </div>
 
@@ -154,6 +155,8 @@ export function ExerciseFormModal({ exercise, onClose, onSubmit }: ExerciseFormM
               <span>Upper Body Exercise</span>
             </label>
           </div>
+
+          {error && <div className="form-error">{error}</div>}
 
           <div className="form-actions">
             <button type="button" onClick={onClose} className="btn-secondary" disabled={submitting}>

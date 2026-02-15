@@ -139,6 +139,56 @@
   border-color: rgb(239, 68, 68);
 }
 
+/* Card list (hidden on desktop, shown on mobile) */
+.exercise-card-list {
+  display: none;
+}
+
+.exercise-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.exercise-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.exercise-card__name {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.exercise-card__slug {
+  font-family: monospace;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  margin-top: 0.125rem;
+}
+
+.exercise-card__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.exercise-card__badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.exercise-card__muscle {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
   .exercise-list-page {
@@ -155,17 +205,10 @@
   }
 
   .exercise-table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    display: none;
   }
 
-  .exercise-table {
-    min-width: 600px;
-  }
-
-  .exercise-table th,
-  .exercise-table td {
-    padding: 0.75rem 0.5rem;
-    font-size: 0.875rem;
+  .exercise-card-list {
+    display: block;
   }
 }

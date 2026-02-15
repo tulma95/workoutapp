@@ -104,18 +104,6 @@ class AdminPlanEditor {
   }
 
   // Set scheme modal locators
-  get bulkCountInput() {
-    return this.setSchemeModal.locator('.bulk-add-row .bulk-input').nth(0);
-  }
-  get bulkPercentageInput() {
-    return this.setSchemeModal.locator('.bulk-add-row .bulk-input').nth(1);
-  }
-  get bulkRepsInput() {
-    return this.setSchemeModal.locator('.bulk-add-row .bulk-input').nth(2);
-  }
-  get bulkAddButton() {
-    return this.setSchemeModal.getByRole('button', { name: /^\+ add$/i });
-  }
   get addSetButton() {
     return this.setSchemeModal.getByRole('button', { name: /add set/i });
   }
@@ -146,13 +134,22 @@ class AdminPlanEditor {
     await this.exercisePickerItems.first().click();
   }
 
-  async bulkAddSets(exerciseIndex: number, count: number, percentage: number, reps: number) {
+  async addSets(exerciseIndex: number, count: number, percentage: number, reps: number) {
     await this.editSetsButton(exerciseIndex).click();
     await this.setSchemeModal.waitFor();
-    await this.bulkCountInput.fill(String(count));
-    await this.bulkPercentageInput.fill(String(percentage));
-    await this.bulkRepsInput.fill(String(reps));
-    await this.bulkAddButton.click();
+
+    for (let i = 0; i < count; i++) {
+      await this.addSetButton.click();
+    }
+
+    // Fill percentage and reps for each set
+    const percentageInputs = this.setSchemeModal.locator('.percentage-input');
+    const repsInputs = this.setSchemeModal.locator('.reps-input');
+    for (let i = 0; i < count; i++) {
+      await percentageInputs.nth(i).fill(String(percentage));
+      await repsInputs.nth(i).fill(String(reps));
+    }
+
     await this.saveSetsButton.click();
     await expect(this.setSchemeModal).not.toBeVisible();
   }
@@ -242,7 +239,7 @@ test.describe('Admin Plan Editor', () => {
 
     // Add exercise with sets
     await admin.addExercise('Bench');
-    await admin.bulkAddSets(1, 3, 65, 5);
+    await admin.addSets(1, 3, 65, 5);
 
     // Verify sets indicator
     await expect(admin.exerciseRows.first()).toContainText('3 sets');
@@ -296,7 +293,7 @@ test.describe('Admin Plan Editor', () => {
 
     // Add exercise + sets on Day 1
     await admin.addExercise('Bench');
-    await admin.bulkAddSets(1, 3, 65, 5);
+    await admin.addSets(1, 3, 65, 5);
 
     // Switch to Day 2 and back
     await admin.dayTab(2).click();
@@ -308,7 +305,7 @@ test.describe('Admin Plan Editor', () => {
     // Add exercise + sets on Day 2 for valid save
     await admin.dayTab(2).click();
     await admin.addExercise('Squat');
-    await admin.bulkAddSets(1, 3, 70, 5);
+    await admin.addSets(1, 3, 70, 5);
 
     // Save
     await admin.saveButton.click();
@@ -349,7 +346,7 @@ test.describe('Admin Plan Editor', () => {
     await admin.daysPerWeekInput.fill('1');
 
     await admin.addExercise('Bench');
-    await admin.bulkAddSets(1, 3, 65, 5);
+    await admin.addSets(1, 3, 65, 5);
 
     // Save
     await admin.saveButton.click();
@@ -399,7 +396,7 @@ test.describe('Admin Plan Editor', () => {
     await expect(admin.incompleteDayTabs()).toHaveCount(1);
 
     // Add sets → complete (green)
-    await admin.bulkAddSets(1, 3, 65, 5);
+    await admin.addSets(1, 3, 65, 5);
     await expect(admin.completeDayTabs()).toHaveCount(1);
     await expect(admin.incompleteDayTabs()).toHaveCount(0);
   });
@@ -425,8 +422,8 @@ test.describe('Admin Plan Editor', () => {
     await expect(admin.ruleIncrease(1)).toHaveValue('2.5');
   });
 
-  // 9. Set scheme — bulk add
-  test('bulk-add creates multiple sets with correct values', async ({ admin }) => {
+  // 9. Set scheme — add set copies previous values
+  test('add set copies values from previous set', async ({ admin }) => {
     await goToCreatePlan(admin);
     await admin.nameInput.fill(uniquePlanName());
     await admin.daysPerWeekInput.fill('1');
@@ -437,21 +434,18 @@ test.describe('Admin Plan Editor', () => {
     await admin.editSetsButton(1).click();
     await admin.setSchemeModal.waitFor();
 
-    // Bulk add 5 sets at 50% for 10 reps
-    await admin.bulkCountInput.fill('5');
-    await admin.bulkPercentageInput.fill('50');
-    await admin.bulkRepsInput.fill('10');
-    await admin.bulkAddButton.click();
+    // Add first set and fill values
+    await admin.addSetButton.click();
+    const percentageInputs = admin.setSchemeModal.locator('.percentage-input');
+    const repsInputs = admin.setSchemeModal.locator('.reps-input');
+    await percentageInputs.first().fill('65');
+    await repsInputs.first().fill('5');
 
-    // Verify 5 rows
-    await expect(admin.setRows).toHaveCount(5);
-
-    // Verify values
-    for (let i = 0; i < 5; i++) {
-      await expect(admin.setRows.nth(i).locator('.percentage-input')).toHaveValue('50');
-      await expect(admin.setRows.nth(i).locator('.reps-input')).toHaveValue('10');
-      await expect(admin.setRows.nth(i).locator('.set-order-cell')).toContainText(String(i + 1));
-    }
+    // Add second set — should copy percentage and reps from first
+    await admin.addSetButton.click();
+    await expect(admin.setRows).toHaveCount(2);
+    await expect(percentageInputs.nth(1)).toHaveValue('65');
+    await expect(repsInputs.nth(1)).toHaveValue('5');
   });
 
   // 10. Copy sets between exercises
@@ -465,7 +459,7 @@ test.describe('Admin Plan Editor', () => {
     await admin.addExercise('Squat');
 
     // Add sets to exercise 1
-    await admin.bulkAddSets(1, 3, 70, 5);
+    await admin.addSets(1, 3, 70, 5);
 
     // Copy to exercise 2
     const copySelect = admin.copySelect(2);
@@ -487,7 +481,7 @@ test.describe('Admin Plan Editor', () => {
     await admin.daysPerWeekInput.fill('1');
 
     await admin.addExercise('Bench');
-    await admin.bulkAddSets(1, 3, 65, 5);
+    await admin.addSets(1, 3, 65, 5);
 
     // Dismiss confirmation — exercise stays
     admin.page.once('dialog', (dialog) => dialog.dismiss());
@@ -564,10 +558,10 @@ test.describe('Admin Plan Editor', () => {
     await admin.nameInput.fill(planName);
     await admin.daysPerWeekInput.fill('2');
     await admin.addExercise('Bench');
-    await admin.bulkAddSets(1, 3, 65, 5);
+    await admin.addSets(1, 3, 65, 5);
     await admin.dayTab(2).click();
     await admin.addExercise('Squat');
-    await admin.bulkAddSets(1, 3, 70, 5);
+    await admin.addSets(1, 3, 70, 5);
     await admin.saveButton.click();
     await expect(admin.successToast).toBeVisible();
     await admin.page.waitForURL(/\/admin\/plans\/\d+/);

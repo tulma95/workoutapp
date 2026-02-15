@@ -84,6 +84,7 @@ export default function ExerciseListPage() {
           </button>
         </div>
       ) : (
+        <>
         <div className="exercise-table-container">
           <table className="exercise-table">
             <thead>
@@ -133,6 +134,47 @@ export default function ExerciseListPage() {
             </tbody>
           </table>
         </div>
+
+        <div className="exercise-card-list">
+          {exercises.map((exercise) => (
+            <div key={exercise.id} className="exercise-card">
+              <div className="exercise-card__header">
+                <div>
+                  <div className="exercise-card__name">{exercise.name}</div>
+                  <div className="exercise-card__slug">{exercise.slug}</div>
+                </div>
+                <div className="exercise-card__actions">
+                  <button
+                    className="btn-icon"
+                    onClick={() => handleEdit(exercise)}
+                    title="Edit"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    className="btn-icon btn-danger"
+                    onClick={() => handleDelete(exercise)}
+                    title="Delete"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+              <div className="exercise-card__badges">
+                <span className={`badge badge-${exercise.category}`}>
+                  {exercise.category}
+                </span>
+                <span className={`badge badge-${exercise.isUpperBody ? 'upper' : 'lower'}`}>
+                  {exercise.isUpperBody ? 'Upper' : 'Lower'}
+                </span>
+                {exercise.muscleGroup && (
+                  <span className="exercise-card__muscle">{exercise.muscleGroup}</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        </>
       )}
 
       {showModal && (

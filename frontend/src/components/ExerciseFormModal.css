@@ -46,8 +46,8 @@
   color: var(--text-muted);
   cursor: pointer;
   padding: 0;
-  width: 2rem;
-  height: 2rem;
+  min-width: 3rem;
+  min-height: 3rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -111,8 +111,8 @@
 }
 
 .checkbox-label input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
+  width: 1.5rem;
+  height: 1.5rem;
   cursor: pointer;
 }
 
@@ -120,6 +120,15 @@
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-primary);
+}
+
+.form-error {
+  background: #fef2f2;
+  color: #991b1b;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  border: 1px solid #fecaca;
 }
 
 .form-actions {
