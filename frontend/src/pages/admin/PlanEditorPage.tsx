@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { getAdminPlan, createPlan, updatePlan, setProgressionRules as saveProgressionRules, PlanDayExerciseInput, PlanDayInput, PlanSet, ProgressionRule } from '../../api/adminPlans';
 import { getExercises, Exercise } from '../../api/exercises';
 import SetSchemeEditorModal from '../../components/SetSchemeEditorModal';
 import ProgressionRulesEditor from '../../components/ProgressionRulesEditor';
+import { useToast } from '../../components/Toast';
 import './PlanEditorPage.css';
 
 interface EditorExercise extends PlanDayExerciseInput {
@@ -26,7 +27,9 @@ interface EditorProgressionRule {
 export default function PlanEditorPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const toast = useToast();
   const isEditMode = Boolean(id);
+  const initialized = useRef(false);
 
   // Plan metadata
   const [name, setName] = useState('');
@@ -59,12 +62,14 @@ export default function PlanEditorPage() {
   const [loading, setLoading] = useState(isEditMode);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   useEffect(() => {
     loadExercises();
     if (isEditMode) {
       loadPlan();
-    } else {
+    } else if (!initialized.current) {
+      initialized.current = true;
       initializeNewPlan();
     }
   }, [id]);
@@ -212,13 +217,22 @@ export default function PlanEditorPage() {
   }
 
   function removeExercise(dayNumber: number, tempId: string) {
-    setDays(days.map(day => {
-      if (day.dayNumber !== dayNumber) return day;
+    const day = days.find(d => d.dayNumber === dayNumber);
+    const exercise = day?.exercises.find(ex => ex.tempId === tempId);
 
-      const filtered = day.exercises.filter(ex => ex.tempId !== tempId);
-      // Re-number sort orders
+    if (exercise && exercise.sets.length > 0) {
+      const confirmed = window.confirm(
+        `This exercise has ${exercise.sets.length} sets configured. Delete it?`
+      );
+      if (!confirmed) return;
+    }
+
+    setDays(days.map(d => {
+      if (d.dayNumber !== dayNumber) return d;
+
+      const filtered = d.exercises.filter(ex => ex.tempId !== tempId);
       return {
-        ...day,
+        ...d,
         exercises: filtered.map((ex, idx) => ({ ...ex, sortOrder: idx + 1 })),
       };
     }));
@@ -313,25 +327,37 @@ export default function PlanEditorPage() {
     setEditingSets(null);
   }
 
-  async function handleSave() {
-    if (!name.trim()) {
-      alert('Plan name is required');
-      return;
-    }
-    if (!slug.trim()) {
-      alert('Plan slug is required');
-      return;
-    }
+  function copySetsFrom(dayNumber: number, sourceTempId: string, targetTempId: string) {
+    const day = days.find(d => d.dayNumber === dayNumber);
+    if (!day) return;
+    const source = day.exercises.find(ex => ex.tempId === sourceTempId);
+    if (!source) return;
 
-    // Validate all exercises have at least one set
+    const copiedSets = source.sets.map(set => ({ ...set }));
+    updateExerciseField(dayNumber, targetTempId, 'sets', copiedSets);
+  }
+
+  async function handleSave() {
+    const errors: string[] = [];
+
+    if (!name.trim()) errors.push('Plan name is required');
+    if (!slug.trim()) errors.push('Plan slug is required');
+
     for (const day of days) {
       for (const ex of day.exercises) {
         if (ex.sets.length === 0) {
-          alert(`Exercise in Day ${day.dayNumber} has no sets defined. Please add sets or remove the exercise.`);
-          return;
+          const exerciseData = exercises.find(e => e.id === ex.exerciseId);
+          errors.push(`Day ${day.dayNumber}: ${exerciseData?.name || 'Exercise'} has no sets defined`);
         }
       }
     }
+
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      toast.error(`Plan has ${errors.length} validation error${errors.length > 1 ? 's' : ''}`);
+      return;
+    }
+    setValidationErrors([]);
 
     setSaving(true);
     setError('');
@@ -355,11 +381,11 @@ export default function PlanEditorPage() {
       if (isEditMode && id) {
         await updatePlan(parseInt(id, 10), payload);
         planId = parseInt(id, 10);
-        alert('Plan updated successfully');
+        toast.success('Plan updated successfully');
       } else {
         const created = await createPlan(payload);
         planId = created.id;
-        alert('Plan created successfully');
+        toast.success('Plan created successfully');
       }
 
       // Save progression rules if there are any
@@ -399,15 +425,18 @@ export default function PlanEditorPage() {
     <div className="plan-editor-page">
       <div className="plan-editor-header">
         <h2>{isEditMode ? 'Edit Plan' : 'Create New Plan'}</h2>
-        <button
-          className="btn-save-plan"
-          onClick={handleSave}
-          disabled={saving}
-        >
-          {saving ? 'Saving...' : 'Save Plan'}
-        </button>
       </div>
 
+      {validationErrors.length > 0 && (
+        <div className="validation-errors">
+          <strong>Please fix the following errors:</strong>
+          <ul>
+            {validationErrors.map((err, idx) => (
+              <li key={idx}>{err}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       {error && <div className="plan-editor-error">{error}</div>}
 
       <div className="plan-metadata-section">
@@ -423,7 +452,7 @@ export default function PlanEditorPage() {
           </label>
         </div>
 
-        <div className="form-row">
+        <div className="form-row slug-row">
           <label>
             Slug *
             <input
@@ -433,6 +462,14 @@ export default function PlanEditorPage() {
               placeholder="e.g., nsuns-4day-lp"
             />
           </label>
+          {slugManuallyEdited && (
+            <button className="btn-reset-slug" onClick={() => {
+              setSlugManuallyEdited(false);
+              setSlug(generateSlug(name));
+            }}>
+              Auto-generate
+            </button>
+          )}
         </div>
 
         <div className="form-row">
@@ -472,15 +509,26 @@ export default function PlanEditorPage() {
 
       <div className="day-tabs-section">
         <div className="day-tabs">
-          {days.map((day) => (
-            <button
-              key={day.dayNumber}
-              className={`day-tab ${activeDay === day.dayNumber ? 'day-tab--active' : ''}`}
-              onClick={() => setActiveDay(day.dayNumber)}
-            >
-              Day {day.dayNumber}
-            </button>
-          ))}
+          {days.map((day) => {
+            const hasExercises = day.exercises.length > 0;
+            const allHaveSets = hasExercises && day.exercises.every(ex => ex.sets.length > 0);
+
+            let statusClass = '';
+            if (allHaveSets) statusClass = 'day-tab--complete';
+            else if (hasExercises) statusClass = 'day-tab--incomplete';
+
+            return (
+              <button
+                key={day.dayNumber}
+                className={`day-tab ${activeDay === day.dayNumber ? 'day-tab--active' : ''} ${statusClass}`}
+                onClick={() => setActiveDay(day.dayNumber)}
+              >
+                {day.name && day.name !== `Day ${day.dayNumber}`
+                  ? `Day ${day.dayNumber}: ${day.name}`
+                  : `Day ${day.dayNumber}`}
+              </button>
+            );
+          })}
         </div>
 
         {currentDayData && (
@@ -586,14 +634,41 @@ export default function PlanEditorPage() {
                       {ex.sets.length > 0 ? (
                         <span>{ex.sets.length} sets defined</span>
                       ) : (
-                        <span className="warning">⚠️ No sets defined</span>
+                        <span className="warning">No sets defined</span>
                       )}
-                      <button
-                        className="btn-edit-sets"
-                        onClick={() => openSetSchemeEditor(activeDay, ex.tempId)}
-                      >
-                        Edit Sets
-                      </button>
+                      <div className="exercise-sets-actions">
+                        <button
+                          className="btn-edit-sets"
+                          onClick={() => openSetSchemeEditor(activeDay, ex.tempId)}
+                        >
+                          Edit Sets
+                        </button>
+                        {(() => {
+                          const otherWithSets = currentDayData!.exercises.filter(
+                            other => other.tempId !== ex.tempId && other.sets.length > 0
+                          );
+                          if (otherWithSets.length === 0) return null;
+                          return (
+                            <select
+                              className="copy-sets-select"
+                              value=""
+                              onChange={(e) => {
+                                if (e.target.value) copySetsFrom(activeDay, e.target.value, ex.tempId);
+                              }}
+                            >
+                              <option value="">Copy sets from...</option>
+                              {otherWithSets.map(other => {
+                                const otherExData = exercises.find(e => e.id === other.exerciseId);
+                                return (
+                                  <option key={other.tempId} value={other.tempId}>
+                                    {otherExData?.name || 'Exercise'} ({other.sets.length} sets)
+                                  </option>
+                                );
+                              })}
+                            </select>
+                          );
+                        })()}
+                      </div>
                     </div>
                   </div>
                 );
@@ -644,6 +719,16 @@ export default function PlanEditorPage() {
         exercises={exercises}
         onChange={setProgressionRules}
       />
+
+      <div className="sticky-save-bar">
+        <button
+          className="btn-save-plan"
+          onClick={handleSave}
+          disabled={saving}
+        >
+          {saving ? 'Saving...' : 'Save Plan'}
+        </button>
+      </div>
 
       {editingSets && (
         <SetSchemeEditorModal

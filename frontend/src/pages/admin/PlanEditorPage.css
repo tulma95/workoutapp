@@ -263,6 +263,8 @@
   font-size: 0.875rem;
   min-height: 32px;
   min-width: 32px;
+  color: var(--admin-accent, #7c3aed);
+  font-weight: 600;
 }
 
 .exercise-row-actions button:hover:not(:disabled) {
@@ -270,8 +272,9 @@
 }
 
 .exercise-row-actions button:disabled {
-  opacity: 0.3;
+  opacity: 0.25;
   cursor: not-allowed;
+  color: var(--text-muted);
 }
 
 .exercise-row-actions .btn-remove {
@@ -321,6 +324,12 @@
 .exercise-sets-info .warning {
   color: #ea580c;
   font-weight: 500;
+}
+
+.exercise-sets-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }
 
 .btn-edit-sets {
@@ -437,6 +446,92 @@
 
 .exercise-category {
   text-transform: capitalize;
+}
+
+/* Validation errors */
+.validation-errors {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  color: #991b1b;
+}
+
+.validation-errors ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.validation-errors li {
+  margin-bottom: 0.25rem;
+}
+
+/* Day tab status indicators */
+.day-tab--complete::after {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #16a34a;
+  margin-left: 0.5rem;
+}
+
+.day-tab--incomplete::after {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ea580c;
+  margin-left: 0.5rem;
+}
+
+/* Day tab name truncation */
+.day-tab {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Sticky save bar */
+.sticky-save-bar {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-color);
+  padding: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+  border-radius: 0 0 12px 12px;
+  z-index: 10;
+}
+
+/* Slug auto-generate button */
+.slug-row {
+  position: relative;
+}
+
+.btn-reset-slug {
+  background: transparent;
+  border: none;
+  color: var(--admin-accent, #7c3aed);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0.25rem 0;
+}
+
+/* Copy sets dropdown */
+.copy-sets-select {
+  padding: 0.375rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  background: var(--bg-primary);
+  color: var(--text-muted);
+  min-height: 32px;
 }
 
 @media (max-width: 768px) {
