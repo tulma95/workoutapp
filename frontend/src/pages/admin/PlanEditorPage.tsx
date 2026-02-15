@@ -70,6 +70,7 @@ export default function PlanEditorPage() {
   const [isDirty, setIsDirtyState] = useState(false);
   const isDirtyRef = useRef(false);
   const [removingExercise, setRemovingExercise] = useState<{ dayNumber: number; tempId: string; setCount: number } | null>(null);
+  const [metadataCollapsed, setMetadataCollapsed] = useState(isEditMode);
 
   function setIsDirty(value: boolean) {
     isDirtyRef.current = value;
@@ -480,6 +481,24 @@ export default function PlanEditorPage() {
     }
   }
 
+  function formatSetSummary(sets: PlanSet[]): string {
+    if (sets.length === 0) return '';
+    const percentages = sets.map(s => Math.round(s.percentage * 100));
+    const minPct = Math.min(...percentages);
+    const maxPct = Math.max(...percentages);
+    const pctRange = minPct === maxPct ? `${minPct}%` : `${minPct}-${maxPct}%`;
+    const amrapSets = sets.filter(s => s.isAmrap);
+    const parts = [`${sets.length} sets`, pctRange];
+    if (amrapSets.length > 0) {
+      parts.push(`AMRAP set ${amrapSets.map(s => s.setOrder).join(', ')}`);
+    }
+    const progSets = sets.filter(s => s.isProgression);
+    if (progSets.length > 0) {
+      parts.push('Progression');
+    }
+    return parts.join(' · ');
+  }
+
   const filteredExercises = exercises.filter(ex =>
     ex.name.toLowerCase().includes(exerciseSearch.toLowerCase())
   );
@@ -508,72 +527,88 @@ export default function PlanEditorPage() {
       )}
       {error && <div className="plan-editor-error">{error}</div>}
 
-      <div className="plan-metadata-section">
-        <div className="form-row">
-          <label>
-            Plan Name *
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => handleNameChange(e.target.value)}
-              placeholder="e.g., nSuns 4-Day LP"
-            />
-          </label>
-        </div>
+      <div className={`plan-metadata-section ${metadataCollapsed ? 'plan-metadata-section--collapsed' : ''}`}>
+        <button
+          className="metadata-toggle"
+          onClick={() => setMetadataCollapsed(!metadataCollapsed)}
+        >
+          <span className="metadata-toggle-label">
+            {metadataCollapsed ? '▸' : '▾'} Plan Details
+            {metadataCollapsed && name && (
+              <span className="metadata-summary"> — {name} ({daysPerWeek} days/week)</span>
+            )}
+          </span>
+        </button>
 
-        <div className="form-row slug-row">
-          <label>
-            Slug *
-            <input
-              type="text"
-              value={slug}
-              onChange={(e) => handleSlugChange(e.target.value)}
-              placeholder="e.g., nsuns-4day-lp"
-            />
-          </label>
-          {slugManuallyEdited && (
-            <button className="btn-reset-slug" onClick={() => {
-              setSlugManuallyEdited(false);
-              setSlug(generateSlug(name));
-            }}>
-              Auto-generate
-            </button>
-          )}
-        </div>
+        {!metadataCollapsed && (
+          <>
+            <div className="form-row">
+              <label>
+                Plan Name *
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => handleNameChange(e.target.value)}
+                  placeholder="e.g., nSuns 4-Day LP"
+                />
+              </label>
+            </div>
 
-        <div className="form-row">
-          <label>
-            Description
-            <textarea
-              value={description}
-              onChange={(e) => { setDescription(e.target.value); setIsDirty(true); }}
-              placeholder="Describe this workout plan..."
-              rows={3}
-            />
-          </label>
-        </div>
+            <div className="form-row slug-row">
+              <label>
+                Slug *
+                <input
+                  type="text"
+                  value={slug}
+                  onChange={(e) => handleSlugChange(e.target.value)}
+                  placeholder="e.g., nsuns-4day-lp"
+                />
+              </label>
+              {slugManuallyEdited && (
+                <button className="btn-reset-slug" onClick={() => {
+                  setSlugManuallyEdited(false);
+                  setSlug(generateSlug(name));
+                }}>
+                  Auto-generate
+                </button>
+              )}
+            </div>
 
-        <div className="form-row-inline">
-          <label>
-            Days per Week *
-            <input
-              type="number"
-              min="1"
-              max="7"
-              value={daysPerWeek}
-              onChange={(e) => handleDaysPerWeekChange(parseInt(e.target.value, 10))}
-            />
-          </label>
+            <div className="form-row">
+              <label>
+                Description
+                <textarea
+                  value={description}
+                  onChange={(e) => { setDescription(e.target.value); setIsDirty(true); }}
+                  placeholder="Describe this workout plan..."
+                  rows={3}
+                />
+              </label>
+            </div>
 
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              checked={isPublic}
-              onChange={(e) => { setIsPublic(e.target.checked); setIsDirty(true); }}
-            />
-            <span>Public (visible to users)</span>
-          </label>
-        </div>
+            <div className="form-row-inline">
+              <label>
+                Days per Week *
+                <input
+                  type="number"
+                  min="1"
+                  max="7"
+                  value={daysPerWeek}
+                  onChange={(e) => handleDaysPerWeekChange(parseInt(e.target.value, 10))}
+                />
+              </label>
+
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={isPublic}
+                  onChange={(e) => { setIsPublic(e.target.checked); setIsDirty(true); }}
+                />
+                <span>Public (visible to users)</span>
+              </label>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="day-tabs-section">
@@ -595,6 +630,9 @@ export default function PlanEditorPage() {
                 {day.name && day.name !== `Day ${day.dayNumber}`
                   ? `Day ${day.dayNumber}: ${day.name}`
                   : `Day ${day.dayNumber}`}
+                {day.exercises.length > 0 && (
+                  <span className="day-tab-count">({day.exercises.length})</span>
+                )}
               </button>
             );
           })}
@@ -636,9 +674,9 @@ export default function PlanEditorPage() {
                 if (!exercise) return null;
 
                 return (
-                  <div key={ex.tempId} className="exercise-row">
+                  <div key={ex.tempId} className={`exercise-row ${ex.sets.length > 0 ? 'exercise-row--has-sets' : 'exercise-row--no-sets'}`}>
                     <div className="exercise-row-header">
-                      <span className="exercise-name">{exercise.name}</span>
+                      <span className="exercise-name">{idx + 1}. {exercise.name}</span>
                       <div className="exercise-row-actions">
                         <button
                           onClick={() => moveExerciseUp(activeDay, ex.tempId)}
@@ -701,9 +739,9 @@ export default function PlanEditorPage() {
 
                     <div className="exercise-sets-info">
                       {ex.sets.length > 0 ? (
-                        <span>{ex.sets.length} sets defined</span>
+                        <span className="sets-summary">{formatSetSummary(ex.sets)}</span>
                       ) : (
-                        <span className="warning">No sets defined</span>
+                        <span className="sets-warning-badge">No sets defined</span>
                       )}
                       <div className="exercise-sets-actions">
                         <button
