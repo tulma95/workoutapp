@@ -105,7 +105,9 @@
 }
 
 .workout-calendar__day--outside {
-  opacity: 0.3;
+  background-color: transparent;
+  border-color: transparent;
+  color: var(--border);
 }
 
 .workout-calendar__day--today {
@@ -157,22 +159,28 @@
 }
 
 /* View Transition API animations */
+/* Prevent default additive blending between old/new snapshots */
+::view-transition-old(calendar-grid),
+::view-transition-new(calendar-grid) {
+  mix-blend-mode: normal;
+}
+
 /* Next month: slide left (old exits left, new enters from right) */
 :root[data-transition-direction='next']::view-transition-old(calendar-grid) {
-  animation: slideOutLeft 200ms ease-in-out;
+  animation: slideOutLeft 200ms ease-in-out both;
 }
 
 :root[data-transition-direction='next']::view-transition-new(calendar-grid) {
-  animation: slideInRight 200ms ease-in-out;
+  animation: slideInRight 200ms ease-in-out both;
 }
 
 /* Previous month: slide right (old exits right, new enters from left) */
 :root[data-transition-direction='prev']::view-transition-old(calendar-grid) {
-  animation: slideOutRight 200ms ease-in-out;
+  animation: slideOutRight 200ms ease-in-out both;
 }
 
 :root[data-transition-direction='prev']::view-transition-new(calendar-grid) {
-  animation: slideInLeft 200ms ease-in-out;
+  animation: slideInLeft 200ms ease-in-out both;
 }
 
 @keyframes slideOutLeft {
