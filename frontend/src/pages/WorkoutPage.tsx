@@ -101,10 +101,7 @@ export default function WorkoutPage() {
           }
         }
       } catch (err) {
-        const message = err instanceof Error
-          ? err.message
-          : (err && typeof err === 'object' && 'error' in err && typeof (err as Record<string, unknown>).error === 'object' && (err as Record<string, { message?: string }>).error?.message)
-            || 'Failed to load workout';
+        const message = err instanceof Error ? err.message : 'Failed to load workout';
         setError(message)
       } finally {
         setIsLoading(false)
