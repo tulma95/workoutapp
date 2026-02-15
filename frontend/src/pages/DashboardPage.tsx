@@ -189,24 +189,15 @@ export default function DashboardPage() {
         <h2>Workout Days</h2>
         <div className="workout-cards">
           {activePlan?.days.map((day) => {
-            // Get T1 and T2 exercises for this day
-            const t1Exercise = day.exercises.find((ex) => ex.tier === 'T1');
-            const t2Exercise = day.exercises.find((ex) => ex.tier === 'T2');
+            const exerciseNames = day.exercises.map(
+              (ex) => ex.displayName || ex.exercise.name
+            );
 
             return (
               <WorkoutCard
                 key={day.dayNumber}
                 dayNumber={day.dayNumber}
-                t1Exercise={
-                  t1Exercise
-                    ? t1Exercise.displayName || t1Exercise.exercise.name
-                    : 'N/A'
-                }
-                t2Exercise={
-                  t2Exercise
-                    ? t2Exercise.displayName || t2Exercise.exercise.name
-                    : 'N/A'
-                }
+                exercises={exerciseNames}
                 status={getWorkoutStatus(day.dayNumber)}
                 onStart={handleStartWorkout}
               />

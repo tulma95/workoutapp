@@ -2,16 +2,14 @@ import './WorkoutCard.css';
 
 interface WorkoutCardProps {
   dayNumber: number;
-  t1Exercise: string;
-  t2Exercise: string;
+  exercises: string[];
   status: 'upcoming' | 'in_progress' | 'completed';
   onStart: (dayNumber: number) => void;
 }
 
 export default function WorkoutCard({
   dayNumber,
-  t1Exercise,
-  t2Exercise,
+  exercises,
   status,
   onStart,
 }: WorkoutCardProps) {
@@ -25,14 +23,11 @@ export default function WorkoutCard({
       </div>
 
       <div className="workout-card__exercises">
-        <div className="workout-card__exercise">
-          <span className="workout-card__label">T1:</span>
-          <span className="workout-card__name">{t1Exercise}</span>
-        </div>
-        <div className="workout-card__exercise">
-          <span className="workout-card__label">T2:</span>
-          <span className="workout-card__name">{t2Exercise}</span>
-        </div>
+        {exercises.map((name) => (
+          <div key={name} className="workout-card__exercise">
+            <span className="workout-card__name">{name}</span>
+          </div>
+        ))}
       </div>
 
       {status !== 'completed' && (
