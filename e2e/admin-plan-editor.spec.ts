@@ -65,7 +65,7 @@ class AdminPlanEditor {
     this.stayButton = page.getByRole('button', { name: /^stay$/i });
     this.leaveButton = page.getByRole('button', { name: /^leave$/i });
 
-    this.setSchemeModal = page.locator('.set-scheme-content');
+    this.setSchemeModal = page.locator('.set-scheme-modal');
 
     this.progressionRulesSection = page.locator('.progression-rules-editor');
     this.addRuleButton = page.getByRole('button', { name: /add rule/i });

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Exercise, CreateExerciseInput, UpdateExerciseInput } from '../api/exercises';
 import './ExerciseFormModal.css';
 
@@ -19,6 +19,7 @@ function slugify(str: string): string {
 
 export function ExerciseFormModal({ exercise, onClose, onSubmit }: ExerciseFormModalProps) {
   const isEdit = !!exercise;
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   const [name, setName] = useState(exercise?.name || '');
   const [slug, setSlug] = useState(exercise?.slug || '');
@@ -28,7 +29,16 @@ export function ExerciseFormModal({ exercise, onClose, onSubmit }: ExerciseFormM
   const [autoSlug, setAutoSlug] = useState(!exercise);
   const [submitting, setSubmitting] = useState(false);
 
-  // Auto-generate slug from name
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+
+    const handleClose = () => onClose();
+    dialog.addEventListener('close', handleClose);
+    return () => dialog.removeEventListener('close', handleClose);
+  }, []);
+
   useEffect(() => {
     if (autoSlug && name) {
       setSlug(slugify(name));
@@ -67,15 +77,15 @@ export function ExerciseFormModal({ exercise, onClose, onSubmit }: ExerciseFormM
     }
   };
 
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
+  const handleDialogClick = (e: React.MouseEvent<HTMLDialogElement>) => {
+    if (e.target === dialogRef.current) {
       onClose();
     }
   };
 
   return (
-    <div className="modal-overlay" onClick={handleOverlayClick}>
-      <div className="modal-content exercise-form-modal">
+    <dialog ref={dialogRef} className="exercise-form-modal" onClick={handleDialogClick}>
+      <div className="exercise-form-modal__content">
         <div className="modal-header">
           <h2>{isEdit ? 'Edit Exercise' : 'Add Exercise'}</h2>
           <button className="modal-close" onClick={onClose}>&times;</button>
@@ -155,6 +165,6 @@ export function ExerciseFormModal({ exercise, onClose, onSubmit }: ExerciseFormM
           </div>
         </form>
       </div>
-    </div>
+    </dialog>
   );
 }

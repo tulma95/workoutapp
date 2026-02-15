@@ -88,10 +88,10 @@ test.describe('Conflict Dialog', () => {
     await startDay1Workout(page)
     await triggerConflictDialog(page)
 
-    // Click the overlay (not the dialog content)
-    const overlay = page.locator('.conflict-dialog-overlay')
-    await expect(overlay).toBeVisible()
-    await overlay.click({ position: { x: 10, y: 10 } })
+    // Click outside the dialog content (on the transparent dialog backdrop area)
+    const dialog = page.locator('dialog.conflict-dialog')
+    await expect(dialog).toBeVisible()
+    await page.mouse.click(10, 10)
 
     // Should navigate back to dashboard
     await page.waitForURL('/')

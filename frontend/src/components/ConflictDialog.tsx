@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import './ConflictDialog.css';
 
 interface ConflictDialogProps {
@@ -13,9 +14,28 @@ export function ConflictDialog({
   onDiscard,
   onClose,
 }: ConflictDialogProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    dialog.showModal();
+
+    const handleClose = () => onClose();
+    dialog.addEventListener('close', handleClose);
+    return () => dialog.removeEventListener('close', handleClose);
+  }, [onClose]);
+
+  const handleClick = (e: React.MouseEvent<HTMLDialogElement>) => {
+    if (e.target === dialogRef.current) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="conflict-dialog-overlay" onClick={onClose}>
-      <div className="conflict-dialog" onClick={(e) => e.stopPropagation()}>
+    <dialog ref={dialogRef} className="conflict-dialog" onClick={handleClick}>
+      <div className="conflict-dialog__content">
         <h2 className="conflict-dialog__title">Workout in Progress</h2>
         <p className="conflict-dialog__message">
           You have a Day {existingDayNumber} workout in progress. What would you like to do?
@@ -29,6 +49,6 @@ export function ConflictDialog({
           </button>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 }

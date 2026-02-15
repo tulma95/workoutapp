@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { PlanSet } from '../api/adminPlans';
 import './SetSchemeEditorModal.css';
 
@@ -15,13 +15,23 @@ export default function SetSchemeEditorModal({
   onSave,
   onClose,
 }: SetSchemeEditorModalProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const [sets, setSets] = useState<PlanSet[]>([]);
   const [bulkCount, setBulkCount] = useState(5);
   const [bulkPercentage, setBulkPercentage] = useState(50);
   const [bulkReps, setBulkReps] = useState(10);
 
   useEffect(() => {
-    // Clone initial sets with proper ordering
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+
+    const handleClose = () => onClose();
+    dialog.addEventListener('close', handleClose);
+    return () => dialog.removeEventListener('close', handleClose);
+  }, []);
+
+  useEffect(() => {
     const orderedSets = initialSets
       .map(set => ({ ...set }))
       .sort((a, b) => a.setOrder - b.setOrder)
@@ -58,7 +68,6 @@ export default function SetSchemeEditorModal({
 
   function removeSet(setOrder: number) {
     const filtered = sets.filter(s => s.setOrder !== setOrder);
-    // Re-number set orders
     const renumbered = filtered.map((s, idx) => ({ ...s, setOrder: idx + 1 }));
     setSets(renumbered);
   }
@@ -70,7 +79,6 @@ export default function SetSchemeEditorModal({
   }
 
   function handleSave() {
-    // Validation: check for multiple progression sets
     const progressionCount = sets.filter(s => s.isProgression).length;
     if (progressionCount > 1) {
       const confirmed = window.confirm(
@@ -83,9 +91,15 @@ export default function SetSchemeEditorModal({
     onSave(sets);
   }
 
+  function handleBackdropClick(e: React.MouseEvent<HTMLDialogElement>) {
+    if (e.target === dialogRef.current) {
+      onClose();
+    }
+  }
+
   return (
-    <div className="set-scheme-modal" onClick={onClose}>
-      <div className="set-scheme-content" onClick={(e) => e.stopPropagation()}>
+    <dialog className="set-scheme-modal" ref={dialogRef} onClick={handleBackdropClick}>
+      <div className="set-scheme-modal__content">
         <div className="set-scheme-header">
           <h3>Edit Set Scheme: {exerciseName}</h3>
           <button onClick={onClose} className="btn-close">×</button>
@@ -211,6 +225,6 @@ export default function SetSchemeEditorModal({
           </div>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 }

@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react';
 import type { Exercise } from '../api/plans';
 import './PlanSwitchConfirmModal.css';
 
@@ -20,9 +21,27 @@ export function PlanSwitchConfirmModal({
   onConfirm,
   onCancel,
 }: PlanSwitchConfirmModalProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+
+    const handleCancel = () => onCancel();
+    dialog.addEventListener('close', handleCancel);
+    return () => dialog.removeEventListener('close', handleCancel);
+  }, []);
+
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDialogElement>) => {
+    if (e.target === dialogRef.current) {
+      onCancel();
+    }
+  };
+
   return (
-    <div className="modal-overlay" onClick={onCancel}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+    <dialog className="plan-switch-modal" ref={dialogRef} onClick={handleBackdropClick}>
+      <div className="plan-switch-modal__content">
         <div className="modal-header">
           <h2>Switch to {targetPlanName}?</h2>
         </div>
@@ -69,6 +88,6 @@ export function PlanSwitchConfirmModal({
           </button>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 }
