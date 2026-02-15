@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router'
+import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router'
 import { AuthProvider } from './context/AuthContext'
 import PrivateRoute from './components/PrivateRoute'
 import { AdminRoute } from './components/AdminRoute'
@@ -16,55 +16,64 @@ import PlanListPage from './pages/admin/PlanListPage'
 import PlanEditorPage from './pages/admin/PlanEditorPage'
 import ExerciseListPage from './pages/admin/ExerciseListPage'
 
-function App() {
+function AuthWrapper() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-
-          <Route element={<PrivateRoute />}>
-            <Route element={<Layout />}>
-              <Route path="/" element={<DashboardPage />} />
-              <Route path="/select-plan" element={<PlanSelectionPage />} />
-              <Route path="/history" element={<HistoryPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/setup" element={<SetupPage />} />
-              <Route path="/workout/:dayNumber" element={<WorkoutPage />} />
-            </Route>
-
-            {/* Admin routes */}
-            <Route
-              path="/admin"
-              element={
-                <AdminRoute>
-                  <Navigate to="/admin/plans" replace />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/admin/*"
-              element={
-                <AdminRoute>
-                  <AdminLayout>
-                    <Routes>
-                      <Route path="plans" element={<PlanListPage />} />
-                      <Route path="plans/new" element={<PlanEditorPage />} />
-                      <Route path="plans/:id" element={<PlanEditorPage />} />
-                      <Route path="exercises" element={<ExerciseListPage />} />
-                    </Routes>
-                  </AdminLayout>
-                </AdminRoute>
-              }
-            />
-          </Route>
-
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+    <AuthProvider>
+      <Outlet />
+    </AuthProvider>
   )
+}
+
+function AdminLayoutWrapper() {
+  return (
+    <AdminRoute>
+      <AdminLayout>
+        <Outlet />
+      </AdminLayout>
+    </AdminRoute>
+  )
+}
+
+const router = createBrowserRouter([
+  {
+    element: <AuthWrapper />,
+    children: [
+      { path: '/login', element: <LoginPage /> },
+      { path: '/register', element: <RegisterPage /> },
+      {
+        element: <PrivateRoute />,
+        children: [
+          {
+            element: <Layout />,
+            children: [
+              { path: '/', element: <DashboardPage /> },
+              { path: '/select-plan', element: <PlanSelectionPage /> },
+              { path: '/history', element: <HistoryPage /> },
+              { path: '/settings', element: <SettingsPage /> },
+              { path: '/setup', element: <SetupPage /> },
+              { path: '/workout/:dayNumber', element: <WorkoutPage /> },
+            ],
+          },
+          {
+            path: '/admin',
+            element: <AdminLayoutWrapper />,
+            children: [
+              { index: true, element: <Navigate to="/admin/plans" replace /> },
+              { path: 'plans', element: <PlanListPage /> },
+              { path: 'plans/new', element: <PlanEditorPage /> },
+              { path: 'plans/:id', element: <PlanEditorPage /> },
+              { path: 'exercises', element: <ExerciseListPage /> },
+            ],
+          },
+        ],
+      },
+      { path: '*', element: <Navigate to="/" /> },
+    ],
+  },
+])
+
+function App() {
+  return <RouterProvider router={router} />
 }
 
 export default App

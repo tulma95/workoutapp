@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useBlocker } from 'react-router';
 import { getAdminPlan, createPlan, updatePlan, setProgressionRules as saveProgressionRules, PlanDayExerciseInput, PlanDayInput, PlanSet, ProgressionRule } from '../../api/adminPlans';
 import { getExercises, Exercise } from '../../api/exercises';
@@ -63,9 +63,15 @@ export default function PlanEditorPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  const [isDirty, setIsDirty] = useState(false);
+  const [isDirty, setIsDirtyState] = useState(false);
+  const isDirtyRef = useRef(false);
 
-  const blocker = useBlocker(isDirty);
+  function setIsDirty(value: boolean) {
+    isDirtyRef.current = value;
+    setIsDirtyState(value);
+  }
+
+  const blocker = useBlocker(() => isDirtyRef.current);
 
   useEffect(() => {
     loadExercises();
@@ -122,7 +128,7 @@ export default function PlanEditorPage() {
           displayName: ex.displayName || undefined,
           sets: ex.sets.map(set => ({
             setOrder: set.setOrder,
-            percentage: set.percentage,
+            percentage: Number(set.percentage),
             reps: set.reps,
             isAmrap: set.isAmrap,
             isProgression: set.isProgression,
@@ -138,7 +144,7 @@ export default function PlanEditorPage() {
         category: rule.category,
         minReps: rule.minReps,
         maxReps: rule.maxReps,
-        increase: rule.increase,
+        increase: Number(rule.increase),
       }));
       setProgressionRules(editorRules);
     } catch (err: any) {
@@ -376,6 +382,19 @@ export default function PlanEditorPage() {
       }
     }
 
+    // Only send days that have exercises (backend requires min 1 exercise per day)
+    const daysWithExercises = days
+      .filter(day => day.exercises.length > 0)
+      .map(day => ({
+        dayNumber: day.dayNumber,
+        name: day.name,
+        exercises: day.exercises,
+      }));
+
+    if (daysWithExercises.length === 0) {
+      errors.push('At least one day must have exercises');
+    }
+
     if (errors.length > 0) {
       setValidationErrors(errors);
       toast.error(`Plan has ${errors.length} validation error${errors.length > 1 ? 's' : ''}`);
@@ -392,11 +411,7 @@ export default function PlanEditorPage() {
       description: description || undefined,
       daysPerWeek,
       isPublic,
-      days: days.map(day => ({
-        dayNumber: day.dayNumber,
-        name: day.name,
-        exercises: day.exercises,
-      })),
+      days: daysWithExercises,
     };
 
     try {
