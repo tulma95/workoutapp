@@ -105,20 +105,50 @@ When in Review Mode, ALWAYS do this:
 - Alert() dialogs instead of inline feedback
 - Fixed pixel widths that break on small screens
 
-## Output Format
+## Clarifications
 
-Categorize findings:
+After completing the review but BEFORE writing the plan, ask the user clarifying questions about any ambiguous findings:
+- If multiple valid approaches exist for a fix, present the options and ask which they prefer
+- If a finding might be intentional (e.g., a design choice), confirm before including it
+- If the scope of a fix is unclear (e.g., "fix touch targets" could mean just this page or app-wide), ask
 
-**Critical** — Broken on mobile or violates HTML semantics badly
-**Improvement** — Better native HTML/CSS alternative exists
-**Convention** — Doesn't match project patterns
+Use AskUserQuestion for this — don't just dump questions as text.
 
-For each finding:
+## Output: Implementation Plan
+
+After completing the review and resolving clarifications, write an implementation plan to `docs/ui-ux-<scope>.md` (create the `docs/` directory if needed). `<scope>` should be a short kebab-case name for what was reviewed (e.g., `admin-panel`, `workout-page`, `settings`).
+
+The plan must be structured so it can be directly executed as an implementation task:
+
+```markdown
+# <Title> UX Improvements
+
+## Context
+<1-2 sentences: what was reviewed, at what viewport, key findings summary>
+
+## Changes
+
+### 1. <Short description>
+**Files:** `path/to/file.tsx`, `path/to/file.css`
+
+- <Concrete change: what to add/remove/modify>
+- <Code snippet or specific CSS values where helpful>
+
+### 2. <Next change>
+...
+
+## Verification
+<Steps to verify the fixes: which pages to check, what to look for>
 ```
-### [Category] Short description
-**Where:** file:line or element
-**Issue:** What's wrong
-**Fix:** The native HTML/CSS solution (show code)
-```
+
+### Plan Rules
+- Categorize findings by severity but write ALL as concrete changes (not observations)
+- **Critical** issues first, then **Improvement**, then **Convention**
+- Each change must name the exact files to modify
+- Include specific values (e.g., `min-height: 3rem` not "increase touch target")
+- Skip nitpicks — only include changes that meaningfully improve mobile UX
+- If the page is solid, write a short plan noting what's good and skip the changes section
+
+After writing the plan, tell the user the file path so they can review it.
 
 Do NOT generate a flat undifferentiated list. Prioritize. If the page is solid, say so — don't manufacture issues.
