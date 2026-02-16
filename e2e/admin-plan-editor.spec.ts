@@ -202,9 +202,10 @@ const test = base.extend<AdminFixture>({
     // Re-login to get a new JWT with isAdmin=true (admin flag is in the JWT payload)
     await page.evaluate(() => localStorage.removeItem('accessToken'));
     await page.goto('/login');
+    await page.waitForSelector('#email', { timeout: 10000 });
     await page.fill('#email', email);
     await page.fill('#password', 'ValidPassword123');
-    await page.click('button[type="submit"]');
+    await page.locator('button[type="submit"]').click();
     // After login, user goes to /setup (no TMs) — that's fine, we just need the new token
     await page.waitForURL(/\/(setup|$)/);
 

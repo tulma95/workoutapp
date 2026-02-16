@@ -11,153 +11,65 @@ TEST_JWT_SECRET="test-jwt-secret-do-not-use-in-production"
 source scripts/common.sh
 ensure_dependencies
 
-# Track background process PIDs
-BACKEND_PID=""
-FRONTEND_PID=""
-
 cleanup() {
   echo "Cleaning up..."
-
-  # Kill background processes
-  if [ -n "$BACKEND_PID" ]; then
-    echo "Stopping backend server (PID: $BACKEND_PID)..."
-    kill $BACKEND_PID 2>/dev/null || true
-  fi
-
-  if [ -n "$FRONTEND_PID" ]; then
-    echo "Stopping frontend dev server (PID: $FRONTEND_PID)..."
-    kill $FRONTEND_PID 2>/dev/null || true
-  fi
-
-  echo "Stopping test database..."
-  docker compose -f "$COMPOSE_FILE" down 2>/dev/null || true
+  docker compose -f "$COMPOSE_FILE" --profile e2e down || true
 }
-trap cleanup EXIT
+trap cleanup EXIT INT TERM
+
+echo ""
+echo "=== Step 1: Backend integration tests ==="
 
 echo "Starting test database..."
-docker compose -f "$COMPOSE_FILE" up -d
-
-echo "Waiting for database to be ready..."
-for i in $(seq 1 30); do
-  if docker compose -f "$COMPOSE_FILE" exec -T postgres-test pg_isready -U treenisofta -d treenisofta_test >/dev/null 2>&1; then
-    echo "Database is ready."
-    break
-  fi
-  if [ "$i" -eq 30 ]; then
-    echo "Database failed to become ready in time."
-    exit 1
-  fi
-  sleep 1
-done
+docker compose -f "$COMPOSE_FILE" up -d --wait
+echo "Database is ready."
 
 echo "Generating Prisma client..."
 cd "$PROJECT_ROOT/backend"
 npx prisma generate
 
 echo "Running migrations..."
-cd "$PROJECT_ROOT/backend"
 DATABASE_URL="$TEST_DB_URL" npx prisma migrate deploy
 
 echo "Running backend tests..."
-cd "$PROJECT_ROOT/backend"
-TEST_EXIT_CODE=0
 DATABASE_URL="$TEST_DB_URL" \
 JWT_SECRET="$TEST_JWT_SECRET" \
 PORT=3001 \
 NODE_ENV=test \
-npx vitest run "$@" || TEST_EXIT_CODE=$?
+npx vitest run "$@"
 
-if [ $TEST_EXIT_CODE -ne 0 ]; then
-  echo "Backend tests failed. Exiting."
-  exit $TEST_EXIT_CODE
-fi
+echo "Backend tests passed."
 
-echo "Backend tests passed. Cleaning database for E2E tests..."
-# Truncate all tables (except migrations) and reset auto-increment IDs
-# so only seed data exists — prevents leftover test plans from confusing E2E tests
+echo ""
+echo "=== Step 2: Building Docker image ==="
+cd "$PROJECT_ROOT"
+
+docker compose -f "$COMPOSE_FILE" --profile e2e build app
+
+echo "Docker image built."
+
+echo ""
+echo "=== Step 3: E2E tests against Docker image ==="
+
+# Clean and re-seed test database for E2E
+cd "$PROJECT_ROOT"
 docker compose -f "$COMPOSE_FILE" exec -T postgres-test psql -U treenisofta -d treenisofta_test -c \
   "TRUNCATE users, exercises, workout_plans, training_maxes, workouts, workout_sets, plan_days, plan_day_exercises, plan_sets, plan_progression_rules, user_plans RESTART IDENTITY CASCADE"
 
-echo "Re-seeding database for E2E tests..."
 cd "$PROJECT_ROOT/backend"
 DATABASE_URL="$TEST_DB_URL" npx tsx prisma/seed.ts
 
-echo "Starting servers for E2E tests..."
-
-# Kill any existing processes on ports 3001 and 5173
-echo "Checking for processes on ports 3001 and 5173..."
-lsof -ti:3001 | xargs kill -9 2>/dev/null || true
-lsof -ti:5173 | xargs kill -9 2>/dev/null || true
-sleep 1
-
-# Build backend
-echo "Building backend..."
-npm run build -w backend
-
-# Start backend server
-echo "Starting backend server on port 3001..."
-cd "$PROJECT_ROOT/backend"
-DATABASE_URL="$TEST_DB_URL" \
-JWT_SECRET="$TEST_JWT_SECRET" \
-PORT=3001 \
-NODE_ENV=test \
-node dist/index.js > "$PROJECT_ROOT/backend-test.log" 2>&1 &
-BACKEND_PID=$!
-echo "Backend server started (PID: $BACKEND_PID)"
-
-# Start frontend dev server
-echo "Starting frontend dev server on port 5173..."
-cd "$PROJECT_ROOT/frontend"
-npm run dev > "$PROJECT_ROOT/frontend-test.log" 2>&1 &
-FRONTEND_PID=$!
-echo "Frontend dev server started (PID: $FRONTEND_PID)"
-
-# Wait for backend to be ready
-echo "Waiting for backend server to be ready..."
-for i in $(seq 1 30); do
-  if curl -s http://localhost:3001/api/health >/dev/null 2>&1; then
-    echo "Backend server is ready."
-    break
-  fi
-  if [ "$i" -eq 30 ]; then
-    echo "Backend server failed to become ready in time."
-    echo "Backend logs:"
-    cat "$PROJECT_ROOT/backend-test.log" || true
-    exit 1
-  fi
-  sleep 1
-done
-
-# Wait for frontend to be ready
-echo "Waiting for frontend dev server to be ready..."
-for i in $(seq 1 30); do
-  if curl -s http://localhost:5173 >/dev/null 2>&1; then
-    echo "Frontend dev server is ready."
-    break
-  fi
-  if [ "$i" -eq 30 ]; then
-    echo "Frontend dev server failed to become ready in time."
-    echo "Frontend logs:"
-    cat "$PROJECT_ROOT/frontend-test.log" || true
-    exit 1
-  fi
-  sleep 1
-done
+# Start the app container alongside the DB, wait for both to be healthy
+cd "$PROJECT_ROOT"
+docker compose -f "$COMPOSE_FILE" --profile e2e up -d --wait
+echo "App is healthy."
 
 # Ensure Playwright browsers are installed
-echo "Ensuring Playwright browsers are installed..."
-cd "$PROJECT_ROOT"
 npx playwright install --with-deps chromium 2>/dev/null || npx playwright install chromium
 
-# Run Playwright E2E tests
-echo "Running Playwright E2E tests..."
-E2E_EXIT_CODE=0
-npx playwright test || E2E_EXIT_CODE=$?
+# Run Playwright E2E tests pointing at port 3001 (app serves both API and frontend)
+BASE_URL="http://localhost:3001" npx playwright test
 
-if [ $E2E_EXIT_CODE -ne 0 ]; then
-  echo "E2E tests failed."
-  exit $E2E_EXIT_CODE
-fi
-
-echo "All tests passed!"
+echo ""
+echo "=== All tests passed! ==="
 exit 0

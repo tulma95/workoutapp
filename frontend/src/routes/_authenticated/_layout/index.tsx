@@ -25,7 +25,7 @@ export const Route = createFileRoute('/_authenticated/_layout/')({
       staleTime: 30_000,
     })
     if (!tms || tms.length === 0) {
-      throw redirect({ to: '/setup' })
+      throw redirect({ to: '/setup', search: { missingTMs: false } })
     }
 
     const existingTMSlugs = new Set(tms.map((tm: { exercise: string }) => tm.exercise))
