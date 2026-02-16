@@ -10,7 +10,7 @@ interface RepsInputProps {
 export default function RepsInput({ value, targetReps, isAmrap, onChange }: RepsInputProps) {
   function handleDecrement() {
     if (value === null) {
-      onChange(0);
+      onChange(targetReps - 1);
     } else if (value > 0) {
       onChange(value - 1);
     }
@@ -42,7 +42,7 @@ export default function RepsInput({ value, targetReps, isAmrap, onChange }: Reps
     }
   }
 
-  const isDecrementDisabled = value === null || value === 0;
+  const isDecrementDisabled = value !== null && value <= 0;
 
   return (
     <div className="reps-input">

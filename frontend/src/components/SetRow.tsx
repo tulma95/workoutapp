@@ -29,7 +29,14 @@ export default function SetRow({
   onUndo,
 }: SetRowProps) {
   const isEdited = completed && actualReps !== null && actualReps < reps;
-  const showStepper = isAmrap || completed;
+  const isPending = !isAmrap && !completed;
+
+  function handleRepsChange(value: number) {
+    if (isPending) {
+      onConfirm();
+    }
+    onRepsChange(value);
+  }
 
   return (
     <div
@@ -40,42 +47,29 @@ export default function SetRow({
       <div className="set-row__info">
         <span className="set-row__number">{setNumber}</span>
         <span className="set-row__weight">{formatWeight(weight, unit)}</span>
-        <div className="set-row__reps-container">
-          <span className="set-row__reps">
-            x{reps}
-            {isAmrap ? '+' : ''}
-          </span>
-          {isEdited && (
-            <span className="set-row__target-hint">target: {reps}</span>
-          )}
-        </div>
+        {isAmrap && (
+          <span className="set-row__reps">x{reps}+</span>
+        )}
+        {isEdited && (
+          <span className="set-row__target-hint">target: {reps}</span>
+        )}
       </div>
 
       <div className="set-row__action">
-        {showStepper ? (
-          <>
-            <RepsInput
-              value={actualReps}
-              targetReps={reps}
-              isAmrap={isAmrap}
-              onChange={onRepsChange}
-            />
-            <button
-              type="button"
-              className="set-row__undo"
-              onClick={onUndo}
-              aria-label={`Undo set ${setNumber}`}
-            >
-              ✓
-            </button>
-          </>
-        ) : (
+        <RepsInput
+          value={actualReps}
+          targetReps={reps}
+          isAmrap={isAmrap}
+          onChange={handleRepsChange}
+        />
+        {completed && (
           <button
             type="button"
-            className="set-row__confirm"
-            onClick={onConfirm}
+            className="set-row__undo"
+            onClick={onUndo}
+            aria-label={`Undo set ${setNumber}`}
           >
-            Confirm
+            ✓
           </button>
         )}
       </div>

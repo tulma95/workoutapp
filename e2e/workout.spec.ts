@@ -14,14 +14,11 @@ test.describe('Workout Session', () => {
     await dashboard.startWorkout();
     await page.waitForURL(/\/workout\/1/);
 
-    await expect(workout.confirmButtons.first()).toBeVisible({ timeout: 15000 });
+    await expect(workout.repsInputs.first()).toBeVisible({ timeout: 15000 });
     await expect(workout.dayHeading(1)).toBeVisible();
 
-    const confirmCount = await workout.confirmButtons.count();
-    expect(confirmCount).toBeGreaterThanOrEqual(16);
-
     const repsCount = await workout.repsInputs.count();
-    expect(repsCount).toBeGreaterThanOrEqual(1);
+    expect(repsCount).toBeGreaterThanOrEqual(17);
   });
 
   test('completing a non-AMRAP set marks it visually as done', async ({ setupCompletePage }) => {
@@ -34,7 +31,7 @@ test.describe('Workout Session', () => {
     await page.waitForURL(/\/workout\/1/);
     await workout.expectLoaded(1);
 
-    // Click the first Confirm button
+    // Tap + on the first set to auto-confirm it
     await workout.confirmSet(0);
 
     // Verify the set row has completed class
@@ -152,13 +149,13 @@ test.describe('Workout Session', () => {
     await page.waitForURL(/\/workout\/1/);
     await workout.expectLoaded(1);
 
-    // Confirm first two sets and wait for PATCH responses
+    // Confirm first two sets by tapping + and wait for PATCH responses
     const patchResponse1 = page.waitForResponse(resp => resp.url().includes('/sets/') && resp.request().method() === 'PATCH');
     await workout.confirmSet(0);
     await patchResponse1;
 
     const patchResponse2 = page.waitForResponse(resp => resp.url().includes('/sets/') && resp.request().method() === 'PATCH');
-    await workout.confirmSet(0); // After first confirm disappears, next confirm is now at index 0
+    await workout.confirmSet(1);
     await patchResponse2;
 
     // Verify completed rows exist
@@ -189,7 +186,7 @@ test.describe('Workout Session', () => {
     await dashboard.startWorkout();
     await page.waitForURL(/\/workout\/1/);
     await workout.expectLoaded(1);
-    await expect(workout.confirmButtons.first()).toBeVisible();
+    await expect(workout.repsInputs.first()).toBeVisible();
 
     const firstExerciseSection = page.locator('.workout-section').first();
     const secondExerciseSection = page.locator('.workout-section').nth(1);
@@ -197,12 +194,11 @@ test.describe('Workout Session', () => {
     await expect(firstExerciseSection).toBeVisible();
     await expect(secondExerciseSection).toBeVisible();
 
-    const firstConfirmCount = await firstExerciseSection.getByRole('button', { name: /^confirm$/i }).count();
     const firstRepsCount = await firstExerciseSection.getByRole('spinbutton', { name: /reps completed/i }).count();
-    expect(firstConfirmCount + firstRepsCount).toBe(9);
+    expect(firstRepsCount).toBe(9);
 
-    const secondConfirmCount = await secondExerciseSection.getByRole('button', { name: /^confirm$/i }).count();
-    expect(secondConfirmCount).toBe(8);
+    const secondRepsCount = await secondExerciseSection.getByRole('spinbutton', { name: /reps completed/i }).count();
+    expect(secondRepsCount).toBe(8);
   });
 
   test('TM progression after workout: completing Day 1 with good AMRAP performance increases Bench TM', async ({ setupCompletePage }) => {
@@ -231,7 +227,7 @@ test.describe('Workout Session', () => {
     await page.waitForURL(/\/workout\/1/);
 
     await workout.expectLoaded(1);
-    await expect(workout.confirmButtons.first()).toBeVisible();
+    await expect(workout.repsInputs.first()).toBeVisible();
 
     await workout.fillAmrap('10');
     await workout.completeWithDialog();

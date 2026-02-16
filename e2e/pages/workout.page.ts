@@ -3,7 +3,6 @@ import { expect, type Page } from '@playwright/test';
 export class WorkoutPage {
   readonly page: Page;
 
-  readonly confirmButtons;
   readonly repsInputs;
   readonly undoButtons;
   readonly completeButton;
@@ -14,7 +13,6 @@ export class WorkoutPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.confirmButtons = page.getByRole('button', { name: /^confirm$/i });
     this.repsInputs = page.getByRole('spinbutton', { name: /reps completed/i });
     this.undoButtons = page.locator('.set-row__undo');
     this.completeButton = page.getByRole('button', { name: /complete workout/i });
@@ -23,11 +21,6 @@ export class WorkoutPage {
     this.confirmDialog = page.locator('.confirm-dialog__content');
     this.progressionBanner = page.getByText(/progression|increase|bench.*\+/i);
   }
-
-  /** Backward compat alias */
-  get checkboxes() { return this.confirmButtons; }
-  /** Backward compat alias */
-  get amrapInputs() { return this.repsInputs; }
 
   dayHeading(dayNumber: number) {
     return this.page.getByRole('heading', { name: new RegExp(`day ${dayNumber}`, 'i') });
@@ -40,8 +33,10 @@ export class WorkoutPage {
     await expect(heading).toBeVisible({ timeout: 15000 });
   }
 
+  /** Confirm a set by tapping the + button on its stepper (auto-confirms pending sets) */
   async confirmSet(index: number) {
-    await this.confirmButtons.nth(index).click();
+    const section = this.page.locator('.set-row').nth(index);
+    await section.getByRole('button', { name: /increase reps/i }).click();
   }
 
   async fillAmrap(value: string, index = 0) {
@@ -49,7 +44,7 @@ export class WorkoutPage {
   }
 
   async toggleSet(index: number) {
-    await this.confirmButtons.nth(index).click();
+    await this.confirmSet(index);
   }
 
   async complete() {
