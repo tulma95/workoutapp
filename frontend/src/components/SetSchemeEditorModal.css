@@ -30,7 +30,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
 }
 
 .set-scheme-header h3 {
@@ -64,7 +64,7 @@
   text-align: center;
   padding: 2rem;
   color: var(--text-muted);
-  background: var(--bg-secondary);
+  background: var(--bg);
   border-radius: 8px;
 }
 
@@ -79,8 +79,8 @@
 }
 
 .sets-table thead {
-  background: var(--bg-secondary);
-  border-bottom: 2px solid var(--border-color);
+  background: var(--bg);
+  border-bottom: 2px solid var(--border);
 }
 
 .sets-table th {
@@ -91,11 +91,11 @@
 }
 
 .sets-table tbody tr {
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
 }
 
 .sets-table tbody tr:hover {
-  background: var(--bg-secondary);
+  background: var(--bg);
 }
 
 .sets-table td {
@@ -113,10 +113,10 @@
 .reps-input {
   width: 80px;
   padding: 0.5rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 0.875rem;
-  background: var(--bg-primary);
+  background: var(--bg-card);
   color: var(--text-primary);
   text-align: center;
 }
@@ -145,7 +145,7 @@
 
 .btn-remove-set {
   background: transparent;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 4px;
   padding: 0.25rem 0.5rem;
   cursor: pointer;
@@ -164,7 +164,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.5rem;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--border);
   gap: 1rem;
 }
 
@@ -201,12 +201,12 @@
 
 .btn-cancel {
   background: transparent;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   color: var(--text-primary);
 }
 
 .btn-cancel:hover {
-  background: var(--bg-secondary);
+  background: var(--bg);
 }
 
 .btn-save {

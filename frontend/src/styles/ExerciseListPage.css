@@ -24,7 +24,7 @@
   padding: 3rem 1rem;
   background: var(--bg-card);
   border-radius: 12px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
 }
 
 .empty-state p {
@@ -35,7 +35,7 @@
 .exercise-table-container {
   background: var(--bg-card);
   border-radius: 12px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   overflow-x: auto;
 }
 
@@ -45,8 +45,8 @@
 }
 
 .exercise-table thead {
-  background: var(--bg-primary);
-  border-bottom: 2px solid var(--border-color);
+  background: var(--bg-card);
+  border-bottom: 2px solid var(--border);
 }
 
 .exercise-table th {
@@ -61,7 +61,7 @@
 
 .exercise-table td {
   padding: 1rem;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
   color: var(--text-primary);
 }
 
@@ -70,7 +70,7 @@
 }
 
 .exercise-table tbody tr:hover {
-  background: var(--bg-primary);
+  background: var(--bg-card);
 }
 
 .exercise-name {
@@ -122,7 +122,7 @@
   min-height: 40px;
   min-width: 40px;
   background: transparent;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 6px;
   cursor: pointer;
   font-size: 1rem;
@@ -130,7 +130,7 @@
 }
 
 .btn-icon:hover {
-  background: var(--bg-primary);
+  background: var(--bg-card);
   border-color: var(--accent-color);
 }
 
@@ -146,7 +146,7 @@
 
 .exercise-card {
   background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 0.75rem;

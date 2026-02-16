@@ -64,7 +64,7 @@
 
 .warning-section p {
   margin: 0 0 0.5rem 0;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-size: 0.875rem;
 }
 
@@ -75,7 +75,7 @@
 .exercise-list {
   margin: 0;
   padding-left: 1.5rem;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
 .exercise-list li {
@@ -104,7 +104,7 @@
 
 .button-secondary {
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   border: 1px solid var(--border);
 }
 

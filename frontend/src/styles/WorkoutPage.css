@@ -47,7 +47,7 @@
   text-align: center;
   padding: var(--space-xl);
   font-size: 1rem;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
 .error {

@@ -55,7 +55,7 @@
 /* Collapsible metadata section */
 .plan-metadata-section {
   background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
@@ -81,7 +81,7 @@
 }
 
 .metadata-toggle:hover {
-  background: var(--bg-secondary);
+  background: var(--bg);
   border-radius: 12px;
 }
 
@@ -116,11 +116,11 @@
 .form-row textarea {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 1rem;
   font-family: inherit;
-  background: var(--bg-primary);
+  background: var(--bg-card);
   color: var(--text-primary);
   min-height: 48px;
 }
@@ -146,7 +146,7 @@
 
 .form-row-inline input[type="number"] {
   padding: 0.75rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 1rem;
   width: 100px;
@@ -169,7 +169,7 @@
 
 .day-tabs-section {
   background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
 }
@@ -177,8 +177,8 @@
 .day-tabs {
   display: flex;
   overflow-x: auto;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
 }
 
 .day-tab {
@@ -233,10 +233,10 @@
   width: 100%;
   max-width: 400px;
   padding: 0.75rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 1rem;
-  background: var(--bg-primary);
+  background: var(--bg-card);
   color: var(--text-primary);
   min-height: 48px;
 }
@@ -277,19 +277,19 @@
   text-align: center;
   padding: 2rem;
   color: var(--text-muted);
-  background: var(--bg-secondary);
+  background: var(--bg);
   border-radius: 8px;
 }
 
 /* Exercise cards with color-coded left border */
 .exercise-row {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 1rem;
   padding-left: calc(1rem + 4px);
   margin-bottom: 0;
-  border-left: 4px solid var(--border-color);
+  border-left: 4px solid var(--border);
 }
 
 .exercise-row + .exercise-row {
@@ -304,7 +304,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: var(--border-color, #e5e7eb);
+  background: var(--border, #e5e7eb);
 }
 
 .exercise-row--has-sets {
@@ -335,7 +335,7 @@
 
 .exercise-row-actions button {
   background: transparent;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 4px;
   padding: 0.25rem 0.5rem;
   cursor: pointer;
@@ -376,7 +376,7 @@
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   margin-bottom: 0.25rem;
 }
 
@@ -384,10 +384,10 @@
 .exercise-row-fields input {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 0.875rem;
-  background: var(--bg-primary);
+  background: var(--bg-card);
   color: var(--text-primary);
   min-height: 40px;
 }
@@ -397,12 +397,12 @@
   justify-content: space-between;
   align-items: center;
   padding-top: 0.75rem;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--border);
 }
 
 .sets-summary {
   font-size: 0.875rem;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-weight: 500;
 }
 
@@ -475,7 +475,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
 }
 
 .exercise-picker-header h3 {
@@ -497,11 +497,11 @@
 .exercise-search {
   margin: 1rem 1.5rem;
   padding: 0.75rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 1rem;
   width: calc(100% - 3rem);
-  background: var(--bg-primary);
+  background: var(--bg-card);
   color: var(--text-primary);
   min-height: 48px;
 }
@@ -516,8 +516,8 @@
   width: 100%;
   text-align: left;
   padding: 0.75rem;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 6px;
   margin-bottom: 0.5rem;
   cursor: pointer;
@@ -525,7 +525,7 @@
 }
 
 .exercise-picker-item:hover {
-  background: var(--bg-primary);
+  background: var(--bg-card);
   border-color: var(--admin-accent, #7c3aed);
 }
 
@@ -591,7 +591,7 @@
   position: sticky;
   bottom: 0;
   background: var(--bg-card);
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--border);
   padding: 1rem;
   display: flex;
   justify-content: flex-end;
@@ -642,7 +642,7 @@
 }
 
 .unsaved-modal-content p {
-  color: var(--text-secondary);
+  color: var(--text-muted);
   margin-bottom: 1.5rem;
 }
 
@@ -665,7 +665,7 @@
 
 .btn-leave {
   background: transparent;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   color: var(--text-primary);
   padding: 0.625rem 1.25rem;
   border-radius: 6px;
@@ -677,10 +677,10 @@
 /* Copy sets dropdown */
 .copy-sets-select {
   padding: 0.375rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 0.75rem;
-  background: var(--bg-primary);
+  background: var(--bg-card);
   color: var(--text-muted);
   min-height: 32px;
 }

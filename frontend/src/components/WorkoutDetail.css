@@ -1,6 +1,6 @@
 .workout-detail {
   background: var(--card-bg);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: var(--space-sm);
   padding: var(--space-lg);
   box-shadow: 0 2px var(--space-xs) rgba(0, 0, 0, 0.1);
@@ -11,7 +11,7 @@
   text-align: center;
   padding: var(--space-xl);
   font-size: 1rem;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
 .workout-detail__error {
@@ -21,7 +21,7 @@
 .workout-detail__header {
   margin-bottom: var(--space-lg);
   padding-bottom: var(--space-md);
-  border-bottom: 2px solid var(--border-color);
+  border-bottom: 2px solid var(--border);
 }
 
 .workout-detail__title {
@@ -33,7 +33,7 @@
 
 .workout-detail__date {
   font-size: 1rem;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -59,14 +59,14 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background: var(--bg-secondary);
+  background: var(--bg);
   border-radius: var(--space-xs);
   font-size: 1rem;
 }
 
 .workout-detail__set-number {
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   min-width: 3rem;
 }
 
@@ -82,7 +82,7 @@
 }
 
 .workout-detail__set-actual {
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-size: 1rem;
 }
 
@@ -95,15 +95,15 @@
 .workout-detail__progression {
   margin-top: var(--space-lg);
   padding-top: var(--space-md);
-  border-top: 2px solid var(--border-color);
+  border-top: 2px solid var(--border);
 }
 
 .workout-detail__no-progression {
   text-align: center;
   padding: var(--space-md);
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-size: 1rem;
-  background: var(--bg-secondary);
+  background: var(--bg);
   border-radius: var(--space-xs);
 }
 

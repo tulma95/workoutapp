@@ -14,7 +14,7 @@
 .history-page__loading {
   padding: var(--space-xl);
   text-align: center;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-size: 1rem;
 }
 
@@ -25,13 +25,13 @@
 .history-page__prompt {
   padding: var(--space-xl);
   text-align: center;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-size: 1rem;
 }
 
 .history-page__empty {
   padding: var(--space-xl);
   text-align: center;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-size: 1rem;
 }
