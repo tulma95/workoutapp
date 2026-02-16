@@ -34,12 +34,9 @@ test.describe('Workout Session', () => {
     // Tap + on the first set to auto-confirm it
     await workout.confirmSet(0);
 
-    // Verify the set row has completed class
+    // Verify the set row has completed class (green background)
     const completedRows = page.locator('.set-row--completed');
     await expect(completedRows.first()).toBeVisible();
-
-    // Verify undo button appears
-    await expect(workout.undoButtons.first()).toBeVisible();
   });
 
   test('entering AMRAP reps using the +/- stepper works correctly', async ({ setupCompletePage }) => {

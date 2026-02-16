@@ -13,7 +13,6 @@ interface SetRowProps {
   unit: UnitPreference;
   onConfirm: () => void;
   onRepsChange: (reps: number) => void;
-  onUndo: () => void;
 }
 
 export default function SetRow({
@@ -26,9 +25,7 @@ export default function SetRow({
   unit,
   onConfirm,
   onRepsChange,
-  onUndo,
 }: SetRowProps) {
-  const isEdited = completed && actualReps !== null && actualReps < reps;
   const isPending = !isAmrap && !completed;
 
   function handleRepsChange(value: number) {
@@ -40,18 +37,13 @@ export default function SetRow({
 
   return (
     <div
-      className={`set-row ${completed ? 'set-row--completed' : ''} ${
-        isEdited ? 'set-row--edited' : ''
-      }`}
+      className={`set-row ${completed ? 'set-row--completed' : ''}`}
     >
       <div className="set-row__info">
         <span className="set-row__number">{setNumber}</span>
         <span className="set-row__weight">{formatWeight(weight, unit)}</span>
         {isAmrap && (
           <span className="set-row__reps">x{reps}+</span>
-        )}
-        {isEdited && (
-          <span className="set-row__target-hint">target: {reps}</span>
         )}
       </div>
 
@@ -61,17 +53,8 @@ export default function SetRow({
           targetReps={reps}
           isAmrap={isAmrap}
           onChange={handleRepsChange}
+          onFocus={isPending ? onConfirm : undefined}
         />
-        {completed && (
-          <button
-            type="button"
-            className="set-row__undo"
-            onClick={onUndo}
-            aria-label={`Undo set ${setNumber}`}
-          >
-            ✓
-          </button>
-        )}
       </div>
     </div>
   );

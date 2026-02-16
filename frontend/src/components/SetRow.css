@@ -13,15 +13,12 @@
   background-color: rgba(22, 163, 74, 0.1); /* --success with opacity */
 }
 
-.set-row--edited {
-  background-color: rgba(251, 146, 60, 0.1); /* amber tint */
-}
-
 .set-row__info {
   display: flex;
   align-items: center;
   gap: var(--space-md);
   flex: 1;
+  min-width: 0;
 }
 
 .set-row__number {
@@ -44,44 +41,10 @@
   font-size: 1rem;
 }
 
-.set-row__target-hint {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  font-weight: 400;
-}
-
 .set-row__action {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  position: relative;
   min-height: 3rem;
-  justify-content: center;
-}
-
-.set-row__undo {
-  min-width: 2.5rem;
-  min-height: 2.5rem;
-  width: 2.5rem;
-  height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--bg);
-  border: 2px solid var(--success);
-  border-radius: var(--space-xs);
-  color: var(--success);
-  font-size: 1.25rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  padding: 0;
-}
-
-.set-row__undo:hover {
-  background-color: rgba(22, 163, 74, 0.1);
-}
-
-.set-row__undo:active {
-  transform: scale(0.95);
+  justify-content: flex-end;
+  flex-shrink: 0;
 }

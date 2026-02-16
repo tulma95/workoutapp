@@ -109,8 +109,8 @@
   width: 50px;
 }
 
-.percentage-input,
-.reps-input {
+.set-scheme-modal .percentage-input,
+.set-scheme-modal .reps-input {
   width: 80px;
   padding: 0.5rem;
   border: 1px solid var(--border);
@@ -121,8 +121,8 @@
   text-align: center;
 }
 
-.percentage-input:focus,
-.reps-input:focus {
+.set-scheme-modal .percentage-input:focus,
+.set-scheme-modal .reps-input:focus {
   outline: 2px solid var(--admin-accent, #7c3aed);
   outline-offset: 1px;
 }

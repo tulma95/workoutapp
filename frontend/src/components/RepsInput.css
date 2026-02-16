@@ -1,17 +1,21 @@
 .reps-input {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: 0.25rem;
+  width: max-content;
 }
 
 .reps-input__button {
-  min-width: 3rem;
-  min-height: 3rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 600;
+  line-height: 1;
+  overflow: hidden;
   background-color: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--space-xs);
@@ -40,9 +44,10 @@
 }
 
 .reps-input__field {
-  width: 4rem;
-  min-height: 3rem;
-  padding: var(--space-sm);
+  width: 3rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  padding: 0;
   text-align: center;
   font-size: 1rem;
   font-weight: 600;

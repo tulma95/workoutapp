@@ -4,7 +4,6 @@ export class WorkoutPage {
   readonly page: Page;
 
   readonly repsInputs;
-  readonly undoButtons;
   readonly completeButton;
   readonly cancelButton;
   readonly backToDashboardButton;
@@ -14,7 +13,6 @@ export class WorkoutPage {
   constructor(page: Page) {
     this.page = page;
     this.repsInputs = page.getByRole('spinbutton', { name: /reps completed/i });
-    this.undoButtons = page.locator('.set-row__undo');
     this.completeButton = page.getByRole('button', { name: /complete workout/i });
     this.cancelButton = page.getByRole('button', { name: /cancel workout/i });
     this.backToDashboardButton = page.getByRole('button', { name: /back to dashboard|dashboard/i });

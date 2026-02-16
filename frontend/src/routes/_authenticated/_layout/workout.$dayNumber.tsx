@@ -189,19 +189,6 @@ function WorkoutPage() {
     debouncedLogSet(setId, { actualReps: reps, completed: true })
   }
 
-  const handleUndoSet = (setId: number) => {
-    if (!workout) return
-
-    setWorkout({
-      ...workout,
-      sets: workout.sets.map((s) =>
-        s.id === setId ? { ...s, actualReps: null, completed: false } : s
-      ),
-    })
-
-    debouncedLogSet(setId, { actualReps: null, completed: false })
-  }
-
   const handleCompleteWorkout = async () => {
     if (!workout) return
 
@@ -376,7 +363,6 @@ function WorkoutPage() {
                 unit={unit}
                 onConfirm={() => handleConfirmSet(set.id)}
                 onRepsChange={(reps) => handleRepsChange(set.id, reps)}
-                onUndo={() => handleUndoSet(set.id)}
               />
             ))}
           </div>

@@ -5,9 +5,10 @@ interface RepsInputProps {
   targetReps: number;
   isAmrap: boolean;
   onChange: (value: number) => void;
+  onFocus?: () => void;
 }
 
-export default function RepsInput({ value, targetReps, isAmrap, onChange }: RepsInputProps) {
+export default function RepsInput({ value, targetReps, isAmrap, onChange, onFocus }: RepsInputProps) {
   function handleDecrement() {
     if (value === null) {
       onChange(targetReps - 1);
@@ -20,7 +21,6 @@ export default function RepsInput({ value, targetReps, isAmrap, onChange }: Reps
     if (value === null) {
       onChange(targetReps);
     } else if (!isAmrap && value >= targetReps) {
-      // Cap at targetReps for non-AMRAP sets
       return;
     } else {
       onChange(value + 1);
@@ -30,14 +30,12 @@ export default function RepsInput({ value, targetReps, isAmrap, onChange }: Reps
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const newValue = parseInt(e.target.value, 10);
     if (!isNaN(newValue) && newValue >= 0) {
-      // Cap at targetReps for non-AMRAP sets
       if (!isAmrap && newValue > targetReps) {
         onChange(targetReps);
       } else {
         onChange(newValue);
       }
     } else if (e.target.value === '') {
-      // Allow clearing the input
       onChange(0);
     }
   }
@@ -61,6 +59,7 @@ export default function RepsInput({ value, targetReps, isAmrap, onChange }: Reps
         className="reps-input__field"
         value={value ?? ''}
         onChange={handleInputChange}
+        onFocus={onFocus}
         placeholder={targetReps.toString()}
         min="0"
         max={isAmrap ? undefined : targetReps}
