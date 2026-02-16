@@ -19,7 +19,6 @@ describe('Admin Exercise routes', () => {
         email: `admin-ex-${uid}@example.com`,
         passwordHash: await bcrypt.hash('password123', 10),
         displayName: 'Admin User',
-        unitPreference: 'kg',
         isAdmin: true,
       },
     });
@@ -30,7 +29,6 @@ describe('Admin Exercise routes', () => {
         email: `nonadmin-ex-${uid}@example.com`,
         passwordHash: await bcrypt.hash('password123', 10),
         displayName: 'Non-Admin User',
-        unitPreference: 'kg',
         isAdmin: false,
       },
     });

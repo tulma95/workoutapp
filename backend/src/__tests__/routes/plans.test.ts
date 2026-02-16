@@ -38,7 +38,6 @@ describe('Plans routes', () => {
         email: userEmail,
         passwordHash: await bcrypt.hash('password123', 10),
         displayName: 'Test User',
-        unitPreference: 'kg',
         isAdmin: false,
       },
     });

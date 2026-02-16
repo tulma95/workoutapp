@@ -16,7 +16,6 @@ describe('Workouts API - Plan-Driven Generation', () => {
       email: `wk-test-${uid}@example.com`,
       password: 'password123',
       displayName: 'Plan Workout Test',
-      unitPreference: 'kg',
     });
     token = res.body.accessToken;
     userId = res.body.user.id;
@@ -239,7 +238,6 @@ describe('Workouts API - Plan-Driven Generation', () => {
         email: `wk-notm-${uid}@example.com`,
         password: 'password123',
         displayName: 'No TM',
-        unitPreference: 'kg',
       });
       const noTmUserId = res.body.user.id;
 
@@ -305,7 +303,6 @@ describe('Workouts API - Plan-Driven Generation', () => {
         email: `wk-fallback-${uid}@example.com`,
         password: 'password123',
         displayName: 'Fallback User',
-        unitPreference: 'kg',
       });
       fallbackToken = res.body.accessToken;
     });

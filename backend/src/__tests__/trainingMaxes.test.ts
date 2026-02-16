@@ -8,27 +8,16 @@ const uid = randomUUID().slice(0, 8);
 
 describe('Training Maxes API', () => {
   let token: string;
-  let lbToken: string;
   let exerciseIds: { bench: number; squat: number; ohp: number; deadlift: number };
 
   beforeAll(async () => {
-    // Register a kg user
+    // Register a test user
     const res = await request(app).post('/api/auth/register').send({
       email: `tm-test-${uid}@example.com`,
       password: 'password123',
       displayName: 'TM Test',
-      unitPreference: 'kg',
     });
     token = res.body.accessToken;
-
-    // Register an lb user
-    const lbRes = await request(app).post('/api/auth/register').send({
-      email: `tm-lb-${uid}@example.com`,
-      password: 'password123',
-      displayName: 'LB Test',
-      unitPreference: 'lb',
-    });
-    lbToken = lbRes.body.accessToken;
 
     // Get exercise IDs
     const exercises = await prisma.exercise.findMany({
@@ -61,7 +50,7 @@ describe('Training Maxes API', () => {
   });
 
   describe('POST /api/training-maxes/setup', () => {
-    it('creates TMs from 1RMs for kg user (TM = 90% of 1RM, rounded to 2.5kg)', async () => {
+    it('creates TMs from 1RMs (TM = 90% of 1RM, rounded to 2.5kg)', async () => {
       const res = await request(app)
         .post('/api/training-maxes/setup')
         .set('Authorization', `Bearer ${token}`)
@@ -91,26 +80,6 @@ describe('Training Maxes API', () => {
 
       expect(res.status).toBe(200);
       expect(res.body).toHaveLength(4);
-    });
-
-    it('creates TMs from 1RMs for lb user (converts lb→kg and returns in lb)', async () => {
-      const res = await request(app)
-        .post('/api/training-maxes/setup')
-        .set('Authorization', `Bearer ${lbToken}`)
-        .send({
-          exerciseTMs: [
-            { exerciseId: exerciseIds.bench, oneRepMax: 225 },
-            { exerciseId: exerciseIds.squat, oneRepMax: 315 },
-            { exerciseId: exerciseIds.ohp, oneRepMax: 135 },
-            { exerciseId: exerciseIds.deadlift, oneRepMax: 405 },
-          ],
-        });
-
-      expect(res.status).toBe(201);
-      const byExercise = Object.fromEntries(
-        res.body.map((tm: { exercise: string }) => [tm.exercise, tm]),
-      );
-      expect(byExercise['bench-press'].weight).toBe(205); // 225lb 1RM → 102.06kg → 91.86kg TM → 92.5kg rounded → 205lb
     });
 
     it('allows re-setup with different values', async () => {
@@ -165,17 +134,6 @@ describe('Training Maxes API', () => {
 
       const bench = getRes.body.find((tm: { exercise: string }) => tm.exercise === 'bench-press');
       expect(bench.weight).toBe(95);
-    });
-
-    it('converts lb weight to kg for storage and returns in lb for lb user', async () => {
-      // 200lb → 200/2.20462 = 90.72kg → rounded to 90kg → converted back: 90*2.20462 = 198.42lb → rounded to 200lb
-      const res = await request(app)
-        .patch('/api/training-maxes/bench-press')
-        .set('Authorization', `Bearer ${lbToken}`)
-        .send({ weight: 200 });
-
-      expect(res.status).toBe(200);
-      expect(res.body.weight).toBe(200); // 200lb → 90.72kg → 90kg → 200lb
     });
 
     it('rejects invalid exercise name', async () => {
@@ -238,7 +196,6 @@ describe('Training Maxes API', () => {
         email: `tm-exids-${uid}@example.com`,
         password: 'password123',
         displayName: 'Exercise IDs Test',
-        unitPreference: 'kg',
       });
       newUserToken = res.body.accessToken;
     });
@@ -319,7 +276,6 @@ describe('Training Maxes API', () => {
         email: `tm-plan-${uid}@example.com`,
         password: 'password123',
         displayName: 'Plan Test User',
-        unitPreference: 'kg',
       });
       planUserToken = res.body.accessToken;
       planUserId = res.body.user.id;
@@ -403,7 +359,6 @@ describe('Training Maxes API', () => {
         email: `tm-noplan-${uid}@example.com`,
         password: 'password123',
         displayName: 'No Plan User',
-        unitPreference: 'kg',
       });
       const noPlanToken = res.body.accessToken;
 

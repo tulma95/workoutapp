@@ -33,7 +33,6 @@ describe('Admin Plans routes', () => {
         email: adminEmail,
         passwordHash: await bcrypt.hash('password123', 10),
         displayName: 'Plan Admin',
-        unitPreference: 'kg',
         isAdmin: true,
       },
     });
@@ -44,7 +43,6 @@ describe('Admin Plans routes', () => {
         email: nonAdminEmail,
         passwordHash: await bcrypt.hash('password123', 10),
         displayName: 'Non-Admin User',
-        unitPreference: 'kg',
         isAdmin: false,
       },
     });

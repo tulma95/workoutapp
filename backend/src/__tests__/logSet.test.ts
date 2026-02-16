@@ -19,7 +19,6 @@ describe('Log Set - actualReps nullable', () => {
       email: `logset-${uid}@example.com`,
       password: 'password123',
       displayName: 'LogSet Test User',
-      unitPreference: 'kg',
     });
     token = res.body.accessToken;
     userId = res.body.user.id;

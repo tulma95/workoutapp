@@ -21,7 +21,6 @@ describe('Workout Completion - Plan-Driven', () => {
       email: `completion-${uid}@example.com`,
       password: 'password123',
       displayName: 'Plan Completion Test',
-      unitPreference: 'kg',
     });
     token = res.body.accessToken;
     userId = res.body.user.id;

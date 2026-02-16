@@ -12,7 +12,6 @@ export async function createTestUser(opts: {
   email?: string;
   password?: string;
   displayName?: string;
-  unitPreference?: 'kg' | 'lb';
   isAdmin?: boolean;
 } = {}) {
   const password = opts.password ?? 'password123';
@@ -21,7 +20,6 @@ export async function createTestUser(opts: {
       email: opts.email ?? `user-${uniqueId()}@example.com`,
       passwordHash: await bcrypt.hash(password, 10),
       displayName: opts.displayName ?? 'Test User',
-      unitPreference: opts.unitPreference ?? 'kg',
       isAdmin: opts.isAdmin ?? false,
     },
   });
