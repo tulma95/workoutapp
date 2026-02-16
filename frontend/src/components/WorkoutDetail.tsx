@@ -1,14 +1,12 @@
 import React from 'react';
 import { Workout, ProgressionResult } from '../api/workouts';
 import { ProgressionBanner } from './ProgressionBanner';
-import type { UnitPreference } from '../types';
 import { formatWeight } from '../utils/weight';
 import styles from './WorkoutDetail.module.css';
 
 interface WorkoutDetailProps {
   workout?: Workout;
   progression: ProgressionResult | null;
-  unit: UnitPreference;
   isLoading?: boolean;
 }
 
@@ -26,7 +24,6 @@ function formatDate(dateString: string): string {
 export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
   workout,
   progression,
-  unit,
   isLoading = false,
 }) => {
   if (isLoading || !workout) {
@@ -67,7 +64,7 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
               <div key={set.id} className={styles.setRow}>
                 <span className={styles.setNumber}>Set {index + 1}</span>
                 <span className={styles.setWeight}>
-                  {formatWeight(set.prescribedWeight, unit)}
+                  {formatWeight(set.prescribedWeight)}
                 </span>
                 <span className={styles.setReps}>
                   {set.prescribedReps}
@@ -91,7 +88,7 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
 
       <div className={styles.progression}>
         {progression ? (
-          <ProgressionBanner progression={progression} unit={unit} />
+          <ProgressionBanner progression={progression} />
         ) : (
           <div className={styles.noProgression}>No TM change</div>
         )}

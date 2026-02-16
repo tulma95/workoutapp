@@ -1,6 +1,5 @@
 import React from 'react';
-import { formatExerciseName, formatWeight, convertWeight, roundWeight } from '../utils/weight';
-import type { UnitPreference } from '../types';
+import { formatExerciseName, formatWeight } from '../utils/weight';
 import styles from './ProgressionBanner.module.css';
 
 interface ProgressionBannerProps {
@@ -17,10 +16,9 @@ interface ProgressionBannerProps {
     newTM: number;
     increase: number;
   }>;
-  unit: UnitPreference;
 }
 
-export const ProgressionBanner: React.FC<ProgressionBannerProps> = ({ progression, progressions, unit }) => {
+export const ProgressionBanner: React.FC<ProgressionBannerProps> = ({ progression, progressions }) => {
   // Normalize to array format
   const progressionArray = progressions || (progression ? [progression] : []);
 
@@ -37,12 +35,10 @@ export const ProgressionBanner: React.FC<ProgressionBannerProps> = ({ progressio
       {progressionArray.map((prog, index) => {
         const exerciseName = formatExerciseName(prog.exercise);
 
-        // Convert and round the increase value for display
-        const increaseInUserUnit = roundWeight(convertWeight(prog.increase, unit), unit);
-        const increaseStr = increaseInUserUnit > 0 ? `+${increaseInUserUnit} ${unit}` : increaseInUserUnit === 0 ? 'No change' : `${increaseInUserUnit} ${unit}`;
+        const increaseStr = prog.increase > 0 ? `+${formatWeight(prog.increase)}` : prog.increase === 0 ? 'No change' : formatWeight(prog.increase);
 
         // Format the new TM
-        const newTMFormatted = formatWeight(prog.newTM, unit);
+        const newTMFormatted = formatWeight(prog.newTM);
 
         // Color-coded: green for increase, neutral for no change
         const bannerClass = prog.increase > 0 ? styles.success : styles.neutral;
