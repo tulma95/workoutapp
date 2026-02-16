@@ -64,9 +64,9 @@
 
 .error-message {
   padding: 1rem;
-  background-color: var(--error-bg, #fee);
-  color: var(--error, #c33);
-  border: 1px solid var(--error, #c33);
+  background-color: #fee;
+  color: var(--danger);
+  border: 1px solid var(--danger);
   border-radius: var(--space-sm);
   font-size: 1rem;
 }

@@ -2,7 +2,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--background);
+  background: var(--bg);
 }
 
 .admin-header {
@@ -41,7 +41,7 @@
 }
 
 .admin-tabs {
-  background: var(--surface);
+  background: var(--bg-card);
   border-bottom: 2px solid var(--border);
   display: flex;
   gap: 0;

@@ -47,12 +47,12 @@
 .warning-section {
   padding: 1rem;
   border-radius: 6px;
-  background: var(--background);
+  background: var(--bg);
   border-left: 4px solid var(--primary);
 }
 
 .warning-section.warning-danger {
-  border-left-color: var(--error);
+  border-left-color: var(--danger);
   background: rgba(239, 68, 68, 0.1);
 }
 
@@ -109,7 +109,7 @@
 }
 
 .button-secondary:hover {
-  background: var(--background);
+  background: var(--bg);
 }
 
 .button-primary {

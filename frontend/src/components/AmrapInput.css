@@ -22,11 +22,11 @@
 }
 
 .amrap-input__button:hover {
-  background-color: var(--bg-hover, #f5f5f5);
+  background-color: #f5f5f5;
 }
 
 .amrap-input__button:active {
-  background-color: var(--bg-active, #eee);
+  background-color: #eee;
 }
 
 .amrap-input__field {

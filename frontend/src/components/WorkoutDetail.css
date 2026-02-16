@@ -1,5 +1,5 @@
 .workout-detail {
-  background: var(--card-bg);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--space-sm);
   padding: var(--space-lg);
@@ -15,7 +15,7 @@
 }
 
 .workout-detail__error {
-  color: var(--error-color);
+  color: var(--danger);
 }
 
 .workout-detail__header {
@@ -87,7 +87,7 @@
 }
 
 .workout-detail__set-completed {
-  color: var(--success-color);
+  color: var(--success);
   font-size: 1.5rem;
   line-height: 1;
 }

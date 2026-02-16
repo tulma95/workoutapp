@@ -65,11 +65,11 @@
 }
 
 .btn-edit:hover {
-  background-color: var(--bg-hover, #f5f5f5);
+  background-color: #f5f5f5;
 }
 
 .btn-edit:active {
-  background-color: var(--bg-active, #eee);
+  background-color: #eee;
 }
 
 /* TM Edit Dialog */
@@ -130,7 +130,7 @@
 
 .tm-edit-dialog__body .error {
   margin-top: var(--space-sm);
-  color: var(--danger, #c33);
+  color: var(--danger);
   font-size: 1rem;
 }
 

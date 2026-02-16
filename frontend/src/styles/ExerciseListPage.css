@@ -131,7 +131,7 @@
 
 .btn-icon:hover {
   background: var(--bg-card);
-  border-color: var(--accent-color);
+  border-color: var(--primary);
 }
 
 .btn-icon.btn-danger:hover {
