@@ -65,7 +65,6 @@ export const UserSchema = z.object({
   id: z.number(),
   email: z.string(),
   displayName: z.string(),
-  unitPreference: z.enum(['kg', 'lb']),
   isAdmin: z.boolean(),
   createdAt: z.string(),
   updatedAt: z.string(),
