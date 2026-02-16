@@ -33,5 +33,6 @@ export class SetupPage {
   async submitAndWaitForDashboard() {
     await this.calculateButton.click();
     await this.page.waitForURL('/');
+    await expect(this.page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
   }
 }

@@ -11,7 +11,7 @@ export class SettingsPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.trainingMaxesHeading = page.getByText('Training Maxes');
+    this.trainingMaxesHeading = page.getByRole('heading', { name: 'Training Maxes' });
     this.kgButton = page.getByRole('button', { name: 'kg' });
     this.lbButton = page.getByRole('button', { name: 'lb' });
     this.logoutButton = page.getByRole('button', { name: /log out/i });
