@@ -1,26 +1,18 @@
 import { test as base, expect, type Page } from '@playwright/test';
 
-/**
- * Helper: register a user via the UI, subscribe to the default plan,
- * then use the API to set up TMs for only SOME exercises (skipping one).
- * Simulates the scenario where an admin edits a plan to add new exercises
- * after a user has already set up their TMs.
- */
 async function registerAndPartialSetup(page: Page) {
   const uniqueId = crypto.randomUUID();
   const email = `test-${uniqueId}@example.com`;
   const password = 'ValidPassword123';
 
-  // Register via UI
   await page.goto('/register');
-  await page.fill('#email', email);
-  await page.fill('#password', password);
-  await page.fill('#displayName', 'Test User');
-  await page.click('button[type="submit"]');
+  await page.getByLabel(/email/i).fill(email);
+  await page.getByLabel(/password/i).fill(password);
+  await page.getByLabel(/display name/i).fill('Test User');
+  await page.getByRole('button', { name: /create account/i }).click();
 
-  // After registration, select the default plan via UI
   await page.waitForURL('/select-plan');
-  await page.click('button:has-text("Select Plan")');
+  await page.getByRole('button', { name: /select plan/i }).first().click();
   await page.waitForURL(/\/setup/);
 
   // Get auth token
@@ -74,37 +66,26 @@ test.describe('Missing TM redirect', () => {
     const { skippedExercise } = await registerAndPartialSetup(page);
     const [, skippedName] = skippedExercise;
 
-    // Navigate to dashboard
     await page.goto('/');
-
-    // Should be redirected to /setup because one TM is missing
     await page.waitForURL(/\/setup/, { timeout: 10000 });
     expect(page.url()).toContain('/setup');
 
-    // The setup page should show only the missing exercise
-    await page.waitForSelector(`text=${skippedName}`, { timeout: 5000 });
+    await expect(page.getByText(skippedName)).toBeVisible();
   });
 
   test('after filling missing TM on setup page, user reaches dashboard', async ({ page }) => {
     await registerAndPartialSetup(page);
 
-    // Navigate to dashboard — should redirect to /setup
     await page.goto('/');
     await page.waitForURL(/\/setup/, { timeout: 10000 });
 
-    // Fill in the missing exercise's 1RM (there should be exactly 1 input)
-    // Wait for the setup form to load (exercises are fetched asynchronously)
-    await page.getByRole('spinbutton').first().waitFor({ timeout: 10000 });
+    await expect(page.getByRole('spinbutton').first()).toBeVisible({ timeout: 10000 });
     const inputs = page.getByRole('spinbutton');
-    const count = await inputs.count();
-    expect(count).toBe(1);
+    expect(await inputs.count()).toBe(1);
 
     await inputs.first().fill('100');
-
-    // Submit
     await page.getByRole('button', { name: /calculate/i }).click();
 
-    // Should redirect to dashboard
     await page.waitForURL('/', { timeout: 10000 });
     await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
   });

@@ -1,145 +1,84 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { test as testWithFixture } from './fixtures';
 
-/** After registration, user lands on /select-plan. Select the first plan to proceed to /setup. */
-async function selectPlanAfterRegistration(page: import('@playwright/test').Page) {
+async function registerLbUser(page: Page, email: string, displayName: string) {
+  await page.goto('/register');
+  await page.getByLabel(/email/i).fill(email);
+  await page.getByLabel(/password/i).fill('ValidPassword123');
+  await page.getByLabel(/display name/i).fill(displayName);
+  await page.getByRole('radio', { name: 'lb' }).click();
+  await page.getByRole('button', { name: /create account/i }).click();
+
   await page.waitForURL('/select-plan');
-  await page.click('button:has-text("Select Plan")');
+  await page.getByRole('button', { name: /select plan/i }).first().click();
   await page.waitForURL(/\/setup/);
-  // Wait for setup form to be fully loaded with all exercise fields
   await expect(page.getByRole('heading', { name: /enter your 1 rep maxes/i })).toBeVisible();
   await expect(page.locator('.form-group')).toHaveCount(4);
 }
 
+async function fillLbOneRepMaxes(page: Page, bench: string, squat: string, ohp: string, deadlift: string) {
+  await page.getByLabel(/Bench Press/i).fill(bench);
+  await page.getByLabel(/^Squat/i).fill(squat);
+  await page.getByLabel(/Overhead Press/i).fill(ohp);
+  await page.getByLabel(/^Deadlift/i).fill(deadlift);
+  await page.getByRole('button', { name: /calculate/i }).click();
+  await page.waitForURL('/');
+}
+
 test.describe('Unit Conversion', () => {
   test('register a user with unitPreference lb, set up 1RM values in lb, verify setup page accepts lb values', async ({ page }) => {
-    const timestamp = Date.now();
-    const email = `lb-user-${timestamp}@example.com`;
-    const password = 'ValidPassword123';
-    const displayName = 'LB User';
+    const email = `lb-user-${Date.now()}@example.com`;
 
-    // Register user with lb unit preference
-    await page.goto('/register');
-    await page.fill('#email', email);
-    await page.fill('#password', password);
-    await page.fill('#displayName', displayName);
-
-    // Select lb unit preference
-    await page.click('input[type="radio"][value="lb"]');
-
-    await page.click('button[type="submit"]');
-
-    // After registration, select a plan first
-    await selectPlanAfterRegistration(page);
+    await registerLbUser(page, email, 'LB User');
 
     // Verify unit label shows "lb" on setup page
     const benchLabel = await page.getByLabel(/Bench Press/i).locator('..').locator('label').textContent();
     expect(benchLabel).toContain('lb');
 
-    // Fill in 1RM values in lb using label selectors (input names are numeric IDs)
-    await page.getByLabel(/Bench Press/i).fill('225');
-    await page.getByLabel(/^Squat/i).fill('315');
-    await page.getByLabel(/Overhead Press/i).fill('135');
-    await page.getByLabel(/^Deadlift/i).fill('405');
-
-    // Submit form
-    await page.click('button[type="submit"]');
-
-    // Wait for redirect to dashboard
-    await page.waitForURL('/', { timeout: 10000 });
-
-    // Verify we're on dashboard
+    await fillLbOneRepMaxes(page, '225', '315', '135', '405');
     expect(page.url()).toContain('/');
   });
 
   test('lb user starting Day 1 workout sees weights in lb rounded to nearest 5', async ({ page }) => {
-    const timestamp = Date.now();
-    const email = `lb-workout-${timestamp}@example.com`;
-    const password = 'ValidPassword123';
-    const displayName = 'LB Workout User';
+    const email = `lb-workout-${Date.now()}@example.com`;
 
-    // Register user with lb unit preference
-    await page.goto('/register');
-    await page.fill('#email', email);
-    await page.fill('#password', password);
-    await page.fill('#displayName', displayName);
-    await page.click('input[type="radio"][value="lb"]');
-    await page.click('button[type="submit"]');
-    await selectPlanAfterRegistration(page);
+    await registerLbUser(page, email, 'LB Workout User');
+    await fillLbOneRepMaxes(page, '225', '315', '135', '405');
 
-    // Fill in 1RM values in lb
-    await page.getByLabel(/Bench Press/i).fill('225');
-    await page.getByLabel(/^Squat/i).fill('315');
-    await page.getByLabel(/Overhead Press/i).fill('135');
-    await page.getByLabel(/^Deadlift/i).fill('405');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/');
-
-    // Start Day 1 workout (Bench Volume)
     const startButton = page.getByRole('button', { name: /start workout/i }).first();
     await expect(startButton).toBeVisible();
     await startButton.click();
-
-    // Wait for workout page
     await page.waitForURL(/\/workout\/\d+/);
 
-    // Day 1 Bench TM calculation: 225 lb * 0.9 = 202.5 lb
-    // Set 1: 65% of 202.5 = 131.625 lb, rounded to nearest 5 = 130 lb
     const firstSetWeight = await page.locator('.set-row').first().locator('.set-row__weight').textContent();
-
-    // Verify weight is displayed in lb
     expect(firstSetWeight).toContain('lb');
 
-    // Verify weight is rounded to nearest 5
     const weightValue = parseInt(firstSetWeight?.match(/\d+/)?.[0] || '0');
     expect(weightValue % 5).toBe(0);
-
-    // Verify the first set weight is approximately 130 lb (65% of 202.5 lb TM)
     expect(weightValue).toBeGreaterThanOrEqual(125);
     expect(weightValue).toBeLessThanOrEqual(135);
   });
 
   test('lb user settings shows TMs in lb', async ({ page }) => {
-    const timestamp = Date.now();
-    const email = `lb-dashboard-${timestamp}@example.com`;
-    const password = 'ValidPassword123';
-    const displayName = 'LB Dashboard User';
+    const email = `lb-dashboard-${Date.now()}@example.com`;
 
-    // Register user with lb unit preference
-    await page.goto('/register');
-    await page.fill('#email', email);
-    await page.fill('#password', password);
-    await page.fill('#displayName', displayName);
-    await page.click('input[type="radio"][value="lb"]');
-    await page.click('button[type="submit"]');
-    await selectPlanAfterRegistration(page);
+    await registerLbUser(page, email, 'LB Dashboard User');
+    await fillLbOneRepMaxes(page, '220', '310', '130', '400');
 
-    // Fill in 1RM values in lb
-    await page.getByLabel(/Bench Press/i).fill('220');
-    await page.getByLabel(/^Squat/i).fill('310');
-    await page.getByLabel(/Overhead Press/i).fill('130');
-    await page.getByLabel(/^Deadlift/i).fill('400');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/');
-
-    // Navigate to settings to check TMs
-    await page.click('a[href="/settings"]');
+    await page.getByRole('link', { name: /settings/i }).click();
     await page.waitForURL('/settings');
-    await page.waitForSelector('text=Training Maxes');
+    await expect(page.getByText('Training Maxes')).toBeVisible();
 
-    // Verify Training Maxes section shows lb values
     const benchTM = await page.locator('.tm-item:has-text("Bench")').locator('.tm-weight').textContent();
     const squatTM = await page.locator('.tm-item:has-text("Squat")').locator('.tm-weight').textContent();
     const ohpTM = await page.locator('.tm-item:has-text("OHP"), .tm-item:has-text("Overhead")').locator('.tm-weight').textContent();
     const deadliftTM = await page.locator('.tm-item:has-text("Deadlift")').locator('.tm-weight').textContent();
 
-    // All TMs should show "lb" unit
     expect(benchTM).toContain('lb');
     expect(squatTM).toContain('lb');
     expect(ohpTM).toContain('lb');
     expect(deadliftTM).toContain('lb');
 
-    // Verify TMs are 90% of 1RMs and rounded to nearest 5
     const benchValue = parseInt(benchTM?.match(/\d+/)?.[0] || '0');
     const squatValue = parseInt(squatTM?.match(/\d+/)?.[0] || '0');
     const ohpValue = parseInt(ohpTM?.match(/\d+/)?.[0] || '0');
@@ -150,16 +89,12 @@ test.describe('Unit Conversion', () => {
     expect(ohpValue % 5).toBe(0);
     expect(deadliftValue % 5).toBe(0);
 
-    // Verify approximate values (within rounding range)
     expect(benchValue).toBeGreaterThanOrEqual(195);
     expect(benchValue).toBeLessThanOrEqual(200);
-
     expect(squatValue).toBeGreaterThanOrEqual(275);
     expect(squatValue).toBeLessThanOrEqual(280);
-
     expect(ohpValue).toBeGreaterThanOrEqual(115);
     expect(ohpValue).toBeLessThanOrEqual(120);
-
     expect(deadliftValue).toBeGreaterThanOrEqual(360);
     expect(deadliftValue).toBeLessThanOrEqual(365);
   });
@@ -167,59 +102,42 @@ test.describe('Unit Conversion', () => {
   testWithFixture('switching unit preference from kg to lb updates weight displays across the app', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
 
-    // setupCompletePage registers user with kg (default), subscribes to plan, and sets up TMs
-    // Initial state: user is on dashboard with kg units
-    await page.waitForSelector('text=Workout Days');
+    await expect(page.getByText('Workout Days')).toBeVisible();
 
-    // Navigate to settings to verify initial kg TMs and switch unit
-    await page.click('a[href="/settings"]');
+    await page.getByRole('link', { name: /settings/i }).click();
     await page.waitForURL('/settings');
-    await page.waitForSelector('text=Training Maxes');
+    await expect(page.getByText('Training Maxes')).toBeVisible();
 
-    // Verify initial state shows kg
     await expect(page.locator('text=Bench-press').locator('..')).toContainText('kg');
 
-    // Switch to lb
     await page.getByRole('button', { name: 'lb' }).click();
-
-    // Wait for save confirmation
     await expect(page.getByText(/saved/i)).toBeVisible({ timeout: 3000 });
 
-    // Navigate to dashboard
-    await page.click('a[href="/"]');
+    await page.getByRole('link', { name: /dashboard/i }).click();
     await page.waitForURL('/');
 
-    // Start a workout to verify workout weights are displayed in lb
     await page.getByRole('button', { name: /start workout/i }).first().click();
     await page.waitForURL(/\/workout\/1/);
     await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('checkbox').first()).toBeVisible();
 
-    // Wait for sets to load
-    await expect(page.getByRole('checkbox').first()).toBeVisible({ timeout: 15000 });
-
-    // Verify workout set weights are displayed in lb
     const firstSetText = await page.locator('.set-row').first().textContent();
     expect(firstSetText).toContain('lb');
 
-    // Extract weight value and verify it's in lb and properly rounded to nearest 5
     const firstSetWeightMatch = firstSetText?.match(/(\d+(?:\.\d+)?)\s*lb/);
     expect(firstSetWeightMatch).toBeTruthy();
     const firstSetWeight = parseFloat(firstSetWeightMatch![1]);
-
-    // Verify weight is rounded to nearest 5 lb
     expect(firstSetWeight % 5).toBe(0);
 
-    // Navigate to settings and verify TMs are displayed in lb
     await page.goto('/settings');
-    await page.waitForSelector('text=Training Maxes', { timeout: 10000 });
+    await expect(page.getByText('Training Maxes')).toBeVisible();
 
-    // Verify TMs are displayed in lb
-    await expect(page.locator('text=Bench-press').locator('..')).toContainText('lb', { timeout: 5000 });
+    await expect(page.locator('text=Bench-press').locator('..')).toContainText('lb');
     const benchTMText = await page.locator('text=Bench-press').locator('..').textContent();
     const benchMatch = benchTMText?.match(/(\d+(?:\.\d+)?)\s*lb/);
     expect(benchMatch).toBeTruthy();
     const benchLb = parseFloat(benchMatch![1]);
     expect(benchLb).toBeGreaterThan(0);
-    expect(benchLb % 5).toBe(0); // Should be rounded to nearest 5 lb
+    expect(benchLb % 5).toBe(0);
   });
 });

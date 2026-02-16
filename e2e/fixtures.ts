@@ -13,12 +13,24 @@ interface AuthenticatedPageFixture {
 
 interface SetupCompletePageFixture extends AuthenticatedPageFixture {}
 
+/** Register a new user via the UI and subscribe to the default plan. */
+async function registerAndSelectPlan(page: Page, user: User) {
+  await page.goto('/register');
+  await page.getByLabel(/email/i).fill(user.email);
+  await page.getByLabel(/password/i).fill(user.password);
+  await page.getByLabel(/display name/i).fill(user.displayName);
+  await page.getByRole('button', { name: /create account/i }).click();
+
+  await page.waitForURL('/select-plan');
+  await page.getByRole('button', { name: /select plan/i }).first().click();
+  await page.waitForURL(/\/setup/);
+}
+
 export const test = base.extend<{
   authenticatedPage: AuthenticatedPageFixture;
   setupCompletePage: SetupCompletePageFixture;
 }>({
   authenticatedPage: async ({ page }, use) => {
-    // Generate unique user (use crypto.randomUUID to avoid collisions in parallel tests)
     const uniqueId = crypto.randomUUID();
     const user: User = {
       email: `test-${uniqueId}@example.com`,
@@ -26,42 +38,24 @@ export const test = base.extend<{
       displayName: 'Test User',
     };
 
-    // Register user
-    await page.goto('/register');
-    await page.fill('#email', user.email);
-    await page.fill('#password', user.password);
-    await page.fill('#displayName', user.displayName);
-    await page.click('button[type="submit"]');
-
-    // After registration, user must select a plan first
-    await page.waitForURL('/select-plan');
-    await page.click('button:has-text("Select Plan")');
-    await page.waitForURL(/\/setup/);
-
-    // Provide the authenticated page and user to the test
+    await registerAndSelectPlan(page, user);
     await use({ page, user });
   },
 
   setupCompletePage: async ({ authenticatedPage }, use) => {
     const { page, user } = authenticatedPage;
 
-    // Wait for setup form to be fully loaded with all exercise fields
-    await page.getByRole('heading', { name: /enter your 1 rep maxes/i }).waitFor();
+    await expect(page.getByRole('heading', { name: /enter your 1 rep maxes/i })).toBeVisible();
     await expect(page.locator('.form-group')).toHaveCount(4);
 
-    // Fill in 1RM values (in kg) using label selectors (input names are numeric IDs)
     await page.getByLabel(/Bench Press/i).fill('100');
     await page.getByLabel(/^Squat/i).fill('140');
     await page.getByLabel(/Overhead Press/i).fill('60');
     await page.getByLabel(/^Deadlift/i).fill('180');
 
-    // Submit form
-    await page.click('button[type="submit"]');
+    await page.getByRole('button', { name: /calculate/i }).click();
+    await page.waitForURL('/');
 
-    // Wait for redirect to dashboard (root path)
-    await page.waitForURL('/', { timeout: 10000 });
-
-    // Provide the page with setup complete and user to the test
     await use({ page, user });
   },
 });

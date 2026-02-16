@@ -196,6 +196,17 @@ Always write tests for new code.
 - **Test isolation**: Backend `vitest.config.ts` uses `fileParallelism: false` and `setup.ts` truncates all tables in `beforeAll` per test file.
 - **E2E tests**: Playwright for end-to-end user flows (registration, login, workout session, progression). Test files located in `e2e/`, configuration in `playwright.config.ts` at project root. Parallel execution with `crypto.randomUUID()` for unique test users.
 - **Do not write frontend unit tests.** All frontend testing is done via Playwright E2E tests.
+
+### Playwright Best Practices
+
+- **Use `await page.locator().click()` instead of `await page.click()`** — locator-based API is more reliable and auto-waits.
+- **Prefer `getByRole`, `getByLabel`, `getByText` over CSS selectors** — use `page.getByRole('button', { name: /save/i })` instead of `page.click('button[type="submit"]')`, `page.getByLabel(/email/i)` instead of `page.fill('#email', ...)`, `page.getByRole('link', { name: /settings/i })` instead of `page.click('a[href="/settings"]')`.
+- **Wait with `expect` assertions, not `waitForTimeout` or `waitForSelector`** — use `await expect(page.getByText('Workout Days')).toBeVisible()` instead of `page.waitForSelector('text=Workout Days')` or `page.waitForTimeout(500)`. Never use `waitForTimeout`; if you need to wait for async data, use `waitForResponse` or `expect` with a timeout.
+- **Use `expect(...).toBeVisible()` instead of `.waitFor()`** — e.g. `await expect(page.getByRole('heading', { name: /log in/i })).toBeVisible()` instead of `page.getByRole('heading', { name: /log in/i }).waitFor()`.
+- **Add `.first()` when multiple elements match** — e.g. `page.getByRole('button', { name: /select plan/i }).first().click()` when there are multiple "Select Plan" buttons.
+- **Target elements within specific containers** to avoid position-dependent `nth()` — e.g. `page.locator('.workout-card').filter({ has: page.getByRole('heading', { name: 'Day 2' }) }).getByRole('button')` instead of `page.getByRole('button').nth(1)`.
+- **Wait for page render after navigation** before interacting with forms that share input IDs across routes — e.g. `await expect(page.getByRole('heading', { name: /create account/i })).toBeVisible()` before filling the register form, since login and register both have `id="email"`.
+- **Extract shared helpers** for repetitive flows (registration, login, logout, workout completion) to reduce duplication across test files.
 - Run tests before committing: `npm test` or `./run_test.sh`
 - If tests fail, fix code or test and then you can commit. Never skip tests if they fail
 - **Backend typecheck**: `npm run build -w backend` (no separate typecheck script)

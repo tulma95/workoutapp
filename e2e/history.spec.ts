@@ -1,245 +1,148 @@
 import { test, expect } from './fixtures';
+import type { Page } from '@playwright/test';
 
-// Helper to complete a workout via UI
-async function completeWorkout(page: any, dayNumber: number, amrapReps: number) {
-  // Start the workout
-  await page.getByRole('button', { name: /start workout/i }).nth(dayNumber - 1).click();
+async function completeWorkout(page: Page, dayNumber: number, amrapReps: number) {
+  await expect(page.getByText('Workout Days')).toBeVisible();
+
+  // Click the start button within the specific day card to avoid nth() position issues
+  const card = page.locator('.workout-card').filter({
+    has: page.getByRole('heading', { name: `Day ${dayNumber}` }),
+  });
+  await card.getByRole('button', { name: /start workout/i }).click();
   await page.waitForURL(/\/workout\/\d+/);
-
-  // Wait for workout to load
   await expect(page.getByRole('heading', { name: new RegExp(`day ${dayNumber}`, 'i') })).toBeVisible({ timeout: 15000 });
 
-  // Enter AMRAP reps
+  // Fill AMRAP and wait for the API call to persist
   const amrapInput = page.getByRole('spinbutton').first();
   await amrapInput.fill(amrapReps.toString());
-  await page.waitForTimeout(300);
+  await page.waitForResponse(
+    resp => resp.url().includes('/api/workouts/') && resp.request().method() === 'PATCH' && resp.ok(),
+  );
 
-  // Complete the workout
   await page.getByRole('button', { name: /complete workout/i }).click();
-  await page.waitForTimeout(1500); // Wait for completion to process
 
-  // Return to dashboard
+  await expect(page.getByRole('button', { name: /back to dashboard|dashboard/i })).toBeVisible();
   await page.getByRole('button', { name: /back to dashboard|dashboard/i }).click();
   await page.waitForURL('/');
+}
+
+function currentMonthYear() {
+  const currentDate = new Date();
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December'];
+  return { month: monthNames[currentDate.getMonth()], year: currentDate.getFullYear().toString() };
 }
 
 test.describe('Workout History', () => {
   test('navigate to history page from bottom nav, verify calendar visible with month/year header', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
 
-    // Wait for dashboard to load
-    await page.waitForSelector('text=Workout Days');
+    await expect(page.getByText('Workout Days')).toBeVisible();
 
-    // Click History nav link
     await page.getByRole('link', { name: /history/i }).click();
     await page.waitForURL('/history');
 
-    // Verify we're on the history page
-    expect(page.url()).toContain('/history');
-
-    // Verify the page heading
     await expect(page.getByRole('heading', { name: /history/i })).toBeVisible();
 
-    // Verify calendar with month/year header is visible
-    // The calendar should show current month and year (e.g. "February 2026")
-    const currentDate = new Date();
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                        'July', 'August', 'September', 'October', 'November', 'December'];
-    const currentMonth = monthNames[currentDate.getMonth()];
-    const currentYear = currentDate.getFullYear().toString();
-
-    // Verify the month/year heading is visible in the calendar
-    await expect(page.getByRole('heading', { name: new RegExp(`${currentMonth} ${currentYear}`) })).toBeVisible();
+    const { month, year } = currentMonthYear();
+    await expect(page.getByRole('heading', { name: new RegExp(`${month} ${year}`) })).toBeVisible();
   });
 
   test('no completed workouts - calendar renders, empty state message shown', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
 
-    // Navigate to history page
-    await page.waitForSelector('text=Workout Days');
+    await expect(page.getByText('Workout Days')).toBeVisible();
     await page.getByRole('link', { name: /history/i }).click();
     await page.waitForURL('/history');
 
-    // Verify calendar is visible with current month in header
-    const currentDate = new Date();
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                        'July', 'August', 'September', 'October', 'November', 'December'];
-    const currentMonth = monthNames[currentDate.getMonth()];
-    const currentYear = currentDate.getFullYear().toString();
-
-    // Check for month/year heading (level 2 heading in the calendar)
-    await expect(page.getByRole('heading', { name: new RegExp(`${currentMonth} ${currentYear}`) })).toBeVisible();
-
-    // Verify empty state message is shown
+    const { month, year } = currentMonthYear();
+    await expect(page.getByRole('heading', { name: new RegExp(`${month} ${year}`) })).toBeVisible();
     await expect(page.getByText(/no workouts yet.*complete your first workout/i)).toBeVisible();
   });
 
   test('complete Day 1 workout, navigate to history, verify today highlighted on calendar', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
 
-    // Wait for dashboard
-    await page.waitForSelector('text=Workout Days');
-
-    // Complete Day 1 workout
+    await expect(page.getByText('Workout Days')).toBeVisible();
     await completeWorkout(page, 1, 10);
 
-    // Navigate to history
     await page.getByRole('link', { name: /history/i }).click();
     await page.waitForURL('/history');
 
-    // Wait for calendar to load and fetch workout data
-    await page.waitForTimeout(1000);
-
-    // Verify calendar is visible
-    const currentDate = new Date();
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                        'July', 'August', 'September', 'October', 'November', 'December'];
-    const currentMonth = monthNames[currentDate.getMonth()];
-    const currentYear = currentDate.getFullYear().toString();
-    await expect(page.getByRole('heading', { name: new RegExp(`${currentMonth} ${currentYear}`) })).toBeVisible();
-
-    // Verify a workout day is shown on the calendar (we can't easily test the exact highlighting
-    // without more specific data-testid attributes, but the calendar should have clickable workout days)
-    // The fact that we completed a workout and can proceed to the next test (clicking it) is sufficient
+    const { month, year } = currentMonthYear();
+    await expect(page.getByRole('heading', { name: new RegExp(`${month} ${year}`) })).toBeVisible();
   });
 
   test('tap highlighted day, verify workout detail appears with Day 1, exercises, and set data', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
 
-    // Wait for dashboard
-    await page.waitForSelector('text=Workout Days');
-
-    // Complete Day 1 workout
+    await expect(page.getByText('Workout Days')).toBeVisible();
     await completeWorkout(page, 1, 10);
 
-    // Navigate to history
     await page.getByRole('link', { name: /history/i }).click();
     await page.waitForURL('/history');
 
-    // Wait for calendar to load
-    await page.waitForTimeout(500);
-
-    // Click on today's date (should have a workout)
-    // Find buttons with text matching today's date number
     const today = new Date().getDate();
+    await page.getByRole('button').filter({ hasText: today.toString() }).first().click();
 
-    // Try to find and click the workout day button
-    // The calendar cells should be clickable buttons for days with workouts
-    const workoutDayButtons = page.getByRole('button');
-    const workoutButton = workoutDayButtons.filter({ hasText: today.toString() }).first();
-    await workoutButton.click();
-
-    // Wait for workout detail to load
-    await page.waitForTimeout(1500);
-
-    // Verify workout detail shows Day 1 heading
     await expect(page.getByRole('heading', { name: /day\s*1/i }).first()).toBeVisible();
-
-    // Verify exercise names are shown (Day 1 is Bench Volume and OHP)
     await expect(page.getByText(/bench/i).first()).toBeVisible();
     await expect(page.getByText(/overhead press/i).first()).toBeVisible();
-
-    // Verify set data is shown with weights
-    // Day 1 Bench Volume uses percentages of bench TM (90kg from setup fixture)
-    await expect(page.getByText(/\d+\s*kg|\d+\s*lb/).first()).toBeVisible(); // Weight with unit
+    await expect(page.getByText(/\d+\s*kg|\d+\s*lb/).first()).toBeVisible();
   });
 
   test('complete two workouts (Day 1 and Day 2), verify both days show on calendar', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
 
-    // Wait for dashboard to load
-    await page.waitForSelector('text=Workout Days');
-
-    // Complete Day 1 workout
+    await expect(page.getByText('Workout Days')).toBeVisible();
     await completeWorkout(page, 1, 10);
-
-    // Wait for dashboard to fully load after first workout
-    await page.waitForTimeout(500);
-
-    // Complete Day 2 workout
     await completeWorkout(page, 2, 8);
 
-    // Wait for dashboard to fully load after second workout
-    await page.waitForTimeout(500);
-
-    // Navigate to history page
     await page.getByRole('link', { name: /history/i }).click();
     await page.waitForURL('/history');
 
-    // Wait for calendar to load and fetch workout data
-    await page.waitForTimeout(1000);
-
-    // Click on today's date to see workout details
     const today = new Date().getDate();
-    const workoutDayButtons = page.getByRole('button');
-    const workoutButton = workoutDayButtons.filter({ hasText: today.toString() }).first();
-    await workoutButton.click();
+    await page.getByRole('button').filter({ hasText: today.toString() }).first().click();
 
-    // Wait for workout details to load
-    await page.waitForTimeout(1500);
-
-    // Verify both workouts are visible (or at least the detail panel shows workout data)
-    // Day 1 has Bench Volume, Day 2 has Squat and Sumo Deadlift
-    // We should see evidence of both workouts in the detail view
-    const bodyText = await page.textContent('body');
-
-    // Check for Day 1 content (Bench) or Day 2 content (Squat/Sumo)
-    const hasBench = /bench/i.test(bodyText || '');
-    const hasSquat = /squat/i.test(bodyText || '');
-
-    // At minimum, we should see workout details loaded (either Bench or Squat present)
-    expect(hasBench || hasSquat).toBeTruthy();
+    // Wait for workout detail to load, then verify exercises are visible
+    await expect(page.getByText(/bench|squat/i).first()).toBeVisible();
   });
 
   test('month navigation - prev and next buttons are present and clickable', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
 
-    // Navigate to history page
-    await page.waitForSelector('text=Workout Days');
+    await expect(page.getByText('Workout Days')).toBeVisible();
     await page.getByRole('link', { name: /history/i }).click();
     await page.waitForURL('/history');
 
-    // Get current date and calculate expected months
     const currentDate = new Date();
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
                         'July', 'August', 'September', 'October', 'November', 'December'];
-
     const currentMonth = currentDate.getMonth();
     const currentYear = currentDate.getFullYear();
-
-    // Calculate previous month (accounting for year boundary)
     const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
     const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
-    // Verify current month is displayed (select the heading within the calendar)
     const monthHeading = page.locator('.workout-calendar__title');
     await expect(monthHeading).toContainText(`${monthNames[currentMonth]} ${currentYear}`);
 
-    // Verify navigation buttons are visible and clickable
     const prevButton = page.getByRole('button', { name: 'Previous month' });
     const nextButton = page.getByRole('button', { name: 'Next month' });
 
     await expect(prevButton).toBeVisible();
     await expect(nextButton).toBeVisible();
 
-    // Click Previous month and verify the month changes
     await prevButton.click();
-    await page.waitForTimeout(300); // Wait for View Transition animation
     await expect(monthHeading).toContainText(`${monthNames[prevMonth]} ${prevYear}`);
 
-    // Click Next month (back to current month) and verify
     await nextButton.click();
-    await page.waitForTimeout(300);
     await expect(monthHeading).toContainText(`${monthNames[currentMonth]} ${currentYear}`);
 
-    // Click Next month again (forward to next month) and verify
     const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
     const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
     await nextButton.click();
-    await page.waitForTimeout(300);
     await expect(monthHeading).toContainText(`${monthNames[nextMonth]} ${nextYear}`);
 
-    // Verify calendar grid is still rendered and visible
     await expect(page.locator('.workout-calendar__grid')).toBeVisible();
   });
 });
