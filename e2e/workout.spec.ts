@@ -14,14 +14,14 @@ test.describe('Workout Session', () => {
     await dashboard.startWorkout();
     await page.waitForURL(/\/workout\/1/);
 
-    await expect(workout.checkboxes.first()).toBeVisible({ timeout: 15000 });
+    await expect(workout.confirmButtons.first()).toBeVisible({ timeout: 15000 });
     await expect(workout.dayHeading(1)).toBeVisible();
 
-    const checkboxCount = await workout.checkboxes.count();
-    expect(checkboxCount).toBeGreaterThanOrEqual(16);
+    const confirmCount = await workout.confirmButtons.count();
+    expect(confirmCount).toBeGreaterThanOrEqual(16);
 
-    const amrapCount = await workout.amrapInputs.count();
-    expect(amrapCount).toBeGreaterThanOrEqual(1);
+    const repsCount = await workout.repsInputs.count();
+    expect(repsCount).toBeGreaterThanOrEqual(1);
   });
 
   test('completing a non-AMRAP set marks it visually as done', async ({ setupCompletePage }) => {
@@ -34,11 +34,15 @@ test.describe('Workout Session', () => {
     await page.waitForURL(/\/workout\/1/);
     await workout.expectLoaded(1);
 
-    const firstCheckbox = workout.checkboxes.first();
-    await expect(firstCheckbox).not.toBeChecked();
+    // Click the first Confirm button
+    await workout.confirmSet(0);
 
-    await firstCheckbox.click();
-    await expect(firstCheckbox).toBeChecked();
+    // Verify the set row has completed class
+    const completedRows = page.locator('.set-row--completed');
+    await expect(completedRows.first()).toBeVisible();
+
+    // Verify undo button appears
+    await expect(workout.undoButtons.first()).toBeVisible();
   });
 
   test('entering AMRAP reps using the +/- stepper works correctly', async ({ setupCompletePage }) => {
@@ -51,11 +55,11 @@ test.describe('Workout Session', () => {
     await page.waitForURL(/\/workout\/1/);
     await workout.expectLoaded(1);
 
-    const amrapInput = workout.amrapInputs.first();
+    const amrapInput = workout.repsInputs.first();
     const initialValue = await amrapInput.inputValue();
     expect(initialValue === '' || initialValue === '0').toBeTruthy();
 
-    const plusButton = page.getByRole('button', { name: /increase|increment|\+/i }).first();
+    const plusButton = page.getByRole('button', { name: /increase reps/i }).first();
     await plusButton.click();
     await plusButton.click();
     await plusButton.click();
@@ -64,7 +68,7 @@ test.describe('Workout Session', () => {
     const numValue = parseInt(valueAfterPlus, 10);
     expect(numValue).toBeGreaterThan(0);
 
-    const minusButton = page.getByRole('button', { name: /decrease|decrement|\-/i }).first();
+    const minusButton = page.getByRole('button', { name: /decrease reps/i }).first();
     await minusButton.click();
 
     const finalValue = await amrapInput.inputValue();
@@ -87,7 +91,7 @@ test.describe('Workout Session', () => {
     await workout.expectLoaded(1);
 
     await workout.fillAmrap('12');
-    await workout.complete();
+    await workout.completeWithDialog();
 
     await expect(page.getByText(/bench.*\+5|progression|increase/i)).toBeVisible();
     await expect(workout.backToDashboardButton).toBeVisible();
@@ -109,7 +113,7 @@ test.describe('Workout Session', () => {
     await workout.expectLoaded(1);
 
     await workout.fillAmrap('10');
-    await workout.complete();
+    await workout.completeWithDialog();
 
     await workout.goBackToDashboard();
 
@@ -148,11 +152,18 @@ test.describe('Workout Session', () => {
     await page.waitForURL(/\/workout\/1/);
     await workout.expectLoaded(1);
 
-    await workout.toggleSet(0);
-    await expect(workout.checkboxes.nth(0)).toBeChecked();
+    // Confirm first two sets and wait for PATCH responses
+    const patchResponse1 = page.waitForResponse(resp => resp.url().includes('/sets/') && resp.request().method() === 'PATCH');
+    await workout.confirmSet(0);
+    await patchResponse1;
 
-    await workout.toggleSet(1);
-    await expect(workout.checkboxes.nth(1)).toBeChecked();
+    const patchResponse2 = page.waitForResponse(resp => resp.url().includes('/sets/') && resp.request().method() === 'PATCH');
+    await workout.confirmSet(0); // After first confirm disappears, next confirm is now at index 0
+    await patchResponse2;
+
+    // Verify completed rows exist
+    const completedRows = page.locator('.set-row--completed');
+    await expect(completedRows).toHaveCount(2, { timeout: 5000 });
 
     // Navigate back to dashboard
     await page.goto('/');
@@ -162,8 +173,9 @@ test.describe('Workout Session', () => {
     await page.waitForURL(/\/workout\/1/);
     await workout.expectLoaded(1);
 
-    await expect(workout.checkboxes.nth(0)).toBeChecked();
-    await expect(workout.checkboxes.nth(1)).toBeChecked();
+    // Verify the completed sets are still shown as completed (undo buttons visible)
+    await expect(completedRows.first()).toBeVisible();
+    await expect(completedRows).toHaveCount(2);
 
     await expect(page.getByRole('heading', { name: /workout in progress/i })).not.toBeVisible();
   });
@@ -177,7 +189,7 @@ test.describe('Workout Session', () => {
     await dashboard.startWorkout();
     await page.waitForURL(/\/workout\/1/);
     await workout.expectLoaded(1);
-    await expect(workout.checkboxes.first()).toBeVisible();
+    await expect(workout.confirmButtons.first()).toBeVisible();
 
     const firstExerciseSection = page.locator('.workout-section').first();
     const secondExerciseSection = page.locator('.workout-section').nth(1);
@@ -185,12 +197,12 @@ test.describe('Workout Session', () => {
     await expect(firstExerciseSection).toBeVisible();
     await expect(secondExerciseSection).toBeVisible();
 
-    const firstExerciseCheckboxCount = await firstExerciseSection.getByRole('checkbox').count();
-    const firstExerciseAmrapCount = await firstExerciseSection.getByRole('spinbutton').count();
-    expect(firstExerciseCheckboxCount + firstExerciseAmrapCount).toBe(9);
+    const firstConfirmCount = await firstExerciseSection.getByRole('button', { name: /^confirm$/i }).count();
+    const firstRepsCount = await firstExerciseSection.getByRole('spinbutton', { name: /reps completed/i }).count();
+    expect(firstConfirmCount + firstRepsCount).toBe(9);
 
-    const secondExerciseCheckboxCount = await secondExerciseSection.getByRole('checkbox').count();
-    expect(secondExerciseCheckboxCount).toBe(8);
+    const secondConfirmCount = await secondExerciseSection.getByRole('button', { name: /^confirm$/i }).count();
+    expect(secondConfirmCount).toBe(8);
   });
 
   test('TM progression after workout: completing Day 1 with good AMRAP performance increases Bench TM', async ({ setupCompletePage }) => {
@@ -219,10 +231,10 @@ test.describe('Workout Session', () => {
     await page.waitForURL(/\/workout\/1/);
 
     await workout.expectLoaded(1);
-    await expect(workout.checkboxes.first()).toBeVisible();
+    await expect(workout.confirmButtons.first()).toBeVisible();
 
     await workout.fillAmrap('10');
-    await workout.complete();
+    await workout.completeWithDialog();
 
     await expect(page.getByText(/progression|increase|bench.*\+/i)).toBeVisible({ timeout: 5000 });
     await expect(page.getByText(/bench/i).filter({ hasText: /\+/ })).toBeVisible();

@@ -3,8 +3,9 @@ import { expect, type Page } from '@playwright/test';
 export class WorkoutPage {
   readonly page: Page;
 
-  readonly checkboxes;
-  readonly amrapInputs;
+  readonly confirmButtons;
+  readonly repsInputs;
+  readonly undoButtons;
   readonly completeButton;
   readonly cancelButton;
   readonly backToDashboardButton;
@@ -13,14 +14,20 @@ export class WorkoutPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.checkboxes = page.getByRole('checkbox');
-    this.amrapInputs = page.getByRole('spinbutton');
+    this.confirmButtons = page.getByRole('button', { name: /^confirm$/i });
+    this.repsInputs = page.getByRole('spinbutton', { name: /reps completed/i });
+    this.undoButtons = page.locator('.set-row__undo');
     this.completeButton = page.getByRole('button', { name: /complete workout/i });
     this.cancelButton = page.getByRole('button', { name: /cancel workout/i });
     this.backToDashboardButton = page.getByRole('button', { name: /back to dashboard|dashboard/i });
     this.confirmDialog = page.locator('.confirm-dialog__content');
     this.progressionBanner = page.getByText(/progression|increase|bench.*\+/i);
   }
+
+  /** Backward compat alias */
+  get checkboxes() { return this.confirmButtons; }
+  /** Backward compat alias */
+  get amrapInputs() { return this.repsInputs; }
 
   dayHeading(dayNumber: number) {
     return this.page.getByRole('heading', { name: new RegExp(`day ${dayNumber}`, 'i') });
@@ -33,16 +40,32 @@ export class WorkoutPage {
     await expect(heading).toBeVisible({ timeout: 15000 });
   }
 
+  async confirmSet(index: number) {
+    await this.confirmButtons.nth(index).click();
+  }
+
   async fillAmrap(value: string, index = 0) {
-    await this.amrapInputs.nth(index).fill(value);
+    await this.repsInputs.nth(index).fill(value);
   }
 
   async toggleSet(index: number) {
-    await this.checkboxes.nth(index).click();
+    await this.confirmButtons.nth(index).click();
   }
 
   async complete() {
     await this.completeButton.click();
+  }
+
+  /** Complete workout, handling the confirmation dialog if it appears. */
+  async completeWithDialog() {
+    await this.completeButton.click();
+    const dialog = this.confirmDialog;
+    try {
+      await expect(dialog).toBeVisible({ timeout: 2000 });
+      await dialog.getByRole('button', { name: /complete anyway/i }).click();
+    } catch {
+      // Dialog didn't appear — workout completed directly
+    }
   }
 
   async cancel() {
