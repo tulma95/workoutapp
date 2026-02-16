@@ -1,4 +1,4 @@
-import AmrapInput from './AmrapInput';
+import RepsInput from './RepsInput';
 import type { UnitPreference } from '../types';
 import { formatWeight } from '../utils/weight';
 import './SetRow.css';
@@ -11,8 +11,9 @@ interface SetRowProps {
   completed: boolean;
   actualReps: number | null;
   unit: UnitPreference;
-  onComplete: () => void;
-  onAmrapRepsChange: (reps: number) => void;
+  onConfirm: () => void;
+  onRepsChange: (reps: number) => void;
+  onUndo: () => void;
 }
 
 export default function SetRow({
@@ -23,37 +24,59 @@ export default function SetRow({
   completed,
   actualReps,
   unit,
-  onComplete,
-  onAmrapRepsChange,
+  onConfirm,
+  onRepsChange,
+  onUndo,
 }: SetRowProps) {
+  const isEdited = completed && actualReps !== null && actualReps < reps;
+  const showStepper = isAmrap || completed;
+
   return (
-    <div className={`set-row ${completed ? 'set-row--completed' : ''}`}>
+    <div
+      className={`set-row ${completed ? 'set-row--completed' : ''} ${
+        isEdited ? 'set-row--edited' : ''
+      }`}
+    >
       <div className="set-row__info">
         <span className="set-row__number">{setNumber}</span>
-        <span className="set-row__weight">
-          {formatWeight(weight, unit)}
-        </span>
-        <span className="set-row__reps">
-          x{reps}
-          {isAmrap ? '+' : ''}
-        </span>
+        <span className="set-row__weight">{formatWeight(weight, unit)}</span>
+        <div className="set-row__reps-container">
+          <span className="set-row__reps">
+            x{reps}
+            {isAmrap ? '+' : ''}
+          </span>
+          {isEdited && (
+            <span className="set-row__target-hint">target: {reps}</span>
+          )}
+        </div>
       </div>
 
       <div className="set-row__action">
-        {isAmrap ? (
-          <AmrapInput
-            value={actualReps}
-            targetReps={reps}
-            onChange={onAmrapRepsChange}
-          />
+        {showStepper ? (
+          <>
+            <RepsInput
+              value={actualReps}
+              targetReps={reps}
+              isAmrap={isAmrap}
+              onChange={onRepsChange}
+            />
+            <button
+              type="button"
+              className="set-row__undo"
+              onClick={onUndo}
+              aria-label={`Undo set ${setNumber}`}
+            >
+              ✓
+            </button>
+          </>
         ) : (
-          <input
-            type="checkbox"
-            checked={completed}
-            onChange={onComplete}
-            className="set-row__checkbox"
-            aria-label={`Mark set ${setNumber} as complete`}
-          />
+          <button
+            type="button"
+            className="set-row__confirm"
+            onClick={onConfirm}
+          >
+            Confirm
+          </button>
         )}
       </div>
     </div>
