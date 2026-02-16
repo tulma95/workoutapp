@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useAuth } from '../../context/useAuth'
 import { ErrorMessage } from '../../components/ErrorMessage'
+import { Button } from '../../components/Button'
 import type { UnitPreference } from '../../types'
 import styles from '../../styles/AuthForm.module.css'
 import shared from '../../styles/shared.module.css'
@@ -119,9 +120,9 @@ function RegisterPage() {
 
         {error && <ErrorMessage message={error} />}
 
-        <button type="submit" className={shared.btnPrimary} disabled={loading}>
+        <Button type="submit" disabled={loading}>
           {loading ? 'Creating account...' : 'Create Account'}
-        </button>
+        </Button>
       </form>
 
       <p className={styles.footer}>

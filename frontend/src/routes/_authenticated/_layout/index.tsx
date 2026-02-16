@@ -6,8 +6,8 @@ import { getCurrentWorkout } from '../../../api/workouts'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import WorkoutCard from '../../../components/WorkoutCard'
+import { Button } from '../../../components/Button'
 import styles from '../../../styles/DashboardPage.module.css'
-import shared from '../../../styles/shared.module.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/')({
   beforeLoad: async ({ context: { queryClient } }) => {
@@ -89,12 +89,12 @@ function DashboardPage() {
                 <p className={styles.planDescription}>{plan.description}</p>
               )}
             </div>
-            <button
-              className={shared.btnSecondary}
+            <Button
+              variant="secondary"
               onClick={() => navigate({ to: '/select-plan' })}
             >
               Change
-            </button>
+            </Button>
           </div>
         </section>
       )}

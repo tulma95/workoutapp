@@ -1,5 +1,5 @@
+import { Button } from './Button';
 import styles from './WorkoutCard.module.css';
-import shared from '../styles/shared.module.css';
 
 interface WorkoutCardProps {
   dayNumber: number;
@@ -32,12 +32,9 @@ export default function WorkoutCard({
       </div>
 
       {status !== 'completed' && (
-        <button
-          className={`${shared.btnPrimary} ${styles.button}`}
-          onClick={() => onStart(dayNumber)}
-        >
+        <Button onClick={() => onStart(dayNumber)}>
           {status === 'in_progress' ? 'Continue Workout' : 'Start Workout'}
-        </button>
+        </Button>
       )}
     </div>
   );

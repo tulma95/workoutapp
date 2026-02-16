@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
+import { Button } from './Button';
 import styles from './ConfirmDialog.module.css';
-import shared from '../styles/shared.module.css';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -62,16 +62,16 @@ export function ConfirmDialog({
         <p className={styles.message}>{message}</p>
         <div className={styles.actions}>
           {showCancel && (
-            <button className={shared.btnSecondary} onClick={onCancel}>
+            <Button variant="secondary" onClick={onCancel}>
               {cancelLabel}
-            </button>
+            </Button>
           )}
-          <button
-            className={`${shared.btnPrimary}${variant === 'danger' ? ` ${styles.btnDanger}` : ''}`}
+          <Button
+            variant={variant === 'danger' ? 'danger' : 'primary'}
             onClick={onConfirm}
           >
             {confirmLabel}
-          </button>
+          </Button>
         </div>
       </div>
     </dialog>

@@ -9,8 +9,8 @@ import { formatExerciseName, formatWeight, convertWeight, roundWeight, convertTo
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import type { UnitPreference } from '../../../types'
+import { Button } from '../../../components/Button'
 import styles from '../../../styles/SettingsPage.module.css'
-import shared from '../../../styles/shared.module.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/settings')({
   loader: ({ context: { queryClient } }) =>
@@ -137,25 +137,24 @@ function SettingsPage() {
                 {currentPlan.description}
               </p>
             )}
-            <button
-              className={shared.btnSecondary}
+            <Button
+              variant="secondary"
               onClick={() => navigate({ to: '/select-plan' })}
               style={{ marginTop: '8px' }}
             >
               Change Plan
-            </button>
+            </Button>
           </>
         ) : (
           <>
             <p style={{ margin: '0 0 12px', color: 'var(--text-muted)', fontSize: '14px' }}>
               No plan selected
             </p>
-            <button
-              className={shared.btnPrimary}
+            <Button
               onClick={() => navigate({ to: '/select-plan' })}
             >
               Browse Plans
-            </button>
+            </Button>
           </>
         )}
       </div>
@@ -173,22 +172,22 @@ function SettingsPage() {
       <div className={styles.card}>
         <p style={{ margin: '0 0 12px', fontWeight: 500 }}>Unit Preference</p>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            className={unit === 'kg' ? shared.btnPrimary : shared.btnSecondary}
+          <Button
+            variant={unit === 'kg' ? 'primary' : 'secondary'}
             style={{ flex: 1 }}
             onClick={() => handleUnitChange('kg')}
             disabled={isSaving}
           >
             kg
-          </button>
-          <button
-            className={unit === 'lb' ? shared.btnPrimary : shared.btnSecondary}
+          </Button>
+          <Button
+            variant={unit === 'lb' ? 'primary' : 'secondary'}
             style={{ flex: 1 }}
             onClick={() => handleUnitChange('lb')}
             disabled={isSaving}
           >
             lb
-          </button>
+          </Button>
         </div>
         {isSaving && <LoadingSpinner size={24} />}
         {saved && (
@@ -219,9 +218,9 @@ function SettingsPage() {
         </section>
       )}
 
-      <button className={shared.btnSecondary} style={{ color: 'var(--danger)' }} onClick={handleLogout}>
+      <Button variant="secondary" style={{ color: 'var(--danger)' }} onClick={handleLogout}>
         Log Out
-      </button>
+      </Button>
 
       <dialog ref={dialogRef} className={styles.editDialog} onClick={(e) => { if (e.target === dialogRef.current) closeEditModal() }}>
         <div className={styles.editDialogContent}>
@@ -242,20 +241,19 @@ function SettingsPage() {
           </div>
 
           <div className={styles.editDialogActions}>
-            <button
-              className={shared.btnSecondary}
+            <Button
+              variant="secondary"
               onClick={closeEditModal}
               disabled={tmSaving}
             >
               Cancel
-            </button>
-            <button
-              className={shared.btnPrimary}
+            </Button>
+            <Button
               onClick={handleTmSave}
               disabled={tmSaving}
             >
               {tmSaving ? 'Saving...' : 'Save'}
-            </button>
+            </Button>
           </div>
         </div>
       </dialog>

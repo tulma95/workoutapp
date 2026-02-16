@@ -12,8 +12,8 @@ import {
 } from '../../../api/exercises'
 import { ExerciseFormModal } from '../../../components/ExerciseFormModal'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
+import { Button } from '../../../components/Button'
 import styles from '../../../styles/ExerciseListPage.module.css'
-import shared from '../../../styles/shared.module.css'
 
 export const Route = createFileRoute('/_authenticated/admin/exercises')({
   loader: ({ context: { queryClient } }) =>
@@ -76,17 +76,17 @@ function ExerciseListPage() {
     <div className={styles.page}>
       <div className={styles.header}>
         <h1>Exercise Library</h1>
-        <button className={shared.btnPrimary} onClick={handleCreate}>
+        <Button onClick={handleCreate}>
           + Add Exercise
-        </button>
+        </Button>
       </div>
 
       {exercises.length === 0 ? (
         <div className={styles.emptyState}>
           <p>No exercises yet. Create your first exercise to get started.</p>
-          <button className={shared.btnPrimary} onClick={handleCreate}>
+          <Button onClick={handleCreate}>
             + Add Exercise
-          </button>
+          </Button>
         </div>
       ) : (
         <>

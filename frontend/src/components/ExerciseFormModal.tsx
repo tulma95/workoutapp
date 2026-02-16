@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Exercise, CreateExerciseInput, UpdateExerciseInput } from '../api/exercises';
+import { Button } from './Button';
 import styles from './ExerciseFormModal.module.css';
-import shared from '../styles/shared.module.css';
 
 interface ExerciseFormModalProps {
   exercise?: Exercise | null;
@@ -160,12 +160,12 @@ export function ExerciseFormModal({ exercise, onClose, onSubmit }: ExerciseFormM
           {error && <div className={styles.formError}>{error}</div>}
 
           <div className={styles.formActions}>
-            <button type="button" onClick={onClose} className={shared.btnSecondary} disabled={submitting}>
+            <Button type="button" variant="secondary" onClick={onClose} disabled={submitting}>
               Cancel
-            </button>
-            <button type="submit" className={shared.btnPrimary} disabled={submitting}>
+            </Button>
+            <Button type="submit" disabled={submitting}>
               {submitting ? 'Saving...' : (isEdit ? 'Update' : 'Create')}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

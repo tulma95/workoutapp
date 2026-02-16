@@ -7,6 +7,7 @@ import { getTrainingMaxes } from '../../../api/trainingMaxes'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import { PlanSwitchConfirmModal, type PlanSwitchWarnings } from '../../../components/PlanSwitchConfirmModal'
+import { Button } from '../../../components/Button'
 import styles from '../../../styles/PlanSelectionPage.module.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/select-plan')({
@@ -184,13 +185,12 @@ function PlanSelectionPage() {
               ))}
             </div>
 
-            <button
-              className={styles.selectBtn}
+            <Button
               onClick={() => handleSelectPlan(plan.id)}
               disabled={subscribing !== null}
             >
               {subscribing === plan.id ? 'Subscribing...' : 'Select Plan'}
-            </button>
+            </Button>
           </div>
         ))}
       </div>

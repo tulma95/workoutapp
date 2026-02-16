@@ -99,47 +99,9 @@
   color: var(--text);
 }
 
-.selectBtn {
-  min-height: 3rem;
-  padding: var(--space-md);
-  background-color: var(--primary);
-  color: white;
-  border: none;
-  border-radius: var(--space-sm);
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.selectBtn:hover:not(:disabled) {
-  background-color: var(--primary-dark);
-}
-
-.selectBtn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
 
 .noPlans {
   text-align: center;
   padding: var(--space-xl);
   color: var(--text-muted);
-}
-
-.retryBtn {
-  min-height: 3rem;
-  padding: var(--space-md);
-  background-color: var(--primary);
-  color: white;
-  border: none;
-  border-radius: var(--space-sm);
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: var(--space-md);
-}
-
-.retryBtn:hover {
-  background-color: var(--primary-dark);
 }

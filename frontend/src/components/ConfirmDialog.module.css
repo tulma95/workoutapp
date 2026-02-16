@@ -49,12 +49,3 @@
   min-height: 3rem;
   width: 100%;
 }
-
-.btnDanger {
-  background: var(--danger);
-  border-color: var(--danger);
-}
-
-.btnDanger:hover {
-  opacity: 0.9;
-}

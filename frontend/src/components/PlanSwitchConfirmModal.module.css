@@ -89,39 +89,3 @@
   justify-content: flex-end;
   gap: 0.75rem;
 }
-
-.secondaryBtn,
-.primaryBtn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  border: none;
-  min-height: 48px;
-  min-width: 100px;
-}
-
-.secondaryBtn {
-  background: transparent;
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-}
-
-.secondaryBtn:hover {
-  background: var(--bg);
-}
-
-.primaryBtn {
-  background: var(--primary);
-  color: white;
-}
-
-.primaryBtn:hover {
-  opacity: 0.9;
-}
-
-.primaryBtn:active,
-.secondaryBtn:active {
-  transform: translateY(1px);
-}

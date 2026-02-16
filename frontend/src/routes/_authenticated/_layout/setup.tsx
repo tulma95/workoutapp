@@ -6,8 +6,8 @@ import { getCurrentPlan, type Exercise } from '../../../api/plans'
 import { getMe } from '../../../api/user'
 import { convertToKg } from '../../../utils/weight'
 import { ErrorMessage } from '../../../components/ErrorMessage'
+import { Button } from '../../../components/Button'
 import styles from '../../../styles/SetupPage.module.css'
-import shared from '../../../styles/shared.module.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/setup')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -149,13 +149,12 @@ function SetupPage() {
             Please select a workout plan first.
           </p>
           {error && <ErrorMessage message={error} />}
-          <button
+          <Button
             type="button"
-            className={shared.btnPrimary}
             onClick={() => navigate({ to: '/select-plan' })}
           >
             Select a Plan
-          </button>
+          </Button>
         </div>
       </div>
     )
@@ -190,9 +189,9 @@ function SetupPage() {
 
           {error && <ErrorMessage message={error} />}
 
-          <button type="submit" className={shared.btnPrimary} disabled={isSubmitting}>
+          <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Saving...' : 'Calculate Training Maxes'}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

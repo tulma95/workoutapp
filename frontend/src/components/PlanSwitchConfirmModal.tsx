@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react';
 import type { Exercise } from '../api/plans';
+import { Button } from './Button';
 import styles from './PlanSwitchConfirmModal.module.css';
 
 export interface PlanSwitchWarnings {
@@ -80,12 +81,12 @@ export function PlanSwitchConfirmModal({
         </div>
 
         <div className={styles.footer}>
-          <button className={styles.secondaryBtn} onClick={onCancel}>
+          <Button variant="secondary" onClick={onCancel}>
             Cancel
-          </button>
-          <button className={styles.primaryBtn} onClick={onConfirm}>
+          </Button>
+          <Button onClick={onConfirm}>
             Confirm Switch
-          </button>
+          </Button>
         </div>
       </div>
     </dialog>

@@ -17,8 +17,8 @@ import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import { ConflictDialog } from '../../../components/ConflictDialog'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
+import { Button } from '../../../components/Button'
 import styles from '../../../styles/WorkoutPage.module.css'
-import shared from '../../../styles/shared.module.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/workout/$dayNumber')({
   pendingComponent: () => (
@@ -303,9 +303,9 @@ function WorkoutPage() {
     return (
       <div className={styles.page}>
         <ErrorMessage message={error} />
-        <button onClick={handleBackToDashboard} className={shared.btnSecondary}>
+        <Button variant="secondary" onClick={handleBackToDashboard}>
           Back to Dashboard
-        </button>
+        </Button>
       </div>
     )
   }
@@ -337,9 +337,9 @@ function WorkoutPage() {
       <div className={styles.page}>
         <h1>Workout Complete!</h1>
         <ProgressionBanner progressions={progressions} unit={unit} />
-        <button onClick={handleBackToDashboard} className={shared.btnPrimary}>
+        <Button onClick={handleBackToDashboard}>
           Back to Dashboard
-        </button>
+        </Button>
       </div>
     )
   }
@@ -371,20 +371,21 @@ function WorkoutPage() {
       ))}
 
       <div className={styles.actions}>
-        <button
+        <Button
+          size="large"
           onClick={handleCompleteWorkout}
           disabled={isCompleting || isCanceling}
-          className={`${shared.btnPrimary} ${shared.btnLarge}`}
         >
           {isCompleting ? 'Completing...' : 'Complete Workout'}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="secondary"
+          size="large"
           onClick={handleCancelWorkout}
           disabled={isCanceling || isCompleting}
-          className={`${shared.btnSecondary} ${shared.btnLarge}`}
         >
           {isCanceling ? 'Canceling...' : 'Cancel Workout'}
-        </button>
+        </Button>
       </div>
 
       <ConfirmDialog
