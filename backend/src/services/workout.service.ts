@@ -267,7 +267,7 @@ export async function getWorkout(workoutId: number, userId: number) {
 export async function logSet(
   setId: number,
   userId: number,
-  data: { actualReps?: number; completed?: boolean },
+  data: { actualReps?: number | null; completed?: boolean },
 ) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {
@@ -282,7 +282,7 @@ export async function logSet(
     return null;
   }
 
-  const updateData: { actualReps?: number; completed?: boolean } = {};
+  const updateData: { actualReps?: number | null; completed?: boolean } = {};
   if (data.actualReps !== undefined) updateData.actualReps = data.actualReps;
   if (data.completed !== undefined) updateData.completed = data.completed;
 

@@ -76,7 +76,7 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
 });
 
 const logSetSchema = z.object({
-  actualReps: z.number().int().min(0).optional(),
+  actualReps: z.number().int().min(0).nullable().optional(),
   completed: z.boolean().optional(),
 });
 
