@@ -6,7 +6,6 @@ import { getCurrentWorkout } from '../../../api/workouts'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import WorkoutCard from '../../../components/WorkoutCard'
-import { Button } from '../../../components/Button'
 import styles from '../../../styles/DashboardPage.module.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/')({
@@ -81,21 +80,11 @@ function DashboardPage() {
 
       {plan && (
         <section className={styles.planSection}>
-          <div className={styles.planHeader}>
-            <div>
-              <h2>Current Plan</h2>
-              <p className={styles.planName}>{plan.name}</p>
-              {plan.description && (
-                <p className={styles.planDescription}>{plan.description}</p>
-              )}
-            </div>
-            <Button
-              variant="secondary"
-              onClick={() => navigate({ to: '/select-plan' })}
-            >
-              Change
-            </Button>
-          </div>
+          <h2>Current Plan</h2>
+          <p className={styles.planName}>{plan.name}</p>
+          {plan.description && (
+            <p className={styles.planDescription}>{plan.description}</p>
+          )}
         </section>
       )}
 

@@ -16,20 +16,13 @@
 
 .planSection {
   margin-bottom: 2rem;
-}
-
-.planHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   padding: var(--space-md);
   background-color: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--space-sm);
-  gap: var(--space-md);
 }
 
-.planHeader h2 {
+.planSection h2 {
   font-size: 1rem;
   margin: 0 0 var(--space-xs) 0;
   color: var(--text-muted);
