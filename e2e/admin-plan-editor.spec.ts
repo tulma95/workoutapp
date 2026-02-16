@@ -69,6 +69,8 @@ class AdminPlanEditor {
 
     this.progressionRulesSection = page.locator('.progression-rules-editor');
     this.addRuleButton = page.getByRole('button', { name: /add rule/i });
+
+    this.metadataToggle = page.locator('.metadata-toggle');
   }
 
   dayTab(n: number) {
@@ -125,7 +127,19 @@ class AdminPlanEditor {
     return this.page.locator('.progression-rules-table tbody tr').nth(n - 1).locator('.increase-input');
   }
 
+  // Metadata toggle
+  readonly metadataToggle: Locator;
+
   // ── Actions ──
+
+  async expandMetadata() {
+    await this.metadataToggle.waitFor();
+    const isCollapsed = await this.page.locator('.plan-metadata-section--collapsed').isVisible();
+    if (isCollapsed) {
+      await this.metadataToggle.click();
+      await this.nameInput.waitFor();
+    }
+  }
 
   async addExercise(searchTerm: string) {
     await this.addExerciseButton.click();
@@ -311,8 +325,9 @@ test.describe('Admin Plan Editor', () => {
     await admin.saveButton.click();
     await expect(admin.successToast).toBeVisible();
 
-    // Reload and verify persistence
+    // Reload and verify persistence (metadata section starts collapsed in edit mode)
     await admin.page.reload();
+    await admin.expandMetadata();
     await expect(admin.descriptionInput).toHaveValue(desc);
   });
 
@@ -572,6 +587,7 @@ test.describe('Admin Plan Editor', () => {
 
     // Reload page to get a fresh edit mode load from the API
     await admin.page.reload();
+    await admin.expandMetadata();
     await expect(admin.nameInput).toHaveValue(planName);
     await expect(admin.dayTabs).toHaveCount(2);
     await expect(admin.exerciseRows).not.toHaveCount(0);
@@ -586,6 +602,7 @@ test.describe('Admin Plan Editor', () => {
 
     // Reload and verify persistence
     await admin.page.reload();
+    await admin.expandMetadata();
     await expect(admin.descriptionInput).toHaveValue(testDesc);
   });
 });
