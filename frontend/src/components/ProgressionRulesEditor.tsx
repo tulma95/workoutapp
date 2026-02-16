@@ -137,6 +137,7 @@ export default function ProgressionRulesEditor({
                     </select>
                   </td>
                   <td>
+                    <span className="mobile-label">Min Reps</span>
                     <input
                       type="number"
                       className="reps-input"
@@ -148,6 +149,7 @@ export default function ProgressionRulesEditor({
                     />
                   </td>
                   <td>
+                    <span className="mobile-label">Max Reps</span>
                     <input
                       type="number"
                       className="reps-input"
@@ -159,6 +161,7 @@ export default function ProgressionRulesEditor({
                     />
                   </td>
                   <td>
+                    <span className="mobile-label">TM Increase (kg)</span>
                     <input
                       type="number"
                       className="increase-input"

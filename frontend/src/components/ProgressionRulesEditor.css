@@ -1,20 +1,20 @@
 .progression-rules-editor {
-  margin-top: 32px;
-  padding: 20px;
+  margin-top: 2rem;
+  padding: 1.25rem;
   background: var(--bg-card);
-  border-radius: 12px;
+  border-radius: 0.75rem;
 }
 
 .progression-rules-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
 }
 
 .progression-rules-header h3 {
   margin: 0;
-  font-size: 18px;
+  font-size: 1.125rem;
   color: var(--text-primary);
 }
 
@@ -22,12 +22,12 @@
   background: var(--primary);
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  min-height: 40px;
+  min-height: 2.75rem;
 }
 
 .btn-add-rule:hover {
@@ -36,7 +36,7 @@
 
 .progression-rules-table-wrapper {
   overflow-x: auto;
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
 }
 
 .progression-rules-table {
@@ -46,16 +46,16 @@
 
 .progression-rules-table th {
   text-align: left;
-  padding: 12px;
+  padding: 0.75rem;
   background: var(--bg-secondary);
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   border-bottom: 2px solid var(--border);
 }
 
 .progression-rules-table td {
-  padding: 12px;
+  padding: 0.75rem;
   border-bottom: 1px solid var(--border);
 }
 
@@ -67,32 +67,32 @@
 .reps-input,
 .increase-input {
   width: 100%;
-  padding: 8px;
+  padding: 0.5rem;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 0.375rem;
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .target-select {
-  min-width: 200px;
+  min-width: 12.5rem;
 }
 
 .reps-input,
 .increase-input {
   text-align: center;
-  max-width: 100px;
+  max-width: 6.25rem;
 }
 
 .btn-remove-rule {
   background: transparent;
   border: none;
   cursor: pointer;
-  font-size: 18px;
-  padding: 4px 8px;
-  min-height: 32px;
-  min-width: 32px;
+  font-size: 1.125rem;
+  padding: 0.25rem 0.5rem;
+  min-height: 2.75rem;
+  min-width: 2.75rem;
 }
 
 .btn-remove-rule:hover {
@@ -104,20 +104,20 @@
   padding: 2rem;
   color: var(--text-muted);
   background: var(--bg-secondary);
-  border-radius: 8px;
+  border-radius: 0.5rem;
   margin-bottom: 1rem;
 }
 
 .progression-rules-info {
-  padding: 12px;
+  padding: 0.75rem;
   background: var(--bg-secondary);
-  border-radius: 8px;
+  border-radius: 0.5rem;
   border-left: 3px solid var(--primary);
 }
 
 .progression-rules-info p {
   margin: 0;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--text-muted);
 }
 
@@ -125,30 +125,85 @@
   color: var(--text-primary);
 }
 
-/* Mobile responsive */
+/* Hidden on desktop, shown on mobile */
+.mobile-label {
+  display: none;
+}
+
+/* Mobile: card layout */
 @media (max-width: 768px) {
-  .progression-rules-table {
-    font-size: 13px;
+  .progression-rules-table thead {
+    display: none;
   }
 
-  .progression-rules-table th,
+  .progression-rules-table,
+  .progression-rules-table tbody {
+    display: block;
+  }
+
+  .progression-rules-table tr {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 0.5rem;
+    margin-bottom: 0.75rem;
+    border: 1px solid var(--border);
+  }
+
   .progression-rules-table td {
-    padding: 8px 4px;
+    padding: 0;
+    border-bottom: none;
+  }
+
+  /* Target select: full width */
+  .progression-rules-table tr td:first-child {
+    width: 100%;
   }
 
   .target-select {
-    min-width: 140px;
-    font-size: 13px;
+    min-width: unset;
+    width: 100%;
+    min-height: 2.75rem;
+  }
+
+  .mobile-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+  }
+
+  /* Number inputs: 3 inline */
+  .progression-rules-table tr td:nth-child(2),
+  .progression-rules-table tr td:nth-child(3),
+  .progression-rules-table tr td:nth-child(4) {
+    width: calc(33.33% - 0.375rem);
   }
 
   .reps-input,
   .increase-input {
-    max-width: 60px;
-    font-size: 13px;
+    max-width: none;
+    width: 100%;
+    min-height: 2.75rem;
+  }
+
+  /* Delete button: full width, align right */
+  .progression-rules-table tr td:last-child {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
   }
 
   .btn-add-rule {
-    font-size: 13px;
-    padding: 6px 12px;
+    font-size: 0.8125rem;
+    padding: 0.375rem 0.75rem;
+    width: 100%;
+  }
+
+  .progression-rules-table-wrapper {
+    overflow-x: visible;
   }
 }
