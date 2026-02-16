@@ -91,14 +91,13 @@ model PlanSet {
 }
 
 model User {
-  id             Int      @id @default(autoincrement())
-  email          String   @unique
-  passwordHash   String   @map("password_hash")
-  displayName    String   @map("display_name")
-  unitPreference String   @default("kg") @map("unit_preference")
-  isAdmin        Boolean  @default(false) @map("is_admin")
-  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  displayName  String   @map("display_name")
+  isAdmin      Boolean  @default(false) @map("is_admin")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   trainingMaxes TrainingMax[]
   workouts      Workout[]
