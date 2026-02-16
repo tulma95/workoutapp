@@ -1,12 +1,13 @@
-import './AmrapInput.css';
+import './RepsInput.css';
 
-interface AmrapInputProps {
+interface RepsInputProps {
   value: number | null;
   targetReps: number;
+  isAmrap: boolean;
   onChange: (value: number) => void;
 }
 
-export default function AmrapInput({ value, targetReps, onChange }: AmrapInputProps) {
+export default function RepsInput({ value, targetReps, isAmrap, onChange }: RepsInputProps) {
   function handleDecrement() {
     if (value === null) {
       onChange(0);
@@ -18,6 +19,9 @@ export default function AmrapInput({ value, targetReps, onChange }: AmrapInputPr
   function handleIncrement() {
     if (value === null) {
       onChange(targetReps);
+    } else if (!isAmrap && value >= targetReps) {
+      // Cap at targetReps for non-AMRAP sets
+      return;
     } else {
       onChange(value + 1);
     }
@@ -26,19 +30,27 @@ export default function AmrapInput({ value, targetReps, onChange }: AmrapInputPr
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const newValue = parseInt(e.target.value, 10);
     if (!isNaN(newValue) && newValue >= 0) {
-      onChange(newValue);
+      // Cap at targetReps for non-AMRAP sets
+      if (!isAmrap && newValue > targetReps) {
+        onChange(targetReps);
+      } else {
+        onChange(newValue);
+      }
     } else if (e.target.value === '') {
       // Allow clearing the input
       onChange(0);
     }
   }
 
+  const isDecrementDisabled = value === null || value === 0;
+
   return (
-    <div className="amrap-input">
+    <div className="reps-input">
       <button
         type="button"
-        className="amrap-input__button"
+        className="reps-input__button"
         onClick={handleDecrement}
+        disabled={isDecrementDisabled}
         aria-label="Decrease reps"
       >
         −
@@ -46,17 +58,18 @@ export default function AmrapInput({ value, targetReps, onChange }: AmrapInputPr
 
       <input
         type="number"
-        className="amrap-input__field"
+        className="reps-input__field"
         value={value ?? ''}
         onChange={handleInputChange}
         placeholder={targetReps.toString()}
         min="0"
-        aria-label="AMRAP reps"
+        max={isAmrap ? undefined : targetReps}
+        aria-label="Reps completed"
       />
 
       <button
         type="button"
-        className="amrap-input__button"
+        className="reps-input__button"
         onClick={handleIncrement}
         aria-label="Increase reps"
       >
