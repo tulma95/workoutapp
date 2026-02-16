@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
 import { getMe, updateMe } from '../../../api/user'
@@ -38,6 +38,27 @@ function SettingsPage() {
   const [editValue, setEditValue] = useState('')
   const [tmSaving, setTmSaving] = useState(false)
   const [tmError, setTmError] = useState('')
+  const dialogRef = useRef<HTMLDialogElement>(null)
+
+  useEffect(() => {
+    const dialog = dialogRef.current
+    if (!dialog) return
+
+    if (editingExercise) {
+      dialog.showModal()
+    } else {
+      dialog.close()
+    }
+  }, [editingExercise])
+
+  useEffect(() => {
+    const dialog = dialogRef.current
+    if (!dialog) return
+
+    const handleClose = () => closeEditModal()
+    dialog.addEventListener('close', handleClose)
+    return () => dialog.removeEventListener('close', handleClose)
+  }, [])
 
   async function handleUnitChange(newUnit: UnitPreference) {
     setUnit(newUnit)
@@ -201,44 +222,42 @@ function SettingsPage() {
         Log Out
       </button>
 
-      {editingExercise && (
-        <div className="modal-overlay" onClick={closeEditModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Edit {formatExerciseName(editingExercise)}</h3>
+      <dialog ref={dialogRef} className="tm-edit-dialog" onClick={(e) => { if (e.target === dialogRef.current) closeEditModal() }}>
+        <div className="tm-edit-dialog__content">
+          <h3>Edit {editingExercise ? formatExerciseName(editingExercise) : ''}</h3>
 
-            <div className="modal-body">
-              <label htmlFor="tm-input">Training Max ({unit})</label>
-              <input
-                id="tm-input"
-                type="number"
-                value={editValue}
-                onChange={(e) => setEditValue(e.target.value)}
-                step="0.1"
-                min="0"
-                autoFocus
-              />
-              {tmError && <p className="error" role="alert">{tmError}</p>}
-            </div>
+          <div className="tm-edit-dialog__body">
+            <label htmlFor="tm-input">Training Max ({unit})</label>
+            <input
+              id="tm-input"
+              type="number"
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              step="0.1"
+              min="0"
+              autoFocus
+            />
+            {tmError && <p className="error" role="alert">{tmError}</p>}
+          </div>
 
-            <div className="modal-actions">
-              <button
-                className="btn-secondary"
-                onClick={closeEditModal}
-                disabled={tmSaving}
-              >
-                Cancel
-              </button>
-              <button
-                className="btn-primary"
-                onClick={handleTmSave}
-                disabled={tmSaving}
-              >
-                {tmSaving ? 'Saving...' : 'Save'}
-              </button>
-            </div>
+          <div className="tm-edit-dialog__actions">
+            <button
+              className="btn-secondary"
+              onClick={closeEditModal}
+              disabled={tmSaving}
+            >
+              Cancel
+            </button>
+            <button
+              className="btn-primary"
+              onClick={handleTmSave}
+              disabled={tmSaving}
+            >
+              {tmSaving ? 'Saving...' : 'Save'}
+            </button>
           </div>
         </div>
-      )}
+      </dialog>
     </div>
   )
 }

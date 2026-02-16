@@ -72,41 +72,38 @@
   background-color: var(--bg-active, #eee);
 }
 
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: var(--space-md);
-}
-
-.modal-content {
-  background-color: var(--bg-card);
-  border-radius: 0.5rem;
+/* TM Edit Dialog */
+.tm-edit-dialog {
   width: 100%;
   max-width: 25rem;
+  padding: 0;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+}
+
+.tm-edit-dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.tm-edit-dialog__content {
+  background-color: var(--bg-card);
+  border-radius: 0.5rem;
   padding: var(--space-lg);
   box-shadow: 0 0.25rem 0.375rem rgba(0, 0, 0, 0.1);
 }
 
-.modal-content h3 {
+.tm-edit-dialog__content h3 {
   margin: 0 0 var(--space-lg) 0;
   font-size: 1.5rem;
   color: var(--text);
 }
 
-.modal-body {
+.tm-edit-dialog__body {
   margin-bottom: var(--space-lg);
 }
 
-.modal-body label {
+.tm-edit-dialog__body label {
   display: block;
   margin-bottom: var(--space-sm);
   font-weight: 500;
@@ -114,7 +111,7 @@
   color: var(--text);
 }
 
-.modal-body input {
+.tm-edit-dialog__body input {
   width: 100%;
   min-height: 3rem;
   padding: 1rem;
@@ -125,19 +122,19 @@
   color: var(--text);
 }
 
-.modal-body input:focus {
+.tm-edit-dialog__body input:focus {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
   border-color: var(--primary);
 }
 
-.modal-body .error {
+.tm-edit-dialog__body .error {
   margin-top: var(--space-sm);
   color: var(--danger, #c33);
   font-size: 1rem;
 }
 
-.modal-actions {
+.tm-edit-dialog__actions {
   display: flex;
   gap: 1rem;
   justify-content: flex-end;

@@ -53,7 +53,6 @@ export class SettingsPage {
 
     await this.page.getByRole('button', { name: /^save$/i }).click();
 
-    // Wait for modal to close (uses div.modal-overlay, not native dialog)
-    await expect(this.page.locator('.modal-overlay')).not.toBeVisible();
+    await expect(this.page.locator('.tm-edit-dialog')).not.toBeVisible();
   }
 }
