@@ -13,5 +13,6 @@ scripts/ralph/progress.txt
 scripts/ralph/.last-branch
 *.log
 *.tsbuildinfo
+frontend/src/routeTree.gen.ts
 tasks/
 .env

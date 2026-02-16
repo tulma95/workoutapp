@@ -190,7 +190,7 @@ const test = base.extend<AdminFixture>({
     // Select plan to get JWT stored
     await page.waitForURL('/select-plan');
     await page.click('button:has-text("Select Plan")');
-    await page.waitForURL('/setup');
+    await page.waitForURL(/\/setup/);
 
     // Promote to admin via dev endpoint
     const token = await page.evaluate(() => localStorage.getItem('accessToken'));
@@ -200,6 +200,7 @@ const test = base.extend<AdminFixture>({
     expect(res.ok()).toBeTruthy();
 
     // Re-login to get a new JWT with isAdmin=true (admin flag is in the JWT payload)
+    await page.evaluate(() => localStorage.removeItem('accessToken'));
     await page.goto('/login');
     await page.fill('#email', email);
     await page.fill('#password', 'ValidPassword123');

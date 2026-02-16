@@ -79,7 +79,7 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
     setIsDirtyState(value);
   }
 
-  const blocker = useBlocker({ shouldBlockFn: () => isDirtyRef.current });
+  const blocker = useBlocker({ shouldBlockFn: () => isDirtyRef.current, withResolver: true });
 
   useEffect(() => {
     const dialog = exercisePickerRef.current;

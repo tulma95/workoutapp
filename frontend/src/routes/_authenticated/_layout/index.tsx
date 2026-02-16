@@ -10,17 +10,19 @@ import '../../../styles/DashboardPage.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/')({
   beforeLoad: async ({ context: { queryClient } }) => {
-    const plan = await queryClient.ensureQueryData({
+    const plan = await queryClient.fetchQuery({
       queryKey: ['plan', 'current'],
       queryFn: getCurrentPlan,
+      staleTime: 30_000,
     })
     if (!plan) {
       throw redirect({ to: '/select-plan' })
     }
 
-    const tms = await queryClient.ensureQueryData({
+    const tms = await queryClient.fetchQuery({
       queryKey: ['training-maxes'],
       queryFn: getTrainingMaxes,
+      staleTime: 30_000,
     })
     if (!tms || tms.length === 0) {
       throw redirect({ to: '/setup' })

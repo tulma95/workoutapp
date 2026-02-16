@@ -36,7 +36,7 @@ export const test = base.extend<{
     // After registration, user must select a plan first
     await page.waitForURL('/select-plan');
     await page.click('button:has-text("Select Plan")');
-    await page.waitForURL('/setup');
+    await page.waitForURL(/\/setup/);
 
     // Provide the authenticated page and user to the test
     await use({ page, user });

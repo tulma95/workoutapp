@@ -21,7 +21,7 @@ async function registerAndPartialSetup(page: Page) {
   // After registration, select the default plan via UI
   await page.waitForURL('/select-plan');
   await page.click('button:has-text("Select Plan")');
-  await page.waitForURL('/setup');
+  await page.waitForURL(/\/setup/);
 
   // Get auth token
   const token = await page.evaluate(() => localStorage.getItem('accessToken'));
@@ -78,7 +78,7 @@ test.describe('Missing TM redirect', () => {
     await page.goto('/');
 
     // Should be redirected to /setup because one TM is missing
-    await page.waitForURL('/setup', { timeout: 10000 });
+    await page.waitForURL(/\/setup/, { timeout: 10000 });
     expect(page.url()).toContain('/setup');
 
     // The setup page should show only the missing exercise
@@ -90,9 +90,11 @@ test.describe('Missing TM redirect', () => {
 
     // Navigate to dashboard — should redirect to /setup
     await page.goto('/');
-    await page.waitForURL('/setup', { timeout: 10000 });
+    await page.waitForURL(/\/setup/, { timeout: 10000 });
 
     // Fill in the missing exercise's 1RM (there should be exactly 1 input)
+    // Wait for the setup form to load (exercises are fetched asynchronously)
+    await page.getByRole('spinbutton').first().waitFor({ timeout: 10000 });
     const inputs = page.getByRole('spinbutton');
     const count = await inputs.count();
     expect(count).toBe(1);

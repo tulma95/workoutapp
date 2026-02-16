@@ -9,6 +9,10 @@
   "scripts": {
     "test": "./run_test.sh"
   },
+  "overrides": {
+    "react": "^19",
+    "react-dom": "^19"
+  },
   "devDependencies": {
     "@playwright/test": "^1.58.2"
   }

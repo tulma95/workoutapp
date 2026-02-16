@@ -88,10 +88,10 @@ test.describe('Conflict Dialog', () => {
     await startDay1Workout(page)
     await triggerConflictDialog(page)
 
-    // Click outside the dialog content (on the transparent dialog backdrop area)
+    // Close the dialog by pressing Escape (native <dialog> behavior)
     const dialog = page.locator('dialog.conflict-dialog')
     await expect(dialog).toBeVisible()
-    await page.mouse.click(10, 10)
+    await page.keyboard.press('Escape')
 
     // Should navigate back to dashboard
     await page.waitForURL('/')

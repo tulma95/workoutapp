@@ -4,7 +4,7 @@ import { test, expect, Page } from '@playwright/test';
 async function selectPlanAfterRegistration(page: Page) {
   await page.waitForURL('/select-plan');
   await page.click('button:has-text("Select Plan")');
-  await page.waitForURL('/setup');
+  await page.waitForURL(/\/setup/);
   // Wait for setup form to be fully loaded with all exercise fields
   await expect(page.getByRole('heading', { name: /enter your 1 rep maxes/i })).toBeVisible();
   await expect(page.locator('.form-group')).toHaveCount(4);
@@ -43,8 +43,11 @@ test.describe('Authentication', () => {
     await page.click('button[type="submit"]');
     await selectPlanAfterRegistration(page);
 
-    // Logout
-    await page.goto('/login');
+    // Logout via settings page
+    await page.getByRole('link', { name: /settings/i }).click();
+    await page.waitForURL('/settings');
+    await page.getByRole('button', { name: /log out/i }).click();
+    await page.waitForURL('/login');
 
     // Try to register again with same email
     await page.goto('/register');
@@ -73,8 +76,11 @@ test.describe('Authentication', () => {
     await page.click('button[type="submit"]');
     await selectPlanAfterRegistration(page);
 
-    // Logout by going to login page
-    await page.goto('/login');
+    // Logout via settings page
+    await page.getByRole('link', { name: /settings/i }).click();
+    await page.waitForURL('/settings');
+    await page.getByRole('button', { name: /log out/i }).click();
+    await page.waitForURL('/login');
 
     // Login with valid credentials
     await page.fill('#email', email);
@@ -82,7 +88,7 @@ test.describe('Authentication', () => {
     await page.click('button[type="submit"]');
 
     // Should redirect to setup (user has no TMs yet)
-    await page.waitForURL('/setup');
+    await page.waitForURL(/\/setup/);
     expect(page.url()).toContain('/setup');
   });
 
@@ -100,8 +106,11 @@ test.describe('Authentication', () => {
     await page.click('button[type="submit"]');
     await selectPlanAfterRegistration(page);
 
-    // Go to login
-    await page.goto('/login');
+    // Logout via settings page
+    await page.getByRole('link', { name: /settings/i }).click();
+    await page.waitForURL('/settings');
+    await page.getByRole('button', { name: /log out/i }).click();
+    await page.waitForURL('/login');
 
     // Try to login with wrong password
     await page.fill('#email', email);
@@ -141,7 +150,7 @@ test.describe('Authentication', () => {
     await page.waitForURL('/', { timeout: 10000 });
 
     // Navigate to settings via bottom nav
-    await page.click('a[href="/settings"]');
+    await page.getByRole('link', { name: /settings/i }).click();
     await page.waitForURL('/settings');
 
     // Find and click logout button on settings page
