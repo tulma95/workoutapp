@@ -1,14 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
-import { getMe, updateMe } from '../../../api/user'
+import { getMe } from '../../../api/user'
 import { useAuth } from '../../../context/useAuth'
 import { getCurrentPlan } from '../../../api/plans'
 import { getTrainingMaxes, updateTrainingMax, type TrainingMax } from '../../../api/trainingMaxes'
-import { formatExerciseName, formatWeight, convertWeight, roundWeight, convertToKg } from '../../../utils/weight'
+import { formatExerciseName, formatWeight, roundWeight } from '../../../utils/weight'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { ErrorMessage } from '../../../components/ErrorMessage'
-import type { UnitPreference } from '../../../types'
 import { Button } from '../../../components/Button'
 import styles from '../../../styles/SettingsPage.module.css'
 
@@ -31,10 +30,6 @@ function SettingsPage() {
   const { data: currentPlan } = useSuspenseQuery({ queryKey: ['plan', 'current'], queryFn: getCurrentPlan })
   const { data: trainingMaxes } = useSuspenseQuery({ queryKey: ['training-maxes'], queryFn: getTrainingMaxes })
 
-  const [unit, setUnit] = useState<UnitPreference>(user?.unitPreference || 'kg')
-  const [saved, setSaved] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [error, setError] = useState('')
   const [editingExercise, setEditingExercise] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
   const [tmSaving, setTmSaving] = useState(false)
@@ -61,29 +56,10 @@ function SettingsPage() {
     return () => dialog.removeEventListener('close', handleClose)
   }, [])
 
-  async function handleUnitChange(newUnit: UnitPreference) {
-    setUnit(newUnit)
-    setSaved(false)
-    setIsSaving(true)
-    setError('')
-
-    try {
-      await updateMe({ unitPreference: newUnit })
-      await queryClient.invalidateQueries({ queryKey: ['user', 'me'] })
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save settings')
-      setUnit(user?.unitPreference || 'kg')
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
   function openEditModal(exercise: string, currentWeight: number) {
     setEditingExercise(exercise)
-    const weightInUserUnit = roundWeight(convertWeight(currentWeight, unit), unit)
-    setEditValue(weightInUserUnit.toString())
+    const weightInUserUnit = roundWeight(currentWeight).toString()
+    setEditValue(weightInUserUnit)
     setTmError('')
   }
 
@@ -96,8 +72,8 @@ function SettingsPage() {
   async function handleTmSave() {
     if (!editingExercise) return
 
-    const weightInUserUnit = parseFloat(editValue)
-    if (isNaN(weightInUserUnit) || weightInUserUnit <= 0) {
+    const weightInKg = parseFloat(editValue)
+    if (isNaN(weightInKg) || weightInKg <= 0) {
       setTmError('Please enter a valid positive number')
       return
     }
@@ -106,7 +82,6 @@ function SettingsPage() {
     setTmError('')
 
     try {
-      const weightInKg = convertToKg(weightInUserUnit, unit)
       await updateTrainingMax(editingExercise, weightInKg)
       await queryClient.invalidateQueries({ queryKey: ['training-maxes'] })
       closeEditModal()
@@ -169,33 +144,6 @@ function SettingsPage() {
         <p style={{ margin: '0', fontWeight: 600 }}>{user?.email}</p>
       </div>
 
-      <div className={styles.card}>
-        <p style={{ margin: '0 0 12px', fontWeight: 500 }}>Unit Preference</p>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <Button
-            variant={unit === 'kg' ? 'primary' : 'secondary'}
-            style={{ flex: 1 }}
-            onClick={() => handleUnitChange('kg')}
-            disabled={isSaving}
-          >
-            kg
-          </Button>
-          <Button
-            variant={unit === 'lb' ? 'primary' : 'secondary'}
-            style={{ flex: 1 }}
-            onClick={() => handleUnitChange('lb')}
-            disabled={isSaving}
-          >
-            lb
-          </Button>
-        </div>
-        {isSaving && <LoadingSpinner size={24} />}
-        {saved && (
-          <p style={{ color: 'var(--success)', margin: '8px 0 0', fontSize: '14px' }}>Saved!</p>
-        )}
-        {error && <ErrorMessage message={error} />}
-      </div>
-
       {trainingMaxes.length > 0 && (
         <section className={styles.tmSection}>
           <h3>Training Maxes</h3>
@@ -204,7 +152,7 @@ function SettingsPage() {
               <div key={tm.exercise} className={styles.tmItem} data-testid="tm-item">
                 <div className={styles.tmInfo}>
                   <span className={styles.tmExercise}>{formatExerciseName(tm.exercise)}</span>
-                  <span className={styles.tmWeight}>{formatWeight(tm.weight, unit)}</span>
+                  <span className={styles.tmWeight}>{formatWeight(tm.weight)}</span>
                 </div>
                 <button
                   className={styles.editBtn}
@@ -227,7 +175,7 @@ function SettingsPage() {
           <h3>Edit {editingExercise ? formatExerciseName(editingExercise) : ''}</h3>
 
           <div className={styles.editDialogBody}>
-            <label htmlFor="tm-input">Training Max ({unit})</label>
+            <label htmlFor="tm-input">Training Max (kg)</label>
             <input
               id="tm-input"
               type="number"

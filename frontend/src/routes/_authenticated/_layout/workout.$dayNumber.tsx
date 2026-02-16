@@ -318,8 +318,6 @@ function WorkoutPage() {
     )
   }
 
-  const unit = user?.unitPreference || 'kg'
-
   const exerciseGroups: Array<{ exercise: string; sets: typeof workout.sets }> = []
   for (const set of workout.sets) {
     const last = exerciseGroups[exerciseGroups.length - 1]
@@ -336,7 +334,7 @@ function WorkoutPage() {
     return (
       <div className={styles.page}>
         <h1>Workout Complete!</h1>
-        <ProgressionBanner progressions={progressions} unit={unit} />
+        <ProgressionBanner progressions={progressions} />
         <Button onClick={handleBackToDashboard}>
           Back to Dashboard
         </Button>
@@ -361,7 +359,6 @@ function WorkoutPage() {
                 isAmrap={set.isAmrap}
                 completed={set.completed}
                 actualReps={set.actualReps}
-                unit={unit}
                 onConfirm={() => handleConfirmSet(set.id)}
                 onRepsChange={(reps) => handleRepsChange(set.id, reps)}
               />

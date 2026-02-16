@@ -3,7 +3,6 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useAuth } from '../../context/useAuth'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { Button } from '../../components/Button'
-import type { UnitPreference } from '../../types'
 import styles from '../../styles/AuthForm.module.css'
 import shared from '../../styles/shared.module.css'
 
@@ -17,7 +16,6 @@ function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [displayName, setDisplayName] = useState('')
-  const [unitPreference, setUnitPreference] = useState<UnitPreference>('kg')
   const [error, setError] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -32,7 +30,7 @@ function RegisterPage() {
     setPasswordError('')
     setLoading(true)
     try {
-      await register(email, password, displayName, unitPreference)
+      await register(email, password, displayName)
       navigate({ to: '/' })
     } catch (err: unknown) {
       const msg = err && typeof err === 'object' && 'error' in err
@@ -90,32 +88,6 @@ function RegisterPage() {
             onChange={(e) => setDisplayName(e.target.value)}
             required
           />
-        </div>
-
-        <div>
-          <span className={styles.label}>Unit Preference</span>
-          <div className={styles.unitOptions}>
-            <label className={styles.unitLabel}>
-              <input
-                type="radio"
-                name="unitPreference"
-                value="kg"
-                checked={unitPreference === 'kg'}
-                onChange={() => setUnitPreference('kg')}
-              />
-              kg
-            </label>
-            <label className={styles.unitLabel}>
-              <input
-                type="radio"
-                name="unitPreference"
-                value="lb"
-                checked={unitPreference === 'lb'}
-                onChange={() => setUnitPreference('lb')}
-              />
-              lb
-            </label>
-          </div>
         </div>
 
         {error && <ErrorMessage message={error} />}

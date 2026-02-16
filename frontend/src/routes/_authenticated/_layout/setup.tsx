@@ -1,10 +1,8 @@
 import { useState, useEffect, type FormEvent } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { setupTrainingMaxesFromExercises, getTrainingMaxes, type ExerciseTM } from '../../../api/trainingMaxes'
 import { getCurrentPlan, type Exercise } from '../../../api/plans'
-import { getMe } from '../../../api/user'
-import { convertToKg } from '../../../utils/weight'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import { Button } from '../../../components/Button'
 import styles from '../../../styles/SetupPage.module.css'
@@ -20,18 +18,12 @@ function SetupPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { missingTMs: isMissingTMsMode } = Route.useSearch()
-  const { data: user } = useSuspenseQuery({
-    queryKey: ['user', 'me'],
-    queryFn: getMe,
-  })
 
   const [requiredExercises, setRequiredExercises] = useState<Exercise[]>([])
   const [formData, setFormData] = useState<Record<string, string>>({})
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const unit = user?.unitPreference || 'kg'
 
   useEffect(() => {
     async function loadRequiredExercises() {
@@ -113,7 +105,7 @@ function SetupPage() {
 
       exerciseTMs.push({
         exerciseId: exercise.id,
-        oneRepMax: convertToKg(oneRepMaxInUserUnit, unit),
+        oneRepMax: oneRepMaxInUserUnit,
       })
     }
 
@@ -172,7 +164,7 @@ function SetupPage() {
           {requiredExercises.map((exercise) => (
             <div key={exercise.id} className={styles.formGroup}>
               <label htmlFor={`exercise-${exercise.id}`}>
-                {exercise.name} ({unit})
+                {exercise.name} (kg)
               </label>
               <input
                 type="number"
@@ -180,7 +172,7 @@ function SetupPage() {
                 name={exercise.id.toString()}
                 value={formData[exercise.id.toString()] || ''}
                 onChange={handleInputChange}
-                placeholder={`Enter ${exercise.name} 1RM (${unit})`}
+                placeholder={`Enter ${exercise.name} 1RM (kg)`}
                 step="0.1"
                 min="0"
               />

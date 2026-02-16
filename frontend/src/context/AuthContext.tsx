@@ -6,7 +6,6 @@ import {
   type ReactNode,
 } from 'react'
 import * as authApi from '../api/auth'
-import type { UnitPreference } from '../types'
 
 interface AuthContextValue {
   token: string | null
@@ -16,7 +15,6 @@ interface AuthContextValue {
     email: string,
     password: string,
     displayName: string,
-    unitPreference: UnitPreference,
   ) => Promise<void>
 }
 
@@ -39,13 +37,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email: string,
       password: string,
       displayName: string,
-      unitPreference: UnitPreference,
     ) => {
       const result = await authApi.register(
         email,
         password,
         displayName,
-        unitPreference,
       )
       localStorage.setItem('accessToken', result.accessToken)
       localStorage.setItem('refreshToken', result.refreshToken)

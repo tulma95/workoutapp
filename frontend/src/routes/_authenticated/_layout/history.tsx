@@ -109,14 +109,12 @@ function HistoryPage() {
             {isLoadingWorkout ? (
               <WorkoutDetail
                 progression={null}
-                unit={user?.unitPreference || 'kg'}
                 isLoading={true}
               />
             ) : selectedWorkout ? (
               <WorkoutDetail
                 workout={selectedWorkout}
                 progression={null}
-                unit={user?.unitPreference || 'kg'}
               />
             ) : hasAnyWorkouts ? (
               <div className={styles.prompt}>
