@@ -4,21 +4,8 @@ import type { WorkoutStatus } from '../types';
 import { ExistingWorkoutError } from '../types';
 import { logger } from '../lib/logger';
 
-const LB_TO_KG = 2.20462;
-
 function decimalToNumber(val: unknown): number {
   return Number(val);
-}
-
-function toLb(weightKg: number): number {
-  return weightKg * LB_TO_KG;
-}
-
-function convertWeightToUserUnit(weightKg: number, unit: string): number {
-  if (unit === 'lb') {
-    return roundWeight(toLb(weightKg), 'lb');
-  }
-  return weightKg;
 }
 
 function formatWorkout(
@@ -45,7 +32,6 @@ function formatWorkout(
       createdAt: Date;
     }>;
   },
-  unit: string,
 ) {
   return {
     ...workout,
@@ -53,7 +39,7 @@ function formatWorkout(
     sets: workout.sets.map((s) => ({
       ...s,
       exercise: s.exercise.name,
-      prescribedWeight: convertWeightToUserUnit(decimalToNumber(s.prescribedWeight), unit),
+      prescribedWeight: decimalToNumber(s.prescribedWeight),
     })),
   };
 }
@@ -161,7 +147,7 @@ export async function startWorkout(userId: number, dayNumber: number) {
       const tm = tmMapById[planDayExercise.tmExerciseId];
       for (const planSet of planDayExercise.sets) {
         const percentage = decimalToNumber(planSet.percentage);
-        const weight = roundWeight(tm * percentage, 'kg');
+        const weight = roundWeight(tm * percentage);
         setsToCreate.push({
           exerciseId: planDayExercise.exerciseId,
           exerciseOrder: planDayExercise.sortOrder,
@@ -219,7 +205,7 @@ export async function startWorkout(userId: number, dayNumber: number) {
       planSlug: activePlan.plan.slug,
     });
 
-    return formatWorkout(workout, user.unitPreference);
+    return formatWorkout(workout);
   }
 
   // No active plan - user must select a plan first
@@ -242,7 +228,7 @@ export async function getCurrentWorkout(userId: number) {
     },
   });
 
-  return workout ? formatWorkout(workout, user.unitPreference) : null;
+  return workout ? formatWorkout(workout) : null;
 }
 
 export async function getWorkout(workoutId: number, userId: number) {
@@ -261,7 +247,7 @@ export async function getWorkout(workoutId: number, userId: number) {
     },
   });
 
-  return workout ? formatWorkout(workout, user.unitPreference) : null;
+  return workout ? formatWorkout(workout) : null;
 }
 
 export async function logSet(
@@ -295,7 +281,7 @@ export async function logSet(
   return {
     ...updated,
     exercise: updated.exercise.name,
-    prescribedWeight: convertWeightToUserUnit(decimalToNumber(updated.prescribedWeight), user.unitPreference),
+    prescribedWeight: decimalToNumber(updated.prescribedWeight),
   };
 }
 
@@ -421,9 +407,9 @@ export async function completeWorkout(workoutId: number, userId: number) {
 
       progressions.push({
         exercise: exercise.name,
-        previousTM: convertWeightToUserUnit(currentTMKg, user.unitPreference),
-        newTM: convertWeightToUserUnit(newWeightKg, user.unitPreference),
-        increase: convertWeightToUserUnit(increase, user.unitPreference),
+        previousTM: currentTMKg,
+        newTM: newWeightKg,
+        increase,
       });
     }
 
@@ -446,7 +432,7 @@ export async function completeWorkout(workoutId: number, userId: number) {
       progressionCount: progressions.length,
     });
 
-    return { workout: formatWorkout(completed, user.unitPreference), progressions };
+    return { workout: formatWorkout(completed), progressions };
   }
 
   // No plan day ID - this workout was created without a plan (legacy data)
@@ -464,7 +450,7 @@ export async function completeWorkout(workoutId: number, userId: number) {
 
   logger.info('Workout completed (no plan)', { workoutId, dayNumber: workout.dayNumber, userId });
 
-  return { workout: formatWorkout(completed, user.unitPreference), progressions: [] };
+  return { workout: formatWorkout(completed), progressions: [] };
 }
 
 export async function getHistory(userId: number, page: number, limit: number) {
@@ -497,7 +483,7 @@ export async function getHistory(userId: number, page: number, limit: number) {
   ]);
 
   return {
-    workouts: workouts.map((w) => formatWorkout(w, user.unitPreference)),
+    workouts: workouts.map((w) => formatWorkout(w)),
     total,
     page,
     limit,

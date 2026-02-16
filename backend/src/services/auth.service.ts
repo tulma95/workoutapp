@@ -16,15 +16,15 @@ function signRefreshToken(userId: number): string {
   return jwt.sign({ userId, type: 'refresh' }, config.jwtSecret, { expiresIn: REFRESH_TOKEN_EXPIRY });
 }
 
-function stripPasswordHash(user: { id: number; email: string; displayName: string; unitPreference: string; isAdmin: boolean; createdAt: Date; updatedAt: Date; passwordHash?: string }) {
+function stripPasswordHash(user: { id: number; email: string; displayName: string; isAdmin: boolean; createdAt: Date; updatedAt: Date; passwordHash?: string }) {
   const { passwordHash: _, ...safe } = user;
   return safe;
 }
 
-export async function register(email: string, password: string, displayName: string, unitPreference: string = 'kg') {
+export async function register(email: string, password: string, displayName: string) {
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
   const user = await prisma.user.create({
-    data: { email, passwordHash, displayName, unitPreference },
+    data: { email, passwordHash, displayName },
   });
 
   logger.info('User registered', { email: user.email, userId: user.id });

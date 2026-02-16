@@ -1,6 +1,5 @@
 import { Request } from 'express';
 
-export type UnitPreference = 'kg' | 'lb';
 export type WorkoutStatus = 'in_progress' | 'completed' | 'discarded';
 
 export interface JwtPayload {

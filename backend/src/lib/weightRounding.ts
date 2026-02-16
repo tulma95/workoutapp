@@ -1,5 +1,4 @@
-export function roundWeight(weight: number, unit: 'kg' | 'lb'): number {
+export function roundWeight(weight: number): number {
   if (weight === 0) return 0;
-  const increment = unit === 'kg' ? 2.5 : 5;
-  return Math.round(weight / increment) * increment;
+  return Math.round(weight / 2.5) * 2.5;
 }

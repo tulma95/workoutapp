@@ -2,23 +2,6 @@ import prisma from '../lib/db';
 import { roundWeight } from '../lib/weightRounding';
 import { logger } from '../lib/logger';
 
-const LB_TO_KG = 2.20462;
-
-function toKg(weight: number, unit: string): number {
-  return unit === 'lb' ? weight / LB_TO_KG : weight;
-}
-
-function toLb(weightKg: number): number {
-  return weightKg * LB_TO_KG;
-}
-
-function convertWeightToUserUnit(weightKg: number, unit: string): number {
-  if (unit === 'lb') {
-    return roundWeight(toLb(weightKg), 'lb');
-  }
-  return weightKg;
-}
-
 function decimalToNumber(val: unknown): number {
   return Number(val);
 }
@@ -85,24 +68,22 @@ export async function getCurrentTMs(userId: number) {
   return deduplicated.map((tm) => ({
     ...tm,
     exercise: tm.exercise.slug,
-    weight: convertWeightToUserUnit(decimalToNumber(tm.weight), user.unitPreference),
+    weight: decimalToNumber(tm.weight),
   }));
 }
 
 export async function setupFromExerciseTMs(
   userId: number,
   exerciseTMs: Array<{ exerciseId: number; oneRepMax: number }>,
-  unit: string,
 ) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  logger.info('TM setup from exercise IDs', { userId, exerciseIds: exerciseTMs.map(e => e.exerciseId), unit });
+  logger.info('TM setup from exercise IDs', { userId, exerciseIds: exerciseTMs.map(e => e.exerciseId) });
 
   const created = await Promise.all(
     exerciseTMs.map(async ({ exerciseId, oneRepMax }) => {
-      const ormKg = toKg(oneRepMax, unit);
-      const tm = roundWeight(ormKg * 0.9, 'kg');
+      const tm = roundWeight(oneRepMax * 0.9);
 
       const row = await prisma.trainingMax.upsert({
         where: {
@@ -126,7 +107,7 @@ export async function setupFromExerciseTMs(
       return {
         ...row,
         exercise: row.exercise.slug,
-        weight: convertWeightToUserUnit(decimalToNumber(row.weight), unit)
+        weight: decimalToNumber(row.weight)
       };
     }),
   );
@@ -138,9 +119,8 @@ export async function updateTM(
   userId: number,
   exerciseSlug: string,
   weight: number,
-  unit: string,
 ) {
-  logger.info('Manual TM update', { userId, exerciseSlug, weight, unit });
+  logger.info('Manual TM update', { userId, exerciseSlug, weight });
 
   // Look up exerciseId from slug
   const exercise = await prisma.exercise.findUnique({ where: { slug: exerciseSlug } });
@@ -148,7 +128,7 @@ export async function updateTM(
     throw new Error(`Exercise not found: ${exerciseSlug}`);
   }
 
-  const weightKg = roundWeight(toKg(weight, unit), 'kg');
+  const weightKg = roundWeight(weight);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -175,7 +155,7 @@ export async function updateTM(
   return {
     ...row,
     exercise: row.exercise.slug,
-    weight: convertWeightToUserUnit(decimalToNumber(row.weight), unit)
+    weight: decimalToNumber(row.weight)
   };
 }
 
@@ -202,6 +182,6 @@ export async function getHistory(userId: number, exerciseSlug: string) {
   return rows.map((row) => ({
     ...row,
     exercise: row.exercise.slug,
-    weight: convertWeightToUserUnit(decimalToNumber(row.weight), user.unitPreference),
+    weight: decimalToNumber(row.weight),
   }));
 }
