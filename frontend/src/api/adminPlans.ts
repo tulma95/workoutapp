@@ -1,3 +1,4 @@
+import { apiFetch } from './client';
 import { WorkoutPlan, Exercise } from './plans';
 
 export interface AdminPlanListItem extends WorkoutPlan {
@@ -75,105 +76,43 @@ export interface PlanWithDetails extends WorkoutPlan {
 }
 
 export async function getAdminPlans(): Promise<AdminPlanListItem[]> {
-  const token = localStorage.getItem('accessToken');
-  const response = await fetch('/api/admin/plans', {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch admin plans');
-  }
-
-  return response.json();
+  const data = await apiFetch('/admin/plans');
+  return data as AdminPlanListItem[];
 }
 
 export async function getAdminPlan(planId: number): Promise<PlanWithDetails> {
-  const token = localStorage.getItem('accessToken');
-  const response = await fetch(`/api/admin/plans/${planId}`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.message || 'Failed to fetch plan');
-  }
-
-  return response.json();
+  const data = await apiFetch(`/admin/plans/${planId}`);
+  return data as PlanWithDetails;
 }
 
 export async function createPlan(input: CreatePlanInput): Promise<WorkoutPlan> {
-  const token = localStorage.getItem('accessToken');
-  const response = await fetch('/api/admin/plans', {
+  const data = await apiFetch('/admin/plans', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
     body: JSON.stringify(input),
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.message || 'Failed to create plan');
-  }
-
-  return response.json();
+  return data as WorkoutPlan;
 }
 
 export async function updatePlan(planId: number, input: CreatePlanInput): Promise<WorkoutPlan> {
-  const token = localStorage.getItem('accessToken');
-  const response = await fetch(`/api/admin/plans/${planId}`, {
+  const data = await apiFetch(`/admin/plans/${planId}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
     body: JSON.stringify(input),
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.message || 'Failed to update plan');
-  }
-
-  return response.json();
+  return data as WorkoutPlan;
 }
 
 export async function archivePlan(planId: number): Promise<void> {
-  const token = localStorage.getItem('accessToken');
-  const response = await fetch(`/api/admin/plans/${planId}`, {
+  await apiFetch(`/admin/plans/${planId}`, {
     method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.message || 'Failed to archive plan');
-  }
 }
 
 export async function setProgressionRules(
   planId: number,
   rules: Omit<ProgressionRule, 'id' | 'exercise'>[]
 ): Promise<void> {
-  const token = localStorage.getItem('accessToken');
-  const response = await fetch(`/api/admin/plans/${planId}/progression-rules`, {
+  await apiFetch(`/admin/plans/${planId}/progression-rules`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
     body: JSON.stringify({ rules }),
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.message || 'Failed to save progression rules');
-  }
 }

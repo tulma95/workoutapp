@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { useParams, useNavigate, useBlocker } from 'react-router';
+import { useNavigate, useBlocker } from '@tanstack/react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { getAdminPlan, createPlan, updatePlan, setProgressionRules as saveProgressionRules, PlanDayExerciseInput, PlanDayInput, PlanSet, ProgressionRule } from '../../api/adminPlans';
 import { getExercises, Exercise } from '../../api/exercises';
 import SetSchemeEditorModal from '../../components/SetSchemeEditorModal';
@@ -25,9 +26,10 @@ interface EditorProgressionRule {
   increase: number;
 }
 
-export default function PlanEditorPage() {
-  const { id } = useParams<{ id: string }>();
+export default function PlanEditorPage({ planId }: { planId?: string }) {
+  const id = planId;
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const toast = useToast();
   const isEditMode = Boolean(id);
   const initialized = useRef(false);
@@ -77,7 +79,7 @@ export default function PlanEditorPage() {
     setIsDirtyState(value);
   }
 
-  const blocker = useBlocker(() => isDirtyRef.current);
+  const blocker = useBlocker({ shouldBlockFn: () => isDirtyRef.current });
 
   useEffect(() => {
     const dialog = exercisePickerRef.current;
@@ -444,16 +446,16 @@ export default function PlanEditorPage() {
     };
 
     try {
-      let planId: number;
+      let savedPlanId: number;
 
       if (isEditMode && id) {
         await updatePlan(parseInt(id, 10), payload);
-        planId = parseInt(id, 10);
+        savedPlanId = parseInt(id, 10);
         toast.success('Plan updated successfully');
         setIsDirty(false);
       } else {
         const created = await createPlan(payload);
-        planId = created.id;
+        savedPlanId = created.id;
         toast.success('Plan created successfully');
         setIsDirty(false);
       }
@@ -468,11 +470,12 @@ export default function PlanEditorPage() {
           increase: rule.increase,
         }));
 
-        await saveProgressionRules(planId, rulesPayload);
+        await saveProgressionRules(savedPlanId, rulesPayload);
       }
 
       if (!isEditMode) {
-        navigate(`/admin/plans/${planId}`);
+        await queryClient.invalidateQueries({ queryKey: ['admin-plans'] })
+        navigate({ to: '/admin/plans/$id', params: { id: String(savedPlanId) } });
       }
     } catch (err: any) {
       setError(err.message || 'Failed to save plan');
@@ -864,7 +867,7 @@ export default function PlanEditorPage() {
         onCancel={() => setRemovingExercise(null)}
       />
 
-      {blocker.state === 'blocked' && (
+      {blocker.status === 'blocked' && (
         <div className="unsaved-modal" onClick={() => blocker.reset()}>
           <div className="unsaved-modal-content" onClick={(e) => e.stopPropagation()}>
             <h3>Unsaved Changes</h3>

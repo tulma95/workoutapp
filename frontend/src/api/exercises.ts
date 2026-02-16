@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { apiFetch } from './client';
 
 const ExerciseSchema = z.object({
   id: z.number(),
@@ -31,72 +32,28 @@ export interface UpdateExerciseInput {
 }
 
 export async function getExercises(): Promise<Exercise[]> {
-  const token = localStorage.getItem('accessToken');
-  const response = await fetch('/api/admin/exercises', {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch exercises');
-  }
-
-  const data = await response.json();
+  const data = await apiFetch('/admin/exercises');
   return ExercisesListSchema.parse(data);
 }
 
 export async function createExercise(input: CreateExerciseInput): Promise<Exercise> {
-  const token = localStorage.getItem('accessToken');
-  const response = await fetch('/api/admin/exercises', {
+  const data = await apiFetch('/admin/exercises', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
     body: JSON.stringify(input),
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.message || 'Failed to create exercise');
-  }
-
-  const data = await response.json();
   return ExerciseSchema.parse(data);
 }
 
 export async function updateExercise(id: number, input: UpdateExerciseInput): Promise<Exercise> {
-  const token = localStorage.getItem('accessToken');
-  const response = await fetch(`/api/admin/exercises/${id}`, {
+  const data = await apiFetch(`/admin/exercises/${id}`, {
     method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
     body: JSON.stringify(input),
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.message || 'Failed to update exercise');
-  }
-
-  const data = await response.json();
   return ExerciseSchema.parse(data);
 }
 
 export async function deleteExercise(id: number): Promise<void> {
-  const token = localStorage.getItem('accessToken');
-  const response = await fetch(`/api/admin/exercises/${id}`, {
+  await apiFetch(`/admin/exercises/${id}`, {
     method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.message || 'Failed to delete exercise');
-  }
 }
