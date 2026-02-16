@@ -12,10 +12,9 @@ test.describe('Workout Session', () => {
 
     await dashboard.expectLoaded();
     await dashboard.startWorkout();
-    await page.waitForURL(/\/workout\/1/);
+    await workout.expectLoaded(1);
 
-    await expect(workout.repsInputs.first()).toBeVisible({ timeout: 15000 });
-    await expect(workout.dayHeading(1)).toBeVisible();
+    await expect(workout.repsInputs.first()).toBeVisible();
 
     const repsCount = await workout.repsInputs.count();
     expect(repsCount).toBeGreaterThanOrEqual(17);
@@ -28,7 +27,6 @@ test.describe('Workout Session', () => {
 
     await dashboard.expectLoaded();
     await dashboard.startWorkout();
-    await page.waitForURL(/\/workout\/1/);
     await workout.expectLoaded(1);
 
     // Tap + on the first set to auto-confirm it
@@ -46,7 +44,6 @@ test.describe('Workout Session', () => {
 
     await dashboard.expectLoaded();
     await dashboard.startWorkout();
-    await page.waitForURL(/\/workout\/1/);
     await workout.expectLoaded(1);
 
     // Target the AMRAP set row specifically (has data-amrap attribute)
@@ -84,7 +81,6 @@ test.describe('Workout Session', () => {
 
     await dashboard.expectLoaded();
     await dashboard.startWorkout();
-    await page.waitForURL(/\/workout\/1/);
     await workout.expectLoaded(1);
 
     await workout.fillAmrapAndWait('12');
@@ -106,7 +102,6 @@ test.describe('Workout Session', () => {
     expect(initialCount).toBeGreaterThan(0);
 
     await startButtons.first().click();
-    await page.waitForURL(/\/workout\/1/);
     await workout.expectLoaded(1);
 
     await workout.fillAmrapAndWait('10');
@@ -124,7 +119,6 @@ test.describe('Workout Session', () => {
 
     await dashboard.expectLoaded();
     await dashboard.startWorkout();
-    await page.waitForURL(/\/workout\/1/);
     await workout.expectLoaded(1);
 
     // DO NOT enter AMRAP reps
@@ -146,7 +140,6 @@ test.describe('Workout Session', () => {
 
     await dashboard.expectLoaded();
     await dashboard.startWorkout();
-    await page.waitForURL(/\/workout\/1/);
     await workout.expectLoaded(1);
 
     // Confirm first two sets by tapping + and wait for PATCH responses
@@ -160,14 +153,13 @@ test.describe('Workout Session', () => {
 
     // Verify completed rows exist
     const completedRows = page.locator('[data-testid="set-row"][data-completed]');
-    await expect(completedRows).toHaveCount(2, { timeout: 5000 });
+    await expect(completedRows).toHaveCount(2);
 
     // Navigate back to dashboard
     await page.goto('/');
     await dashboard.expectLoaded();
 
     await dashboard.continueWorkout();
-    await page.waitForURL(/\/workout\/1/);
     await workout.expectLoaded(1);
 
     // Verify the completed sets are still shown as completed (undo buttons visible)
@@ -184,7 +176,6 @@ test.describe('Workout Session', () => {
 
     await dashboard.expectLoaded();
     await dashboard.startWorkout();
-    await page.waitForURL(/\/workout\/1/);
     await workout.expectLoaded(1);
     await expect(workout.repsInputs.first()).toBeVisible();
 
@@ -224,15 +215,13 @@ test.describe('Workout Session', () => {
     await nav.goToDashboard();
     await dashboard.expectLoaded();
     await dashboard.startWorkout();
-    await page.waitForURL(/\/workout\/1/);
-
     await workout.expectLoaded(1);
     await expect(workout.repsInputs.first()).toBeVisible();
 
     await workout.fillAmrapAndWait('10');
     await workout.completeWithDialog();
 
-    await expect(page.getByText(/progression|increase|bench.*\+/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/progression|increase|bench.*\+/i)).toBeVisible();
     await expect(page.getByText(/bench/i).filter({ hasText: /\+/ })).toBeVisible();
 
     await workout.goBackToDashboard();

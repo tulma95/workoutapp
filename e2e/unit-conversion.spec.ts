@@ -46,7 +46,6 @@ test.describe('Unit Conversion', () => {
 
     const dashboard = new DashboardPage(page);
     await dashboard.startWorkout();
-    await page.waitForURL(/\/workout\/\d+/);
 
     const firstSetWeight = await page.locator('[data-testid="set-weight"]').first().textContent();
     expect(firstSetWeight).toContain('lb');
@@ -118,7 +117,6 @@ test.describe('Unit Conversion', () => {
     await nav.goToDashboard();
 
     await dashboard.startWorkout();
-    await page.waitForURL(/\/workout\/1/);
     await workout.expectLoaded(1);
     await expect(page.locator('[data-testid="set-row"]').first()).toBeVisible();
 

@@ -28,7 +28,7 @@ export class WorkoutPage {
     const heading = dayNumber
       ? this.dayHeading(dayNumber)
       : this.page.getByRole('heading', { name: /day \d/i });
-    await expect(heading).toBeVisible({ timeout: 15000 });
+    await expect(heading).toBeVisible();
   }
 
   /** Confirm a set by tapping the + button on its stepper (auto-confirms pending sets) */
@@ -62,12 +62,9 @@ export class WorkoutPage {
   /** Complete workout, handling the confirmation dialog if it appears. */
   async completeWithDialog() {
     await this.completeButton.click();
-    const dialog = this.confirmDialog;
-    try {
-      await expect(dialog).toBeVisible({ timeout: 2000 });
-      await dialog.getByRole('button', { name: /complete anyway/i }).click();
-    } catch {
-      // Dialog didn't appear — workout completed directly
+    await expect(this.confirmDialog.or(this.backToDashboardButton)).toBeVisible();
+    if (await this.confirmDialog.isVisible()) {
+      await this.confirmDialog.getByRole('button', { name: /complete anyway/i }).click();
     }
   }
 
@@ -78,6 +75,5 @@ export class WorkoutPage {
   async goBackToDashboard() {
     await expect(this.backToDashboardButton).toBeVisible();
     await this.backToDashboardButton.click();
-    await this.page.waitForURL('/');
   }
 }

@@ -11,7 +11,6 @@ export class PlanSelectionPage {
   }
 
   async selectFirstPlan() {
-    await this.page.waitForURL('/select-plan');
     await this.selectPlanButtons.first().click();
     await this.page.waitForURL(/\/setup/);
   }

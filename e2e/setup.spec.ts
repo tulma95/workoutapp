@@ -6,7 +6,7 @@ test.describe('Training Max Setup', () => {
   test('new user is redirected to /setup when no TMs exist', async ({ authenticatedPage }) => {
     const { page } = authenticatedPage;
 
-    expect(page.url()).toContain('/setup');
+    await expect(page).toHaveURL(/\/setup/);
 
     await expect(page.getByRole('spinbutton', { name: /bench/i })).toBeVisible();
     await expect(page.getByRole('spinbutton', { name: /squat/i })).toBeVisible();

@@ -20,7 +20,6 @@ export class SettingsPage {
 
   async navigate() {
     await this.page.getByRole('link', { name: /settings/i }).click();
-    await this.page.waitForURL('/settings');
   }
 
   async expectLoaded() {
@@ -30,12 +29,11 @@ export class SettingsPage {
   async setUnit(unit: 'kg' | 'lb') {
     const button = unit === 'kg' ? this.kgButton : this.lbButton;
     await button.click();
-    await expect(this.savedText).toBeVisible({ timeout: 3000 });
+    await expect(this.savedText).toBeVisible();
   }
 
   async logout() {
     await this.logoutButton.click();
-    await this.page.waitForURL('/login');
     await expect(this.page.getByRole('heading', { name: /log in/i })).toBeVisible();
   }
 

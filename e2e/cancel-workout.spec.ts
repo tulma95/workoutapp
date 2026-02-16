@@ -10,7 +10,6 @@ test.describe('Cancel Workout', () => {
 
     await dashboard.expectLoaded();
     await dashboard.startWorkout();
-    await page.waitForURL(/\/workout\/\d+/);
     await workout.expectLoaded(1);
 
     await workout.cancel();
@@ -21,7 +20,6 @@ test.describe('Cancel Workout', () => {
 
     await workout.confirmDialog.getByRole('button', { name: /cancel workout/i }).click();
 
-    await page.waitForURL('/');
     await dashboard.expectLoaded();
   });
 
@@ -32,12 +30,10 @@ test.describe('Cancel Workout', () => {
 
     await dashboard.expectLoaded();
     await dashboard.startWorkout();
-    await page.waitForURL(/\/workout\/\d+/);
     await workout.expectLoaded(1);
 
     const deleteResponsePromise = page.waitForResponse(
       response => response.url().includes('/api/workouts/') && response.request().method() === 'DELETE',
-      { timeout: 10000 }
     );
 
     await workout.cancel();
@@ -49,7 +45,6 @@ test.describe('Cancel Workout', () => {
     const deleteBody = await deleteResponse.json();
     expect(deleteBody.success).toBe(true);
 
-    await page.waitForURL('/');
     await dashboard.expectLoaded();
   });
 
@@ -60,7 +55,6 @@ test.describe('Cancel Workout', () => {
 
     await dashboard.expectLoaded();
     await dashboard.startWorkout();
-    await page.waitForURL(/\/workout\/\d+/);
     await workout.expectLoaded(1);
 
     await workout.cancel();

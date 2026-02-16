@@ -63,8 +63,7 @@ test.describe('Authentication', () => {
     const login = new LoginPage(page);
     await login.login(email, 'ValidPassword123');
 
-    await page.waitForURL(/\/setup/);
-    expect(page.url()).toContain('/setup');
+    await expect(page).toHaveURL(/\/setup/);
   });
 
   test('login with wrong password -> shows error message', async ({ page }) => {
@@ -94,7 +93,6 @@ test.describe('Authentication', () => {
     await expect(logoutButton).toBeVisible();
     await logoutButton.click();
 
-    await page.waitForURL('/login');
-    expect(page.url()).toContain('/login');
+    await expect(page).toHaveURL(/\/login/);
   });
 });

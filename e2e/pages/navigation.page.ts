@@ -9,16 +9,13 @@ export class NavigationBar {
 
   async goToDashboard() {
     await this.page.getByRole('link', { name: /dashboard/i }).click();
-    await this.page.waitForURL('/');
   }
 
   async goToHistory() {
     await this.page.getByRole('link', { name: /history/i }).click();
-    await this.page.waitForURL('/history');
   }
 
   async goToSettings() {
     await this.page.getByRole('link', { name: /settings/i }).click();
-    await this.page.waitForURL('/settings');
   }
 }

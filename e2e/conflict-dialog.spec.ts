@@ -9,7 +9,6 @@ async function startDay1Workout(page: Page) {
 
   await dashboard.expectLoaded();
   await dashboard.startWorkout(1);
-  await page.waitForURL(/\/workout\/\d+/);
   await workout.expectLoaded(1);
   await expect(page.locator('[data-testid="set-row"]').first()).toBeVisible();
 }
@@ -22,7 +21,7 @@ async function triggerConflictDialog(page: Page) {
   await dashboard.getDayCard(2).getByRole('button').click();
   await expect(
     page.getByRole('heading', { name: /workout in progress/i }),
-  ).toBeVisible({ timeout: 5000 });
+  ).toBeVisible();
 }
 
 test.describe('Conflict Dialog', () => {
@@ -38,7 +37,7 @@ test.describe('Conflict Dialog', () => {
     await dashboard.expectLoaded();
     await dashboard.getDayCard(2).getByRole('button').click();
 
-    await expect(page.getByText(/you have a day 1 workout/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/you have a day 1 workout/i)).toBeVisible();
   });
 
   test('clicking Continue button in conflict dialog navigates to existing workout', async ({
@@ -52,7 +51,6 @@ test.describe('Conflict Dialog', () => {
     await expect(continueButton).toBeVisible();
     await continueButton.click();
 
-    await page.waitForURL(/\/workout\/\d+/);
     const workout = new WorkoutPage(page);
     await expect(workout.dayHeading(1)).toBeVisible();
     await expect(page.getByText(/bench press/i).first()).toBeVisible();
@@ -69,7 +67,6 @@ test.describe('Conflict Dialog', () => {
     await expect(discardButton).toBeVisible();
     await discardButton.click();
 
-    await page.waitForURL(/\/workout\/\d+/);
     const workout = new WorkoutPage(page);
     await expect(workout.dayHeading(2)).toBeVisible();
     await expect(page.getByText(/squat/i)).toBeVisible();
@@ -87,7 +84,6 @@ test.describe('Conflict Dialog', () => {
     await expect(dialog).toBeVisible();
     await page.keyboard.press('Escape');
 
-    await page.waitForURL('/');
     await expect(page.getByText(/workout days/i)).toBeVisible();
   });
 });

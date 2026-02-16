@@ -64,8 +64,7 @@ test.describe('Missing TM redirect', () => {
     const [, skippedName] = skippedExercise;
 
     await page.goto('/');
-    await page.waitForURL(/\/setup/, { timeout: 10000 });
-    expect(page.url()).toContain('/setup');
+    await expect(page).toHaveURL(/\/setup/);
 
     await expect(page.getByText(skippedName)).toBeVisible();
   });
@@ -74,16 +73,13 @@ test.describe('Missing TM redirect', () => {
     await registerAndPartialSetup(page);
 
     await page.goto('/');
-    await page.waitForURL(/\/setup/, { timeout: 10000 });
-
-    await expect(page.getByRole('spinbutton').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('spinbutton').first()).toBeVisible();
     const inputs = page.getByRole('spinbutton');
     expect(await inputs.count()).toBe(1);
 
     await inputs.first().fill('100');
     await page.getByRole('button', { name: /calculate/i }).click();
 
-    await page.waitForURL('/', { timeout: 10000 });
     await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
   });
 });

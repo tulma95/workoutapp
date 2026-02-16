@@ -10,7 +10,6 @@ async function completeWorkout(page: Page, dayNumber: number, amrapReps: number)
 
   await dashboard.expectLoaded();
   await dashboard.startWorkout(dayNumber);
-  await page.waitForURL(/\/workout\/\d+/);
   await workout.expectLoaded(dayNumber);
 
   // Fill AMRAP and wait for the API call to persist

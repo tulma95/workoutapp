@@ -20,7 +20,6 @@ export class HistoryPage {
 
   async navigate() {
     await this.page.getByRole('link', { name: /history/i }).click();
-    await this.page.waitForURL('/history');
   }
 
   async expectLoaded() {

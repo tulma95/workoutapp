@@ -185,7 +185,6 @@ const test = base.extend<AdminFixture>({
     await page.getByLabel(/display name/i).fill('Admin User');
     await page.getByRole('button', { name: /create account/i }).click();
 
-    await page.waitForURL('/select-plan');
     await page.getByRole('button', { name: /select plan/i }).first().click();
     await page.waitForURL(/\/setup/);
 
@@ -199,7 +198,6 @@ const test = base.extend<AdminFixture>({
     // Log out via Settings and re-login to get a new JWT with isAdmin=true
     await page.getByRole('link', { name: /settings/i }).click();
     await page.getByRole('button', { name: /log out/i }).click();
-    await page.waitForURL('/login');
     await expect(page.getByRole('heading', { name: /log in/i })).toBeVisible();
     await page.getByLabel(/email/i).fill(email);
     await page.getByLabel(/password/i).fill('ValidPassword123');
@@ -208,7 +206,7 @@ const test = base.extend<AdminFixture>({
 
     // Navigate to admin
     await page.goto('/admin/plans');
-    await expect(page.getByRole('heading', { name: /workout plans/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: /workout plans/i })).toBeVisible();
 
     await use(new AdminPlanEditor(page));
   },
@@ -223,7 +221,7 @@ function uniquePlanName() {
 async function goToCreatePlan(admin: AdminPlanEditor) {
   await admin.page.goto('/admin/plans');
   await admin.page.getByRole('link', { name: /create plan/i }).click();
-  await admin.page.waitForURL('/admin/plans/new');
+  await expect(admin.page.getByLabel(/plan name/i)).toBeVisible();
 }
 
 // -- Tests --
@@ -318,7 +316,7 @@ test.describe('Admin Plan Editor', () => {
     await admin.page.getByRole('link', { name: /^plans$/i }).click();
     await expect(admin.unsavedModal).toBeVisible();
     await admin.leaveButton.click();
-    await admin.page.waitForURL('/admin/plans');
+    await expect(admin.page).toHaveURL('/admin/plans');
   });
 
   test('no unsaved changes warning after saving', async ({ admin }) => {
@@ -333,7 +331,7 @@ test.describe('Admin Plan Editor', () => {
     await expect(admin.successToast).toBeVisible();
 
     await admin.page.getByRole('link', { name: /^plans$/i }).click();
-    await admin.page.waitForURL('/admin/plans');
+    await expect(admin.page.getByRole('heading', { name: /workout plans/i })).toBeVisible();
     await expect(admin.unsavedModal).not.toBeVisible();
   });
 
