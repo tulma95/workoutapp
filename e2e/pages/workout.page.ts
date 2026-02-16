@@ -16,7 +16,7 @@ export class WorkoutPage {
     this.completeButton = page.getByRole('button', { name: /complete workout/i });
     this.cancelButton = page.getByRole('button', { name: /cancel workout/i });
     this.backToDashboardButton = page.getByRole('button', { name: /back to dashboard|dashboard/i });
-    this.confirmDialog = page.locator('.confirm-dialog__content');
+    this.confirmDialog = page.locator('[data-testid="confirm-dialog"]');
     this.progressionBanner = page.getByText(/progression|increase|bench.*\+/i);
   }
 
@@ -33,12 +33,22 @@ export class WorkoutPage {
 
   /** Confirm a set by tapping the + button on its stepper (auto-confirms pending sets) */
   async confirmSet(index: number) {
-    const section = this.page.locator('.set-row').nth(index);
+    const section = this.page.locator('[data-testid="set-row"]').nth(index);
     await section.getByRole('button', { name: /increase reps/i }).click();
   }
 
   async fillAmrap(value: string, index = 0) {
-    await this.repsInputs.nth(index).fill(value);
+    const amrapRow = this.page.locator('[data-testid="set-row"][data-amrap]').nth(index);
+    await amrapRow.getByRole('spinbutton', { name: /reps completed/i }).fill(value);
+  }
+
+  /** Fill AMRAP input and wait for the debounced PATCH to persist. */
+  async fillAmrapAndWait(value: string, index = 0) {
+    const responsePromise = this.page.waitForResponse(
+      resp => resp.url().includes('/api/workouts/') && resp.request().method() === 'PATCH' && resp.ok(),
+    );
+    await this.fillAmrap(value, index);
+    await responsePromise;
   }
 
   async toggleSet(index: number) {

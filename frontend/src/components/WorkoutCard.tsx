@@ -15,7 +15,7 @@ export default function WorkoutCard({
   onStart,
 }: WorkoutCardProps) {
   return (
-    <div className={`${styles.card} ${status === 'in_progress' ? styles.inProgress : status === 'completed' ? styles.completed : styles.upcoming}`} style={{ viewTransitionName: `workout-day-${dayNumber}` }}>
+    <div className={`${styles.card} ${status === 'in_progress' ? styles.inProgress : status === 'completed' ? styles.completed : styles.upcoming}`} style={{ viewTransitionName: `workout-day-${dayNumber}` }} data-testid="workout-card" data-day={dayNumber}>
       <div className={styles.header}>
         <h3 className={styles.title}>Day {dayNumber}</h3>
         {status === 'completed' && (

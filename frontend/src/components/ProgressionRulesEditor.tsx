@@ -80,7 +80,7 @@ export default function ProgressionRulesEditor({
   }
 
   return (
-    <div className={styles.editor}>
+    <div className={styles.editor} data-testid="progression-rules">
       <div className={styles.header}>
         <h3>Progression Rules</h3>
         <button className={styles.addBtn} onClick={addRule}>
@@ -89,7 +89,7 @@ export default function ProgressionRulesEditor({
       </div>
 
       {rules.length === 0 ? (
-        <div className={styles.empty}>
+        <div className={styles.empty} data-testid="progression-rules-empty">
           No progression rules defined. Click "+ Add Rule" to configure how training maxes increase.
         </div>
       ) : (
@@ -115,7 +115,7 @@ export default function ProgressionRulesEditor({
               }
 
               return (
-                <tr key={rule.tempId}>
+                <tr key={rule.tempId} data-testid="rule-row">
                   <td>
                     <select
                       className={styles.targetSelect}

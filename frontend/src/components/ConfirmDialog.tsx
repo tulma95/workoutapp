@@ -57,7 +57,7 @@ export function ConfirmDialog({
 
   return (
     <dialog ref={dialogRef} className={styles.dialog} onClick={handleBackdropClick}>
-      <div className={styles.content}>
+      <div className={styles.content} data-testid="confirm-dialog">
         <h2 className={styles.title}>{title}</h2>
         <p className={styles.message}>{message}</p>
         <div className={styles.actions}>

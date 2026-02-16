@@ -53,6 +53,6 @@ export class SettingsPage {
 
     await this.page.getByRole('button', { name: /^save$/i }).click();
 
-    await expect(this.page.locator('.tm-edit-dialog')).not.toBeVisible();
+    await expect(this.page.getByRole('dialog')).not.toBeVisible();
   }
 }

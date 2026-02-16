@@ -15,7 +15,7 @@ export class RegisterPage {
     this.passwordInput = page.getByLabel(/password/i);
     this.displayNameInput = page.getByLabel(/display name/i);
     this.submitButton = page.getByRole('button', { name: /create account/i });
-    this.errorMessage = page.locator('.error, [role="alert"], .alert-error');
+    this.errorMessage = page.getByRole('alert');
   }
 
   unitRadio(unit: 'kg' | 'lb') {

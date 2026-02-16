@@ -201,7 +201,7 @@ function SettingsPage() {
           <h3>Training Maxes</h3>
           <div className={styles.tmList}>
             {trainingMaxes.map((tm: TrainingMax) => (
-              <div key={tm.exercise} className={styles.tmItem}>
+              <div key={tm.exercise} className={styles.tmItem} data-testid="tm-item">
                 <div className={styles.tmInfo}>
                   <span className={styles.tmExercise}>{formatExerciseName(tm.exercise)}</span>
                   <span className={styles.tmWeight}>{formatWeight(tm.weight, unit)}</span>

@@ -519,7 +519,7 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
       </div>
 
       {validationErrors.length > 0 && (
-        <div className={styles.validationErrors}>
+        <div className={styles.validationErrors} data-testid="validation-errors">
           <strong>Please fix the following errors:</strong>
           <ul>
             {validationErrors.map((err, idx) => (
@@ -530,10 +530,11 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
       )}
       {error && <div className={styles.error}>{error}</div>}
 
-      <div className={`${styles.metadataSection} ${metadataCollapsed ? styles.metadataCollapsed : ''}`}>
+      <div className={`${styles.metadataSection} ${metadataCollapsed ? styles.metadataCollapsed : ''}`} data-testid="metadata-section" data-collapsed={metadataCollapsed || undefined}>
         <button
           className={styles.metadataToggle}
           onClick={() => setMetadataCollapsed(!metadataCollapsed)}
+          data-testid="metadata-toggle"
         >
           <span className={styles.metadataToggleLabel}>
             {metadataCollapsed ? '▸' : '▾'} Plan Details
@@ -629,6 +630,8 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
                 key={day.dayNumber}
                 className={`${styles.dayTab} ${activeDay === day.dayNumber ? styles.dayTabActive : ''} ${statusClass}`}
                 onClick={() => setActiveDay(day.dayNumber)}
+                data-testid="day-tab"
+                {...(allHaveSets ? { 'data-complete': '' } : hasExercises ? { 'data-incomplete': '' } : {})}
               >
                 {day.name && day.name !== `Day ${day.dayNumber}`
                   ? `Day ${day.dayNumber}: ${day.name}`
@@ -677,7 +680,7 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
                 if (!exercise) return null;
 
                 return (
-                  <div key={ex.tempId} className={`${styles.exerciseRow} ${ex.sets.length > 0 ? styles.exerciseRowHasSets : styles.exerciseRowNoSets}`}>
+                  <div key={ex.tempId} className={`${styles.exerciseRow} ${ex.sets.length > 0 ? styles.exerciseRowHasSets : styles.exerciseRowNoSets}`} data-testid="exercise-row">
                     <div className={styles.exerciseRowHeader}>
                       <span className={styles.exerciseName}>{idx + 1}. {exercise.name}</span>
                       <div className={styles.exerciseRowActions}>
@@ -813,6 +816,7 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
                 key={ex.id}
                 className={styles.pickerItem}
                 onClick={() => addExerciseToDay(ex)}
+                data-testid="exercise-picker-item"
               >
                 <div className={styles.pickerItemName}>{ex.name}</div>
                 <div className={styles.pickerItemMeta}>
@@ -868,7 +872,7 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
       />
 
       {blocker.status === 'blocked' && (
-        <div className={styles.unsavedModal} onClick={() => blocker.reset()}>
+        <div className={styles.unsavedModal} onClick={() => blocker.reset()} data-testid="unsaved-modal">
           <div className={styles.unsavedModalContent} onClick={(e) => e.stopPropagation()}>
             <h3>Unsaved Changes</h3>
             <p>You have unsaved changes. Leave without saving?</p>

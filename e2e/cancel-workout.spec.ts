@@ -16,8 +16,8 @@ test.describe('Cancel Workout', () => {
     await workout.cancel();
 
     await expect(workout.confirmDialog).toBeVisible();
-    await expect(workout.confirmDialog.locator('.confirm-dialog__message')).toContainText(/cancel/i);
-    await expect(workout.confirmDialog.locator('.confirm-dialog__message')).toContainText(/progress/i);
+    await expect(workout.confirmDialog).toContainText(/cancel/i);
+    await expect(workout.confirmDialog).toContainText(/progress/i);
 
     await workout.confirmDialog.getByRole('button', { name: /cancel workout/i }).click();
 
@@ -70,6 +70,6 @@ test.describe('Cancel Workout', () => {
 
     expect(page.url()).toMatch(/\/workout\/\d+/);
     await expect(workout.dayHeading(1)).toBeVisible();
-    expect(await workout.checkboxes.count()).toBeGreaterThan(0);
+    expect(await page.locator('[data-testid="set-row"]').count()).toBeGreaterThan(0);
   });
 });

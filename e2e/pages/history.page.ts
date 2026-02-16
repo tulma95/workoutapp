@@ -12,10 +12,10 @@ export class HistoryPage {
   constructor(page: Page) {
     this.page = page;
     this.heading = page.getByRole('heading', { name: /history/i });
-    this.monthHeading = page.locator('.workout-calendar__title');
+    this.monthHeading = page.locator('[data-testid="calendar-title"]');
     this.prevButton = page.getByRole('button', { name: 'Previous month' });
     this.nextButton = page.getByRole('button', { name: 'Next month' });
-    this.calendarGrid = page.locator('.workout-calendar__grid');
+    this.calendarGrid = page.locator('[data-testid="calendar-grid"]');
   }
 
   async navigate() {

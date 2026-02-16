@@ -39,10 +39,13 @@ export default function SetRow({
     <div
       className={`${styles.setRow} ${completed ? styles.completed : ''}`}
       data-set-row
+      data-testid="set-row"
+      {...(completed ? { 'data-completed': '' } : {})}
+      {...(isAmrap ? { 'data-amrap': '' } : {})}
     >
       <div className={styles.info}>
         <span className={styles.number}>{setNumber}</span>
-        <span className={styles.weight}>{formatWeight(weight, unit)}</span>
+        <span className={styles.weight} data-testid="set-weight">{formatWeight(weight, unit)}</span>
         {isAmrap && (
           <span className={styles.reps}>x{reps}+</span>
         )}

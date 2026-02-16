@@ -4,19 +4,19 @@ export class SetupPage {
   readonly page: Page;
 
   readonly heading;
-  readonly formGroups;
+  readonly exerciseInputs;
   readonly calculateButton;
 
   constructor(page: Page) {
     this.page = page;
     this.heading = page.getByRole('heading', { name: /enter your 1 rep maxes/i });
-    this.formGroups = page.locator('.form-group');
+    this.exerciseInputs = page.getByRole('spinbutton');
     this.calculateButton = page.getByRole('button', { name: /calculate/i });
   }
 
   async expectHeading() {
     await expect(this.heading).toBeVisible();
-    await expect(this.formGroups).toHaveCount(4);
+    await expect(this.exerciseInputs).toHaveCount(4);
   }
 
   getExerciseInput(name: string) {

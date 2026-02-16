@@ -48,10 +48,12 @@ test.describe('Unit Conversion', () => {
     await dashboard.startWorkout();
     await page.waitForURL(/\/workout\/\d+/);
 
-    const firstSetWeight = await page.locator('.set-row').first().locator('.set-row__weight').textContent();
+    const firstSetWeight = await page.locator('[data-testid="set-weight"]').first().textContent();
     expect(firstSetWeight).toContain('lb');
 
-    const weightValue = parseInt(firstSetWeight?.match(/\d+/)?.[0] || '0');
+    const weightMatch = firstSetWeight?.match(/(\d+(?:\.\d+)?)\s*lb/);
+    expect(weightMatch).toBeTruthy();
+    const weightValue = parseInt(weightMatch![1]);
     expect(weightValue % 5).toBe(0);
     expect(weightValue).toBeGreaterThanOrEqual(125);
     expect(weightValue).toBeLessThanOrEqual(135);
@@ -67,10 +69,10 @@ test.describe('Unit Conversion', () => {
     await settings.navigate();
     await settings.expectLoaded();
 
-    const benchTM = await page.locator('.tm-item:has-text("Bench")').locator('.tm-weight').textContent();
-    const squatTM = await page.locator('.tm-item:has-text("Squat")').locator('.tm-weight').textContent();
-    const ohpTM = await page.locator('.tm-item:has-text("OHP"), .tm-item:has-text("Overhead")').locator('.tm-weight').textContent();
-    const deadliftTM = await page.locator('.tm-item:has-text("Deadlift")').locator('.tm-weight').textContent();
+    const benchTM = await page.locator('[data-testid="tm-item"]').filter({ hasText: 'Bench' }).textContent();
+    const squatTM = await page.locator('[data-testid="tm-item"]').filter({ hasText: 'Squat' }).textContent();
+    const ohpTM = await page.locator('[data-testid="tm-item"]').filter({ hasText: /OHP|Overhead/i }).textContent();
+    const deadliftTM = await page.locator('[data-testid="tm-item"]').filter({ hasText: 'Deadlift' }).textContent();
 
     expect(benchTM).toContain('lb');
     expect(squatTM).toContain('lb');
@@ -118,9 +120,9 @@ test.describe('Unit Conversion', () => {
     await dashboard.startWorkout();
     await page.waitForURL(/\/workout\/1/);
     await workout.expectLoaded(1);
-    await expect(workout.checkboxes.first()).toBeVisible();
+    await expect(page.locator('[data-testid="set-row"]').first()).toBeVisible();
 
-    const firstSetText = await page.locator('.set-row').first().textContent();
+    const firstSetText = await page.locator('[data-testid="set-row"]').first().textContent();
     expect(firstSetText).toContain('lb');
 
     const firstSetWeightMatch = firstSetText?.match(/(\d+(?:\.\d+)?)\s*lb/);

@@ -151,7 +151,7 @@ export default function WorkoutCalendar({
         >
           ←
         </button>
-        <h2 className={styles.title}>
+        <h2 className={styles.title} data-testid="calendar-title">
           {MONTH_NAMES[currentMonth]} {currentYear}
         </h2>
         <button
@@ -175,6 +175,7 @@ export default function WorkoutCalendar({
       <div
         className={styles.grid}
         style={{ viewTransitionName: 'calendar-grid' }}
+        data-testid="calendar-grid"
       >
         {calendarDays.map((day, index) => (
           <button

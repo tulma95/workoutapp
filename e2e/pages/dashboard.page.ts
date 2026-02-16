@@ -15,7 +15,7 @@ export class DashboardPage {
   }
 
   getDayCard(dayNumber: number) {
-    return this.page.locator('.workout-card').filter({
+    return this.page.locator('[data-testid="workout-card"]').filter({
       has: this.page.getByRole('heading', { name: `Day ${dayNumber}` }),
     });
   }

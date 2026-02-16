@@ -35,7 +35,7 @@ test.describe('Workout Session', () => {
     await workout.confirmSet(0);
 
     // Verify the set row has completed class (green background)
-    const completedRows = page.locator('.set-row--completed');
+    const completedRows = page.locator('[data-testid="set-row"][data-completed]');
     await expect(completedRows.first()).toBeVisible();
   });
 
@@ -49,11 +49,14 @@ test.describe('Workout Session', () => {
     await page.waitForURL(/\/workout\/1/);
     await workout.expectLoaded(1);
 
-    const amrapInput = workout.repsInputs.first();
+    // Target the AMRAP set row specifically (has data-amrap attribute)
+    const amrapRow = page.locator('[data-testid="set-row"][data-amrap]').first();
+    await expect(amrapRow).toBeVisible();
+    const amrapInput = amrapRow.getByRole('spinbutton', { name: /reps completed/i });
     const initialValue = await amrapInput.inputValue();
     expect(initialValue === '' || initialValue === '0').toBeTruthy();
 
-    const plusButton = page.getByRole('button', { name: /increase reps/i }).first();
+    const plusButton = amrapRow.getByRole('button', { name: /increase reps/i });
     await plusButton.click();
     await plusButton.click();
     await plusButton.click();
@@ -62,7 +65,7 @@ test.describe('Workout Session', () => {
     const numValue = parseInt(valueAfterPlus, 10);
     expect(numValue).toBeGreaterThan(0);
 
-    const minusButton = page.getByRole('button', { name: /decrease reps/i }).first();
+    const minusButton = amrapRow.getByRole('button', { name: /decrease reps/i });
     await minusButton.click();
 
     const finalValue = await amrapInput.inputValue();
@@ -84,7 +87,7 @@ test.describe('Workout Session', () => {
     await page.waitForURL(/\/workout\/1/);
     await workout.expectLoaded(1);
 
-    await workout.fillAmrap('12');
+    await workout.fillAmrapAndWait('12');
     await workout.completeWithDialog();
 
     await expect(page.getByText(/bench.*\+5|progression|increase/i)).toBeVisible();
@@ -106,7 +109,7 @@ test.describe('Workout Session', () => {
     await page.waitForURL(/\/workout\/1/);
     await workout.expectLoaded(1);
 
-    await workout.fillAmrap('10');
+    await workout.fillAmrapAndWait('10');
     await workout.completeWithDialog();
 
     await workout.goBackToDashboard();
@@ -128,7 +131,7 @@ test.describe('Workout Session', () => {
     await workout.complete();
 
     await expect(workout.confirmDialog).toBeVisible();
-    await expect(workout.confirmDialog.locator('.confirm-dialog__message')).toContainText(/progression/i);
+    await expect(workout.confirmDialog).toContainText(/progression/i);
 
     await workout.confirmDialog.getByRole('button', { name: /complete anyway/i }).click();
 
@@ -156,7 +159,7 @@ test.describe('Workout Session', () => {
     await patchResponse2;
 
     // Verify completed rows exist
-    const completedRows = page.locator('.set-row--completed');
+    const completedRows = page.locator('[data-testid="set-row"][data-completed]');
     await expect(completedRows).toHaveCount(2, { timeout: 5000 });
 
     // Navigate back to dashboard
@@ -185,8 +188,8 @@ test.describe('Workout Session', () => {
     await workout.expectLoaded(1);
     await expect(workout.repsInputs.first()).toBeVisible();
 
-    const firstExerciseSection = page.locator('.workout-section').first();
-    const secondExerciseSection = page.locator('.workout-section').nth(1);
+    const firstExerciseSection = page.locator('section').first();
+    const secondExerciseSection = page.locator('section').nth(1);
 
     await expect(firstExerciseSection).toBeVisible();
     await expect(secondExerciseSection).toBeVisible();
@@ -226,7 +229,7 @@ test.describe('Workout Session', () => {
     await workout.expectLoaded(1);
     await expect(workout.repsInputs.first()).toBeVisible();
 
-    await workout.fillAmrap('10');
+    await workout.fillAmrapAndWait('10');
     await workout.completeWithDialog();
 
     await expect(page.getByText(/progression|increase|bench.*\+/i)).toBeVisible({ timeout: 5000 });

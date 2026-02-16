@@ -11,7 +11,7 @@ async function startDay1Workout(page: Page) {
   await dashboard.startWorkout(1);
   await page.waitForURL(/\/workout\/\d+/);
   await workout.expectLoaded(1);
-  await expect(workout.checkboxes.first()).toBeVisible();
+  await expect(page.locator('[data-testid="set-row"]').first()).toBeVisible();
 }
 
 async function triggerConflictDialog(page: Page) {
@@ -83,7 +83,7 @@ test.describe('Conflict Dialog', () => {
     await startDay1Workout(page);
     await triggerConflictDialog(page);
 
-    const dialog = page.locator('dialog.conflict-dialog');
+    const dialog = page.locator('[data-testid="conflict-dialog"]');
     await expect(dialog).toBeVisible();
     await page.keyboard.press('Escape');
 

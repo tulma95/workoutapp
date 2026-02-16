@@ -51,29 +51,29 @@ class AdminPlanEditor {
     this.descriptionInput = page.getByLabel(/description/i);
     this.daysPerWeekInput = page.getByLabel(/days per week/i);
 
-    this.dayTabs = page.locator('.day-tab');
+    this.dayTabs = page.locator('[data-testid="day-tab"]');
     this.dayNameInput = page.getByLabel(/day name/i);
 
     this.addExerciseButton = page.getByRole('button', { name: /add exercise/i });
-    this.exerciseRows = page.locator('.exercise-row');
+    this.exerciseRows = page.locator('[data-testid="exercise-row"]');
     this.exerciseSearch = page.getByPlaceholder(/search exercises/i);
-    this.exercisePickerItems = page.locator('.exercise-picker-item');
+    this.exercisePickerItems = page.locator('[data-testid="exercise-picker-item"]');
 
     this.saveButton = page.getByRole('button', { name: /save plan/i });
-    this.validationErrors = page.locator('.validation-errors');
+    this.validationErrors = page.locator('[data-testid="validation-errors"]');
 
-    this.successToast = page.locator('.toast--success');
+    this.successToast = page.locator('[data-testid="toast"][data-type="success"]');
 
-    this.unsavedModal = page.locator('.unsaved-modal');
+    this.unsavedModal = page.locator('[data-testid="unsaved-modal"]');
     this.stayButton = page.getByRole('button', { name: /^stay$/i });
     this.leaveButton = page.getByRole('button', { name: /^leave$/i });
 
-    this.setSchemeModal = page.locator('.set-scheme-modal');
+    this.setSchemeModal = page.locator('[data-testid="set-scheme-modal"]');
 
-    this.progressionRulesSection = page.locator('.progression-rules-editor');
+    this.progressionRulesSection = page.locator('[data-testid="progression-rules"]');
     this.addRuleButton = page.getByRole('button', { name: /add rule/i });
 
-    this.metadataToggle = page.locator('.metadata-toggle');
+    this.metadataToggle = page.locator('[data-testid="metadata-toggle"]');
   }
 
   dayTab(n: number) {
@@ -81,11 +81,11 @@ class AdminPlanEditor {
   }
 
   completeDayTabs() {
-    return this.page.locator('.day-tab--complete');
+    return this.page.locator('[data-testid="day-tab"][data-complete]');
   }
 
   incompleteDayTabs() {
-    return this.page.locator('.day-tab--incomplete');
+    return this.page.locator('[data-testid="day-tab"][data-incomplete]');
   }
 
   editSetsButton(n: number) {
@@ -93,7 +93,7 @@ class AdminPlanEditor {
   }
 
   removeExerciseButton(n: number) {
-    return this.exerciseRows.nth(n - 1).locator('.btn-remove');
+    return this.exerciseRows.nth(n - 1).getByTitle('Remove');
   }
 
   moveUpButton(n: number) {
@@ -105,7 +105,7 @@ class AdminPlanEditor {
   }
 
   copySelect(n: number) {
-    return this.exerciseRows.nth(n - 1).locator('.copy-sets-select');
+    return this.exerciseRows.nth(n - 1).locator('select').last();
   }
 
   // Set scheme modal locators
@@ -116,25 +116,25 @@ class AdminPlanEditor {
     return this.setSchemeModal.getByRole('button', { name: /^save$/i });
   }
   get setRows() {
-    return this.setSchemeModal.locator('.sets-table tbody tr');
+    return this.setSchemeModal.locator('tbody tr');
   }
 
   // Progression rule row locators
   ruleMinReps(n: number) {
-    return this.page.locator('.progression-rules-table tbody tr').nth(n - 1).locator('.reps-input').first();
+    return this.page.locator('[data-testid="rule-row"]').nth(n - 1).locator('input[type="number"]').first();
   }
   ruleMaxReps(n: number) {
-    return this.page.locator('.progression-rules-table tbody tr').nth(n - 1).locator('.reps-input').nth(1);
+    return this.page.locator('[data-testid="rule-row"]').nth(n - 1).locator('input[type="number"]').nth(1);
   }
   ruleIncrease(n: number) {
-    return this.page.locator('.progression-rules-table tbody tr').nth(n - 1).locator('.increase-input');
+    return this.page.locator('[data-testid="rule-row"]').nth(n - 1).locator('input[type="number"]').nth(2);
   }
 
   // -- Actions --
 
   async expandMetadata() {
     await expect(this.metadataToggle).toBeVisible();
-    const isCollapsed = await this.page.locator('.plan-metadata-section--collapsed').isVisible();
+    const isCollapsed = await this.page.locator('[data-testid="metadata-section"][data-collapsed]').isVisible();
     if (isCollapsed) {
       await this.metadataToggle.click();
       await expect(this.nameInput).toBeVisible();
@@ -156,8 +156,8 @@ class AdminPlanEditor {
       await this.addSetButton.click();
     }
 
-    const percentageInputs = this.setSchemeModal.locator('.percentage-input');
-    const repsInputs = this.setSchemeModal.locator('.reps-input');
+    const percentageInputs = this.setSchemeModal.locator('td:nth-child(2) input[type="number"]');
+    const repsInputs = this.setSchemeModal.locator('td:nth-child(3) input[type="number"]');
     for (let i = 0; i < count; i++) {
       await percentageInputs.nth(i).fill(String(percentage));
       await repsInputs.nth(i).fill(String(reps));
@@ -264,7 +264,7 @@ test.describe('Admin Plan Editor', () => {
     await expect(admin.setSchemeModal).toBeVisible();
     await admin.addSetButton.click();
 
-    const percentageInput = admin.setSchemeModal.locator('.percentage-input').first();
+    const percentageInput = admin.setSchemeModal.locator('td:nth-child(2) input[type="number"]').first();
     await percentageInput.fill('70');
     await expect(percentageInput).toHaveValue('70');
 
@@ -273,7 +273,7 @@ test.describe('Admin Plan Editor', () => {
 
     await admin.editSetsButton(1).click();
     await expect(admin.setSchemeModal).toBeVisible();
-    await expect(admin.setSchemeModal.locator('.percentage-input').first()).toHaveValue('70');
+    await expect(admin.setSchemeModal.locator('td:nth-child(2) input[type="number"]').first()).toHaveValue('70');
   });
 
   test('description persists across tab switches and after save', async ({ admin }) => {
@@ -377,7 +377,7 @@ test.describe('Admin Plan Editor', () => {
 
     await admin.progressionRulesSection.scrollIntoViewIfNeeded();
 
-    const emptyMsg = admin.page.locator('.progression-rules-empty');
+    const emptyMsg = admin.page.locator('[data-testid="progression-rules-empty"]');
     await expect(emptyMsg).toBeVisible();
 
     await admin.addRuleButton.click();
@@ -398,8 +398,8 @@ test.describe('Admin Plan Editor', () => {
     await expect(admin.setSchemeModal).toBeVisible();
 
     await admin.addSetButton.click();
-    const percentageInputs = admin.setSchemeModal.locator('.percentage-input');
-    const repsInputs = admin.setSchemeModal.locator('.reps-input');
+    const percentageInputs = admin.setSchemeModal.locator('td:nth-child(2) input[type="number"]');
+    const repsInputs = admin.setSchemeModal.locator('td:nth-child(3) input[type="number"]');
     await percentageInputs.first().fill('65');
     await repsInputs.first().fill('5');
 
@@ -426,8 +426,8 @@ test.describe('Admin Plan Editor', () => {
     await expect(admin.setSchemeModal).toBeVisible();
 
     await expect(admin.setRows).toHaveCount(3);
-    await expect(admin.setRows.first().locator('.percentage-input')).toHaveValue('70');
-    await expect(admin.setRows.first().locator('.reps-input')).toHaveValue('5');
+    await expect(admin.setSchemeModal.locator('td:nth-child(2) input[type="number"]').first()).toHaveValue('70');
+    await expect(admin.setSchemeModal.locator('td:nth-child(3) input[type="number"]').first()).toHaveValue('5');
   });
 
   test('confirms before deleting exercise with configured sets', async ({ admin }) => {
@@ -439,7 +439,7 @@ test.describe('Admin Plan Editor', () => {
     await admin.addSets(1, 3, 65, 5);
 
     await admin.removeExerciseButton(1).click();
-    const dialog = admin.page.locator('.confirm-dialog__content');
+    const dialog = admin.page.locator('[data-testid="confirm-dialog"]');
     await expect(dialog).toBeVisible();
 
     await dialog.getByRole('button', { name: /cancel/i }).click();
@@ -460,7 +460,7 @@ test.describe('Admin Plan Editor', () => {
     await admin.addExercise('Bench');
     await admin.removeExerciseButton(1).click();
     await expect(admin.exerciseRows).toHaveCount(0);
-    await expect(admin.page.locator('.confirm-dialog__content')).not.toBeVisible();
+    await expect(admin.page.locator('[data-testid="confirm-dialog"]')).not.toBeVisible();
   });
 
   test('reorder arrows are visually distinct for movable exercises', async ({ admin }) => {

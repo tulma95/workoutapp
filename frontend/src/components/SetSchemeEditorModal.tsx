@@ -81,7 +81,7 @@ export default function SetSchemeEditorModal({
   }
 
   return (
-    <dialog className={styles.dialog} ref={dialogRef} onClick={handleBackdropClick}>
+    <dialog className={styles.dialog} ref={dialogRef} onClick={handleBackdropClick} data-testid="set-scheme-modal">
       <div className={styles.content}>
         <div className={styles.header}>
           <h3>Edit Set Scheme: {exerciseName}</h3>

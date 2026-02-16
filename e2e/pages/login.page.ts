@@ -13,7 +13,7 @@ export class LoginPage {
     this.emailInput = page.getByLabel(/email/i);
     this.passwordInput = page.getByLabel(/password/i);
     this.submitButton = page.getByRole('button', { name: /log in/i });
-    this.errorMessage = page.locator('.error, [role="alert"], .alert-error');
+    this.errorMessage = page.getByRole('alert');
   }
 
   async expectHeading() {

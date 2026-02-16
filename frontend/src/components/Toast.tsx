@@ -48,7 +48,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {children}
       <div className={styles.container}>
         {toasts.map(toast => (
-          <div key={toast.id} className={`${styles.toast} ${styles[toast.type]}`}>
+          <div key={toast.id} className={`${styles.toast} ${styles[toast.type]}`} data-testid="toast" data-type={toast.type}>
             <span className={styles.message}>{toast.message}</span>
             <button className={styles.dismiss} onClick={() => dismiss(toast.id)}>×</button>
           </div>

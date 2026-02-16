@@ -35,7 +35,7 @@ export function ConflictDialog({
   };
 
   return (
-    <dialog ref={dialogRef} className={styles.dialog} onClick={handleClick}>
+    <dialog ref={dialogRef} className={styles.dialog} onClick={handleClick} data-testid="conflict-dialog">
       <div className={styles.content}>
         <h2 className={styles.title}>Workout in Progress</h2>
         <p className={styles.message}>

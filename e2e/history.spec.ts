@@ -19,7 +19,7 @@ async function completeWorkout(page: Page, dayNumber: number, amrapReps: number)
     resp => resp.url().includes('/api/workouts/') && resp.request().method() === 'PATCH' && resp.ok(),
   );
 
-  await workout.complete();
+  await workout.completeWithDialog();
   await workout.goBackToDashboard();
 }
 
