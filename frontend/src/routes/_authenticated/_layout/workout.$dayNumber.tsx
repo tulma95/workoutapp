@@ -54,6 +54,7 @@ function WorkoutPage() {
   const dayNumber = parseInt(dayParam || '0', 10)
 
   const loadingRef = useRef(false)
+  const debounceMap = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map())
 
   useEffect(() => {
     if (loadingRef.current) return
@@ -121,49 +122,84 @@ function WorkoutPage() {
     loadWorkout()
   }, [dayNumber])
 
-  const handleSetComplete = async (setId: number) => {
+  // Cleanup debounce timers on unmount
+  useEffect(() => {
+    return () => {
+      debounceMap.current.forEach((timer) => clearTimeout(timer))
+      debounceMap.current.clear()
+    }
+  }, [])
+
+  const debouncedLogSet = (
+    setId: number,
+    data: { actualReps?: number | null; completed?: boolean }
+  ) => {
+    if (!workout) return
+
+    // Clear existing timer for this set
+    const existingTimer = debounceMap.current.get(setId)
+    if (existingTimer) {
+      clearTimeout(existingTimer)
+    }
+
+    // Set new timer
+    const timer = setTimeout(async () => {
+      try {
+        await logSet(workout.id, setId, data)
+        debounceMap.current.delete(setId)
+      } catch (err) {
+        console.error('Failed to update set:', err)
+      }
+    }, 300)
+
+    debounceMap.current.set(setId, timer)
+  }
+
+  const handleConfirmSet = (setId: number) => {
     if (!workout) return
 
     const set = workout.sets.find((s) => s.id === setId)
     if (!set) return
 
-    const newCompleted = !set.completed
-
     setWorkout({
       ...workout,
       sets: workout.sets.map((s) =>
-        s.id === setId ? { ...s, completed: newCompleted } : s,
+        s.id === setId
+          ? { ...s, actualReps: s.prescribedReps, completed: true }
+          : s
       ),
     })
 
-    try {
-      await logSet(workout.id, setId, { completed: newCompleted })
-    } catch (err) {
-      setWorkout({
-        ...workout,
-        sets: workout.sets.map((s) =>
-          s.id === setId ? { ...s, completed: !newCompleted } : s,
-        ),
-      })
-      console.error('Failed to update set:', err)
-    }
+    debouncedLogSet(setId, {
+      actualReps: set.prescribedReps,
+      completed: true,
+    })
   }
 
-  const handleAmrapRepsChange = async (setId: number, reps: number) => {
+  const handleRepsChange = (setId: number, reps: number) => {
     if (!workout) return
 
     setWorkout({
       ...workout,
       sets: workout.sets.map((s) =>
-        s.id === setId ? { ...s, actualReps: reps, completed: true } : s,
+        s.id === setId ? { ...s, actualReps: reps, completed: true } : s
       ),
     })
 
-    try {
-      await logSet(workout.id, setId, { actualReps: reps, completed: true })
-    } catch (err) {
-      console.error('Failed to update AMRAP reps:', err)
-    }
+    debouncedLogSet(setId, { actualReps: reps, completed: true })
+  }
+
+  const handleUndoSet = (setId: number) => {
+    if (!workout) return
+
+    setWorkout({
+      ...workout,
+      sets: workout.sets.map((s) =>
+        s.id === setId ? { ...s, actualReps: null, completed: false } : s
+      ),
+    })
+
+    debouncedLogSet(setId, { actualReps: null, completed: false })
   }
 
   const handleCompleteWorkout = async () => {
@@ -338,10 +374,9 @@ function WorkoutPage() {
                 completed={set.completed}
                 actualReps={set.actualReps}
                 unit={unit}
-                onComplete={() => handleSetComplete(set.id)}
-                onAmrapRepsChange={(reps) =>
-                  handleAmrapRepsChange(set.id, reps)
-                }
+                onConfirm={() => handleConfirmSet(set.id)}
+                onRepsChange={(reps) => handleRepsChange(set.id, reps)}
+                onUndo={() => handleUndoSet(set.id)}
               />
             ))}
           </div>
