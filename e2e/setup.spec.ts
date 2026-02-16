@@ -1,4 +1,6 @@
 import { test, expect } from './fixtures';
+import { SetupPage } from './pages/setup.page';
+import { SettingsPage } from './pages/settings.page';
 
 test.describe('Training Max Setup', () => {
   test('new user is redirected to /setup when no TMs exist', async ({ authenticatedPage }) => {
@@ -14,6 +16,8 @@ test.describe('Training Max Setup', () => {
 
   test('entering 1RMs and submitting redirects to dashboard with correct TMs', async ({ authenticatedPage }) => {
     const { page } = authenticatedPage;
+    const setup = new SetupPage(page);
+    const settings = new SettingsPage(page);
 
     const oneRepMaxes = {
       bench: 100,
@@ -27,15 +31,13 @@ test.describe('Training Max Setup', () => {
     await page.getByRole('spinbutton', { name: /overhead|ohp/i }).fill(oneRepMaxes.ohp.toString());
     await page.getByRole('spinbutton', { name: /deadlift/i }).fill(oneRepMaxes.deadlift.toString());
 
-    await page.getByRole('button', { name: /calculate/i }).click();
-    await page.waitForURL('/');
+    await setup.submitAndWaitForDashboard();
 
     await expect(page.getByText('Workout Days')).toBeVisible();
 
     // Navigate to settings to verify TMs
-    await page.getByRole('link', { name: /settings/i }).click();
-    await page.waitForURL('/settings');
-    await expect(page.getByText('Training Maxes')).toBeVisible();
+    await settings.navigate();
+    await settings.expectLoaded();
 
     // Calculate expected TMs (90% of 1RMs, rounded to 2.5kg)
     const expectedTMs = {
@@ -54,30 +56,19 @@ test.describe('Training Max Setup', () => {
 
   test('editing a TM from settings updates the displayed value', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
+    const settings = new SettingsPage(page);
 
     expect(page.url()).toContain('/');
 
-    await page.getByRole('link', { name: /settings/i }).click();
-    await page.waitForURL('/settings');
-    await expect(page.getByText('Training Maxes')).toBeVisible();
+    await settings.navigate();
+    await settings.expectLoaded();
 
     // Initial TM for bench should be 90kg (90% of 100kg)
     let pageContent = await page.textContent('body');
     expect(pageContent).toContain('90');
 
-    // Find and click the Edit button for Bench
-    const benchEditButton = page.locator('button', { hasText: 'Edit' }).first();
-    await benchEditButton.click();
-
-    const modalInput = page.getByRole('spinbutton');
-    await expect(modalInput).toBeVisible();
-    await expect(modalInput).toHaveValue('90');
-
-    await modalInput.fill('95');
-    await page.getByRole('button', { name: /save/i }).click();
-
-    // Wait for modal to close and value to update
-    await expect(page.getByRole('dialog')).not.toBeVisible();
+    // Edit Bench TM
+    await settings.editTM(0, '95');
 
     pageContent = await page.textContent('body');
     expect(pageContent).toContain('95');

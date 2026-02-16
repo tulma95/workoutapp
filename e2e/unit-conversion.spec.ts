@@ -1,28 +1,27 @@
 import { test, expect, type Page } from '@playwright/test';
 import { test as testWithFixture } from './fixtures';
+import { RegisterPage } from './pages/register.page';
+import { PlanSelectionPage } from './pages/plan-selection.page';
+import { SetupPage } from './pages/setup.page';
+import { SettingsPage } from './pages/settings.page';
+import { DashboardPage } from './pages/dashboard.page';
+import { WorkoutPage } from './pages/workout.page';
+import { NavigationBar } from './pages/navigation.page';
 
 async function registerLbUser(page: Page, email: string, displayName: string) {
-  await page.goto('/register');
-  await page.getByLabel(/email/i).fill(email);
-  await page.getByLabel(/password/i).fill('ValidPassword123');
-  await page.getByLabel(/display name/i).fill(displayName);
-  await page.getByRole('radio', { name: 'lb' }).click();
-  await page.getByRole('button', { name: /create account/i }).click();
+  const register = new RegisterPage(page);
+  const planSelection = new PlanSelectionPage(page);
+  const setup = new SetupPage(page);
 
-  await page.waitForURL('/select-plan');
-  await page.getByRole('button', { name: /select plan/i }).first().click();
-  await page.waitForURL(/\/setup/);
-  await expect(page.getByRole('heading', { name: /enter your 1 rep maxes/i })).toBeVisible();
-  await expect(page.locator('.form-group')).toHaveCount(4);
+  await register.register(email, 'ValidPassword123', displayName, 'lb');
+  await planSelection.selectFirstPlan();
+  await setup.expectHeading();
 }
 
 async function fillLbOneRepMaxes(page: Page, bench: string, squat: string, ohp: string, deadlift: string) {
-  await page.getByLabel(/Bench Press/i).fill(bench);
-  await page.getByLabel(/^Squat/i).fill(squat);
-  await page.getByLabel(/Overhead Press/i).fill(ohp);
-  await page.getByLabel(/^Deadlift/i).fill(deadlift);
-  await page.getByRole('button', { name: /calculate/i }).click();
-  await page.waitForURL('/');
+  const setup = new SetupPage(page);
+  await setup.fillOneRepMaxes(bench, squat, ohp, deadlift);
+  await setup.submitAndWaitForDashboard();
 }
 
 test.describe('Unit Conversion', () => {
@@ -45,9 +44,8 @@ test.describe('Unit Conversion', () => {
     await registerLbUser(page, email, 'LB Workout User');
     await fillLbOneRepMaxes(page, '225', '315', '135', '405');
 
-    const startButton = page.getByRole('button', { name: /start workout/i }).first();
-    await expect(startButton).toBeVisible();
-    await startButton.click();
+    const dashboard = new DashboardPage(page);
+    await dashboard.startWorkout();
     await page.waitForURL(/\/workout\/\d+/);
 
     const firstSetWeight = await page.locator('.set-row').first().locator('.set-row__weight').textContent();
@@ -65,9 +63,9 @@ test.describe('Unit Conversion', () => {
     await registerLbUser(page, email, 'LB Dashboard User');
     await fillLbOneRepMaxes(page, '220', '310', '130', '400');
 
-    await page.getByRole('link', { name: /settings/i }).click();
-    await page.waitForURL('/settings');
-    await expect(page.getByText('Training Maxes')).toBeVisible();
+    const settings = new SettingsPage(page);
+    await settings.navigate();
+    await settings.expectLoaded();
 
     const benchTM = await page.locator('.tm-item:has-text("Bench")').locator('.tm-weight').textContent();
     const squatTM = await page.locator('.tm-item:has-text("Squat")').locator('.tm-weight').textContent();
@@ -101,25 +99,26 @@ test.describe('Unit Conversion', () => {
 
   testWithFixture('switching unit preference from kg to lb updates weight displays across the app', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const settings = new SettingsPage(page);
+    const workout = new WorkoutPage(page);
+    const nav = new NavigationBar(page);
 
-    await expect(page.getByText('Workout Days')).toBeVisible();
+    await dashboard.expectLoaded();
 
-    await page.getByRole('link', { name: /settings/i }).click();
-    await page.waitForURL('/settings');
-    await expect(page.getByText('Training Maxes')).toBeVisible();
+    await settings.navigate();
+    await settings.expectLoaded();
 
     await expect(page.locator('text=Bench-press').locator('..')).toContainText('kg');
 
-    await page.getByRole('button', { name: 'lb' }).click();
-    await expect(page.getByText(/saved/i)).toBeVisible({ timeout: 3000 });
+    await settings.setUnit('lb');
 
-    await page.getByRole('link', { name: /dashboard/i }).click();
-    await page.waitForURL('/');
+    await nav.goToDashboard();
 
-    await page.getByRole('button', { name: /start workout/i }).first().click();
+    await dashboard.startWorkout();
     await page.waitForURL(/\/workout\/1/);
-    await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
-    await expect(page.getByRole('checkbox').first()).toBeVisible();
+    await workout.expectLoaded(1);
+    await expect(workout.checkboxes.first()).toBeVisible();
 
     const firstSetText = await page.locator('.set-row').first().textContent();
     expect(firstSetText).toContain('lb');
@@ -130,7 +129,7 @@ test.describe('Unit Conversion', () => {
     expect(firstSetWeight % 5).toBe(0);
 
     await page.goto('/settings');
-    await expect(page.getByText('Training Maxes')).toBeVisible();
+    await settings.expectLoaded();
 
     await expect(page.locator('text=Bench-press').locator('..')).toContainText('lb');
     const benchTMText = await page.locator('text=Bench-press').locator('..').textContent();

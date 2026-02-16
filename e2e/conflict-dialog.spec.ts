@@ -1,25 +1,25 @@
 import { test, expect } from './fixtures';
+import { DashboardPage } from './pages/dashboard.page';
+import { WorkoutPage } from './pages/workout.page';
 import type { Page } from '@playwright/test';
 
-async function clickDayButton(page: Page, dayNumber: number) {
-  const card = page.locator('.workout-card').filter({
-    has: page.getByRole('heading', { name: `Day ${dayNumber}` }),
-  });
-  await card.getByRole('button').click();
-}
-
 async function startDay1Workout(page: Page) {
-  await expect(page.getByText('Workout Days')).toBeVisible();
-  await clickDayButton(page, 1);
+  const dashboard = new DashboardPage(page);
+  const workout = new WorkoutPage(page);
+
+  await dashboard.expectLoaded();
+  await dashboard.startWorkout(1);
   await page.waitForURL(/\/workout\/\d+/);
-  await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
-  await expect(page.getByRole('checkbox').first()).toBeVisible();
+  await workout.expectLoaded(1);
+  await expect(workout.checkboxes.first()).toBeVisible();
 }
 
 async function triggerConflictDialog(page: Page) {
+  const dashboard = new DashboardPage(page);
+
   await page.goto('/');
-  await expect(page.getByText('Workout Days')).toBeVisible();
-  await clickDayButton(page, 2);
+  await dashboard.expectLoaded();
+  await dashboard.getDayCard(2).getByRole('button').click();
   await expect(
     page.getByRole('heading', { name: /workout in progress/i }),
   ).toBeVisible({ timeout: 5000 });
@@ -30,11 +30,13 @@ test.describe('Conflict Dialog', () => {
     setupCompletePage,
   }) => {
     const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+
     await startDay1Workout(page);
 
     await page.goto('/');
-    await expect(page.getByText('Workout Days')).toBeVisible();
-    await clickDayButton(page, 2);
+    await dashboard.expectLoaded();
+    await dashboard.getDayCard(2).getByRole('button').click();
 
     await expect(page.getByText(/you have a day 1 workout/i)).toBeVisible({ timeout: 5000 });
   });
@@ -51,7 +53,8 @@ test.describe('Conflict Dialog', () => {
     await continueButton.click();
 
     await page.waitForURL(/\/workout\/\d+/);
-    await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible();
+    const workout = new WorkoutPage(page);
+    await expect(workout.dayHeading(1)).toBeVisible();
     await expect(page.getByText(/bench press/i).first()).toBeVisible();
   });
 
@@ -67,7 +70,8 @@ test.describe('Conflict Dialog', () => {
     await discardButton.click();
 
     await page.waitForURL(/\/workout\/\d+/);
-    await expect(page.getByRole('heading', { name: /day 2/i })).toBeVisible();
+    const workout = new WorkoutPage(page);
+    await expect(workout.dayHeading(2)).toBeVisible();
     await expect(page.getByText(/squat/i)).toBeVisible();
     await expect(page.getByText(/sumo.*deadlift/i)).toBeVisible();
   });

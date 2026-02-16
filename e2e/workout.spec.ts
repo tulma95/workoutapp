@@ -1,36 +1,40 @@
 import { test, expect } from './fixtures';
+import { DashboardPage } from './pages/dashboard.page';
+import { WorkoutPage } from './pages/workout.page';
+import { SettingsPage } from './pages/settings.page';
+import { NavigationBar } from './pages/navigation.page';
 
 test.describe('Workout Session', () => {
   test('starting a workout from the dashboard shows exercise sections with correct set counts', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const workout = new WorkoutPage(page);
 
-    await expect(page.getByText('Workout Days')).toBeVisible();
-
-    await page.getByRole('button', { name: /start workout/i }).first().click();
+    await dashboard.expectLoaded();
+    await dashboard.startWorkout();
     await page.waitForURL(/\/workout\/1/);
 
-    const firstCheckbox = page.getByRole('checkbox').first();
-    await expect(firstCheckbox).toBeVisible({ timeout: 15000 });
+    await expect(workout.checkboxes.first()).toBeVisible({ timeout: 15000 });
+    await expect(workout.dayHeading(1)).toBeVisible();
 
-    await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible();
-
-    const checkboxCount = await page.getByRole('checkbox').count();
+    const checkboxCount = await workout.checkboxes.count();
     expect(checkboxCount).toBeGreaterThanOrEqual(16);
 
-    const amrapCount = await page.getByRole('spinbutton').count();
+    const amrapCount = await workout.amrapInputs.count();
     expect(amrapCount).toBeGreaterThanOrEqual(1);
   });
 
   test('completing a non-AMRAP set marks it visually as done', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const workout = new WorkoutPage(page);
 
-    await expect(page.getByText('Workout Days')).toBeVisible();
-
-    await page.getByRole('button', { name: /start workout/i }).first().click();
+    await dashboard.expectLoaded();
+    await dashboard.startWorkout();
     await page.waitForURL(/\/workout\/1/);
-    await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
+    await workout.expectLoaded(1);
 
-    const firstCheckbox = page.getByRole('checkbox').first();
+    const firstCheckbox = workout.checkboxes.first();
     await expect(firstCheckbox).not.toBeChecked();
 
     await firstCheckbox.click();
@@ -39,14 +43,15 @@ test.describe('Workout Session', () => {
 
   test('entering AMRAP reps using the +/- stepper works correctly', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const workout = new WorkoutPage(page);
 
-    await expect(page.getByText('Workout Days')).toBeVisible();
-
-    await page.getByRole('button', { name: /start workout/i }).first().click();
+    await dashboard.expectLoaded();
+    await dashboard.startWorkout();
     await page.waitForURL(/\/workout\/1/);
-    await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
+    await workout.expectLoaded(1);
 
-    const amrapInput = page.getByRole('spinbutton').first();
+    const amrapInput = workout.amrapInputs.first();
     const initialValue = await amrapInput.inputValue();
     expect(initialValue === '' || initialValue === '0').toBeTruthy();
 
@@ -73,26 +78,27 @@ test.describe('Workout Session', () => {
 
   test('completing a workout shows the progression banner with TM change info', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const workout = new WorkoutPage(page);
 
-    await expect(page.getByText('Workout Days')).toBeVisible();
-
-    await page.getByRole('button', { name: /start workout/i }).first().click();
+    await dashboard.expectLoaded();
+    await dashboard.startWorkout();
     await page.waitForURL(/\/workout\/1/);
-    await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
+    await workout.expectLoaded(1);
 
-    const amrapInput = page.getByRole('spinbutton').first();
-    await amrapInput.fill('12');
-
-    await page.getByRole('button', { name: /complete workout/i }).click();
+    await workout.fillAmrap('12');
+    await workout.complete();
 
     await expect(page.getByText(/bench.*\+5|progression|increase/i)).toBeVisible();
-    await expect(page.getByRole('button', { name: /back to dashboard|dashboard/i })).toBeVisible();
+    await expect(workout.backToDashboardButton).toBeVisible();
   });
 
   test('after completing a workout, navigating back to dashboard shows the day as completed', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const workout = new WorkoutPage(page);
 
-    await expect(page.getByText('Workout Days')).toBeVisible();
+    await dashboard.expectLoaded();
 
     const startButtons = page.getByRole('button', { name: /start workout/i });
     const initialCount = await startButtons.count();
@@ -100,83 +106,78 @@ test.describe('Workout Session', () => {
 
     await startButtons.first().click();
     await page.waitForURL(/\/workout\/1/);
-    await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
+    await workout.expectLoaded(1);
 
-    const amrapInput = page.getByRole('spinbutton').first();
-    await amrapInput.fill('10');
+    await workout.fillAmrap('10');
+    await workout.complete();
 
-    await page.getByRole('button', { name: /complete workout/i }).click();
+    await workout.goBackToDashboard();
 
-    await expect(page.getByRole('button', { name: /back to dashboard|dashboard/i })).toBeVisible();
-    await page.getByRole('button', { name: /back to dashboard|dashboard/i }).click();
-    await page.waitForURL('/');
-
-    await expect(page.getByText('Workout Days')).toBeVisible();
+    await dashboard.expectLoaded();
   });
 
   test('completing a workout without entering AMRAP reps shows the confirmation warning', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const workout = new WorkoutPage(page);
 
-    await expect(page.getByText('Workout Days')).toBeVisible();
-
-    await page.getByRole('button', { name: /start workout/i }).first().click();
+    await dashboard.expectLoaded();
+    await dashboard.startWorkout();
     await page.waitForURL(/\/workout\/1/);
-    await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
+    await workout.expectLoaded(1);
 
     // DO NOT enter AMRAP reps
-    await page.getByRole('button', { name: /complete workout/i }).click();
+    await workout.complete();
 
-    const dialog = page.locator('.confirm-dialog__content');
-    await expect(dialog).toBeVisible();
-    await expect(dialog.locator('.confirm-dialog__message')).toContainText(/progression/i);
+    await expect(workout.confirmDialog).toBeVisible();
+    await expect(workout.confirmDialog.locator('.confirm-dialog__message')).toContainText(/progression/i);
 
-    await dialog.getByRole('button', { name: /complete anyway/i }).click();
+    await workout.confirmDialog.getByRole('button', { name: /complete anyway/i }).click();
 
     await expect(page.getByText(/no.*change|no.*increase/i)).toBeVisible();
-    await expect(page.getByRole('button', { name: /back to dashboard|dashboard/i })).toBeVisible();
+    await expect(workout.backToDashboardButton).toBeVisible();
   });
 
   test('resuming an in-progress workout by clicking the same day again loads existing workout with completed sets preserved', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const workout = new WorkoutPage(page);
 
-    await expect(page.getByText('Workout Days')).toBeVisible();
-
-    await page.getByRole('button', { name: /start workout/i }).first().click();
+    await dashboard.expectLoaded();
+    await dashboard.startWorkout();
     await page.waitForURL(/\/workout\/1/);
-    await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
+    await workout.expectLoaded(1);
 
-    const firstCheckbox = page.getByRole('checkbox').nth(0);
-    const secondCheckbox = page.getByRole('checkbox').nth(1);
+    await workout.toggleSet(0);
+    await expect(workout.checkboxes.nth(0)).toBeChecked();
 
-    await firstCheckbox.click();
-    await expect(firstCheckbox).toBeChecked();
-
-    await secondCheckbox.click();
-    await expect(secondCheckbox).toBeChecked();
+    await workout.toggleSet(1);
+    await expect(workout.checkboxes.nth(1)).toBeChecked();
 
     // Navigate back to dashboard
     await page.goto('/');
-    await expect(page.getByText('Workout Days')).toBeVisible();
+    await dashboard.expectLoaded();
 
-    await page.getByRole('button', { name: /continue workout|start workout/i }).first().click();
+    await dashboard.continueWorkout();
     await page.waitForURL(/\/workout\/1/);
-    await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
+    await workout.expectLoaded(1);
 
-    await expect(page.getByRole('checkbox').nth(0)).toBeChecked();
-    await expect(page.getByRole('checkbox').nth(1)).toBeChecked();
+    await expect(workout.checkboxes.nth(0)).toBeChecked();
+    await expect(workout.checkboxes.nth(1)).toBeChecked();
 
     await expect(page.getByRole('heading', { name: /workout in progress/i })).not.toBeVisible();
   });
 
   test('nSuns plan-driven workout has correct set counts: 9 sets for first exercise and 8 for second exercise on Day 1', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const workout = new WorkoutPage(page);
 
-    await expect(page.getByText('Workout Days')).toBeVisible();
-
-    await page.getByRole('button', { name: /start workout/i }).first().click();
+    await dashboard.expectLoaded();
+    await dashboard.startWorkout();
     await page.waitForURL(/\/workout\/1/);
-    await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
-    await expect(page.getByRole('checkbox').first()).toBeVisible();
+    await workout.expectLoaded(1);
+    await expect(workout.checkboxes.first()).toBeVisible();
 
     const firstExerciseSection = page.locator('.workout-section').first();
     const secondExerciseSection = page.locator('.workout-section').nth(1);
@@ -194,13 +195,16 @@ test.describe('Workout Session', () => {
 
   test('TM progression after workout: completing Day 1 with good AMRAP performance increases Bench TM', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const workout = new WorkoutPage(page);
+    const settings = new SettingsPage(page);
+    const nav = new NavigationBar(page);
 
-    await expect(page.getByText('Workout Days')).toBeVisible();
+    await dashboard.expectLoaded();
 
     // Navigate to settings to check initial Bench TM
-    await page.getByRole('link', { name: /settings/i }).click();
-    await page.waitForURL('/settings');
-    await expect(page.getByText('Training Maxes')).toBeVisible();
+    await settings.navigate();
+    await settings.expectLoaded();
 
     const benchCardText = await page.locator('text=Bench-press').locator('..').textContent();
     const initialBenchTMMatch = benchCardText?.match(/(\d+(?:\.\d+)?)\s*(kg|lb)/);
@@ -209,30 +213,25 @@ test.describe('Workout Session', () => {
     const unit = initialBenchTMMatch![2];
 
     // Navigate back to dashboard and start Day 1 workout
-    await page.getByRole('link', { name: /dashboard/i }).click();
-    await page.waitForURL('/');
-    await expect(page.getByText('Workout Days')).toBeVisible();
-    await page.getByRole('button', { name: /start workout/i }).first().click();
+    await nav.goToDashboard();
+    await dashboard.expectLoaded();
+    await dashboard.startWorkout();
     await page.waitForURL(/\/workout\/1/);
 
-    await expect(page.getByRole('heading', { name: /day 1/i })).toBeVisible({ timeout: 15000 });
-    await expect(page.getByRole('checkbox').first()).toBeVisible();
+    await workout.expectLoaded(1);
+    await expect(workout.checkboxes.first()).toBeVisible();
 
-    const amrapInput = page.getByRole('spinbutton').first();
-    await amrapInput.fill('10');
-
-    await page.getByRole('button', { name: /complete workout/i }).click();
+    await workout.fillAmrap('10');
+    await workout.complete();
 
     await expect(page.getByText(/progression|increase|bench.*\+/i)).toBeVisible({ timeout: 5000 });
     await expect(page.getByText(/bench/i).filter({ hasText: /\+/ })).toBeVisible();
 
-    await page.getByRole('button', { name: /back to dashboard|dashboard/i }).click();
-    await page.waitForURL('/');
+    await workout.goBackToDashboard();
 
     // Navigate to settings to check updated Bench TM
-    await page.getByRole('link', { name: /settings/i }).click();
-    await page.waitForURL('/settings');
-    await expect(page.getByText('Training Maxes')).toBeVisible();
+    await settings.navigate();
+    await settings.expectLoaded();
 
     const newBenchCardText = await page.locator('text=Bench-press').locator('..').textContent();
     const newBenchTMMatch = newBenchCardText?.match(/(\d+(?:\.\d+)?)\s*(kg|lb)/);

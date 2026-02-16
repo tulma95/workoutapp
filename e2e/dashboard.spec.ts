@@ -1,4 +1,6 @@
 import { test, expect } from './fixtures';
+import { DashboardPage } from './pages/dashboard.page';
+import { SettingsPage } from './pages/settings.page';
 
 test.describe('Dashboard', () => {
   test('shows 4 workout day cards with correct exercise names', async ({ setupCompletePage }) => {
@@ -26,10 +28,10 @@ test.describe('Dashboard', () => {
 
   test('shows current TM values for all 4 exercises on settings page', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
+    const settings = new SettingsPage(page);
 
-    await page.getByRole('link', { name: /settings/i }).click();
-    await page.waitForURL('/settings');
-    await expect(page.getByText('Training Maxes')).toBeVisible();
+    await settings.navigate();
+    await settings.expectLoaded();
 
     // Expected TMs from 1RMs: bench 100, squat 140, ohp 60, deadlift 180
     await expect(page.getByText(/90.*kg/i).first()).toBeVisible();
@@ -40,10 +42,9 @@ test.describe('Dashboard', () => {
 
   test('clicking Start Workout navigates to workout page', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
 
-    const startButton = page.getByRole('button', { name: /start workout/i }).first();
-    await expect(startButton).toBeVisible();
-    await startButton.click();
+    await dashboard.startWorkout();
 
     await expect(page).toHaveURL('/workout/1');
   });

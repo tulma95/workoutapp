@@ -1,19 +1,16 @@
 import { test as base, expect, type Page } from '@playwright/test';
+import { RegisterPage } from './pages/register.page';
+import { PlanSelectionPage } from './pages/plan-selection.page';
 
 async function registerAndPartialSetup(page: Page) {
+  const register = new RegisterPage(page);
+  const planSelection = new PlanSelectionPage(page);
+
   const uniqueId = crypto.randomUUID();
   const email = `test-${uniqueId}@example.com`;
-  const password = 'ValidPassword123';
 
-  await page.goto('/register');
-  await page.getByLabel(/email/i).fill(email);
-  await page.getByLabel(/password/i).fill(password);
-  await page.getByLabel(/display name/i).fill('Test User');
-  await page.getByRole('button', { name: /create account/i }).click();
-
-  await page.waitForURL('/select-plan');
-  await page.getByRole('button', { name: /select plan/i }).first().click();
-  await page.waitForURL(/\/setup/);
+  await register.register(email, 'ValidPassword123', 'Test User');
+  await planSelection.selectFirstPlan();
 
   // Get auth token
   const token = await page.evaluate(() => localStorage.getItem('accessToken'));
