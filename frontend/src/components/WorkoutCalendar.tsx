@@ -174,6 +174,7 @@ export default function WorkoutCalendar({
 
       <div
         className="workout-calendar__grid"
+        style={{ viewTransitionName: 'calendar-grid' }}
       >
         {calendarDays.map((day, index) => (
           <button

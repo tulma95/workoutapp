@@ -1,0 +1,74 @@
+/* Route transition: default cross-fade (TanStack Router handles the startViewTransition call) */
+::view-transition-old(root) {
+  animation: fade-out 150ms ease;
+}
+::view-transition-new(root) {
+  animation: fade-in 150ms ease;
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Calendar month transitions (manual startViewTransition) */
+[data-transition-direction="next"] ::view-transition-old(calendar-grid) {
+  animation: slide-out-left 250ms ease;
+}
+[data-transition-direction="next"] ::view-transition-new(calendar-grid) {
+  animation: slide-in-right 250ms ease;
+}
+[data-transition-direction="prev"] ::view-transition-old(calendar-grid) {
+  animation: slide-out-right 250ms ease;
+}
+[data-transition-direction="prev"] ::view-transition-new(calendar-grid) {
+  animation: slide-in-left 250ms ease;
+}
+
+@keyframes slide-out-left {
+  to { transform: translateX(-100%); opacity: 0; }
+}
+@keyframes slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+}
+@keyframes slide-out-right {
+  to { transform: translateX(100%); opacity: 0; }
+}
+@keyframes slide-in-left {
+  from { transform: translateX(-100%); opacity: 0; }
+}
+
+/* List enter animations */
+.workout-section__sets .set-row {
+  animation: fade-slide-up 200ms ease both;
+}
+.workout-section__sets .set-row:nth-child(1) { animation-delay: 0ms; }
+.workout-section__sets .set-row:nth-child(2) { animation-delay: 30ms; }
+.workout-section__sets .set-row:nth-child(3) { animation-delay: 60ms; }
+.workout-section__sets .set-row:nth-child(4) { animation-delay: 90ms; }
+.workout-section__sets .set-row:nth-child(5) { animation-delay: 120ms; }
+.workout-section__sets .set-row:nth-child(6) { animation-delay: 150ms; }
+.workout-section__sets .set-row:nth-child(7) { animation-delay: 180ms; }
+.workout-section__sets .set-row:nth-child(8) { animation-delay: 210ms; }
+.workout-section__sets .set-row:nth-child(9) { animation-delay: 240ms; }
+
+@keyframes fade-slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+  .set-row {
+    animation: none !important;
+  }
+}

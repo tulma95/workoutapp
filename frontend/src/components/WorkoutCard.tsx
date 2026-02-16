@@ -14,7 +14,7 @@ export default function WorkoutCard({
   onStart,
 }: WorkoutCardProps) {
   return (
-    <div className={`workout-card workout-card--${status}`}>
+    <div className={`workout-card workout-card--${status}`} style={{ viewTransitionName: `workout-day-${dayNumber}` }}>
       <div className="workout-card__header">
         <h3 className="workout-card__title">Day {dayNumber}</h3>
         {status === 'completed' && (

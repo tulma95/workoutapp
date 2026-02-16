@@ -4,6 +4,7 @@ import { RouterProvider } from '@tanstack/react-router'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { router, queryClient } from './router'
 import './styles/global.css'
+import './styles/transitions.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

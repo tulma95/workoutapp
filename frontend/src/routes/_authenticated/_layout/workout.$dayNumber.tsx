@@ -322,7 +322,7 @@ function WorkoutPage() {
 
   return (
     <div className="workout-page">
-      <h1>{dayTitle}</h1>
+      <h1 style={{ viewTransitionName: `workout-day-${dayNumber}` }}>{dayTitle}</h1>
 
       {exerciseGroups.map((group) => (
         <section key={group.exercise} className="workout-section">
