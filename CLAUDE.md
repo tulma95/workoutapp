@@ -7,7 +7,7 @@ A workout tracking application supporting configurable training plans. Ships wit
 ## Tech Stack
 
 - **Backend**: Express.js + TypeScript, Prisma v7 (ORM + migrations), bcrypt + jsonwebtoken, zod, vitest + supertest
-- **Frontend**: React + TypeScript, Vite, React Router v7 (`react-router` package, not `react-router-dom`), plain CSS with rem units
+- **Frontend**: React + TypeScript, Vite, TanStack Router + React Query, CSS Modules with rem units
 - **E2E**: Playwright (parallel execution, 4 workers dev / 2 CI)
 - **Database**: PostgreSQL latest (Dockerized via docker-compose)
 - **Package manager**: npm workspaces (monorepo: `backend/`, `frontend/`)
@@ -167,12 +167,17 @@ Round calculated weights to nearest **2.5kg** or **5lb** depending on user prefe
 - `AdminLayout` - purple (#7c3aed) themed layout with Plans/Exercises tabs
 - `WorkoutCalendar` - controlled component, Monday-first calendar with workout indicators
 - `WorkoutDetail` - read-only workout display with set data
-- `SetRow` - single set: weight, reps, completion toggle
-- `AmrapInput` - +/- stepper for mobile-friendly rep entry
+- `SetRow` - single set: weight, prescribed reps, +/- stepper for rep entry, undo support
+- `RepsInput` - +/- stepper for mobile-friendly rep entry (used by SetRow)
+- `Button` - reusable button component with variant support
 - `ProgressionBanner` - supports both single and array progressions
 - `ConflictDialog` - duplicate workout resolution (continue/discard)
+- `ConfirmDialog` - generic confirmation dialog
+- `Toast` - toast notifications
+- `WorkoutCard` - workout day card for dashboard
 - `ExerciseFormModal` - admin create/edit exercise form
 - `SetSchemeEditorModal` - admin set scheme editor (bulk add, percentage/reps/AMRAP/progression per set)
+- `ProgressionRulesEditor` - admin progression rules editor
 - `PlanSwitchConfirmModal` - plan switch warnings (in-progress workout, new/existing TMs)
 - `LoadingSpinner` / `ErrorMessage` - shared UI state components
 
@@ -180,7 +185,7 @@ Round calculated weights to nearest **2.5kg** or **5lb** depending on user prefe
 
 - **Zod schemas**: All API responses validated at runtime via `frontend/src/api/schemas.ts`
 - **Weight conversion**: All display uses `formatWeight()` from `frontend/src/utils/weight.ts`. Backend always stores kg.
-- **CSS**: rem units on 8-point grid, custom properties in `global.css`, border widths stay as px
+- **CSS Modules**: Component-scoped styles via `.module.css` files, rem units on 8-point grid, shared custom properties in `global.css`, border widths stay as px
 - **Touch targets**: All interactive elements min 44px (3rem)
 - **View Transitions**: `document.startViewTransition()` with feature detection for calendar navigation
 - **Controlled components**: Complex stateful UI (e.g., WorkoutCalendar) uses props not internal state to prevent reset on re-render
@@ -219,7 +224,7 @@ Always write tests for new code.
 - **Plan-driven architecture**: All workout generation uses plan data (exercises, sets, progression rules). No hardcoded exercise logic.
 - **Seed script for default plan**: nSuns 4-Day LP defined in `backend/prisma/seed.ts` with idempotent upsert logic.
 - **Prisma ORM**: Type-safe database client, declarative schema with migrations, auto-generated types.
-- **No CSS framework**: Plain CSS with custom properties and rem units on 8-point grid.
+- **CSS Modules**: Component-scoped styles via `.module.css`, shared custom properties in `global.css`, rem units on 8-point grid.
 - **Soft-delete workouts**: Canceled workouts set to 'discarded' status, preserving data integrity.
 - **No dotenv**: Environment variables exported by shell scripts. Backend reads `process.env` directly.
 - **Percentages as decimals**: Stored as Decimal(5,4) in DB (e.g., 0.6500 for 65%).
