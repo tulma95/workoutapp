@@ -364,8 +364,8 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
 });
 
 const progressionRuleSchema = z.object({
-  exerciseId: z.number().int().optional(),
-  category: z.string().optional(),
+  exerciseId: z.number().int().nullable().optional(),
+  category: z.string().nullable().optional(),
   minReps: z.number().int().min(0),
   maxReps: z.number().int().min(0),
   increase: z.number().min(0),
@@ -402,7 +402,7 @@ router.post('/:id/progression-rules', validate(setProgressionRulesSchema), async
   // Validate exerciseId references if provided
   const exerciseIds = rules
     .map((rule: any) => rule.exerciseId)
-    .filter((id: number | undefined): id is number => id !== undefined);
+    .filter((id: number | undefined | null): id is number => typeof id === 'number');
 
   if (exerciseIds.length > 0) {
     const uniqueExerciseIds: number[] = Array.from(new Set(exerciseIds));
