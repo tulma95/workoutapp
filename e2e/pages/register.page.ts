@@ -18,23 +18,16 @@ export class RegisterPage {
     this.errorMessage = page.getByRole('alert');
   }
 
-  unitRadio(unit: 'kg' | 'lb') {
-    return this.page.getByRole('radio', { name: unit });
-  }
-
   async expectHeading() {
     await expect(this.page.getByRole('heading', { name: /create account/i })).toBeVisible();
   }
 
-  async register(email: string, password: string, displayName: string, unit?: 'kg' | 'lb') {
+  async register(email: string, password: string, displayName: string) {
     await this.page.goto('/register');
     await this.expectHeading();
     await this.emailInput.fill(email);
     await this.passwordInput.fill(password);
     await this.displayNameInput.fill(displayName);
-    if (unit) {
-      await this.unitRadio(unit).click();
-    }
     await this.submitButton.click();
   }
 }

@@ -4,18 +4,12 @@ export class SettingsPage {
   readonly page: Page;
 
   readonly trainingMaxesHeading;
-  readonly kgButton;
-  readonly lbButton;
   readonly logoutButton;
-  readonly savedText;
 
   constructor(page: Page) {
     this.page = page;
     this.trainingMaxesHeading = page.getByRole('heading', { name: 'Training Maxes' });
-    this.kgButton = page.getByRole('button', { name: 'kg' });
-    this.lbButton = page.getByRole('button', { name: 'lb' });
     this.logoutButton = page.getByRole('button', { name: /log out/i });
-    this.savedText = page.getByText('Saved!');
   }
 
   async navigate() {
@@ -24,12 +18,6 @@ export class SettingsPage {
 
   async expectLoaded() {
     await expect(this.trainingMaxesHeading).toBeVisible();
-  }
-
-  async setUnit(unit: 'kg' | 'lb') {
-    const button = unit === 'kg' ? this.kgButton : this.lbButton;
-    await button.click();
-    await expect(this.savedText).toBeVisible();
   }
 
   async logout() {

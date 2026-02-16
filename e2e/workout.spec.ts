@@ -209,10 +209,9 @@ test.describe('Workout Session', () => {
     await settings.expectLoaded();
 
     const benchCardText = await page.locator('text=Bench-press').locator('..').textContent();
-    const initialBenchTMMatch = benchCardText?.match(/(\d+(?:\.\d+)?)\s*(kg|lb)/);
+    const initialBenchTMMatch = benchCardText?.match(/(\d+(?:\.\d+)?)\s*kg/);
     expect(initialBenchTMMatch).toBeTruthy();
     const initialBenchTM = parseFloat(initialBenchTMMatch![1]);
-    const unit = initialBenchTMMatch![2];
 
     // Navigate back to dashboard and start Day 1 workout
     await nav.goToDashboard();
@@ -234,13 +233,13 @@ test.describe('Workout Session', () => {
     await settings.expectLoaded();
 
     const newBenchCardText = await page.locator('text=Bench-press').locator('..').textContent();
-    const newBenchTMMatch = newBenchCardText?.match(/(\d+(?:\.\d+)?)\s*(kg|lb)/);
+    const newBenchTMMatch = newBenchCardText?.match(/(\d+(?:\.\d+)?)\s*kg/);
     expect(newBenchTMMatch).toBeTruthy();
     const newBenchTM = parseFloat(newBenchTMMatch![1]);
 
     expect(newBenchTM).toBeGreaterThan(initialBenchTM);
 
-    const expectedIncrease = unit === 'kg' ? 5 : 11;
+    const expectedIncrease = 5;
     const actualIncrease = newBenchTM - initialBenchTM;
     expect(actualIncrease).toBeCloseTo(expectedIncrease, 0);
   });

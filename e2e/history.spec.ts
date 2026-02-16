@@ -75,7 +75,7 @@ test.describe('Workout History', () => {
     await expect(page.getByRole('heading', { name: /day\s*1/i }).first()).toBeVisible();
     await expect(page.getByText(/bench/i).first()).toBeVisible();
     await expect(page.getByText(/overhead press/i).first()).toBeVisible();
-    await expect(page.getByText(/\d+\s*kg|\d+\s*lb/).first()).toBeVisible();
+    await expect(page.getByText(/\d+\s*kg/).first()).toBeVisible();
   });
 
   test('complete two workouts (Day 1 and Day 2), verify both days show on calendar', async ({ setupCompletePage }) => {
