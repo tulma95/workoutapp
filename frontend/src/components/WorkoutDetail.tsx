@@ -73,12 +73,12 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
                   {set.prescribedReps}
                   {set.isAmrap ? '+' : ''} reps
                 </span>
-                {set.actualReps !== null && (
+                {set.actualReps !== null && set.actualReps !== set.prescribedReps && (
                   <span className="workout-detail__set-actual">
                     ({set.actualReps} done)
                   </span>
                 )}
-                {set.completed && (
+                {(set.completed || set.actualReps !== null) && (
                   <span className="workout-detail__set-completed" aria-label="completed">
                     ✓
                   </span>
