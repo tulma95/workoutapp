@@ -340,8 +340,8 @@
   padding: 0.25rem 0.5rem;
   cursor: pointer;
   font-size: 0.875rem;
-  min-height: 32px;
-  min-width: 32px;
+  min-height: 2.75rem;
+  min-width: 2.75rem;
   color: var(--admin-accent, #7c3aed);
   font-weight: 600;
 }
@@ -708,5 +708,24 @@
 
   .day-tabs {
     justify-content: flex-start;
+  }
+
+  .exercise-sets-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .exercise-sets-actions {
+    width: 100%;
+  }
+
+  .btn-edit-sets {
+    flex: 1;
+  }
+
+  .copy-sets-select {
+    flex: 1;
+    min-height: 2.75rem;
   }
 }
