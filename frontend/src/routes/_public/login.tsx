@@ -2,7 +2,8 @@ import { useState, type FormEvent } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useAuth } from '../../context/useAuth'
 import { ErrorMessage } from '../../components/ErrorMessage'
-import '../../styles/AuthForm.css'
+import styles from '../../styles/AuthForm.module.css'
+import shared from '../../styles/shared.module.css'
 
 export const Route = createFileRoute('/_public/login')({
   component: LoginPage,
@@ -34,10 +35,10 @@ function LoginPage() {
   }
 
   return (
-    <div className="container auth-page">
+    <div className={`${shared.container} ${styles.page}`}>
       <h1>Log In</h1>
 
-      <form onSubmit={handleSubmit} className="auth-form">
+      <form onSubmit={handleSubmit} className={styles.form}>
         <div>
           <label htmlFor="email">Email</label>
           <input
@@ -62,12 +63,12 @@ function LoginPage() {
 
         {error && <ErrorMessage message={error} />}
 
-        <button type="submit" className="btn-primary" disabled={loading}>
+        <button type="submit" className={shared.btnPrimary} disabled={loading}>
           {loading ? 'Logging in...' : 'Log In'}
         </button>
       </form>
 
-      <p className="auth-page__footer">
+      <p className={styles.footer}>
         Don't have an account? <Link to="/register">Register</Link>
       </p>
     </div>

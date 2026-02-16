@@ -1,4 +1,5 @@
-import './WorkoutCard.css';
+import styles from './WorkoutCard.module.css';
+import shared from '../styles/shared.module.css';
 
 interface WorkoutCardProps {
   dayNumber: number;
@@ -14,25 +15,25 @@ export default function WorkoutCard({
   onStart,
 }: WorkoutCardProps) {
   return (
-    <div className={`workout-card workout-card--${status}`} style={{ viewTransitionName: `workout-day-${dayNumber}` }}>
-      <div className="workout-card__header">
-        <h3 className="workout-card__title">Day {dayNumber}</h3>
+    <div className={`${styles.card} ${status === 'in_progress' ? styles.inProgress : status === 'completed' ? styles.completed : styles.upcoming}`} style={{ viewTransitionName: `workout-day-${dayNumber}` }}>
+      <div className={styles.header}>
+        <h3 className={styles.title}>Day {dayNumber}</h3>
         {status === 'completed' && (
-          <span className="workout-card__checkmark">✓</span>
+          <span className={styles.checkmark}>✓</span>
         )}
       </div>
 
-      <div className="workout-card__exercises">
+      <div className={styles.exercises}>
         {exercises.map((name) => (
-          <div key={name} className="workout-card__exercise">
-            <span className="workout-card__name">{name}</span>
+          <div key={name} className={styles.exercise}>
+            <span className={styles.name}>{name}</span>
           </div>
         ))}
       </div>
 
       {status !== 'completed' && (
         <button
-          className="btn-primary workout-card__button"
+          className={`${shared.btnPrimary} ${styles.button}`}
           onClick={() => onStart(dayNumber)}
         >
           {status === 'in_progress' ? 'Continue Workout' : 'Start Workout'}

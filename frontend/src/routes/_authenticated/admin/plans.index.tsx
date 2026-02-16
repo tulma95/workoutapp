@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useSuspenseQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getAdminPlans, archivePlan, type AdminPlanListItem } from '../../../api/adminPlans'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
-import '../../../styles/PlanListPage.css'
+import styles from '../../../styles/PlanListPage.module.css'
 
 export const Route = createFileRoute('/_authenticated/admin/plans/')({
   loader: ({ context: { queryClient } }) =>
@@ -43,59 +43,59 @@ function PlanListPage() {
 
   function getStatusBadge(plan: AdminPlanListItem) {
     if (plan.archivedAt) {
-      return <span className="plan-status-badge plan-status-badge--archived">Archived</span>
+      return <span className={`${styles.badge} ${styles.badgeArchived}`}>Archived</span>
     }
     if (!plan.isPublic) {
-      return <span className="plan-status-badge plan-status-badge--draft">Draft</span>
+      return <span className={`${styles.badge} ${styles.badgeDraft}`}>Draft</span>
     }
-    return <span className="plan-status-badge plan-status-badge--active">Active</span>
+    return <span className={`${styles.badge} ${styles.badgeActive}`}>Active</span>
   }
 
   return (
-    <div className="plan-list-page">
-      <div className="plan-list-header">
+    <div className={styles.page}>
+      <div className={styles.header}>
         <h2>Workout Plans</h2>
-        <Link to="/admin/plans/new" className="btn-create-plan">
+        <Link to="/admin/plans/new" className={styles.createBtn}>
           Create Plan
         </Link>
       </div>
 
       {plans.length === 0 && (
-        <div className="plan-list-empty">
+        <div className={styles.empty}>
           <p>No plans found. Create your first workout plan to get started.</p>
         </div>
       )}
 
-      <div className="plan-list">
+      <div className={styles.list}>
         {plans.map((plan) => (
-          <div key={plan.id} className="plan-card">
-            <Link to="/admin/plans/$id" params={{ id: String(plan.id) }} className="plan-card-link">
-              <div className="plan-card-header">
-                <h3 className="plan-card-title">{plan.name}</h3>
-                <div className="plan-card-badges">
+          <div key={plan.id} className={styles.card}>
+            <Link to="/admin/plans/$id" params={{ id: String(plan.id) }} className={styles.cardLink}>
+              <div className={styles.cardHeader}>
+                <h3 className={styles.cardTitle}>{plan.name}</h3>
+                <div className={styles.cardBadges}>
                   {plan.isSystem && (
-                    <span className="plan-status-badge plan-status-badge--system">System</span>
+                    <span className={`${styles.badge} ${styles.badgeSystem}`}>System</span>
                   )}
                   {getStatusBadge(plan)}
                 </div>
               </div>
 
-              <div className="plan-card-meta">
-                <span className="plan-card-days">{plan.daysPerWeek} days/week</span>
-                <span className="plan-card-subscribers">
+              <div className={styles.cardMeta}>
+                <span className={styles.cardDays}>{plan.daysPerWeek} days/week</span>
+                <span className={styles.cardSubscribers}>
                   {plan.subscriberCount} {plan.subscriberCount === 1 ? 'subscriber' : 'subscribers'}
                 </span>
               </div>
 
               {plan.description && (
-                <p className="plan-card-description">{plan.description}</p>
+                <p className={styles.cardDescription}>{plan.description}</p>
               )}
             </Link>
 
             {!plan.isSystem && (
-              <div className="plan-card-actions">
+              <div className={styles.cardActions}>
                 <button
-                  className="btn-archive"
+                  className={styles.archiveBtn}
                   onClick={(e) => {
                     e.preventDefault()
                     setArchiving({ id: plan.id, name: plan.name })

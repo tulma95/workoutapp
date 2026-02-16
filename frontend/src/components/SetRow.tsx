@@ -1,7 +1,7 @@
 import RepsInput from './RepsInput';
 import type { UnitPreference } from '../types';
 import { formatWeight } from '../utils/weight';
-import './SetRow.css';
+import styles from './SetRow.module.css';
 
 interface SetRowProps {
   setNumber: number;
@@ -37,17 +37,18 @@ export default function SetRow({
 
   return (
     <div
-      className={`set-row ${completed ? 'set-row--completed' : ''}`}
+      className={`${styles.setRow} ${completed ? styles.completed : ''}`}
+      data-set-row
     >
-      <div className="set-row__info">
-        <span className="set-row__number">{setNumber}</span>
-        <span className="set-row__weight">{formatWeight(weight, unit)}</span>
+      <div className={styles.info}>
+        <span className={styles.number}>{setNumber}</span>
+        <span className={styles.weight}>{formatWeight(weight, unit)}</span>
         {isAmrap && (
-          <span className="set-row__reps">x{reps}+</span>
+          <span className={styles.reps}>x{reps}+</span>
         )}
       </div>
 
-      <div className="set-row__action">
+      <div className={styles.action}>
         <RepsInput
           value={actualReps}
           targetReps={reps}

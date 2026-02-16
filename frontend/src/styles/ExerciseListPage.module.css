@@ -1,10 +1,10 @@
-.exercise-list-page {
+.page {
   padding: 1.5rem;
   max-width: 1200px;
   margin: 0 auto;
 }
 
-.page-header {
+.header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -12,14 +12,14 @@
   gap: 1rem;
 }
 
-.page-header h1 {
+.header h1 {
   font-size: 1.75rem;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
 }
 
-.empty-state {
+.emptyState {
   text-align: center;
   padding: 3rem 1rem;
   background: var(--bg-card);
@@ -27,29 +27,29 @@
   border: 1px solid var(--border);
 }
 
-.empty-state p {
+.emptyState p {
   color: var(--text-muted);
   margin-bottom: 1.5rem;
 }
 
-.exercise-table-container {
+.tableContainer {
   background: var(--bg-card);
   border-radius: 12px;
   border: 1px solid var(--border);
   overflow-x: auto;
 }
 
-.exercise-table {
+.table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.exercise-table thead {
+.table thead {
   background: var(--bg-card);
   border-bottom: 2px solid var(--border);
 }
 
-.exercise-table th {
+.table th {
   padding: 1rem;
   text-align: left;
   font-size: 0.875rem;
@@ -59,25 +59,25 @@
   letter-spacing: 0.05em;
 }
 
-.exercise-table td {
+.table td {
   padding: 1rem;
   border-bottom: 1px solid var(--border);
   color: var(--text-primary);
 }
 
-.exercise-table tbody tr:last-child td {
+.table tbody tr:last-child td {
   border-bottom: none;
 }
 
-.exercise-table tbody tr:hover {
+.table tbody tr:hover {
   background: var(--bg-card);
 }
 
-.exercise-name {
+.exerciseName {
   font-weight: 500;
 }
 
-.exercise-slug {
+.exerciseSlug {
   font-family: monospace;
   color: var(--text-muted);
   font-size: 0.875rem;
@@ -92,32 +92,32 @@
   text-transform: capitalize;
 }
 
-.badge-compound {
+.badgeCompound {
   background: rgba(34, 197, 94, 0.15);
   color: rgb(34, 197, 94);
 }
 
-.badge-isolation {
+.badgeIsolation {
   background: rgba(99, 102, 241, 0.15);
   color: rgb(99, 102, 241);
 }
 
-.badge-upper {
+.badgeUpper {
   background: rgba(59, 130, 246, 0.15);
   color: rgb(59, 130, 246);
 }
 
-.badge-lower {
+.badgeLower {
   background: rgba(168, 85, 247, 0.15);
   color: rgb(168, 85, 247);
 }
 
-.exercise-actions {
+.exerciseActions {
   display: flex;
   gap: 0.5rem;
 }
 
-.btn-icon {
+.btnIcon {
   padding: 0.5rem;
   min-height: 40px;
   min-width: 40px;
@@ -129,22 +129,22 @@
   transition: all 0.2s;
 }
 
-.btn-icon:hover {
+.btnIcon:hover {
   background: var(--bg-card);
   border-color: var(--primary);
 }
 
-.btn-icon.btn-danger:hover {
+.btnDanger:hover {
   background: rgba(239, 68, 68, 0.1);
   border-color: rgb(239, 68, 68);
 }
 
 /* Card list (hidden on desktop, shown on mobile) */
-.exercise-card-list {
+.cardList {
   display: none;
 }
 
-.exercise-card {
+.card {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -152,63 +152,63 @@
   margin-bottom: 0.75rem;
 }
 
-.exercise-card__header {
+.cardHeader {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 0.75rem;
 }
 
-.exercise-card__name {
+.cardName {
   font-weight: 600;
   color: var(--text-primary);
   font-size: 1rem;
 }
 
-.exercise-card__slug {
+.cardSlug {
   font-family: monospace;
   color: var(--text-muted);
   font-size: 0.8125rem;
   margin-top: 0.125rem;
 }
 
-.exercise-card__actions {
+.cardActions {
   display: flex;
   gap: 0.5rem;
 }
 
-.exercise-card__badges {
+.cardBadges {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
   align-items: center;
 }
 
-.exercise-card__muscle {
+.cardMuscle {
   font-size: 0.8125rem;
   color: var(--text-muted);
 }
 
 /* Mobile responsive */
 @media (max-width: 768px) {
-  .exercise-list-page {
+  .page {
     padding: 1rem;
   }
 
-  .page-header {
+  .header {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .page-header h1 {
+  .header h1 {
     font-size: 1.5rem;
   }
 
-  .exercise-table-container {
+  .tableContainer {
     display: none;
   }
 
-  .exercise-card-list {
+  .cardList {
     display: block;
   }
 }

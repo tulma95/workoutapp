@@ -1,4 +1,4 @@
-.set-scheme-modal {
+.dialog {
   border: none;
   padding: 0;
   background: transparent;
@@ -11,11 +11,11 @@
   justify-content: center;
 }
 
-.set-scheme-modal::backdrop {
+.dialog::backdrop {
   background: rgba(0, 0, 0, 0.5);
 }
 
-.set-scheme-modal__content {
+.content {
   background: var(--bg-card);
   border-radius: 12px;
   max-width: 800px;
@@ -25,7 +25,7 @@
   flex-direction: column;
 }
 
-.set-scheme-header {
+.header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -33,13 +33,13 @@
   border-bottom: 1px solid var(--border);
 }
 
-.set-scheme-header h3 {
+.header h3 {
   margin: 0;
   font-size: 1.25rem;
   color: var(--text-primary);
 }
 
-.btn-close {
+.closeBtn {
   background: transparent;
   border: none;
   font-size: 1.5rem;
@@ -50,17 +50,17 @@
   padding: 0;
 }
 
-.btn-close:hover {
+.closeBtn:hover {
   color: var(--text-primary);
 }
 
-.set-scheme-body {
+.body {
   padding: 1.5rem;
   overflow-y: auto;
   flex: 1;
 }
 
-.sets-empty {
+.empty {
   text-align: center;
   padding: 2rem;
   color: var(--text-muted);
@@ -68,49 +68,49 @@
   border-radius: 8px;
 }
 
-.sets-table-container {
+.tableContainer {
   overflow-x: auto;
 }
 
-.sets-table {
+.table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.875rem;
 }
 
-.sets-table thead {
+.table thead {
   background: var(--bg);
   border-bottom: 2px solid var(--border);
 }
 
-.sets-table th {
+.table th {
   padding: 0.75rem 0.5rem;
   text-align: left;
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.sets-table tbody tr {
+.table tbody tr {
   border-bottom: 1px solid var(--border);
 }
 
-.sets-table tbody tr:hover {
+.table tbody tr:hover {
   background: var(--bg);
 }
 
-.sets-table td {
+.table td {
   padding: 0.75rem 0.5rem;
   color: var(--text-primary);
 }
 
-.set-order-cell {
+.orderCell {
   font-weight: 600;
   text-align: center;
   width: 50px;
 }
 
-.set-scheme-modal .percentage-input,
-.set-scheme-modal .reps-input {
+.percentageInput,
+.repsInput {
   width: 80px;
   padding: 0.5rem;
   border: 1px solid var(--border);
@@ -121,29 +121,29 @@
   text-align: center;
 }
 
-.set-scheme-modal .percentage-input:focus,
-.set-scheme-modal .reps-input:focus {
+.percentageInput:focus,
+.repsInput:focus {
   outline: 2px solid var(--admin-accent, #7c3aed);
   outline-offset: 1px;
 }
 
-.checkbox-cell {
+.checkboxCell {
   text-align: center;
   width: 60px;
 }
 
-.checkbox-cell input[type="checkbox"] {
+.checkboxCell input[type="checkbox"] {
   width: 20px;
   height: 20px;
   cursor: pointer;
 }
 
-.action-cell {
+.actionCell {
   text-align: center;
   width: 60px;
 }
 
-.btn-remove-set {
+.removeBtn {
   background: transparent;
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -154,12 +154,12 @@
   min-width: 2.75rem;
 }
 
-.btn-remove-set:hover {
+.removeBtn:hover {
   background: #fef2f2;
   border-color: #dc2626;
 }
 
-.set-scheme-footer {
+.footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -168,7 +168,7 @@
   gap: 1rem;
 }
 
-.btn-add-set {
+.addBtn {
   background: var(--admin-accent, #7c3aed);
   color: white;
   padding: 0.625rem 1rem;
@@ -179,17 +179,17 @@
   min-height: 2.75rem;
 }
 
-.btn-add-set:hover {
+.addBtn:hover {
   opacity: 0.9;
 }
 
-.footer-actions {
+.footerActions {
   display: flex;
   gap: 0.75rem;
 }
 
-.btn-cancel,
-.btn-save {
+.cancelBtn,
+.saveBtn {
   padding: 0.625rem 1.25rem;
   border-radius: 6px;
   font-weight: 500;
@@ -199,60 +199,60 @@
   min-width: 80px;
 }
 
-.btn-cancel {
+.cancelBtn {
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-primary);
 }
 
-.btn-cancel:hover {
+.cancelBtn:hover {
   background: var(--bg);
 }
 
-.btn-save {
+.saveBtn {
   background: var(--admin-accent, #7c3aed);
   color: white;
   border: none;
 }
 
-.btn-save:hover {
+.saveBtn:hover {
   opacity: 0.9;
 }
 
 @media (max-width: 768px) {
-  .set-scheme-modal__content {
+  .content {
     max-width: 100%;
     max-height: 100vh;
     border-radius: 0;
     width: 100%;
   }
 
-  .sets-table {
+  .table {
     font-size: 0.75rem;
   }
 
-  .sets-table th,
-  .sets-table td {
+  .table th,
+  .table td {
     padding: 0.5rem 0.25rem;
   }
 
-  .percentage-input,
-  .reps-input {
+  .percentageInput,
+  .repsInput {
     width: 60px;
     padding: 0.375rem;
   }
 
-  .set-scheme-footer {
+  .footer {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .footer-actions {
+  .footerActions {
     width: 100%;
   }
 
-  .btn-cancel,
-  .btn-save {
+  .cancelBtn,
+  .saveBtn {
     flex: 1;
   }
 }

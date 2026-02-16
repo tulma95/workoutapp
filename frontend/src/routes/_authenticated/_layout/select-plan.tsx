@@ -7,7 +7,7 @@ import { getTrainingMaxes } from '../../../api/trainingMaxes'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import { PlanSwitchConfirmModal, type PlanSwitchWarnings } from '../../../components/PlanSwitchConfirmModal'
-import '../../../styles/PlanSelectionPage.css'
+import styles from '../../../styles/PlanSelectionPage.module.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/select-plan')({
   loader: ({ context: { queryClient } }) =>
@@ -16,12 +16,12 @@ export const Route = createFileRoute('/_authenticated/_layout/select-plan')({
       queryFn: getPlans,
     }),
   pendingComponent: () => (
-    <div className="plan-selection-page">
+    <div className={styles.page}>
       <LoadingSpinner />
     </div>
   ),
   errorComponent: ({ error }) => (
-    <div className="plan-selection-page">
+    <div className={styles.page}>
       <ErrorMessage message={error instanceof Error ? error.message : 'Failed to load plans'} />
     </div>
   ),
@@ -142,8 +142,8 @@ function PlanSelectionPage() {
   }
 
   return (
-    <div className="plan-selection-page">
-      <div className="plan-selection-header">
+    <div className={styles.page}>
+      <div className={styles.header}>
         <h1>Choose a Workout Plan</h1>
         <p>Select a plan that fits your training goals</p>
       </div>
@@ -152,29 +152,29 @@ function PlanSelectionPage() {
         <ErrorMessage message={error} />
       )}
 
-      <div className="plan-list">
+      <div className={styles.list}>
         {plans.map((plan) => (
-          <div key={plan.id} className="plan-card">
-            <div className="plan-card-header">
+          <div key={plan.id} className={styles.card}>
+            <div className={styles.cardHeader}>
               <h2>{plan.name}</h2>
               {plan.description && (
-                <p className="plan-description">{plan.description}</p>
+                <p className={styles.description}>{plan.description}</p>
               )}
-              <div className="plan-meta">
-                <span className="days-per-week">{plan.daysPerWeek} days/week</span>
+              <div className={styles.meta}>
+                <span className={styles.daysPerWeek}>{plan.daysPerWeek} days/week</span>
               </div>
             </div>
 
-            <div className="plan-days">
+            <div className={styles.days}>
               {plan.days.map((day) => (
-                <div key={day.id} className="plan-day">
-                  <div className="day-label">
+                <div key={day.id} className={styles.day}>
+                  <div className={styles.dayLabel}>
                     {day.name || `Day ${day.dayNumber}`}
                   </div>
-                  <div className="day-exercises">
+                  <div className={styles.dayExercises}>
                     {day.exercises.map((ex) => (
-                      <div key={ex.id} className="exercise-item">
-                        <span className="exercise-name">
+                      <div key={ex.id} className={styles.exerciseItem}>
+                        <span className={styles.exerciseName}>
                           {ex.displayName || ex.exercise.name}
                         </span>
                       </div>
@@ -185,7 +185,7 @@ function PlanSelectionPage() {
             </div>
 
             <button
-              className="select-plan-button"
+              className={styles.selectBtn}
               onClick={() => handleSelectPlan(plan.id)}
               disabled={subscribing !== null}
             >
@@ -196,7 +196,7 @@ function PlanSelectionPage() {
       </div>
 
       {plans.length === 0 && (
-        <div className="no-plans">
+        <div className={styles.noPlans}>
           <p>No workout plans available at the moment.</p>
         </div>
       )}

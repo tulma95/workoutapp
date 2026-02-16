@@ -1,32 +1,32 @@
-.plan-selection-page {
+.page {
   padding: var(--space-md);
   max-width: 48rem;
   margin: 0 auto;
 }
 
-.plan-selection-header {
+.header {
   margin-bottom: var(--space-xl);
 }
 
-.plan-selection-header h1 {
+.header h1 {
   margin: 0 0 var(--space-sm) 0;
   font-size: 1.5rem;
   color: var(--text);
 }
 
-.plan-selection-header p {
+.header p {
   margin: 0;
   color: var(--text-muted);
   font-size: 1rem;
 }
 
-.plan-list {
+.list {
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
 }
 
-.plan-card {
+.card {
   background-color: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--space-sm);
@@ -36,44 +36,44 @@
   gap: var(--space-md);
 }
 
-.plan-card-header h2 {
+.cardHeader h2 {
   margin: 0 0 var(--space-sm) 0;
   font-size: 1.25rem;
   color: var(--text);
 }
 
-.plan-description {
+.description {
   margin: 0 0 var(--space-sm) 0;
   color: var(--text-muted);
   font-size: 0.875rem;
   line-height: 1.5;
 }
 
-.plan-meta {
+.meta {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
 }
 
-.days-per-week {
+.daysPerWeek {
   font-size: 0.875rem;
   color: var(--text-muted);
   font-weight: 500;
 }
 
-.plan-days {
+.days {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
 }
 
-.plan-day {
+.day {
   background-color: var(--bg);
   padding: var(--space-md);
   border-radius: var(--space-sm);
 }
 
-.day-label {
+.dayLabel {
   font-weight: 600;
   font-size: 0.875rem;
   color: var(--text);
@@ -82,24 +82,24 @@
   letter-spacing: 0.025em;
 }
 
-.day-exercises {
+.dayExercises {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
 }
 
-.exercise-item {
+.exerciseItem {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
   font-size: 0.875rem;
 }
 
-.exercise-name {
+.exerciseName {
   color: var(--text);
 }
 
-.select-plan-button {
+.selectBtn {
   min-height: 3rem;
   padding: var(--space-md);
   background-color: var(--primary);
@@ -112,22 +112,22 @@
   transition: background-color 0.2s;
 }
 
-.select-plan-button:hover:not(:disabled) {
+.selectBtn:hover:not(:disabled) {
   background-color: var(--primary-dark);
 }
 
-.select-plan-button:disabled {
+.selectBtn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.no-plans {
+.noPlans {
   text-align: center;
   padding: var(--space-xl);
   color: var(--text-muted);
 }
 
-.retry-button {
+.retryBtn {
   min-height: 3rem;
   padding: var(--space-md);
   background-color: var(--primary);
@@ -140,6 +140,6 @@
   margin-top: var(--space-md);
 }
 
-.retry-button:hover {
+.retryBtn:hover {
   background-color: var(--primary-dark);
 }

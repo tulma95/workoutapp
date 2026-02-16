@@ -9,7 +9,8 @@ import { formatExerciseName, formatWeight, convertWeight, roundWeight, convertTo
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import type { UnitPreference } from '../../../types'
-import '../../../styles/SettingsPage.css'
+import styles from '../../../styles/SettingsPage.module.css'
+import shared from '../../../styles/shared.module.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/settings')({
   loader: ({ context: { queryClient } }) =>
@@ -126,7 +127,7 @@ function SettingsPage() {
     <div>
       <h2>Settings</h2>
 
-      <div className="settings-card">
+      <div className={styles.card}>
         <p style={{ margin: '0 0 12px', fontWeight: 500 }}>Current Plan</p>
         {currentPlan ? (
           <>
@@ -137,7 +138,7 @@ function SettingsPage() {
               </p>
             )}
             <button
-              className="btn-secondary"
+              className={shared.btnSecondary}
               onClick={() => navigate({ to: '/select-plan' })}
               style={{ marginTop: '8px' }}
             >
@@ -150,7 +151,7 @@ function SettingsPage() {
               No plan selected
             </p>
             <button
-              className="btn-primary"
+              className={shared.btnPrimary}
               onClick={() => navigate({ to: '/select-plan' })}
             >
               Browse Plans
@@ -159,21 +160,21 @@ function SettingsPage() {
         )}
       </div>
 
-      <div className="settings-card">
+      <div className={styles.card}>
         <p style={{ margin: '0 0 4px', color: 'var(--text-muted)', fontSize: '14px' }}>Display Name</p>
         <p style={{ margin: '0', fontWeight: 600 }}>{user?.displayName}</p>
       </div>
 
-      <div className="settings-card">
+      <div className={styles.card}>
         <p style={{ margin: '0 0 4px', color: 'var(--text-muted)', fontSize: '14px' }}>Email</p>
         <p style={{ margin: '0', fontWeight: 600 }}>{user?.email}</p>
       </div>
 
-      <div className="settings-card">
+      <div className={styles.card}>
         <p style={{ margin: '0 0 12px', fontWeight: 500 }}>Unit Preference</p>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
-            className={unit === 'kg' ? 'btn-primary' : 'btn-secondary'}
+            className={unit === 'kg' ? shared.btnPrimary : shared.btnSecondary}
             style={{ flex: 1 }}
             onClick={() => handleUnitChange('kg')}
             disabled={isSaving}
@@ -181,7 +182,7 @@ function SettingsPage() {
             kg
           </button>
           <button
-            className={unit === 'lb' ? 'btn-primary' : 'btn-secondary'}
+            className={unit === 'lb' ? shared.btnPrimary : shared.btnSecondary}
             style={{ flex: 1 }}
             onClick={() => handleUnitChange('lb')}
             disabled={isSaving}
@@ -197,17 +198,17 @@ function SettingsPage() {
       </div>
 
       {trainingMaxes.length > 0 && (
-        <section className="training-maxes-section">
+        <section className={styles.tmSection}>
           <h3>Training Maxes</h3>
-          <div className="tm-list">
+          <div className={styles.tmList}>
             {trainingMaxes.map((tm: TrainingMax) => (
-              <div key={tm.exercise} className="tm-item">
-                <div className="tm-info">
-                  <span className="tm-exercise">{formatExerciseName(tm.exercise)}</span>
-                  <span className="tm-weight">{formatWeight(tm.weight, unit)}</span>
+              <div key={tm.exercise} className={styles.tmItem}>
+                <div className={styles.tmInfo}>
+                  <span className={styles.tmExercise}>{formatExerciseName(tm.exercise)}</span>
+                  <span className={styles.tmWeight}>{formatWeight(tm.weight, unit)}</span>
                 </div>
                 <button
-                  className="btn-edit"
+                  className={styles.editBtn}
                   onClick={() => openEditModal(tm.exercise, tm.weight)}
                 >
                   Edit
@@ -218,15 +219,15 @@ function SettingsPage() {
         </section>
       )}
 
-      <button className="btn-secondary" style={{ color: 'var(--danger)' }} onClick={handleLogout}>
+      <button className={shared.btnSecondary} style={{ color: 'var(--danger)' }} onClick={handleLogout}>
         Log Out
       </button>
 
-      <dialog ref={dialogRef} className="tm-edit-dialog" onClick={(e) => { if (e.target === dialogRef.current) closeEditModal() }}>
-        <div className="tm-edit-dialog__content">
+      <dialog ref={dialogRef} className={styles.editDialog} onClick={(e) => { if (e.target === dialogRef.current) closeEditModal() }}>
+        <div className={styles.editDialogContent}>
           <h3>Edit {editingExercise ? formatExerciseName(editingExercise) : ''}</h3>
 
-          <div className="tm-edit-dialog__body">
+          <div className={styles.editDialogBody}>
             <label htmlFor="tm-input">Training Max ({unit})</label>
             <input
               id="tm-input"
@@ -237,19 +238,19 @@ function SettingsPage() {
               min="0"
               autoFocus
             />
-            {tmError && <p className="error" role="alert">{tmError}</p>}
+            {tmError && <p className={styles.editDialogError} role="alert">{tmError}</p>}
           </div>
 
-          <div className="tm-edit-dialog__actions">
+          <div className={styles.editDialogActions}>
             <button
-              className="btn-secondary"
+              className={shared.btnSecondary}
               onClick={closeEditModal}
               disabled={tmSaving}
             >
               Cancel
             </button>
             <button
-              className="btn-primary"
+              className={shared.btnPrimary}
               onClick={handleTmSave}
               disabled={tmSaving}
             >

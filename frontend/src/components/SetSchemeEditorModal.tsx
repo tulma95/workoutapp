@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { PlanSet } from '../api/adminPlans';
 import { ConfirmDialog } from './ConfirmDialog';
-import './SetSchemeEditorModal.css';
+import styles from './SetSchemeEditorModal.module.css';
 
 interface SetSchemeEditorModalProps {
   exerciseName: string;
@@ -81,21 +81,21 @@ export default function SetSchemeEditorModal({
   }
 
   return (
-    <dialog className="set-scheme-modal" ref={dialogRef} onClick={handleBackdropClick}>
-      <div className="set-scheme-modal__content">
-        <div className="set-scheme-header">
+    <dialog className={styles.dialog} ref={dialogRef} onClick={handleBackdropClick}>
+      <div className={styles.content}>
+        <div className={styles.header}>
           <h3>Edit Set Scheme: {exerciseName}</h3>
-          <button onClick={onClose} className="btn-close">×</button>
+          <button onClick={onClose} className={styles.closeBtn}>×</button>
         </div>
 
-        <div className="set-scheme-body">
+        <div className={styles.body}>
           {sets.length === 0 ? (
-            <div className="sets-empty">
+            <div className={styles.empty}>
               No sets defined. Click "Add Set" to get started.
             </div>
           ) : (
-            <div className="sets-table-container">
-              <table className="sets-table">
+            <div className={styles.tableContainer}>
+              <table className={styles.table}>
                 <thead>
                   <tr>
                     <th>#</th>
@@ -109,7 +109,7 @@ export default function SetSchemeEditorModal({
                 <tbody>
                   {sets.map((set) => (
                     <tr key={set.setOrder}>
-                      <td className="set-order-cell">{set.setOrder}</td>
+                      <td className={styles.orderCell}>{set.setOrder}</td>
                       <td>
                         <input
                           type="number"
@@ -120,7 +120,7 @@ export default function SetSchemeEditorModal({
                           onChange={(e) =>
                             updateSet(set.setOrder, 'percentage', (parseFloat(e.target.value) || 0) / 100)
                           }
-                          className="percentage-input"
+                          className={styles.percentageInput}
                         />
                       </td>
                       <td>
@@ -132,10 +132,10 @@ export default function SetSchemeEditorModal({
                           onChange={(e) =>
                             updateSet(set.setOrder, 'reps', parseInt(e.target.value, 10) || 0)
                           }
-                          className="reps-input"
+                          className={styles.repsInput}
                         />
                       </td>
-                      <td className="checkbox-cell">
+                      <td className={styles.checkboxCell}>
                         <input
                           type="checkbox"
                           checked={set.isAmrap || false}
@@ -144,7 +144,7 @@ export default function SetSchemeEditorModal({
                           }
                         />
                       </td>
-                      <td className="checkbox-cell">
+                      <td className={styles.checkboxCell}>
                         <input
                           type="checkbox"
                           checked={set.isProgression || false}
@@ -153,10 +153,10 @@ export default function SetSchemeEditorModal({
                           }
                         />
                       </td>
-                      <td className="action-cell">
+                      <td className={styles.actionCell}>
                         <button
                           onClick={() => removeSet(set.setOrder)}
-                          className="btn-remove-set"
+                          className={styles.removeBtn}
                           title="Remove set"
                         >
                           🗑️
@@ -170,15 +170,15 @@ export default function SetSchemeEditorModal({
           )}
         </div>
 
-        <div className="set-scheme-footer">
-          <button onClick={addSet} className="btn-add-set">
+        <div className={styles.footer}>
+          <button onClick={addSet} className={styles.addBtn}>
             + Add Set
           </button>
-          <div className="footer-actions">
-            <button onClick={onClose} className="btn-cancel">
+          <div className={styles.footerActions}>
+            <button onClick={onClose} className={styles.cancelBtn}>
               Cancel
             </button>
-            <button onClick={handleSave} className="btn-save">
+            <button onClick={handleSave} className={styles.saveBtn}>
               Save
             </button>
           </div>

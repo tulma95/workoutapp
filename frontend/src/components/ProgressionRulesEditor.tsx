@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ProgressionRule } from '../api/adminPlans';
 import { Exercise } from '../api/exercises';
-import './ProgressionRulesEditor.css';
+import styles from './ProgressionRulesEditor.module.css';
 
 interface EditorRule {
   tempId: string;
@@ -80,21 +80,21 @@ export default function ProgressionRulesEditor({
   }
 
   return (
-    <div className="progression-rules-editor">
-      <div className="progression-rules-header">
+    <div className={styles.editor}>
+      <div className={styles.header}>
         <h3>Progression Rules</h3>
-        <button className="btn-add-rule" onClick={addRule}>
+        <button className={styles.addBtn} onClick={addRule}>
           + Add Rule
         </button>
       </div>
 
       {rules.length === 0 ? (
-        <div className="progression-rules-empty">
+        <div className={styles.empty}>
           No progression rules defined. Click "+ Add Rule" to configure how training maxes increase.
         </div>
       ) : (
-      <div className="progression-rules-table-wrapper">
-        <table className="progression-rules-table">
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
           <thead>
             <tr>
               <th>Target</th>
@@ -118,7 +118,7 @@ export default function ProgressionRulesEditor({
                 <tr key={rule.tempId}>
                   <td>
                     <select
-                      className="target-select"
+                      className={styles.targetSelect}
                       value={targetValue}
                       onChange={(e) => handleTargetChange(rule.tempId, e.target.value)}
                     >
@@ -137,10 +137,10 @@ export default function ProgressionRulesEditor({
                     </select>
                   </td>
                   <td>
-                    <span className="mobile-label">Min Reps</span>
+                    <span className={styles.mobileLabel}>Min Reps</span>
                     <input
                       type="number"
-                      className="reps-input"
+                      className={styles.repsInput}
                       min="0"
                       value={rule.minReps}
                       onChange={(e) =>
@@ -149,10 +149,10 @@ export default function ProgressionRulesEditor({
                     />
                   </td>
                   <td>
-                    <span className="mobile-label">Max Reps</span>
+                    <span className={styles.mobileLabel}>Max Reps</span>
                     <input
                       type="number"
-                      className="reps-input"
+                      className={styles.repsInput}
                       min="0"
                       value={rule.maxReps}
                       onChange={(e) =>
@@ -161,10 +161,10 @@ export default function ProgressionRulesEditor({
                     />
                   </td>
                   <td>
-                    <span className="mobile-label">TM Increase (kg)</span>
+                    <span className={styles.mobileLabel}>TM Increase (kg)</span>
                     <input
                       type="number"
-                      className="increase-input"
+                      className={styles.increaseInput}
                       min="0"
                       step="0.5"
                       value={rule.increase}
@@ -175,7 +175,7 @@ export default function ProgressionRulesEditor({
                   </td>
                   <td>
                     <button
-                      className="btn-remove-rule"
+                      className={styles.removeBtn}
                       onClick={() => removeRule(rule.tempId)}
                       title="Remove rule"
                     >
@@ -190,7 +190,7 @@ export default function ProgressionRulesEditor({
       </div>
       )}
 
-      <div className="progression-rules-info">
+      <div className={styles.info}>
         <p>
           <strong>How it works:</strong> After completing a workout, the app checks the AMRAP reps
           against these rules. Exercise-specific rules take precedence over category rules.

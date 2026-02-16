@@ -1,18 +1,18 @@
-.admin-layout {
+.layout {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   background: var(--bg);
 }
 
-.admin-header {
+.header {
   background: #7c3aed; /* Purple accent for admin */
   color: white;
   padding: 1rem 1.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.admin-header-content {
+.headerContent {
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
@@ -20,13 +20,13 @@
   align-items: center;
 }
 
-.admin-title {
+.title {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
 }
 
-.back-to-app-link {
+.backLink {
   color: white;
   text-decoration: none;
   font-size: 0.875rem;
@@ -36,11 +36,11 @@
   transition: background 0.2s;
 }
 
-.back-to-app-link:hover {
+.backLink:hover {
   background: rgba(255, 255, 255, 0.2);
 }
 
-.admin-tabs {
+.tabs {
   background: var(--bg-card);
   border-bottom: 2px solid var(--border);
   display: flex;
@@ -52,7 +52,7 @@
   box-sizing: border-box;
 }
 
-.admin-tab {
+.tab {
   padding: 1rem 1.5rem;
   text-decoration: none;
   color: var(--text-muted);
@@ -63,16 +63,16 @@
   position: relative;
 }
 
-.admin-tab:hover {
+.tab:hover {
   color: var(--text-primary);
 }
 
-.admin-tab-active {
+.tabActive {
   color: #7c3aed; /* Purple accent */
   border-bottom-color: #7c3aed;
 }
 
-.admin-main {
+.main {
   flex: 1;
   max-width: 1200px;
   margin: 0 auto;
@@ -82,23 +82,23 @@
 }
 
 @media (max-width: 768px) {
-  .admin-header-content {
+  .headerContent {
     flex-direction: column;
     gap: 0.75rem;
     align-items: flex-start;
   }
 
-  .admin-tabs {
+  .tabs {
     padding: 0 1rem;
     overflow-x: auto;
   }
 
-  .admin-tab {
+  .tab {
     padding: 1rem;
     white-space: nowrap;
   }
 
-  .admin-main {
+  .main {
     padding: 1.5rem 1rem;
   }
 }

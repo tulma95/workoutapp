@@ -6,7 +6,8 @@ import { getCurrentWorkout } from '../../../api/workouts'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import WorkoutCard from '../../../components/WorkoutCard'
-import '../../../styles/DashboardPage.css'
+import styles from '../../../styles/DashboardPage.module.css'
+import shared from '../../../styles/shared.module.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/')({
   beforeLoad: async ({ context: { queryClient } }) => {
@@ -75,21 +76,21 @@ function DashboardPage() {
   }
 
   return (
-    <div className="dashboard-page">
+    <div className={styles.page}>
       <h1>Dashboard</h1>
 
       {plan && (
-        <section className="current-plan-section">
-          <div className="current-plan-header">
+        <section className={styles.planSection}>
+          <div className={styles.planHeader}>
             <div>
               <h2>Current Plan</h2>
-              <p className="plan-name">{plan.name}</p>
+              <p className={styles.planName}>{plan.name}</p>
               {plan.description && (
-                <p className="plan-description">{plan.description}</p>
+                <p className={styles.planDescription}>{plan.description}</p>
               )}
             </div>
             <button
-              className="btn-secondary"
+              className={shared.btnSecondary}
               onClick={() => navigate({ to: '/select-plan' })}
             >
               Change
@@ -98,9 +99,9 @@ function DashboardPage() {
         </section>
       )}
 
-      <section className="workout-days-section">
+      <section className={styles.daysSection}>
         <h2>Workout Days</h2>
-        <div className="workout-cards">
+        <div className={styles.cards}>
           {plan?.days.map((day) => {
             const exerciseNames = day.exercises.map(
               (ex) => ex.displayName || ex.exercise.name

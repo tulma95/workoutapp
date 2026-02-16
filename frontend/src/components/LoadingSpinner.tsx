@@ -1,4 +1,4 @@
-import './LoadingSpinner.css';
+import styles from './LoadingSpinner.module.css';
 
 interface LoadingSpinnerProps {
   size?: number;
@@ -6,9 +6,9 @@ interface LoadingSpinnerProps {
 
 export function LoadingSpinner({ size = 32 }: LoadingSpinnerProps) {
   return (
-    <div className="loading-spinner-container">
+    <div className={styles.container}>
       <div
-        className="loading-spinner"
+        className={styles.spinner}
         style={{ width: size, height: size }}
         aria-label="Loading"
       />

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import './ConfirmDialog.css';
+import styles from './ConfirmDialog.module.css';
+import shared from '../styles/shared.module.css';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -55,18 +56,18 @@ export function ConfirmDialog({
   if (!open) return null;
 
   return (
-    <dialog ref={dialogRef} className="confirm-dialog" onClick={handleBackdropClick}>
-      <div className="confirm-dialog__content">
-        <h2 className="confirm-dialog__title">{title}</h2>
-        <p className="confirm-dialog__message">{message}</p>
-        <div className="confirm-dialog__actions">
+    <dialog ref={dialogRef} className={styles.dialog} onClick={handleBackdropClick}>
+      <div className={styles.content}>
+        <h2 className={styles.title}>{title}</h2>
+        <p className={styles.message}>{message}</p>
+        <div className={styles.actions}>
           {showCancel && (
-            <button className="btn-secondary" onClick={onCancel}>
+            <button className={shared.btnSecondary} onClick={onCancel}>
               {cancelLabel}
             </button>
           )}
           <button
-            className={`btn-primary${variant === 'danger' ? ' confirm-dialog__btn--danger' : ''}`}
+            className={`${shared.btnPrimary}${variant === 'danger' ? ` ${styles.btnDanger}` : ''}`}
             onClick={onConfirm}
           >
             {confirmLabel}

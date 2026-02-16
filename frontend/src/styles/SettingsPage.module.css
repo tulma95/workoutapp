@@ -1,4 +1,4 @@
-.settings-card {
+.card {
   margin-bottom: 1.5rem;
   padding: 1rem;
   background: var(--bg-card);
@@ -6,23 +6,23 @@
   border: 1px solid var(--border);
 }
 
-.training-maxes-section {
+.tmSection {
   margin-bottom: 1.5rem;
 }
 
-.training-maxes-section h3 {
+.tmSection h3 {
   font-size: 1.125rem;
   margin: 0 0 var(--space-md) 0;
   color: var(--text);
 }
 
-.tm-list {
+.tmList {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.tm-item {
+.tmItem {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -33,24 +33,24 @@
   min-height: 3rem;
 }
 
-.tm-info {
+.tmInfo {
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
 }
 
-.tm-exercise {
+.tmExercise {
   font-weight: 600;
   font-size: 1rem;
   color: var(--text);
 }
 
-.tm-weight {
+.tmWeight {
   font-size: 1rem;
   color: var(--text);
 }
 
-.btn-edit {
+.editBtn {
   min-height: 3rem;
   min-width: 4rem;
   padding: var(--space-sm) var(--space-md);
@@ -64,16 +64,16 @@
   transition: background-color 0.2s;
 }
 
-.btn-edit:hover {
+.editBtn:hover {
   background-color: #f5f5f5;
 }
 
-.btn-edit:active {
+.editBtn:active {
   background-color: #eee;
 }
 
 /* TM Edit Dialog */
-.tm-edit-dialog {
+.editDialog {
   width: 100%;
   max-width: 25rem;
   padding: 0;
@@ -82,28 +82,28 @@
   background: transparent;
 }
 
-.tm-edit-dialog::backdrop {
+.editDialog::backdrop {
   background-color: rgba(0, 0, 0, 0.5);
 }
 
-.tm-edit-dialog__content {
+.editDialogContent {
   background-color: var(--bg-card);
   border-radius: 0.5rem;
   padding: var(--space-lg);
   box-shadow: 0 0.25rem 0.375rem rgba(0, 0, 0, 0.1);
 }
 
-.tm-edit-dialog__content h3 {
+.editDialogContent h3 {
   margin: 0 0 var(--space-lg) 0;
   font-size: 1.5rem;
   color: var(--text);
 }
 
-.tm-edit-dialog__body {
+.editDialogBody {
   margin-bottom: var(--space-lg);
 }
 
-.tm-edit-dialog__body label {
+.editDialogBody label {
   display: block;
   margin-bottom: var(--space-sm);
   font-weight: 500;
@@ -111,7 +111,7 @@
   color: var(--text);
 }
 
-.tm-edit-dialog__body input {
+.editDialogBody input {
   width: 100%;
   min-height: 3rem;
   padding: 1rem;
@@ -122,19 +122,19 @@
   color: var(--text);
 }
 
-.tm-edit-dialog__body input:focus {
+.editDialogBody input:focus {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
   border-color: var(--primary);
 }
 
-.tm-edit-dialog__body .error {
+.editDialogError {
   margin-top: var(--space-sm);
   color: var(--danger);
   font-size: 1rem;
 }
 
-.tm-edit-dialog__actions {
+.editDialogActions {
   display: flex;
   gap: 1rem;
   justify-content: flex-end;

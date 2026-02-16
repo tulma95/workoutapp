@@ -1,6 +1,7 @@
 import { Outlet, Link, useLocation } from '@tanstack/react-router'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { getMe } from '../api/user'
+import shared from '../styles/shared.module.css'
 
 export default function Layout() {
   const location = useLocation()
@@ -33,18 +34,18 @@ export default function Layout() {
         )}
       </header>
 
-      <main className="container" style={{ paddingTop: '16px', paddingBottom: '72px' }}>
+      <main className={shared.container} style={{ paddingTop: '16px', paddingBottom: '72px' }}>
         <Outlet />
       </main>
 
-      <nav className="bottom-nav">
-        <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
+      <nav className={shared.bottomNav}>
+        <Link to="/" className={`${shared.bottomNavLink} ${location.pathname === '/' ? shared.bottomNavLinkActive : ''}`}>
           Dashboard
         </Link>
-        <Link to="/history" className={location.pathname === '/history' ? 'active' : ''}>
+        <Link to="/history" className={`${shared.bottomNavLink} ${location.pathname === '/history' ? shared.bottomNavLinkActive : ''}`}>
           History
         </Link>
-        <Link to="/settings" className={location.pathname === '/settings' ? 'active' : ''}>
+        <Link to="/settings" className={`${shared.bottomNavLink} ${location.pathname === '/settings' ? shared.bottomNavLinkActive : ''}`}>
           Settings
         </Link>
       </nav>

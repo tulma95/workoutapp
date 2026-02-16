@@ -1,21 +1,21 @@
-.workout-page {
+.page {
   padding: var(--space-md);
   max-width: 37.5rem;
   margin: 0 auto;
 }
 
-.workout-page h1 {
+.page h1 {
   font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: var(--space-lg);
   color: var(--text-primary);
 }
 
-.workout-section {
+.section {
   margin-bottom: var(--space-xl);
 }
 
-.workout-section__title {
+.sectionTitle {
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 1rem;
@@ -24,23 +24,17 @@
   border-bottom: 2px solid var(--border);
 }
 
-.workout-section__sets {
+.sectionSets {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
 }
 
-.workout-actions {
+.actions {
   margin-top: var(--space-xl);
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
-}
-
-.btn-large {
-  min-height: 3.5rem;
-  font-size: 1rem;
-  font-weight: 600;
 }
 
 .loading {

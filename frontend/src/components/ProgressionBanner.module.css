@@ -1,10 +1,10 @@
-.progression-banner-container {
+.container {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
 }
 
-.progression-banner {
+.banner {
   padding: var(--space-md);
   border-radius: var(--space-sm);
   text-align: center;
@@ -13,12 +13,12 @@
   margin: var(--space-md) 0;
 }
 
-.progression-banner--success {
+.success {
   background-color: var(--success);
   color: white;
 }
 
-.progression-banner--neutral {
+.neutral {
   background-color: var(--bg-card);
   border: 1px solid var(--border);
   color: var(--text);

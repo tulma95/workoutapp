@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import './ConflictDialog.css';
+import styles from './ConflictDialog.module.css';
+import shared from '../styles/shared.module.css';
 
 interface ConflictDialogProps {
   existingDayNumber: number;
@@ -34,17 +35,17 @@ export function ConflictDialog({
   };
 
   return (
-    <dialog ref={dialogRef} className="conflict-dialog" onClick={handleClick}>
-      <div className="conflict-dialog__content">
-        <h2 className="conflict-dialog__title">Workout in Progress</h2>
-        <p className="conflict-dialog__message">
+    <dialog ref={dialogRef} className={styles.dialog} onClick={handleClick}>
+      <div className={styles.content}>
+        <h2 className={styles.title}>Workout in Progress</h2>
+        <p className={styles.message}>
           You have a Day {existingDayNumber} workout in progress. What would you like to do?
         </p>
-        <div className="conflict-dialog__actions">
-          <button className="btn-primary" onClick={onContinue}>
+        <div className={styles.actions}>
+          <button className={shared.btnPrimary} onClick={onContinue}>
             Continue Day {existingDayNumber}
           </button>
-          <button className="btn-secondary btn-danger" onClick={onDiscard}>
+          <button className={`${shared.btnSecondary} ${shared.btnDanger}`} onClick={onDiscard}>
             Discard & Start New
           </button>
         </div>

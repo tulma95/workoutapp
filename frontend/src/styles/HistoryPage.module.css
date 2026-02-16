@@ -1,35 +1,35 @@
-.history-page {
+.page {
   padding: var(--space-md);
   max-width: 37.5rem;
   margin: 0 auto;
 }
 
-.history-page__title {
+.title {
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: var(--space-md);
   color: var(--text-primary);
 }
 
-.history-page__loading {
+.loading {
   padding: var(--space-xl);
   text-align: center;
   color: var(--text-muted);
   font-size: 1rem;
 }
 
-.history-page__detail {
+.detail {
   margin-top: var(--space-lg);
 }
 
-.history-page__prompt {
+.prompt {
   padding: var(--space-xl);
   text-align: center;
   color: var(--text-muted);
   font-size: 1rem;
 }
 
-.history-page__empty {
+.empty {
   padding: var(--space-xl);
   text-align: center;
   color: var(--text-muted);

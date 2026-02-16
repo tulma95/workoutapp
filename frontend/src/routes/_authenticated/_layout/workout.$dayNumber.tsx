@@ -17,11 +17,12 @@ import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import { ConflictDialog } from '../../../components/ConflictDialog'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
-import '../../../styles/WorkoutPage.css'
+import styles from '../../../styles/WorkoutPage.module.css'
+import shared from '../../../styles/shared.module.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/workout/$dayNumber')({
   pendingComponent: () => (
-    <div className="workout-page">
+    <div className={styles.page}>
       <LoadingSpinner />
     </div>
   ),
@@ -292,7 +293,7 @@ function WorkoutPage() {
 
   if (isLoading) {
     return (
-      <div className="workout-page">
+      <div className={styles.page}>
         <LoadingSpinner />
       </div>
     )
@@ -300,9 +301,9 @@ function WorkoutPage() {
 
   if (error) {
     return (
-      <div className="workout-page">
+      <div className={styles.page}>
         <ErrorMessage message={error} />
-        <button onClick={handleBackToDashboard} className="btn-secondary">
+        <button onClick={handleBackToDashboard} className={shared.btnSecondary}>
           Back to Dashboard
         </button>
       </div>
@@ -311,7 +312,7 @@ function WorkoutPage() {
 
   if (!workout) {
     return (
-      <div className="workout-page">
+      <div className={styles.page}>
         <ErrorMessage message="Failed to load workout" />
       </div>
     )
@@ -333,10 +334,10 @@ function WorkoutPage() {
 
   if (isCompleted) {
     return (
-      <div className="workout-page">
+      <div className={styles.page}>
         <h1>Workout Complete!</h1>
         <ProgressionBanner progressions={progressions} unit={unit} />
-        <button onClick={handleBackToDashboard} className="btn-primary">
+        <button onClick={handleBackToDashboard} className={shared.btnPrimary}>
           Back to Dashboard
         </button>
       </div>
@@ -344,13 +345,13 @@ function WorkoutPage() {
   }
 
   return (
-    <div className="workout-page">
+    <div className={styles.page}>
       <h1 style={{ viewTransitionName: `workout-day-${dayNumber}` }}>{dayTitle}</h1>
 
       {exerciseGroups.map((group) => (
-        <section key={group.exercise} className="workout-section">
-          <h2 className="workout-section__title">{group.exercise}</h2>
-          <div className="workout-section__sets">
+        <section key={group.exercise} className={styles.section}>
+          <h2 className={styles.sectionTitle}>{group.exercise}</h2>
+          <div className={styles.sectionSets} data-set-list>
             {group.sets.map((set, index) => (
               <SetRow
                 key={set.id}
@@ -369,18 +370,18 @@ function WorkoutPage() {
         </section>
       ))}
 
-      <div className="workout-actions">
+      <div className={styles.actions}>
         <button
           onClick={handleCompleteWorkout}
           disabled={isCompleting || isCanceling}
-          className="btn-primary btn-large"
+          className={`${shared.btnPrimary} ${shared.btnLarge}`}
         >
           {isCompleting ? 'Completing...' : 'Complete Workout'}
         </button>
         <button
           onClick={handleCancelWorkout}
           disabled={isCanceling || isCompleting}
-          className="btn-secondary btn-large"
+          className={`${shared.btnSecondary} ${shared.btnLarge}`}
         >
           {isCanceling ? 'Canceling...' : 'Cancel Workout'}
         </button>

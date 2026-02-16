@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { CalendarWorkout } from '../api/workouts';
-import './WorkoutCalendar.css';
+import styles from './WorkoutCalendar.module.css';
 
 interface WorkoutCalendarProps {
   workouts: CalendarWorkout[];
@@ -141,21 +141,21 @@ export default function WorkoutCalendar({
   };
 
   return (
-    <div className={`workout-calendar ${isLoading ? 'workout-calendar--loading' : ''}`}>
-      <div className="workout-calendar__header">
+    <div className={`${styles.calendar} ${isLoading ? styles.loading : ''}`}>
+      <div className={styles.header}>
         <button
-          className="workout-calendar__nav-button"
+          className={styles.navButton}
           onClick={handlePrevMonth}
           aria-label="Previous month"
           disabled={isLoading}
         >
           ←
         </button>
-        <h2 className="workout-calendar__title">
+        <h2 className={styles.title}>
           {MONTH_NAMES[currentMonth]} {currentYear}
         </h2>
         <button
-          className="workout-calendar__nav-button"
+          className={styles.navButton}
           onClick={handleNextMonth}
           aria-label="Next month"
           disabled={isLoading}
@@ -164,32 +164,32 @@ export default function WorkoutCalendar({
         </button>
       </div>
 
-      <div className="workout-calendar__weekdays">
+      <div className={styles.weekdays}>
         {WEEKDAYS.map((day) => (
-          <div key={day} className="workout-calendar__weekday">
+          <div key={day} className={styles.weekday}>
             {day}
           </div>
         ))}
       </div>
 
       <div
-        className="workout-calendar__grid"
+        className={styles.grid}
         style={{ viewTransitionName: 'calendar-grid' }}
       >
         {calendarDays.map((day, index) => (
           <button
             key={index}
-            className={`workout-calendar__day ${
-              !day.isCurrentMonth ? 'workout-calendar__day--outside' : ''
-            } ${day.isToday ? 'workout-calendar__day--today' : ''} ${
-              day.workout ? 'workout-calendar__day--workout' : ''
+            className={`${styles.day} ${
+              !day.isCurrentMonth ? styles.outside : ''
+            } ${day.isToday ? styles.today : ''} ${
+              day.workout ? styles.workout : ''
             }`}
             onClick={() => handleDayClick(day)}
             disabled={!day.workout}
           >
-            <span className="workout-calendar__day-number">{day.date}</span>
+            <span className={styles.dayNumber}>{day.date}</span>
             {day.workout && (
-              <span className="workout-calendar__day-badge">
+              <span className={styles.dayBadge}>
                 {day.workout.dayNumber}
               </span>
             )}

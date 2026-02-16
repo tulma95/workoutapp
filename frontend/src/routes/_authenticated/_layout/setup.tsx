@@ -6,7 +6,8 @@ import { getCurrentPlan, type Exercise } from '../../../api/plans'
 import { getMe } from '../../../api/user'
 import { convertToKg } from '../../../utils/weight'
 import { ErrorMessage } from '../../../components/ErrorMessage'
-import '../../../styles/SetupPage.css'
+import styles from '../../../styles/SetupPage.module.css'
+import shared from '../../../styles/shared.module.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/setup')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -131,8 +132,8 @@ function SetupPage() {
 
   if (isLoading) {
     return (
-      <div className="setup-page">
-        <div className="setup-container">
+      <div className={styles.page}>
+        <div className={styles.container}>
           <p>Loading exercises...</p>
         </div>
       </div>
@@ -141,16 +142,16 @@ function SetupPage() {
 
   if (requiredExercises.length === 0) {
     return (
-      <div className="setup-page">
-        <div className="setup-container">
+      <div className={styles.page}>
+        <div className={styles.container}>
           <h1>No Exercises Found</h1>
-          <p className="setup-description">
+          <p className={styles.description}>
             Please select a workout plan first.
           </p>
           {error && <ErrorMessage message={error} />}
           <button
             type="button"
-            className="btn-primary"
+            className={shared.btnPrimary}
             onClick={() => navigate({ to: '/select-plan' })}
           >
             Select a Plan
@@ -161,16 +162,16 @@ function SetupPage() {
   }
 
   return (
-    <div className="setup-page">
-      <div className="setup-container">
+    <div className={styles.page}>
+      <div className={styles.container}>
         <h1>Enter Your 1 Rep Maxes</h1>
-        <p className="setup-description">
+        <p className={styles.description}>
           These will be used to calculate your training maxes (90% of 1RM).
         </p>
 
-        <form onSubmit={handleSubmit} className="setup-form">
+        <form onSubmit={handleSubmit} className={styles.form}>
           {requiredExercises.map((exercise) => (
-            <div key={exercise.id} className="form-group">
+            <div key={exercise.id} className={styles.formGroup}>
               <label htmlFor={`exercise-${exercise.id}`}>
                 {exercise.name} ({unit})
               </label>
@@ -189,7 +190,7 @@ function SetupPage() {
 
           {error && <ErrorMessage message={error} />}
 
-          <button type="submit" className="btn-primary" disabled={isSubmitting}>
+          <button type="submit" className={shared.btnPrimary} disabled={isSubmitting}>
             {isSubmitting ? 'Saving...' : 'Calculate Training Maxes'}
           </button>
         </form>

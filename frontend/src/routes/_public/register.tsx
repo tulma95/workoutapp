@@ -3,7 +3,8 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useAuth } from '../../context/useAuth'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import type { UnitPreference } from '../../types'
-import '../../styles/AuthForm.css'
+import styles from '../../styles/AuthForm.module.css'
+import shared from '../../styles/shared.module.css'
 
 export const Route = createFileRoute('/_public/register')({
   component: RegisterPage,
@@ -43,10 +44,10 @@ function RegisterPage() {
   }
 
   return (
-    <div className="container auth-page">
+    <div className={`${shared.container} ${styles.page}`}>
       <h1>Create Account</h1>
 
-      <form onSubmit={handleSubmit} className="auth-form">
+      <form onSubmit={handleSubmit} className={styles.form}>
         <div>
           <label htmlFor="email">Email</label>
           <input
@@ -75,7 +76,7 @@ function RegisterPage() {
             required
           />
           {passwordError && (
-            <p className="auth-form__error">{passwordError}</p>
+            <p className={styles.error}>{passwordError}</p>
           )}
         </div>
 
@@ -91,9 +92,9 @@ function RegisterPage() {
         </div>
 
         <div>
-          <span className="auth-form__label">Unit Preference</span>
-          <div className="auth-form__unit-options">
-            <label className="auth-form__unit-label">
+          <span className={styles.label}>Unit Preference</span>
+          <div className={styles.unitOptions}>
+            <label className={styles.unitLabel}>
               <input
                 type="radio"
                 name="unitPreference"
@@ -103,7 +104,7 @@ function RegisterPage() {
               />
               kg
             </label>
-            <label className="auth-form__unit-label">
+            <label className={styles.unitLabel}>
               <input
                 type="radio"
                 name="unitPreference"
@@ -118,12 +119,12 @@ function RegisterPage() {
 
         {error && <ErrorMessage message={error} />}
 
-        <button type="submit" className="btn-primary" disabled={loading}>
+        <button type="submit" className={shared.btnPrimary} disabled={loading}>
           {loading ? 'Creating account...' : 'Create Account'}
         </button>
       </form>
 
-      <p className="auth-page__footer">
+      <p className={styles.footer}>
         Already have an account? <Link to="/login">Log in</Link>
       </p>
     </div>

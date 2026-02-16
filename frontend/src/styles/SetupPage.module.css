@@ -1,4 +1,4 @@
-.setup-page {
+.page {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -7,7 +7,7 @@
   background-color: var(--bg);
 }
 
-.setup-container {
+.container {
   width: 100%;
   max-width: 31.25rem;
   padding: var(--space-xl);
@@ -16,37 +16,37 @@
   border-radius: var(--space-sm);
 }
 
-.setup-container h1 {
+.container h1 {
   margin: 0 0 var(--space-sm) 0;
   font-size: 1.5rem;
   color: var(--text);
 }
 
-.setup-description {
+.description {
   margin: 0 0 var(--space-xl) 0;
   color: var(--text-muted);
   font-size: 1rem;
 }
 
-.setup-form {
+.form {
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
 }
 
-.form-group {
+.formGroup {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
 }
 
-.form-group label {
+.formGroup label {
   font-weight: 500;
   color: var(--text);
   font-size: 1rem;
 }
 
-.form-group input {
+.formGroup input {
   min-height: 3rem;
   padding: 1rem;
   font-size: 1rem;
@@ -56,39 +56,17 @@
   color: var(--text);
 }
 
-.form-group input:focus {
+.formGroup input:focus {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
   border-color: var(--primary);
 }
 
-.error-message {
+.errorMessage {
   padding: 1rem;
   background-color: #fee;
   color: var(--danger);
   border: 1px solid var(--danger);
   border-radius: var(--space-sm);
   font-size: 1rem;
-}
-
-.btn-primary {
-  min-height: 3rem;
-  padding: var(--space-sm) var(--space-lg);
-  font-size: 1rem;
-  font-weight: 500;
-  background-color: var(--primary);
-  color: white;
-  border: none;
-  border-radius: var(--space-sm);
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.btn-primary:hover:not(:disabled) {
-  opacity: 0.9;
-}
-
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }

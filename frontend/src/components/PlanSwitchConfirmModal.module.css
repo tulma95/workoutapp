@@ -1,4 +1,4 @@
-.plan-switch-modal {
+.dialog {
   border: none;
   padding: 0;
   background: transparent;
@@ -11,11 +11,11 @@
   overflow-y: auto;
 }
 
-.plan-switch-modal::backdrop {
+.dialog::backdrop {
   background-color: rgba(0, 0, 0, 0.5);
 }
 
-.plan-switch-modal__content {
+.content {
   background: var(--bg-card);
   border-radius: 8px;
   max-width: 500px;
@@ -26,63 +26,63 @@
   margin: 5vh auto;
 }
 
-.modal-header {
+.header {
   padding: 1.5rem;
   border-bottom: 1px solid var(--border);
 }
 
-.modal-header h2 {
+.header h2 {
   margin: 0;
   font-size: 1.25rem;
   color: var(--text-primary);
 }
 
-.modal-body {
+.body {
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.warning-section {
+.warning {
   padding: 1rem;
   border-radius: 6px;
   background: var(--bg);
   border-left: 4px solid var(--primary);
 }
 
-.warning-section.warning-danger {
+.warning.danger {
   border-left-color: var(--danger);
   background: rgba(239, 68, 68, 0.1);
 }
 
-.warning-section h3 {
+.warning h3 {
   margin: 0 0 0.5rem 0;
   font-size: 1rem;
   color: var(--text-primary);
 }
 
-.warning-section p {
+.warning p {
   margin: 0 0 0.5rem 0;
   color: var(--text-muted);
   font-size: 0.875rem;
 }
 
-.warning-section strong {
+.warning strong {
   color: var(--text-primary);
 }
 
-.exercise-list {
+.exerciseList {
   margin: 0;
   padding-left: 1.5rem;
   color: var(--text-muted);
 }
 
-.exercise-list li {
+.exerciseList li {
   margin: 0.25rem 0;
 }
 
-.modal-footer {
+.footer {
   padding: 1.5rem;
   border-top: 1px solid var(--border);
   display: flex;
@@ -90,8 +90,8 @@
   gap: 0.75rem;
 }
 
-.button-secondary,
-.button-primary {
+.secondaryBtn,
+.primaryBtn {
   padding: 0.75rem 1.5rem;
   border-radius: 6px;
   font-size: 1rem;
@@ -102,26 +102,26 @@
   min-width: 100px;
 }
 
-.button-secondary {
+.secondaryBtn {
   background: transparent;
   color: var(--text-muted);
   border: 1px solid var(--border);
 }
 
-.button-secondary:hover {
+.secondaryBtn:hover {
   background: var(--bg);
 }
 
-.button-primary {
+.primaryBtn {
   background: var(--primary);
   color: white;
 }
 
-.button-primary:hover {
+.primaryBtn:hover {
   opacity: 0.9;
 }
 
-.button-primary:active,
-.button-secondary:active {
+.primaryBtn:active,
+.secondaryBtn:active {
   transform: translateY(1px);
 }

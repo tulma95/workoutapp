@@ -1,7 +1,7 @@
 import React from 'react';
 import { formatExerciseName, formatWeight, convertWeight, roundWeight } from '../utils/weight';
 import type { UnitPreference } from '../types';
-import './ProgressionBanner.css';
+import styles from './ProgressionBanner.module.css';
 
 interface ProgressionBannerProps {
   // Support both old (single progression) and new (array) formats
@@ -26,14 +26,14 @@ export const ProgressionBanner: React.FC<ProgressionBannerProps> = ({ progressio
 
   if (progressionArray.length === 0) {
     return (
-      <div className="progression-banner progression-banner--neutral">
+      <div className={`${styles.banner} ${styles.neutral}`}>
         No TM changes this session
       </div>
     );
   }
 
   return (
-    <div className="progression-banner-container">
+    <div className={styles.container}>
       {progressionArray.map((prog, index) => {
         const exerciseName = formatExerciseName(prog.exercise);
 
@@ -45,10 +45,10 @@ export const ProgressionBanner: React.FC<ProgressionBannerProps> = ({ progressio
         const newTMFormatted = formatWeight(prog.newTM, unit);
 
         // Color-coded: green for increase, neutral for no change
-        const bannerClass = prog.increase > 0 ? 'progression-banner--success' : 'progression-banner--neutral';
+        const bannerClass = prog.increase > 0 ? styles.success : styles.neutral;
 
         return (
-          <div key={index} className={`progression-banner ${bannerClass}`}>
+          <div key={index} className={`${styles.banner} ${bannerClass}`}>
             {exerciseName} TM {increaseStr}! New TM: {newTMFormatted}
           </div>
         );

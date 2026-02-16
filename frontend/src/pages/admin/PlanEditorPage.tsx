@@ -7,7 +7,7 @@ import SetSchemeEditorModal from '../../components/SetSchemeEditorModal';
 import ProgressionRulesEditor from '../../components/ProgressionRulesEditor';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { useToast } from '../../components/Toast';
-import '../../styles/PlanEditorPage.css';
+import styles from '../../styles/PlanEditorPage.module.css';
 
 interface EditorExercise extends PlanDayExerciseInput {
   tempId: string; // for React keys before saving
@@ -509,17 +509,17 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
   const currentDayData = days.find(d => d.dayNumber === activeDay);
 
   if (loading) {
-    return <div className="plan-editor-loading">Loading plan...</div>;
+    return <div className={styles.loading}>Loading plan...</div>;
   }
 
   return (
-    <div className="plan-editor-page">
-      <div className="plan-editor-header">
+    <div className={styles.page}>
+      <div className={styles.header}>
         <h2>{isEditMode ? 'Edit Plan' : 'Create New Plan'}</h2>
       </div>
 
       {validationErrors.length > 0 && (
-        <div className="validation-errors">
+        <div className={styles.validationErrors}>
           <strong>Please fix the following errors:</strong>
           <ul>
             {validationErrors.map((err, idx) => (
@@ -528,24 +528,24 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
           </ul>
         </div>
       )}
-      {error && <div className="plan-editor-error">{error}</div>}
+      {error && <div className={styles.error}>{error}</div>}
 
-      <div className={`plan-metadata-section ${metadataCollapsed ? 'plan-metadata-section--collapsed' : ''}`}>
+      <div className={`${styles.metadataSection} ${metadataCollapsed ? styles.metadataCollapsed : ''}`}>
         <button
-          className="metadata-toggle"
+          className={styles.metadataToggle}
           onClick={() => setMetadataCollapsed(!metadataCollapsed)}
         >
-          <span className="metadata-toggle-label">
+          <span className={styles.metadataToggleLabel}>
             {metadataCollapsed ? '▸' : '▾'} Plan Details
             {metadataCollapsed && name && (
-              <span className="metadata-summary"> — {name} ({daysPerWeek} days/week)</span>
+              <span className={styles.metadataSummary}> — {name} ({daysPerWeek} days/week)</span>
             )}
           </span>
         </button>
 
         {!metadataCollapsed && (
           <>
-            <div className="form-row">
+            <div className={styles.formRow}>
               <label>
                 Plan Name *
                 <input
@@ -557,7 +557,7 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
               </label>
             </div>
 
-            <div className="form-row slug-row">
+            <div className={`${styles.formRow} ${styles.slugRow}`}>
               <label>
                 Slug *
                 <input
@@ -568,7 +568,7 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
                 />
               </label>
               {slugManuallyEdited && (
-                <button className="btn-reset-slug" onClick={() => {
+                <button className={styles.resetSlugBtn} onClick={() => {
                   setSlugManuallyEdited(false);
                   setSlug(generateSlug(name));
                 }}>
@@ -577,7 +577,7 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
               )}
             </div>
 
-            <div className="form-row">
+            <div className={styles.formRow}>
               <label>
                 Description
                 <textarea
@@ -589,7 +589,7 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
               </label>
             </div>
 
-            <div className="form-row-inline">
+            <div className={styles.formRowInline}>
               <label>
                 Days per Week *
                 <input
@@ -601,7 +601,7 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
                 />
               </label>
 
-              <label className="checkbox-label">
+              <label className={styles.checkboxLabel}>
                 <input
                   type="checkbox"
                   checked={isPublic}
@@ -614,27 +614,27 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
         )}
       </div>
 
-      <div className="day-tabs-section">
-        <div className="day-tabs">
+      <div className={styles.dayTabsSection}>
+        <div className={styles.dayTabs}>
           {days.map((day) => {
             const hasExercises = day.exercises.length > 0;
             const allHaveSets = hasExercises && day.exercises.every(ex => ex.sets.length > 0);
 
             let statusClass = '';
-            if (allHaveSets) statusClass = 'day-tab--complete';
-            else if (hasExercises) statusClass = 'day-tab--incomplete';
+            if (allHaveSets) statusClass = styles.dayTabComplete;
+            else if (hasExercises) statusClass = styles.dayTabIncomplete;
 
             return (
               <button
                 key={day.dayNumber}
-                className={`day-tab ${activeDay === day.dayNumber ? 'day-tab--active' : ''} ${statusClass}`}
+                className={`${styles.dayTab} ${activeDay === day.dayNumber ? styles.dayTabActive : ''} ${statusClass}`}
                 onClick={() => setActiveDay(day.dayNumber)}
               >
                 {day.name && day.name !== `Day ${day.dayNumber}`
                   ? `Day ${day.dayNumber}: ${day.name}`
                   : `Day ${day.dayNumber}`}
                 {day.exercises.length > 0 && (
-                  <span className="day-tab-count">({day.exercises.length})</span>
+                  <span className={styles.dayTabCount}>({day.exercises.length})</span>
                 )}
               </button>
             );
@@ -642,8 +642,8 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
         </div>
 
         {currentDayData && (
-          <div className="day-editor">
-            <div className="day-name-input">
+          <div className={styles.dayEditor}>
+            <div className={styles.dayNameInput}>
               <label>
                 Day Name
                 <input
@@ -655,11 +655,11 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
               </label>
             </div>
 
-            <div className="exercises-section">
-              <div className="exercises-header">
+            <div className={styles.exercisesSection}>
+              <div className={styles.exercisesHeader}>
                 <h3>Exercises</h3>
                 <button
-                  className="btn-add-exercise"
+                  className={styles.addExerciseBtn}
                   onClick={() => setShowExercisePicker(true)}
                 >
                   + Add Exercise
@@ -667,7 +667,7 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
               </div>
 
               {currentDayData.exercises.length === 0 && (
-                <div className="exercises-empty">
+                <div className={styles.exercisesEmpty}>
                   No exercises yet. Click "Add Exercise" to get started.
                 </div>
               )}
@@ -677,10 +677,10 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
                 if (!exercise) return null;
 
                 return (
-                  <div key={ex.tempId} className={`exercise-row ${ex.sets.length > 0 ? 'exercise-row--has-sets' : 'exercise-row--no-sets'}`}>
-                    <div className="exercise-row-header">
-                      <span className="exercise-name">{idx + 1}. {exercise.name}</span>
-                      <div className="exercise-row-actions">
+                  <div key={ex.tempId} className={`${styles.exerciseRow} ${ex.sets.length > 0 ? styles.exerciseRowHasSets : styles.exerciseRowNoSets}`}>
+                    <div className={styles.exerciseRowHeader}>
+                      <span className={styles.exerciseName}>{idx + 1}. {exercise.name}</span>
+                      <div className={styles.exerciseRowActions}>
                         <button
                           onClick={() => moveExerciseUp(activeDay, ex.tempId)}
                           disabled={idx === 0}
@@ -697,7 +697,7 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
                         </button>
                         <button
                           onClick={() => removeExercise(activeDay, ex.tempId)}
-                          className="btn-remove"
+                          className={styles.removeBtn}
                           title="Remove"
                         >
                           🗑️
@@ -705,7 +705,7 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
                       </div>
                     </div>
 
-                    <div className="exercise-row-fields">
+                    <div className={styles.exerciseRowFields}>
                       <label>
                         TM Exercise
                         <select
@@ -740,15 +740,15 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
                       </label>
                     </div>
 
-                    <div className="exercise-sets-info">
+                    <div className={styles.exerciseSetsInfo}>
                       {ex.sets.length > 0 ? (
-                        <span className="sets-summary">{formatSetSummary(ex.sets)}</span>
+                        <span className={styles.setsSummary}>{formatSetSummary(ex.sets)}</span>
                       ) : (
-                        <span className="sets-warning-badge">No sets defined</span>
+                        <span className={styles.setsWarningBadge}>No sets defined</span>
                       )}
-                      <div className="exercise-sets-actions">
+                      <div className={styles.exerciseSetsActions}>
                         <button
-                          className="btn-edit-sets"
+                          className={styles.editSetsBtn}
                           onClick={() => openSetSchemeEditor(activeDay, ex.tempId)}
                         >
                           Edit Sets
@@ -760,7 +760,7 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
                           if (otherWithSets.length === 0) return null;
                           return (
                             <select
-                              className="copy-sets-select"
+                              className={styles.copySetsSelect}
                               value=""
                               onChange={(e) => {
                                 if (e.target.value) copySetsFrom(activeDay, e.target.value, ex.tempId);
@@ -790,34 +790,34 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
 
       <dialog
         ref={exercisePickerRef}
-        className="exercise-picker-dialog"
+        className={styles.pickerDialog}
         onClick={(e) => { if (e.target === exercisePickerRef.current) setShowExercisePicker(false); }}
       >
-        <div className="exercise-picker-content">
-          <div className="exercise-picker-header">
+        <div className={styles.pickerContent}>
+          <div className={styles.pickerHeader}>
             <h3>Add Exercise</h3>
             <button onClick={() => setShowExercisePicker(false)}>×</button>
           </div>
 
           <input
             type="text"
-            className="exercise-search"
+            className={styles.exerciseSearch}
             placeholder="Search exercises..."
             value={exerciseSearch}
             onChange={(e) => setExerciseSearch(e.target.value)}
           />
 
-          <div className="exercise-picker-list">
+          <div className={styles.pickerList}>
             {filteredExercises.map((ex) => (
               <button
                 key={ex.id}
-                className="exercise-picker-item"
+                className={styles.pickerItem}
                 onClick={() => addExerciseToDay(ex)}
               >
-                <div className="exercise-picker-item-name">{ex.name}</div>
-                <div className="exercise-picker-item-meta">
+                <div className={styles.pickerItemName}>{ex.name}</div>
+                <div className={styles.pickerItemMeta}>
                   {ex.muscleGroup && <span>{ex.muscleGroup}</span>}
-                  <span className="exercise-category">{ex.category}</span>
+                  <span className={styles.exerciseCategory}>{ex.category}</span>
                 </div>
               </button>
             ))}
@@ -831,9 +831,9 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
         onChange={(rules) => { setProgressionRules(rules); setIsDirty(true); }}
       />
 
-      <div className="sticky-save-bar">
+      <div className={styles.stickySaveBar}>
         <button
-          className="btn-save-plan"
+          className={styles.saveBtn}
           onClick={handleSave}
           disabled={saving}
         >
@@ -868,15 +868,15 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
       />
 
       {blocker.status === 'blocked' && (
-        <div className="unsaved-modal" onClick={() => blocker.reset()}>
-          <div className="unsaved-modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className={styles.unsavedModal} onClick={() => blocker.reset()}>
+          <div className={styles.unsavedModalContent} onClick={(e) => e.stopPropagation()}>
             <h3>Unsaved Changes</h3>
             <p>You have unsaved changes. Leave without saving?</p>
-            <div className="unsaved-modal-actions">
-              <button className="btn-stay" onClick={() => blocker.reset()}>
+            <div className={styles.unsavedModalActions}>
+              <button className={styles.stayBtn} onClick={() => blocker.reset()}>
                 Stay
               </button>
-              <button className="btn-leave" onClick={() => blocker.proceed()}>
+              <button className={styles.leaveBtn} onClick={() => blocker.proceed()}>
                 Leave
               </button>
             </div>

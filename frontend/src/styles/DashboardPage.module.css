@@ -1,8 +1,8 @@
-.dashboard-page {
+.page {
   padding: var(--space-md);
 }
 
-.dashboard-page h1 {
+.page h1 {
   margin: 0 0 var(--space-lg) 0;
   font-size: 1.5rem;
 }
@@ -14,11 +14,11 @@
   font-size: 1rem;
 }
 
-.current-plan-section {
+.planSection {
   margin-bottom: 2rem;
 }
 
-.current-plan-header {
+.planHeader {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -29,39 +29,38 @@
   gap: var(--space-md);
 }
 
-.current-plan-header h2 {
+.planHeader h2 {
   font-size: 1rem;
   margin: 0 0 var(--space-xs) 0;
   color: var(--text-muted);
   font-weight: 500;
 }
 
-.current-plan-header .plan-name {
+.planName {
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--text);
   margin: 0 0 var(--space-xs) 0;
 }
 
-.current-plan-header .plan-description {
+.planDescription {
   font-size: 0.875rem;
   color: var(--text-muted);
   margin: 0;
 }
 
-.workout-days-section {
+.daysSection {
   margin-bottom: var(--space-xl);
 }
 
-.workout-days-section h2 {
+.daysSection h2 {
   font-size: 1.5rem;
   margin: 0 0 var(--space-md) 0;
   color: var(--text);
 }
 
-.workout-cards {
+.cards {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
 }
-

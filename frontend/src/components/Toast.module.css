@@ -1,4 +1,4 @@
-.toast-container {
+.container {
   position: fixed;
   bottom: 1.5rem;
   right: 1.5rem;
@@ -32,26 +32,26 @@
   }
 }
 
-.toast--success {
+.success {
   background: #065f46;
   color: #d1fae5;
 }
 
-.toast--error {
+.error {
   background: #991b1b;
   color: #fee2e2;
 }
 
-.toast--warning {
+.warning {
   background: #92400e;
   color: #fef3c7;
 }
 
-.toast-message {
+.message {
   flex: 1;
 }
 
-.toast-dismiss {
+.dismiss {
   background: transparent;
   border: none;
   color: inherit;
@@ -63,12 +63,12 @@
   min-height: 24px;
 }
 
-.toast-dismiss:hover {
+.dismiss:hover {
   opacity: 1;
 }
 
 @media (max-width: 768px) {
-  .toast-container {
+  .container {
     left: 1rem;
     right: 1rem;
     max-width: none;

@@ -1,4 +1,4 @@
-.workout-detail {
+.root {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--space-sm);
@@ -6,55 +6,55 @@
   box-shadow: 0 2px var(--space-xs) rgba(0, 0, 0, 0.1);
 }
 
-.workout-detail__loading,
-.workout-detail__error {
+.loading,
+.error {
   text-align: center;
   padding: var(--space-xl);
   font-size: 1rem;
   color: var(--text-muted);
 }
 
-.workout-detail__error {
+.error {
   color: var(--danger);
 }
 
-.workout-detail__header {
+.header {
   margin-bottom: var(--space-lg);
   padding-bottom: var(--space-md);
   border-bottom: 2px solid var(--border);
 }
 
-.workout-detail__title {
+.title {
   font-size: 1.5rem;
   font-weight: 600;
   margin: 0 0 var(--space-sm) 0;
   color: var(--text-primary);
 }
 
-.workout-detail__date {
+.date {
   font-size: 1rem;
   color: var(--text-muted);
   margin: 0;
 }
 
-.workout-detail__section {
+.section {
   margin-bottom: var(--space-lg);
 }
 
-.workout-detail__section-title {
+.sectionTitle {
   font-size: 1rem;
   font-weight: 600;
   margin: 0 0 1rem 0;
   color: var(--text-primary);
 }
 
-.workout-detail__sets {
+.sets {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
 }
 
-.workout-detail__set-row {
+.setRow {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -64,41 +64,41 @@
   font-size: 1rem;
 }
 
-.workout-detail__set-number {
+.setNumber {
   font-weight: 600;
   color: var(--text-muted);
   min-width: 3rem;
 }
 
-.workout-detail__set-weight {
+.setWeight {
   font-weight: 600;
   color: var(--text-primary);
   min-width: 4rem;
 }
 
-.workout-detail__set-reps {
+.setReps {
   color: var(--text-primary);
   flex: 1;
 }
 
-.workout-detail__set-actual {
+.setActual {
   color: var(--text-muted);
   font-size: 1rem;
 }
 
-.workout-detail__set-completed {
+.setCompleted {
   color: var(--success);
   font-size: 1.5rem;
   line-height: 1;
 }
 
-.workout-detail__progression {
+.progression {
   margin-top: var(--space-lg);
   padding-top: var(--space-md);
   border-top: 2px solid var(--border);
 }
 
-.workout-detail__no-progression {
+.noProgression {
   text-align: center;
   padding: var(--space-md);
   color: var(--text-muted);
@@ -108,21 +108,21 @@
 }
 
 @media (max-width: 480px) {
-  .workout-detail {
+  .root {
     padding: var(--space-md);
   }
 
-  .workout-detail__set-row {
+  .setRow {
     gap: var(--space-sm);
     padding: var(--space-sm);
     font-size: 1rem;
   }
 
-  .workout-detail__set-number {
+  .setNumber {
     min-width: 2.5rem;
   }
 
-  .workout-detail__set-weight {
+  .setWeight {
     min-width: 3.5rem;
   }
 }

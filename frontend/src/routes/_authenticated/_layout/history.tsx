@@ -8,7 +8,7 @@ import WorkoutCalendar from '../../../components/WorkoutCalendar'
 import { WorkoutDetail } from '../../../components/WorkoutDetail'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { ErrorMessage } from '../../../components/ErrorMessage'
-import '../../../styles/HistoryPage.css'
+import styles from '../../../styles/HistoryPage.module.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/history')({
   pendingComponent: LoadingSpinner,
@@ -86,8 +86,8 @@ function HistoryPage() {
   const hasAnyWorkouts = calendarWorkouts.length > 0
 
   return (
-    <div className="history-page">
-      <h1 className="history-page__title">History</h1>
+    <div className={styles.page}>
+      <h1 className={styles.title}>History</h1>
 
       {calendarError ? (
         <ErrorMessage
@@ -105,7 +105,7 @@ function HistoryPage() {
             isLoading={isLoadingCalendar}
           />
 
-          <div className="history-page__detail">
+          <div className={styles.detail}>
             {isLoadingWorkout ? (
               <WorkoutDetail
                 progression={null}
@@ -119,11 +119,11 @@ function HistoryPage() {
                 unit={user?.unitPreference || 'kg'}
               />
             ) : hasAnyWorkouts ? (
-              <div className="history-page__prompt">
+              <div className={styles.prompt}>
                 Tap a workout day to see details
               </div>
             ) : (
-              <div className="history-page__empty">
+              <div className={styles.empty}>
                 No workouts yet. Complete your first workout to see it here!
               </div>
             )}

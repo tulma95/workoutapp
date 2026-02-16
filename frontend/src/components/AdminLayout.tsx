@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation } from '@tanstack/react-router'
 import { ToastProvider } from './Toast'
-import './AdminLayout.css'
+import styles from './AdminLayout.module.css'
 
 export function AdminLayout() {
   const location = useLocation()
@@ -10,32 +10,32 @@ export function AdminLayout() {
 
   return (
     <ToastProvider>
-    <div className="admin-layout">
-      <header className="admin-header">
-        <div className="admin-header-content">
-          <h1 className="admin-title">Admin</h1>
-          <Link to="/" className="back-to-app-link">
+    <div className={styles.layout}>
+      <header className={styles.header}>
+        <div className={styles.headerContent}>
+          <h1 className={styles.title}>Admin</h1>
+          <Link to="/" className={styles.backLink}>
             &larr; Back to App
           </Link>
         </div>
       </header>
 
-      <nav className="admin-tabs">
+      <nav className={styles.tabs}>
         <Link
           to="/admin/plans"
-          className={`admin-tab ${isPlansActive ? 'admin-tab-active' : ''}`}
+          className={`${styles.tab} ${isPlansActive ? styles.tabActive : ''}`}
         >
           Plans
         </Link>
         <Link
           to="/admin/exercises"
-          className={`admin-tab ${isExercisesActive ? 'admin-tab-active' : ''}`}
+          className={`${styles.tab} ${isExercisesActive ? styles.tabActive : ''}`}
         >
           Exercises
         </Link>
       </nav>
 
-      <main className="admin-main"><Outlet /></main>
+      <main className={styles.main}><Outlet /></main>
     </div>
     </ToastProvider>
   )

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useRef } from 'react';
-import './Toast.css';
+import styles from './Toast.module.css';
 
 interface Toast {
   id: number;
@@ -46,11 +46,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={ctx}>
       {children}
-      <div className="toast-container">
+      <div className={styles.container}>
         {toasts.map(toast => (
-          <div key={toast.id} className={`toast toast--${toast.type}`}>
-            <span className="toast-message">{toast.message}</span>
-            <button className="toast-dismiss" onClick={() => dismiss(toast.id)}>×</button>
+          <div key={toast.id} className={`${styles.toast} ${styles[toast.type]}`}>
+            <span className={styles.message}>{toast.message}</span>
+            <button className={styles.dismiss} onClick={() => dismiss(toast.id)}>×</button>
           </div>
         ))}
       </div>

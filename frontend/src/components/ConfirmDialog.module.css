@@ -1,4 +1,4 @@
-.conflict-dialog {
+.dialog {
   border: none;
   padding: 0;
   background: transparent;
@@ -11,11 +11,11 @@
   overflow-y: auto;
 }
 
-.conflict-dialog::backdrop {
+.dialog::backdrop {
   background: rgba(0, 0, 0, 0.5);
 }
 
-.conflict-dialog__content {
+.content {
   background: var(--bg-card);
   border-radius: var(--space-sm);
   padding: var(--space-lg);
@@ -25,31 +25,36 @@
   margin: 5vh auto;
 }
 
-.conflict-dialog__title {
+.title {
   margin: 0 0 var(--space-md) 0;
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.conflict-dialog__message {
+.message {
   margin: 0 0 var(--space-lg) 0;
   font-size: 1rem;
   color: var(--text-primary);
   line-height: 1.5;
 }
 
-.conflict-dialog__actions {
+.actions {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
 }
 
-.conflict-dialog__actions button {
+.actions button {
   min-height: 3rem;
   width: 100%;
 }
 
-.btn-danger {
-  color: var(--danger);
+.btnDanger {
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+.btnDanger:hover {
+  opacity: 0.9;
 }

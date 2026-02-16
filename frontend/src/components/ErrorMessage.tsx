@@ -1,4 +1,4 @@
-import './ErrorMessage.css';
+import styles from './ErrorMessage.module.css';
 
 interface ErrorMessageProps {
   message: string;
@@ -7,10 +7,10 @@ interface ErrorMessageProps {
 
 export function ErrorMessage({ message, onRetry }: ErrorMessageProps) {
   return (
-    <div className="error-message" role="alert">
-      <p className="error-message-text">{message}</p>
+    <div className={styles.root} role="alert">
+      <p className={styles.text}>{message}</p>
       {onRetry && (
-        <button className="error-message-retry" onClick={onRetry}>
+        <button className={styles.retry} onClick={onRetry}>
           Retry
         </button>
       )}

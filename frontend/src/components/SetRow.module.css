@@ -1,4 +1,4 @@
-.set-row {
+.setRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -9,11 +9,11 @@
   transition: background-color 0.2s;
 }
 
-.set-row--completed {
+.completed {
   background-color: rgba(22, 163, 74, 0.1); /* --success with opacity */
 }
 
-.set-row__info {
+.info {
   display: flex;
   align-items: center;
   gap: var(--space-md);
@@ -21,27 +21,27 @@
   min-width: 0;
 }
 
-.set-row__number {
+.number {
   font-weight: 600;
   color: var(--text-muted);
   font-size: 1rem;
   min-width: 1.5rem;
 }
 
-.set-row__weight {
+.weight {
   font-weight: 700;
   color: var(--text);
   font-size: 1rem;
   min-width: 4rem;
 }
 
-.set-row__reps {
+.reps {
   font-weight: 600;
   color: var(--text);
   font-size: 1rem;
 }
 
-.set-row__action {
+.action {
   display: flex;
   align-items: center;
   min-height: 3rem;

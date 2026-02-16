@@ -1,4 +1,4 @@
-import './RepsInput.css';
+import styles from './RepsInput.module.css';
 
 interface RepsInputProps {
   value: number | null;
@@ -43,10 +43,10 @@ export default function RepsInput({ value, targetReps, isAmrap, onChange, onFocu
   const isDecrementDisabled = value !== null && value <= 0;
 
   return (
-    <div className="reps-input">
+    <div className={styles.root}>
       <button
         type="button"
-        className="reps-input__button"
+        className={styles.button}
         onClick={handleDecrement}
         disabled={isDecrementDisabled}
         aria-label="Decrease reps"
@@ -56,7 +56,7 @@ export default function RepsInput({ value, targetReps, isAmrap, onChange, onFocu
 
       <input
         type="number"
-        className="reps-input__field"
+        className={styles.field}
         value={value ?? ''}
         onChange={handleInputChange}
         onFocus={onFocus}
@@ -68,7 +68,7 @@ export default function RepsInput({ value, targetReps, isAmrap, onChange, onFocu
 
       <button
         type="button"
-        className="reps-input__button"
+        className={styles.button}
         onClick={handleIncrement}
         aria-label="Increase reps"
       >

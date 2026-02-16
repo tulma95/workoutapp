@@ -3,7 +3,7 @@ import { Workout, ProgressionResult } from '../api/workouts';
 import { ProgressionBanner } from './ProgressionBanner';
 import type { UnitPreference } from '../types';
 import { formatWeight } from '../utils/weight';
-import './WorkoutDetail.css';
+import styles from './WorkoutDetail.module.css';
 
 interface WorkoutDetailProps {
   workout?: Workout;
@@ -31,8 +31,8 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
 }) => {
   if (isLoading || !workout) {
     return (
-      <div className="workout-detail">
-        <div className="workout-detail__loading">Loading workout...</div>
+      <div className={styles.root}>
+        <div className={styles.loading}>Loading workout...</div>
       </div>
     );
   }
@@ -51,35 +51,35 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
   const workoutDate = workout.completedAt || workout.createdAt;
 
   return (
-    <div className="workout-detail">
-      <div className="workout-detail__header">
-        <h2 className="workout-detail__title">
+    <div className={styles.root}>
+      <div className={styles.header}>
+        <h2 className={styles.title}>
           Day {workout.dayNumber}{exerciseGroups.length > 0 ? ` - ${exerciseGroups[0].exercise}` : ''}
         </h2>
-        <p className="workout-detail__date">{formatDate(workoutDate)}</p>
+        <p className={styles.date}>{formatDate(workoutDate)}</p>
       </div>
 
       {exerciseGroups.map((group) => (
-        <section key={group.exercise} className="workout-detail__section">
-          <h3 className="workout-detail__section-title">{group.exercise}</h3>
-          <div className="workout-detail__sets">
+        <section key={group.exercise} className={styles.section}>
+          <h3 className={styles.sectionTitle}>{group.exercise}</h3>
+          <div className={styles.sets}>
             {group.sets.map((set, index) => (
-              <div key={set.id} className="workout-detail__set-row">
-                <span className="workout-detail__set-number">Set {index + 1}</span>
-                <span className="workout-detail__set-weight">
+              <div key={set.id} className={styles.setRow}>
+                <span className={styles.setNumber}>Set {index + 1}</span>
+                <span className={styles.setWeight}>
                   {formatWeight(set.prescribedWeight, unit)}
                 </span>
-                <span className="workout-detail__set-reps">
+                <span className={styles.setReps}>
                   {set.prescribedReps}
                   {set.isAmrap ? '+' : ''} reps
                 </span>
                 {set.actualReps !== null && set.actualReps !== set.prescribedReps && (
-                  <span className="workout-detail__set-actual">
+                  <span className={styles.setActual}>
                     ({set.actualReps} done)
                   </span>
                 )}
                 {(set.completed || set.actualReps !== null) && (
-                  <span className="workout-detail__set-completed" aria-label="completed">
+                  <span className={styles.setCompleted} aria-label="completed">
                     ✓
                   </span>
                 )}
@@ -89,11 +89,11 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
         </section>
       ))}
 
-      <div className="workout-detail__progression">
+      <div className={styles.progression}>
         {progression ? (
           <ProgressionBanner progression={progression} unit={unit} />
         ) : (
-          <div className="workout-detail__no-progression">No TM change</div>
+          <div className={styles.noProgression}>No TM change</div>
         )}
       </div>
     </div>

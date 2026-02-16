@@ -1,4 +1,4 @@
-.error-message {
+.root {
   padding: var(--space-md);
   display: flex;
   flex-direction: column;
@@ -6,14 +6,14 @@
   gap: var(--space-sm);
 }
 
-.error-message-text {
+.text {
   margin: 0;
   color: var(--danger);
   font-size: 1rem;
   text-align: center;
 }
 
-.error-message-retry {
+.retry {
   min-height: 3rem;
   padding: var(--space-sm) var(--space-md);
   background-color: var(--danger);
@@ -25,6 +25,6 @@
   cursor: pointer;
 }
 
-.error-message-retry:hover {
+.retry:hover {
   background-color: #b91c1c;
 }

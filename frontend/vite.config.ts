@@ -4,6 +4,11 @@ import { tanstackRouter } from '@tanstack/router-plugin/vite';
 
 export default defineConfig({
   plugins: [tanstackRouter({ quoteStyle: 'single' }), react()],
+  css: {
+    modules: {
+      localsConvention: 'camelCase',
+    },
+  },
   server: {
     port: 5173,
     strictPort: true,

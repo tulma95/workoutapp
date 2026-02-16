@@ -1,11 +1,11 @@
-.loading-spinner-container {
+.container {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 4rem;
 }
 
-.loading-spinner {
+.spinner {
   border: 3px solid rgba(37, 99, 235, 0.1);
   border-top-color: var(--primary);
   border-radius: 50%;

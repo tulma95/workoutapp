@@ -1,6 +1,6 @@
 import { useRef, useEffect } from 'react';
 import type { Exercise } from '../api/plans';
-import './PlanSwitchConfirmModal.css';
+import styles from './PlanSwitchConfirmModal.module.css';
 
 export interface PlanSwitchWarnings {
   hasInProgressWorkout: boolean;
@@ -40,25 +40,25 @@ export function PlanSwitchConfirmModal({
   };
 
   return (
-    <dialog className="plan-switch-modal" ref={dialogRef} onClick={handleBackdropClick}>
-      <div className="plan-switch-modal__content">
-        <div className="modal-header">
+    <dialog className={styles.dialog} ref={dialogRef} onClick={handleBackdropClick}>
+      <div className={styles.content}>
+        <div className={styles.header}>
           <h2>Switch to {targetPlanName}?</h2>
         </div>
 
-        <div className="modal-body">
+        <div className={styles.body}>
           {warnings.hasInProgressWorkout && (
-            <div className="warning-section warning-danger">
+            <div className={`${styles.warning} ${styles.danger}`}>
               <strong>⚠️ Warning:</strong> You have an in-progress workout that will be
               discarded if you switch plans.
             </div>
           )}
 
           {warnings.newExercises.length > 0 && (
-            <div className="warning-section">
+            <div className={styles.warning}>
               <h3>New Exercises (No Training Max)</h3>
               <p>You'll need to set up training maxes for these exercises:</p>
-              <ul className="exercise-list">
+              <ul className={styles.exerciseList}>
                 {warnings.newExercises.map((ex) => (
                   <li key={ex.id}>{ex.name}</li>
                 ))}
@@ -67,10 +67,10 @@ export function PlanSwitchConfirmModal({
           )}
 
           {warnings.existingExercises.length > 0 && (
-            <div className="warning-section">
+            <div className={styles.warning}>
               <h3>Existing Training Maxes</h3>
               <p>Your current training maxes for these exercises will carry over:</p>
-              <ul className="exercise-list">
+              <ul className={styles.exerciseList}>
                 {warnings.existingExercises.map((ex) => (
                   <li key={ex.id}>{ex.name}</li>
                 ))}
@@ -79,11 +79,11 @@ export function PlanSwitchConfirmModal({
           )}
         </div>
 
-        <div className="modal-footer">
-          <button className="button-secondary" onClick={onCancel}>
+        <div className={styles.footer}>
+          <button className={styles.secondaryBtn} onClick={onCancel}>
             Cancel
           </button>
-          <button className="button-primary" onClick={onConfirm}>
+          <button className={styles.primaryBtn} onClick={onConfirm}>
             Confirm Switch
           </button>
         </div>

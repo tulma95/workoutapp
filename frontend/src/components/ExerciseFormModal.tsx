@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Exercise, CreateExerciseInput, UpdateExerciseInput } from '../api/exercises';
-import './ExerciseFormModal.css';
+import styles from './ExerciseFormModal.module.css';
+import shared from '../styles/shared.module.css';
 
 interface ExerciseFormModalProps {
   exercise?: Exercise | null;
@@ -86,15 +87,15 @@ export function ExerciseFormModal({ exercise, onClose, onSubmit }: ExerciseFormM
   };
 
   return (
-    <dialog ref={dialogRef} className="exercise-form-modal" onClick={handleDialogClick}>
-      <div className="exercise-form-modal__content">
-        <div className="modal-header">
+    <dialog ref={dialogRef} className={styles.dialog} onClick={handleDialogClick}>
+      <div className={styles.content}>
+        <div className={styles.header}>
           <h2>{isEdit ? 'Edit Exercise' : 'Add Exercise'}</h2>
-          <button className="modal-close" onClick={onClose}>&times;</button>
+          <button className={styles.closeBtn} onClick={onClose}>&times;</button>
         </div>
 
-        <form onSubmit={handleSubmit} className="exercise-form">
-          <div className="form-group">
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.formGroup}>
             <label htmlFor="name">Name *</label>
             <input
               id="name"
@@ -106,7 +107,7 @@ export function ExerciseFormModal({ exercise, onClose, onSubmit }: ExerciseFormM
             />
           </div>
 
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="slug">Slug *</label>
             <input
               id="slug"
@@ -116,12 +117,12 @@ export function ExerciseFormModal({ exercise, onClose, onSubmit }: ExerciseFormM
               placeholder="e.g., bench-press"
               required
             />
-            <small className="form-hint">
+            <small className={styles.formHint}>
               {autoSlug ? 'Auto-generated from name' : 'Custom slug'}
             </small>
           </div>
 
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="muscleGroup">Muscle Group</label>
             <input
               id="muscleGroup"
@@ -132,7 +133,7 @@ export function ExerciseFormModal({ exercise, onClose, onSubmit }: ExerciseFormM
             />
           </div>
 
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="category">Category *</label>
             <select
               id="category"
@@ -145,8 +146,8 @@ export function ExerciseFormModal({ exercise, onClose, onSubmit }: ExerciseFormM
             </select>
           </div>
 
-          <div className="form-group">
-            <label className="checkbox-label">
+          <div className={styles.formGroup}>
+            <label className={styles.checkboxLabel}>
               <input
                 type="checkbox"
                 checked={isUpperBody}
@@ -156,13 +157,13 @@ export function ExerciseFormModal({ exercise, onClose, onSubmit }: ExerciseFormM
             </label>
           </div>
 
-          {error && <div className="form-error">{error}</div>}
+          {error && <div className={styles.formError}>{error}</div>}
 
-          <div className="form-actions">
-            <button type="button" onClick={onClose} className="btn-secondary" disabled={submitting}>
+          <div className={styles.formActions}>
+            <button type="button" onClick={onClose} className={shared.btnSecondary} disabled={submitting}>
               Cancel
             </button>
-            <button type="submit" className="btn-primary" disabled={submitting}>
+            <button type="submit" className={shared.btnPrimary} disabled={submitting}>
               {submitting ? 'Saving...' : (isEdit ? 'Update' : 'Create')}
             </button>
           </div>

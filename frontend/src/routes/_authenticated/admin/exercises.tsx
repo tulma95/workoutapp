@@ -12,7 +12,8 @@ import {
 } from '../../../api/exercises'
 import { ExerciseFormModal } from '../../../components/ExerciseFormModal'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
-import '../../../styles/ExerciseListPage.css'
+import styles from '../../../styles/ExerciseListPage.module.css'
+import shared from '../../../styles/shared.module.css'
 
 export const Route = createFileRoute('/_authenticated/admin/exercises')({
   loader: ({ context: { queryClient } }) =>
@@ -72,25 +73,25 @@ function ExerciseListPage() {
   }
 
   return (
-    <div className="exercise-list-page">
-      <div className="page-header">
+    <div className={styles.page}>
+      <div className={styles.header}>
         <h1>Exercise Library</h1>
-        <button className="btn-primary" onClick={handleCreate}>
+        <button className={shared.btnPrimary} onClick={handleCreate}>
           + Add Exercise
         </button>
       </div>
 
       {exercises.length === 0 ? (
-        <div className="empty-state">
+        <div className={styles.emptyState}>
           <p>No exercises yet. Create your first exercise to get started.</p>
-          <button className="btn-primary" onClick={handleCreate}>
+          <button className={shared.btnPrimary} onClick={handleCreate}>
             + Add Exercise
           </button>
         </div>
       ) : (
         <>
-        <div className="exercise-table-container">
-          <table className="exercise-table">
+        <div className={styles.tableContainer}>
+          <table className={styles.table}>
             <thead>
               <tr>
                 <th>Name</th>
@@ -104,29 +105,29 @@ function ExerciseListPage() {
             <tbody>
               {exercises.map((exercise) => (
                 <tr key={exercise.id}>
-                  <td className="exercise-name">{exercise.name}</td>
-                  <td className="exercise-slug">{exercise.slug}</td>
+                  <td className={styles.exerciseName}>{exercise.name}</td>
+                  <td className={styles.exerciseSlug}>{exercise.slug}</td>
                   <td>{exercise.muscleGroup || '\u2014'}</td>
                   <td>
-                    <span className={`badge badge-${exercise.category}`}>
+                    <span className={`${styles.badge} ${exercise.category === 'compound' ? styles.badgeCompound : styles.badgeIsolation}`}>
                       {exercise.category}
                     </span>
                   </td>
                   <td>
-                    <span className={`badge badge-${exercise.isUpperBody ? 'upper' : 'lower'}`}>
+                    <span className={`${styles.badge} ${exercise.isUpperBody ? styles.badgeUpper : styles.badgeLower}`}>
                       {exercise.isUpperBody ? 'Upper' : 'Lower'}
                     </span>
                   </td>
-                  <td className="exercise-actions">
+                  <td className={styles.exerciseActions}>
                     <button
-                      className="btn-icon"
+                      className={styles.btnIcon}
                       onClick={() => handleEdit(exercise)}
                       title="Edit"
                     >
                       &#x270F;&#xFE0F;
                     </button>
                     <button
-                      className="btn-icon btn-danger"
+                      className={`${styles.btnIcon} ${styles.btnDanger}`}
                       onClick={() => handleDelete(exercise)}
                       title="Delete"
                     >
@@ -139,24 +140,24 @@ function ExerciseListPage() {
           </table>
         </div>
 
-        <div className="exercise-card-list">
+        <div className={styles.cardList}>
           {exercises.map((exercise) => (
-            <div key={exercise.id} className="exercise-card">
-              <div className="exercise-card__header">
+            <div key={exercise.id} className={styles.card}>
+              <div className={styles.cardHeader}>
                 <div>
-                  <div className="exercise-card__name">{exercise.name}</div>
-                  <div className="exercise-card__slug">{exercise.slug}</div>
+                  <div className={styles.cardName}>{exercise.name}</div>
+                  <div className={styles.cardSlug}>{exercise.slug}</div>
                 </div>
-                <div className="exercise-card__actions">
+                <div className={styles.cardActions}>
                   <button
-                    className="btn-icon"
+                    className={styles.btnIcon}
                     onClick={() => handleEdit(exercise)}
                     title="Edit"
                   >
                     &#x270F;&#xFE0F;
                   </button>
                   <button
-                    className="btn-icon btn-danger"
+                    className={`${styles.btnIcon} ${styles.btnDanger}`}
                     onClick={() => handleDelete(exercise)}
                     title="Delete"
                   >
@@ -164,15 +165,15 @@ function ExerciseListPage() {
                   </button>
                 </div>
               </div>
-              <div className="exercise-card__badges">
-                <span className={`badge badge-${exercise.category}`}>
+              <div className={styles.cardBadges}>
+                <span className={`${styles.badge} ${exercise.category === 'compound' ? styles.badgeCompound : styles.badgeIsolation}`}>
                   {exercise.category}
                 </span>
-                <span className={`badge badge-${exercise.isUpperBody ? 'upper' : 'lower'}`}>
+                <span className={`${styles.badge} ${exercise.isUpperBody ? styles.badgeUpper : styles.badgeLower}`}>
                   {exercise.isUpperBody ? 'Upper' : 'Lower'}
                 </span>
                 {exercise.muscleGroup && (
-                  <span className="exercise-card__muscle">{exercise.muscleGroup}</span>
+                  <span className={styles.cardMuscle}>{exercise.muscleGroup}</span>
                 )}
               </div>
             </div>
