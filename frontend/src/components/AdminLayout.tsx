@@ -1,17 +1,12 @@
-import { Link, useLocation } from 'react-router';
-import type { ReactNode } from 'react';
-import { ToastProvider } from './Toast';
-import './AdminLayout.css';
+import { Link, Outlet, useLocation } from '@tanstack/react-router'
+import { ToastProvider } from './Toast'
+import './AdminLayout.css'
 
-interface AdminLayoutProps {
-  children: ReactNode;
-}
+export function AdminLayout() {
+  const location = useLocation()
 
-export function AdminLayout({ children }: AdminLayoutProps) {
-  const location = useLocation();
-
-  const isPlansActive = location.pathname.startsWith('/admin/plans');
-  const isExercisesActive = location.pathname === '/admin/exercises';
+  const isPlansActive = location.pathname.startsWith('/admin/plans')
+  const isExercisesActive = location.pathname === '/admin/exercises'
 
   return (
     <ToastProvider>
@@ -20,7 +15,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <div className="admin-header-content">
           <h1 className="admin-title">Admin</h1>
           <Link to="/" className="back-to-app-link">
-            ← Back to App
+            &larr; Back to App
           </Link>
         </div>
       </header>
@@ -40,8 +35,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </Link>
       </nav>
 
-      <main className="admin-main">{children}</main>
+      <main className="admin-main"><Outlet /></main>
     </div>
     </ToastProvider>
-  );
+  )
 }

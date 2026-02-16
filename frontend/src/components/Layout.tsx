@@ -1,15 +1,19 @@
-import { Outlet, Link, useLocation } from 'react-router';
-import { useAuth } from '../context/useAuth';
+import { Outlet, Link, useLocation } from '@tanstack/react-router'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { getMe } from '../api/user'
 
 export default function Layout() {
-  const location = useLocation();
-  const { isAdmin } = useAuth();
+  const location = useLocation()
+  const { data: user } = useSuspenseQuery({
+    queryKey: ['user', 'me'],
+    queryFn: getMe,
+  })
 
   return (
     <div>
       <header style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>nSuns 4-Day LP</h1>
-        {isAdmin && (
+        {user.isAdmin && (
           <Link
             to="/admin"
             style={{
@@ -24,7 +28,7 @@ export default function Layout() {
               gap: '4px'
             }}
           >
-            ⚙️ Admin
+            Admin
           </Link>
         )}
       </header>
@@ -45,5 +49,5 @@ export default function Layout() {
         </Link>
       </nav>
     </div>
-  );
+  )
 }
