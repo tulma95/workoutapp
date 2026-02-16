@@ -13,6 +13,10 @@
   background-color: rgba(22, 163, 74, 0.1); /* --success with opacity */
 }
 
+.under {
+  background-color: rgba(234, 146, 22, 0.15); /* orange for under-prescribed reps */
+}
+
 .info {
   display: flex;
   align-items: center;

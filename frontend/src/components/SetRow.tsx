@@ -27,6 +27,7 @@ export default function SetRow({
   onRepsChange,
 }: SetRowProps) {
   const isPending = !isAmrap && !completed;
+  const isUnder = completed && actualReps !== null && actualReps < reps;
 
   function handleRepsChange(value: number) {
     if (isPending) {
@@ -37,7 +38,7 @@ export default function SetRow({
 
   return (
     <div
-      className={`${styles.setRow} ${completed ? styles.completed : ''}`}
+      className={`${styles.setRow} ${isUnder ? styles.under : completed ? styles.completed : ''}`}
       data-set-row
       data-testid="set-row"
       {...(completed ? { 'data-completed': '' } : {})}
