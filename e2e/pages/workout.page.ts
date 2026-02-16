@@ -12,7 +12,7 @@ export class WorkoutPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.repsInputs = page.getByRole('spinbutton', { name: /reps completed/i });
+    this.repsInputs = page.getByTestId('reps-value');
     this.completeButton = page.getByRole('button', { name: /complete workout/i });
     this.cancelButton = page.getByRole('button', { name: /cancel workout/i });
     this.backToDashboardButton = page.getByRole('button', { name: /back to dashboard|dashboard/i });
@@ -39,7 +39,29 @@ export class WorkoutPage {
 
   async fillAmrap(value: string, index = 0) {
     const amrapRow = this.page.locator('[data-testid="set-row"][data-amrap]').nth(index);
-    await amrapRow.getByRole('spinbutton', { name: /reps completed/i }).fill(value);
+    const targetValue = parseInt(value, 10);
+
+    // Tap confirm button to set initial value (targetReps)
+    const confirmButton = amrapRow.getByRole('button', { name: /confirm reps/i });
+    if (await confirmButton.isVisible()) {
+      await confirmButton.click();
+    }
+
+    // Read current value and use +/- to reach target
+    const repsDisplay = amrapRow.getByTestId('reps-value');
+    let currentValue = parseInt(await repsDisplay.textContent() || '0', 10);
+
+    const plusButton = amrapRow.getByRole('button', { name: /increase reps/i });
+    const minusButton = amrapRow.getByRole('button', { name: /decrease reps/i });
+
+    while (currentValue < targetValue) {
+      await plusButton.click();
+      currentValue++;
+    }
+    while (currentValue > targetValue) {
+      await minusButton.click();
+      currentValue--;
+    }
   }
 
   /** Fill AMRAP input and wait for the debounced PATCH to persist. */

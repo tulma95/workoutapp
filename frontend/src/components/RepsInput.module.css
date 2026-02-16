@@ -51,25 +51,22 @@
   text-align: center;
   font-size: 1rem;
   font-weight: 600;
+  line-height: 1;
   border: 1px solid var(--border);
   border-radius: var(--space-xs);
   background-color: var(--bg);
   color: var(--text);
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.field:focus {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-  border-color: var(--primary);
+button.field {
+  cursor: pointer;
+  color: var(--text-muted);
 }
 
-/* Hide number input spinners */
-.field::-webkit-inner-spin-button,
-.field::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.field[type='number'] {
-  -moz-appearance: textfield;
+button.field:active {
+  background-color: #eee;
 }

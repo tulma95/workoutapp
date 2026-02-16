@@ -37,7 +37,7 @@ test.describe('Workout Session', () => {
     await expect(completedRows.first()).toBeVisible();
   });
 
-  test('entering AMRAP reps using the +/- stepper works correctly', async ({ setupCompletePage }) => {
+  test('entering AMRAP reps using tap-to-confirm and +/- stepper works correctly', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
     const dashboard = new DashboardPage(page);
     const workout = new WorkoutPage(page);
@@ -49,29 +49,32 @@ test.describe('Workout Session', () => {
     // Target the AMRAP set row specifically (has data-amrap attribute)
     const amrapRow = page.locator('[data-testid="set-row"][data-amrap]').first();
     await expect(amrapRow).toBeVisible();
-    const amrapInput = amrapRow.getByRole('spinbutton', { name: /reps completed/i });
-    const initialValue = await amrapInput.inputValue();
-    expect(initialValue === '' || initialValue === '0').toBeTruthy();
 
+    // Initially shows a confirm button (not yet filled)
+    const confirmButton = amrapRow.getByRole('button', { name: /confirm reps/i });
+    await expect(confirmButton).toBeVisible();
+
+    // Tap to confirm prescribed reps
+    await confirmButton.click();
+    const repsDisplay = amrapRow.getByTestId('reps-value');
+    const confirmedValue = parseInt(await repsDisplay.textContent() || '0', 10);
+    expect(confirmedValue).toBeGreaterThan(0);
+
+    // Use + to increment
     const plusButton = amrapRow.getByRole('button', { name: /increase reps/i });
     await plusButton.click();
     await plusButton.click();
     await plusButton.click();
 
-    const valueAfterPlus = await amrapInput.inputValue();
-    const numValue = parseInt(valueAfterPlus, 10);
-    expect(numValue).toBeGreaterThan(0);
+    const valueAfterPlus = parseInt(await repsDisplay.textContent() || '0', 10);
+    expect(valueAfterPlus).toBe(confirmedValue + 3);
 
+    // Use - to decrement
     const minusButton = amrapRow.getByRole('button', { name: /decrease reps/i });
     await minusButton.click();
 
-    const finalValue = await amrapInput.inputValue();
-    const finalNumValue = parseInt(finalValue, 10);
-    expect(finalNumValue).toBe(numValue - 1);
-
-    await amrapInput.fill('10');
-    const directInputValue = await amrapInput.inputValue();
-    expect(directInputValue).toBe('10');
+    const finalValue = parseInt(await repsDisplay.textContent() || '0', 10);
+    expect(finalValue).toBe(valueAfterPlus - 1);
   });
 
   test('completing a workout shows the progression banner with TM change info', async ({ setupCompletePage }) => {
@@ -185,10 +188,10 @@ test.describe('Workout Session', () => {
     await expect(firstExerciseSection).toBeVisible();
     await expect(secondExerciseSection).toBeVisible();
 
-    const firstRepsCount = await firstExerciseSection.getByRole('spinbutton', { name: /reps completed/i }).count();
+    const firstRepsCount = await firstExerciseSection.getByTestId('reps-value').count();
     expect(firstRepsCount).toBe(9);
 
-    const secondRepsCount = await secondExerciseSection.getByRole('spinbutton', { name: /reps completed/i }).count();
+    const secondRepsCount = await secondExerciseSection.getByTestId('reps-value').count();
     expect(secondRepsCount).toBe(8);
   });
 

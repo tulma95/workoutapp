@@ -27,17 +27,9 @@ export default function RepsInput({ value, targetReps, isAmrap, onChange, onFocu
     }
   }
 
-  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const newValue = parseInt(e.target.value, 10);
-    if (!isNaN(newValue) && newValue >= 0) {
-      if (!isAmrap && newValue > targetReps) {
-        onChange(targetReps);
-      } else {
-        onChange(newValue);
-      }
-    } else if (e.target.value === '') {
-      onChange(0);
-    }
+  function handleTapConfirm() {
+    onFocus?.();
+    onChange(targetReps);
   }
 
   const isDecrementDisabled = value !== null && value <= 0;
@@ -54,17 +46,21 @@ export default function RepsInput({ value, targetReps, isAmrap, onChange, onFocu
         −
       </button>
 
-      <input
-        type="number"
-        className={styles.field}
-        value={value ?? ''}
-        onChange={handleInputChange}
-        onFocus={onFocus}
-        placeholder={targetReps.toString()}
-        min="0"
-        max={isAmrap ? undefined : targetReps}
-        aria-label="Reps completed"
-      />
+      {value === null ? (
+        <button
+          type="button"
+          className={styles.field}
+          onClick={handleTapConfirm}
+          aria-label="Confirm reps"
+          data-testid="reps-value"
+        >
+          {targetReps}
+        </button>
+      ) : (
+        <span className={styles.field} aria-label="Reps completed" data-testid="reps-value">
+          {value}
+        </span>
+      )}
 
       <button
         type="button"
