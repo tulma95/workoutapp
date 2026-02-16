@@ -6,7 +6,7 @@ import { getCurrentWorkout } from '../../../api/workouts'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import WorkoutCard from '../../../components/WorkoutCard'
-import '../../../pages/DashboardPage.css'
+import '../../../styles/DashboardPage.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/')({
   beforeLoad: async ({ context: { queryClient } }) => {

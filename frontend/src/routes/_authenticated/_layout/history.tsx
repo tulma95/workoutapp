@@ -8,7 +8,7 @@ import WorkoutCalendar from '../../../components/WorkoutCalendar'
 import { WorkoutDetail } from '../../../components/WorkoutDetail'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { ErrorMessage } from '../../../components/ErrorMessage'
-import '../../../pages/HistoryPage.css'
+import '../../../styles/HistoryPage.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/history')({
   pendingComponent: LoadingSpinner,

@@ -9,7 +9,7 @@ import { formatExerciseName, formatWeight, convertWeight, roundWeight, convertTo
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import type { UnitPreference } from '../../../types'
-import '../../../pages/SettingsPage.css'
+import '../../../styles/SettingsPage.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/settings')({
   loader: ({ context: { queryClient } }) =>

@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useSuspenseQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getAdminPlans, archivePlan, type AdminPlanListItem } from '../../../api/adminPlans'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
-import '../../../pages/admin/PlanListPage.css'
+import '../../../styles/PlanListPage.css'
 
 export const Route = createFileRoute('/_authenticated/admin/plans/')({
   loader: ({ context: { queryClient } }) =>

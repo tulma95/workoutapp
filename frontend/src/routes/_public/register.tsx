@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useAuth } from '../../context/useAuth'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import type { UnitPreference } from '../../types'
-import '../../pages/AuthForm.css'
+import '../../styles/AuthForm.css'
 
 export const Route = createFileRoute('/_public/register')({
   component: RegisterPage,

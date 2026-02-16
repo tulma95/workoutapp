@@ -7,7 +7,7 @@ import { getTrainingMaxes } from '../../../api/trainingMaxes'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import { PlanSwitchConfirmModal, type PlanSwitchWarnings } from '../../../components/PlanSwitchConfirmModal'
-import '../../../pages/PlanSelectionPage.css'
+import '../../../styles/PlanSelectionPage.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/select-plan')({
   loader: ({ context: { queryClient } }) =>

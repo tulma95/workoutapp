@@ -7,7 +7,7 @@ import SetSchemeEditorModal from '../../components/SetSchemeEditorModal';
 import ProgressionRulesEditor from '../../components/ProgressionRulesEditor';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { useToast } from '../../components/Toast';
-import './PlanEditorPage.css';
+import '../../styles/PlanEditorPage.css';
 
 interface EditorExercise extends PlanDayExerciseInput {
   tempId: string; // for React keys before saving

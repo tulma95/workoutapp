@@ -17,7 +17,7 @@ import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import { ConflictDialog } from '../../../components/ConflictDialog'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
-import '../../../pages/WorkoutPage.css'
+import '../../../styles/WorkoutPage.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/workout/$dayNumber')({
   pendingComponent: () => (

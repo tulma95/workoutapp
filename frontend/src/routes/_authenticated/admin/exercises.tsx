@@ -12,7 +12,7 @@ import {
 } from '../../../api/exercises'
 import { ExerciseFormModal } from '../../../components/ExerciseFormModal'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
-import '../../../pages/admin/ExerciseListPage.css'
+import '../../../styles/ExerciseListPage.css'
 
 export const Route = createFileRoute('/_authenticated/admin/exercises')({
   loader: ({ context: { queryClient } }) =>

@@ -6,7 +6,7 @@ import { getCurrentPlan, type Exercise } from '../../../api/plans'
 import { getMe } from '../../../api/user'
 import { convertToKg } from '../../../utils/weight'
 import { ErrorMessage } from '../../../components/ErrorMessage'
-import '../../../pages/SetupPage.css'
+import '../../../styles/SetupPage.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/setup')({
   validateSearch: (search: Record<string, unknown>) => ({

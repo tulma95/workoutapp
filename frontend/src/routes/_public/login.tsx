@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useAuth } from '../../context/useAuth'
 import { ErrorMessage } from '../../components/ErrorMessage'
-import '../../pages/AuthForm.css'
+import '../../styles/AuthForm.css'
 
 export const Route = createFileRoute('/_public/login')({
   component: LoginPage,
