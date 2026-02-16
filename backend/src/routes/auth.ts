@@ -10,7 +10,6 @@ const registerSchema = z.object({
   email: z.email(),
   password: z.string().min(8),
   displayName: z.string().min(1),
-  unitPreference: z.enum(['kg', 'lb']),
 });
 
 const loginSchema = z.object({
@@ -22,8 +21,8 @@ router.post('/register', validate(registerSchema), async (req: Request, res: Res
   try {
     const { password: _pw, ...safeBody } = req.body;
     logger.debug('Register request', { body: safeBody });
-    const { email, password, displayName, unitPreference } = req.body;
-    const result = await authService.register(email, password, displayName, unitPreference);
+    const { email, password, displayName } = req.body;
+    const result = await authService.register(email, password, displayName);
     res.status(201).json(result);
   } catch (err: unknown) {
     if (err && typeof err === 'object' && 'code' in err && err.code === 'P2002') {

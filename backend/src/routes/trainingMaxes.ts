@@ -34,7 +34,6 @@ router.post('/setup', validate(setupSchema), async (req: AuthRequest, res: Respo
   const tms = await trainingMaxService.setupFromExerciseTMs(
     req.userId!,
     req.body.exerciseTMs,
-    user.unitPreference,
   );
   res.status(201).json(tms);
 });
@@ -61,7 +60,7 @@ router.patch('/:exercise', validate(updateSchema), async (req: AuthRequest, res:
     return;
   }
 
-  const tm = await trainingMaxService.updateTM(req.userId!, exercise, req.body.weight, user.unitPreference);
+  const tm = await trainingMaxService.updateTM(req.userId!, exercise, req.body.weight);
   res.json(tm);
 });
 

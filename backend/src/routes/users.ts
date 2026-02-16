@@ -21,7 +21,6 @@ router.get('/me', async (req: AuthRequest, res: Response) => {
 
 const updateSchema = z.object({
   displayName: z.string().min(1).optional(),
-  unitPreference: z.enum(['kg', 'lb']).optional(),
 });
 
 router.patch('/me', validate(updateSchema), async (req: AuthRequest, res: Response) => {
