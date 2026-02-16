@@ -18,7 +18,7 @@ A workout tracking application supporting configurable training plans. Ships wit
 - Monorepo with npm workspaces
 - Backend on port 3001, frontend Vite dev server on 5173 with `/api` proxy
 - JWT auth (`accessToken` in localStorage, `Authorization: Bearer` header)
-- Weights stored internally in **kg**, converted to lb at display layer
+- All weights in **kg** (no unit conversion)
 - Training maxes are **append-only** rows (latest `effective_date` = current TM, older rows = history)
 - **Plan-driven**: All workout generation and progression requires an active plan subscription (no hardcoded fallback)
 - **Environment variables**: Exported by shell scripts (`start_local_env.sh`, `run_test.sh`), never loaded from .env files. Backend reads `process.env` directly without dotenv.
@@ -59,13 +59,13 @@ Seeded via `backend/prisma/seed.ts`. 4 lifts tracked: Bench, Squat, OHP, Deadlif
 
 ### Weight Rounding
 
-Round calculated weights to nearest **2.5kg** or **5lb** depending on user preference.
+Round calculated weights to nearest **2.5 kg**.
 
 ## Database Schema
 
 ### Core Tables
 
-- **users**: `id, email (unique), password_hash, display_name, unit_preference ('kg'/'lb'), is_admin (default false), created_at, updated_at`
+- **users**: `id, email (unique), password_hash, display_name, is_admin (default false), created_at, updated_at`
 - **exercises**: `id, name, slug (unique), category, is_compound, is_upper_body, created_at, updated_at`
 - **training_maxes** (append-only): `id, user_id (FK), exercise, exercise_id (FK exercises), weight (kg), effective_date, created_at` - Unique constraint: (user_id, exercise, effective_date)
 - **workouts**: `id, user_id (FK), day_number, plan_day_id (FK plan_days), status ('in_progress'/'completed'/'discarded'), completed_at, created_at`
@@ -84,7 +84,7 @@ Round calculated weights to nearest **2.5kg** or **5lb** depending on user prefe
 
 ### Public
 
-- `POST /api/auth/register` - `{ email, password, displayName, unitPreference }`
+- `POST /api/auth/register` - `{ email, password, displayName }`
 - `POST /api/auth/login` - `{ email, password }` -> `{ accessToken, refreshToken, user }`
 
 ### Protected (JWT required)
@@ -153,7 +153,7 @@ Round calculated weights to nearest **2.5kg** or **5lb** depending on user prefe
 - `DashboardPage` - plan-driven workout day cards, current TMs, current plan section
 - `WorkoutPage` - active session with conflict dialog for duplicate workouts
 - `HistoryPage` - calendar view (WorkoutCalendar) + workout detail (WorkoutDetail) with View Transition animations
-- `SettingsPage` - unit preference, current plan display
+- `SettingsPage` - current plan display, training maxes, logout
 
 ### Admin Pages (purple accent, /admin/*)
 
@@ -184,7 +184,7 @@ Round calculated weights to nearest **2.5kg** or **5lb** depending on user prefe
 ### Frontend Patterns
 
 - **Zod schemas**: All API responses validated at runtime via `frontend/src/api/schemas.ts`
-- **Weight conversion**: All display uses `formatWeight()` from `frontend/src/utils/weight.ts`. Backend always stores kg.
+- **Weight display**: All display uses `formatWeight()` from `frontend/src/utils/weight.ts` (always kg, rounds to 2.5).
 - **CSS Modules**: Component-scoped styles via `.module.css` files, rem units on 8-point grid, shared custom properties in `global.css`, border widths stay as px
 - **Touch targets**: All interactive elements min 44px (3rem)
 - **View Transitions**: `document.startViewTransition()` with feature detection for calendar navigation
@@ -219,7 +219,7 @@ Always write tests for new code.
 
 ## Design Decisions
 
-- **Weights in kg internally**: Avoids precision loss from repeated lb<>kg conversions. Convert once at display layer.
+- **Weights in kg only**: All weights stored and displayed in kg. No unit conversion.
 - **Append-only training_maxes**: Free progression history. Current TM = `ORDER BY effective_date DESC LIMIT 1`.
 - **Plan-driven architecture**: All workout generation uses plan data (exercises, sets, progression rules). No hardcoded exercise logic.
 - **Seed script for default plan**: nSuns 4-Day LP defined in `backend/prisma/seed.ts` with idempotent upsert logic.
