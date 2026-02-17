@@ -8,7 +8,6 @@ const uid = randomUUID().slice(0, 8);
 
 describe('Log Set - actualReps nullable', () => {
   let token: string;
-  let userId: number;
   let workoutId: number;
   let setId: number;
   let benchExId: number;
@@ -21,7 +20,6 @@ describe('Log Set - actualReps nullable', () => {
       displayName: 'LogSet Test User',
     });
     token = res.body.accessToken;
-    userId = res.body.user.id;
 
     // Get bench exercise ID
     const bench = await prisma.exercise.findUnique({
