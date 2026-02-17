@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react'
 import { flushSync } from 'react-dom'
 import { createFileRoute } from '@tanstack/react-router'
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { getWorkoutCalendar, getWorkout, type CalendarWorkout, type Workout } from '../../../api/workouts'
-import { getMe } from '../../../api/user'
 import WorkoutCalendar from '../../../components/WorkoutCalendar'
 import { WorkoutDetail } from '../../../components/WorkoutDetail'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
@@ -16,11 +14,6 @@ export const Route = createFileRoute('/_authenticated/_layout/history')({
 })
 
 function HistoryPage() {
-  const { data: user } = useSuspenseQuery({
-    queryKey: ['user', 'me'],
-    queryFn: getMe,
-  })
-
   const [calendarWorkouts, setCalendarWorkouts] = useState<CalendarWorkout[]>([])
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null)
   const [isLoadingCalendar, setIsLoadingCalendar] = useState(true)

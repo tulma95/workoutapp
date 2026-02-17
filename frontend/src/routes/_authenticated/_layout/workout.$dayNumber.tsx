@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   getCurrentWorkout,
   startWorkout,
@@ -10,7 +10,6 @@ import {
   type Workout,
   type ProgressionResult,
 } from '../../../api/workouts'
-import { getMe } from '../../../api/user'
 import SetRow from '../../../components/SetRow'
 import { ProgressionBanner } from '../../../components/ProgressionBanner'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
@@ -33,10 +32,6 @@ function WorkoutPage() {
   const { dayNumber: dayParam } = Route.useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { data: user } = useSuspenseQuery({
-    queryKey: ['user', 'me'],
-    queryFn: getMe,
-  })
 
   const [workout, setWorkout] = useState<Workout | null>(null)
   const [isLoading, setIsLoading] = useState(true)
