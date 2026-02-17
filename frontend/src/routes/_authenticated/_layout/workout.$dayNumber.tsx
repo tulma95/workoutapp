@@ -26,6 +26,7 @@ type LoaderResult =
   | { type: 'conflict'; workoutId: number; dayNumber: number }
 
 export const Route = createFileRoute('/_authenticated/_layout/workout/$dayNumber')({
+  preload: false,
   loader: async ({ params }): Promise<LoaderResult> => {
     const dayNumber = parseInt(params.dayNumber || '0', 10)
     if (!dayNumber) {
