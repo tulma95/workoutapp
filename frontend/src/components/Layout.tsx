@@ -34,7 +34,7 @@ export default function Layout() {
         )}
       </header>
 
-      <main className={shared.container} style={{ paddingTop: '16px', paddingBottom: '72px' }}>
+      <main className={shared.container} style={{ paddingTop: '16px', paddingBottom: '72px', viewTransitionName: 'main-content' }}>
         <Outlet />
       </main>
 

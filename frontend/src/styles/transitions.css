@@ -1,8 +1,14 @@
-/* Route transition: default cross-fade (TanStack Router handles the startViewTransition call) */
-::view-transition-old(root) {
-  animation: fade-out 150ms ease;
-}
+/* Disable root transition so header/nav don't animate */
+::view-transition-old(root),
 ::view-transition-new(root) {
+  animation: none;
+}
+
+/* Only animate the main content area between header and bottom nav */
+::view-transition-old(main-content) {
+  display: none;
+}
+::view-transition-new(main-content) {
   animation: fade-in 150ms ease;
 }
 
