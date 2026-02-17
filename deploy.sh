@@ -71,8 +71,8 @@ run_e2e_tests() {
   APP_IMAGE="$FULL_TAG" docker compose -f "$COMPOSE_FILE" --profile e2e up -d --wait
   echo "App is healthy."
 
-  # Run Playwright E2E tests pointing at port 3001 (app serves both API and frontend)
-  BASE_URL="http://localhost:3001" npx playwright test
+  # Run Playwright E2E tests pointing at port 3002 (app container maps 3002:3001)
+  BASE_URL="http://localhost:3002" npx playwright test
 
   echo "E2E tests passed."
 }
