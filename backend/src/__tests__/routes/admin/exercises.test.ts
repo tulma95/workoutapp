@@ -14,7 +14,7 @@ let testExerciseId: number;
 describe('Admin Exercise routes', () => {
   beforeAll(async () => {
     // Create admin user
-    const adminUser = await prisma.user.create({
+    await prisma.user.create({
       data: {
         email: `admin-ex-${uid}@example.com`,
         passwordHash: await bcrypt.hash('password123', 10),
@@ -24,7 +24,7 @@ describe('Admin Exercise routes', () => {
     });
 
     // Create non-admin user
-    const nonAdminUser = await prisma.user.create({
+    await prisma.user.create({
       data: {
         email: `nonadmin-ex-${uid}@example.com`,
         passwordHash: await bcrypt.hash('password123', 10),

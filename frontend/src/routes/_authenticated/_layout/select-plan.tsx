@@ -48,6 +48,7 @@ function PlanSelectionPage() {
     onSuccess: async (result) => {
       await queryClient.invalidateQueries({ queryKey: ['plan', 'current'] })
       await queryClient.invalidateQueries({ queryKey: ['training-maxes'] })
+      await queryClient.invalidateQueries({ queryKey: ['workout', 'current'] })
 
       if (result.missingTMs.length > 0) {
         navigate({ to: '/setup', search: { missingTMs: true } })

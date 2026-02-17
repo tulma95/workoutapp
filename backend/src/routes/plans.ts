@@ -207,6 +207,17 @@ router.post('/:id/subscribe', async (req: AuthRequest, res: Response) => {
       },
     });
 
+    // Discard any in-progress workout from the old plan
+    await tx.workout.updateMany({
+      where: {
+        userId: req.userId!,
+        status: 'in_progress',
+      },
+      data: {
+        status: 'discarded',
+      },
+    });
+
     // Create new subscription
     return await tx.userPlan.create({
       data: {
