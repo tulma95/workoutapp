@@ -119,7 +119,7 @@ test.describe('Plan switch discards in-progress workout', () => {
 
     // Verify "Continue Workout" is shown (workout is in progress)
     await expect(
-      dashboard.getDayCard(1).getByRole('button', { name: /continue workout/i }),
+      dashboard.getDayCard(1).getByRole('link', { name: /continue workout/i }),
     ).toBeVisible();
 
     // 4. Create a second plan (promotes user to admin, re-logs in, creates plan via API)
@@ -129,7 +129,7 @@ test.describe('Plan switch discards in-progress workout', () => {
     const settings = new SettingsPage(page);
     await settings.navigate();
     await settings.expectLoaded();
-    await page.getByRole('button', { name: /change plan/i }).click();
+    await page.getByRole('link', { name: /change plan/i }).click();
     await expect(page.getByRole('heading', { name: /choose a workout plan/i })).toBeVisible();
 
     // Select the "Simple Test Plan" — find the button following the plan heading
@@ -149,7 +149,7 @@ test.describe('Plan switch discards in-progress workout', () => {
 
     // 7. Verify the old workout is discarded - Day 1 should show "Start Workout", not "Continue"
     await expect(
-      dashboard.getDayCard(1).getByRole('button', { name: /start workout/i }),
+      dashboard.getDayCard(1).getByRole('link', { name: /start workout/i }),
     ).toBeVisible();
   });
 });

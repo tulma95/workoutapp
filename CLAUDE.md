@@ -170,6 +170,7 @@ Round calculated weights to nearest **2.5 kg**.
 - `SetRow` - single set: weight, prescribed reps, +/- stepper for rep entry, undo support
 - `RepsInput` - +/- stepper for mobile-friendly rep entry (used by SetRow)
 - `Button` - reusable button component with variant support
+- `ButtonLink` - TanStack Router `Link` styled as a button (same variants/sizes as Button)
 - `ProgressionBanner` - supports both single and array progressions
 - `ConflictDialog` - duplicate workout resolution (continue/discard)
 - `ConfirmDialog` - generic confirmation dialog
@@ -191,6 +192,7 @@ Round calculated weights to nearest **2.5 kg**.
 - **Controlled components**: Complex stateful UI (e.g., WorkoutCalendar) uses props not internal state to prevent reset on re-render
 - **Loading overlays**: Keep components mounted during loading, use opacity + pointer-events: none instead of unmounting
 - **Modals**: Use native `<dialog>` element with `showModal()`. Dialog fills viewport (transparent background), visual content in inner `__content` div. Gives free backdrop, focus trapping, and Escape key handling. Listen for `close` event to sync parent state.
+- **Navigation**: Never use `<Button onClick={() => navigate(...)}>` for navigation. Use `<ButtonLink to="...">` (renders an `<a>` tag) for all navigational actions. Only use `navigate()` for post-action redirects (after form submit, login, logout, API call).
 
 ## Testing
 

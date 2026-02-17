@@ -100,11 +100,11 @@ test.describe('Workout Session', () => {
 
     await dashboard.expectLoaded();
 
-    const startButtons = page.getByRole('button', { name: /start workout/i });
-    const initialCount = await startButtons.count();
+    const startLinks = page.getByRole('link', { name: /start workout/i });
+    const initialCount = await startLinks.count();
     expect(initialCount).toBeGreaterThan(0);
 
-    await startButtons.first().click();
+    await startLinks.first().click();
     await workout.expectLoaded(1);
 
     await workout.fillAmrapAndWait('10');

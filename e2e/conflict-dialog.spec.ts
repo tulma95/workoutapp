@@ -18,7 +18,7 @@ async function triggerConflictDialog(page: Page) {
 
   await page.goto('/');
   await dashboard.expectLoaded();
-  await dashboard.getDayCard(2).getByRole('button').click();
+  await dashboard.getDayCard(2).getByRole('link').click();
   await expect(
     page.getByRole('heading', { name: /workout in progress/i }),
   ).toBeVisible();
@@ -35,7 +35,7 @@ test.describe('Conflict Dialog', () => {
 
     await page.goto('/');
     await dashboard.expectLoaded();
-    await dashboard.getDayCard(2).getByRole('button').click();
+    await dashboard.getDayCard(2).getByRole('link').click();
 
     await expect(page.getByText(/you have a day 1 workout/i)).toBeVisible();
   });

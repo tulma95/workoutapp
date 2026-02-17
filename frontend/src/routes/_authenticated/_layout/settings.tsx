@@ -7,8 +7,8 @@ import { getCurrentPlan } from '../../../api/plans'
 import { getTrainingMaxes, updateTrainingMax, type TrainingMax } from '../../../api/trainingMaxes'
 import { formatExerciseName, formatWeight, roundWeight } from '../../../utils/weight'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
-import { ErrorMessage } from '../../../components/ErrorMessage'
 import { Button } from '../../../components/Button'
+import { ButtonLink } from '../../../components/ButtonLink'
 import styles from '../../../styles/SettingsPage.module.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/settings')({
@@ -112,24 +112,24 @@ function SettingsPage() {
                 {currentPlan.description}
               </p>
             )}
-            <Button
+            <ButtonLink
               variant="secondary"
-              onClick={() => navigate({ to: '/select-plan' })}
+              to="/select-plan"
               style={{ marginTop: '8px' }}
             >
               Change Plan
-            </Button>
+            </ButtonLink>
           </>
         ) : (
           <>
             <p style={{ margin: '0 0 12px', color: 'var(--text-muted)', fontSize: '14px' }}>
               No plan selected
             </p>
-            <Button
-              onClick={() => navigate({ to: '/select-plan' })}
+            <ButtonLink
+              to="/select-plan"
             >
               Browse Plans
-            </Button>
+            </ButtonLink>
           </>
         )}
       </div>

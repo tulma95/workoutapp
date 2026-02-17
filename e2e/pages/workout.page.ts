@@ -15,7 +15,7 @@ export class WorkoutPage {
     this.repsInputs = page.getByTestId('reps-value');
     this.completeButton = page.getByRole('button', { name: /complete workout/i });
     this.cancelButton = page.getByRole('button', { name: /cancel workout/i });
-    this.backToDashboardButton = page.getByRole('button', { name: /back to dashboard|dashboard/i });
+    this.backToDashboardButton = page.getByRole('link', { name: 'Back to Dashboard' });
     this.confirmDialog = page.locator('[data-testid="confirm-dialog"]');
     this.progressionBanner = page.getByText(/progression|increase|bench.*\+/i);
   }

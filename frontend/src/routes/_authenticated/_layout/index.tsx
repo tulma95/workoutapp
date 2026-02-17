@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { getCurrentPlan } from '../../../api/plans'
 import { getTrainingMaxes } from '../../../api/trainingMaxes'
@@ -53,7 +53,6 @@ export const Route = createFileRoute('/_authenticated/_layout/')({
 })
 
 function DashboardPage() {
-  const navigate = useNavigate()
   const { data: plan } = useSuspenseQuery({
     queryKey: ['plan', 'current'],
     queryFn: getCurrentPlan,
@@ -62,10 +61,6 @@ function DashboardPage() {
     queryKey: ['workout', 'current'],
     queryFn: getCurrentWorkout,
   })
-
-  function handleStartWorkout(dayNumber: number) {
-    navigate({ to: '/workout/$dayNumber', params: { dayNumber: String(dayNumber) } })
-  }
 
   function getWorkoutStatus(dayNumber: number): 'upcoming' | 'in_progress' | 'completed' {
     if (currentWorkout && currentWorkout.dayNumber === dayNumber) {
@@ -101,7 +96,6 @@ function DashboardPage() {
                 dayNumber={day.dayNumber}
                 exercises={exerciseNames}
                 status={getWorkoutStatus(day.dayNumber)}
-                onStart={handleStartWorkout}
               />
             )
           })}

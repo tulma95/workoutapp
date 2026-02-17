@@ -22,17 +22,17 @@ export class DashboardPage {
 
   async startWorkout(dayNumber?: number) {
     if (dayNumber) {
-      await this.getDayCard(dayNumber).getByRole('button', { name: /start workout/i }).click();
+      await this.getDayCard(dayNumber).getByRole('link', { name: /start workout/i }).click();
     } else {
-      await this.page.getByRole('button', { name: /start workout/i }).first().click();
+      await this.page.getByRole('link', { name: /start workout/i }).first().click();
     }
   }
 
   async continueWorkout(dayNumber?: number) {
     if (dayNumber) {
-      await this.getDayCard(dayNumber).getByRole('button').click();
+      await this.getDayCard(dayNumber).getByRole('link').click();
     } else {
-      await this.page.getByRole('button', { name: /continue workout|start workout/i }).first().click();
+      await this.page.getByRole('link', { name: /continue workout|start workout/i }).first().click();
     }
   }
 }

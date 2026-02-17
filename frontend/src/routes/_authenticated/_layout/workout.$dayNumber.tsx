@@ -17,6 +17,7 @@ import { ErrorMessage } from '../../../components/ErrorMessage'
 import { ConflictDialog } from '../../../components/ConflictDialog'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
 import { Button } from '../../../components/Button'
+import { ButtonLink } from '../../../components/ButtonLink'
 import styles from '../../../styles/WorkoutPage.module.css'
 
 type LoaderResult =
@@ -225,10 +226,6 @@ function WorkoutPage() {
     }
   }
 
-  const handleBackToDashboard = () => {
-    navigate({ to: '/' })
-  }
-
   const handleCancelWorkout = () => {
     if (!workout) return
     setShowCancelConfirm(true)
@@ -304,9 +301,9 @@ function WorkoutPage() {
     return (
       <div className={styles.page}>
         <ErrorMessage message={error} />
-        <Button variant="secondary" onClick={handleBackToDashboard}>
+        <ButtonLink variant="secondary" to="/">
           Back to Dashboard
-        </Button>
+        </ButtonLink>
       </div>
     )
   }
@@ -336,9 +333,9 @@ function WorkoutPage() {
       <div className={styles.page}>
         <h1>Workout Complete!</h1>
         <ProgressionBanner progressions={progressions} />
-        <Button onClick={handleBackToDashboard}>
+        <ButtonLink to="/">
           Back to Dashboard
-        </Button>
+        </ButtonLink>
       </div>
     )
   }

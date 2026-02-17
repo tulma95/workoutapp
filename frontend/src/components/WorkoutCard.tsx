@@ -1,18 +1,16 @@
-import { Button } from './Button';
+import { ButtonLink } from './ButtonLink';
 import styles from './WorkoutCard.module.css';
 
 interface WorkoutCardProps {
   dayNumber: number;
   exercises: string[];
   status: 'upcoming' | 'in_progress' | 'completed';
-  onStart: (dayNumber: number) => void;
 }
 
 export default function WorkoutCard({
   dayNumber,
   exercises,
   status,
-  onStart,
 }: WorkoutCardProps) {
   return (
     <div className={`${styles.card} ${status === 'in_progress' ? styles.inProgress : status === 'completed' ? styles.completed : styles.upcoming}`} style={{ viewTransitionName: `workout-day-${dayNumber}` }} data-testid="workout-card" data-day={dayNumber}>
@@ -32,9 +30,9 @@ export default function WorkoutCard({
       </div>
 
       {status !== 'completed' && (
-        <Button onClick={() => onStart(dayNumber)}>
+        <ButtonLink to="/workout/$dayNumber" params={{ dayNumber: String(dayNumber) }}>
           {status === 'in_progress' ? 'Continue Workout' : 'Start Workout'}
-        </Button>
+        </ButtonLink>
       )}
     </div>
   );

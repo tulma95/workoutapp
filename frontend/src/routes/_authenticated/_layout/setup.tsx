@@ -5,6 +5,7 @@ import { setupTrainingMaxesFromExercises, getTrainingMaxes, type ExerciseTM } fr
 import { getCurrentPlan, type Exercise } from '../../../api/plans'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import { Button } from '../../../components/Button'
+import { ButtonLink } from '../../../components/ButtonLink'
 import styles from '../../../styles/SetupPage.module.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/setup')({
@@ -141,12 +142,9 @@ function SetupPage() {
             Please select a workout plan first.
           </p>
           {error && <ErrorMessage message={error} />}
-          <Button
-            type="button"
-            onClick={() => navigate({ to: '/select-plan' })}
-          >
+          <ButtonLink to="/select-plan">
             Select a Plan
-          </Button>
+          </ButtonLink>
         </div>
       </div>
     )
