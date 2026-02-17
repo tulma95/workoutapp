@@ -1,3 +1,8 @@
+/* Prevent Safari from painting a solid background over the safe area during transitions */
+::view-transition {
+  background: transparent;
+}
+
 /* Route transition: default cross-fade (TanStack Router handles the startViewTransition call) */
 ::view-transition-old(root) {
   animation: fade-out 150ms ease;
