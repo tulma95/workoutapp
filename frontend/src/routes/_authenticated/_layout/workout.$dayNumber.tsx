@@ -22,8 +22,9 @@ import { ButtonLink } from '../../../components/ButtonLink'
 import styles from '../../../styles/WorkoutPage.module.css'
 
 type LoaderResult =
-  | { type: 'workout'; workout: Workout }
+  | { type: 'existing'; workout: Workout }
   | { type: 'conflict'; workoutId: number; dayNumber: number }
+  | { type: 'none' }
 
 export const Route = createFileRoute('/_authenticated/_layout/workout/$dayNumber')({
   preload: false,
@@ -37,7 +38,7 @@ export const Route = createFileRoute('/_authenticated/_layout/workout/$dayNumber
 
     if (currentWorkout) {
       if (currentWorkout.dayNumber === dayNumber) {
-        return { type: 'workout', workout: currentWorkout }
+        return { type: 'existing', workout: currentWorkout }
       }
       return {
         type: 'conflict',
@@ -46,26 +47,7 @@ export const Route = createFileRoute('/_authenticated/_layout/workout/$dayNumber
       }
     }
 
-    try {
-      const newWorkout = await startWorkout(dayNumber)
-      return { type: 'workout', workout: newWorkout }
-    } catch (err: unknown) {
-      if (
-        err &&
-        typeof err === 'object' &&
-        'error' in err &&
-        err.error === 'EXISTING_WORKOUT' &&
-        'workoutId' in err &&
-        'dayNumber' in err
-      ) {
-        return {
-          type: 'conflict',
-          workoutId: err.workoutId as number,
-          dayNumber: err.dayNumber as number,
-        }
-      }
-      throw err
-    }
+    return { type: 'none' }
   },
   pendingComponent: () => (
     <div className={styles.page}>
@@ -110,8 +92,9 @@ function WorkoutPage() {
   const dayNumber = parseInt(dayParam || '0', 10)
 
   const [workout, setWorkout] = useState<Workout | null>(
-    loaderData.type === 'workout' ? loaderData.workout : null,
+    loaderData.type === 'existing' ? loaderData.workout : null,
   )
+  const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [progressions, setProgressions] = useState<ProgressionResult[]>([])
   const [isCompleting, setIsCompleting] = useState(false)
@@ -128,16 +111,17 @@ function WorkoutPage() {
       : null,
   )
   const [isStartingNew, setIsStartingNew] = useState(false)
+  const createRef = useRef(false)
 
   // Sync state from loader data when route params change (same component, different day)
   useEffect(() => {
-    if (loaderData.type === 'workout') {
+    if (loaderData.type === 'existing') {
       setWorkout(loaderData.workout)
       setConflictWorkout(null)
       setError(null)
       setIsCompleted(false)
       setProgressions([])
-    } else {
+    } else if (loaderData.type === 'conflict') {
       setWorkout(null)
       setConflictWorkout({
         workoutId: loaderData.workoutId,
@@ -145,6 +129,45 @@ function WorkoutPage() {
       })
     }
   }, [loaderData])
+
+  // Create workout on mount when loader found no existing workout
+  useEffect(() => {
+    if (loaderData.type !== 'none') return
+    if (createRef.current) return
+    createRef.current = true
+
+    let cancelled = false
+    setIsCreating(true)
+
+    startWorkout(dayNumber)
+      .then((newWorkout) => {
+        if (!cancelled) {
+          setWorkout(newWorkout)
+          setIsCreating(false)
+        }
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return
+        if (
+          err &&
+          typeof err === 'object' &&
+          'error' in err &&
+          err.error === 'EXISTING_WORKOUT' &&
+          'workoutId' in err &&
+          'dayNumber' in err
+        ) {
+          setConflictWorkout({
+            workoutId: err.workoutId as number,
+            dayNumber: err.dayNumber as number,
+          })
+        } else {
+          setError(err instanceof Error ? err.message : 'Failed to start workout')
+        }
+        setIsCreating(false)
+      })
+
+    return () => { cancelled = true }
+  }, [loaderData.type, dayNumber])
 
   const debounceMap = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map())
 
@@ -312,7 +335,7 @@ function WorkoutPage() {
     )
   }
 
-  if (isStartingNew) {
+  if (isStartingNew || isCreating) {
     return (
       <div className={styles.page}>
         <LoadingSpinner />
