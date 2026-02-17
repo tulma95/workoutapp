@@ -179,6 +179,7 @@ function SettingsPage() {
             <input
               id="tm-input"
               type="number"
+              inputMode="decimal"
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
               step="0.1"

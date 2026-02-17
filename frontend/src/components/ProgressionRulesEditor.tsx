@@ -140,6 +140,7 @@ export default function ProgressionRulesEditor({
                     <span className={styles.mobileLabel}>Min Reps</span>
                     <input
                       type="number"
+                      inputMode="numeric"
                       className={styles.repsInput}
                       min="0"
                       value={rule.minReps}
@@ -152,6 +153,7 @@ export default function ProgressionRulesEditor({
                     <span className={styles.mobileLabel}>Max Reps</span>
                     <input
                       type="number"
+                      inputMode="numeric"
                       className={styles.repsInput}
                       min="0"
                       value={rule.maxReps}
@@ -164,6 +166,7 @@ export default function ProgressionRulesEditor({
                     <span className={styles.mobileLabel}>TM Increase (kg)</span>
                     <input
                       type="number"
+                      inputMode="decimal"
                       className={styles.increaseInput}
                       min="0"
                       step="0.5"

@@ -595,6 +595,7 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
                 Days per Week *
                 <input
                   type="number"
+                  inputMode="numeric"
                   min="1"
                   max="7"
                   value={daysPerWeek}

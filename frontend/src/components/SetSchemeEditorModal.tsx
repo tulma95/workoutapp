@@ -113,6 +113,7 @@ export default function SetSchemeEditorModal({
                       <td>
                         <input
                           type="number"
+                          inputMode="numeric"
                           min="0"
                           max="100"
                           step="1"
@@ -126,6 +127,7 @@ export default function SetSchemeEditorModal({
                       <td>
                         <input
                           type="number"
+                          inputMode="numeric"
                           min="0"
                           step="1"
                           value={set.reps}

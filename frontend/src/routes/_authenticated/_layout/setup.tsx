@@ -166,6 +166,7 @@ function SetupPage() {
               </label>
               <input
                 type="number"
+                inputMode="decimal"
                 id={`exercise-${exercise.id}`}
                 name={exercise.id.toString()}
                 value={formData[exercise.id.toString()] || ''}
