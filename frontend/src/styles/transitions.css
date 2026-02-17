@@ -62,6 +62,14 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Keep header and bottom nav static during route transitions */
+::view-transition-old(header),
+::view-transition-new(header),
+::view-transition-old(bottom-nav),
+::view-transition-new(bottom-nav) {
+  animation: none;
+}
+
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-old(*),
