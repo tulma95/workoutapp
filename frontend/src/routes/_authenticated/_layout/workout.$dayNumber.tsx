@@ -19,22 +19,75 @@ import { ConfirmDialog } from '../../../components/ConfirmDialog'
 import { Button } from '../../../components/Button'
 import styles from '../../../styles/WorkoutPage.module.css'
 
+type LoaderResult =
+  | { type: 'workout'; workout: Workout }
+  | { type: 'conflict'; workoutId: number; dayNumber: number }
+
 export const Route = createFileRoute('/_authenticated/_layout/workout/$dayNumber')({
+  loader: async ({ params }): Promise<LoaderResult> => {
+    const dayNumber = parseInt(params.dayNumber || '0', 10)
+    if (!dayNumber) {
+      throw new Error('Invalid day number')
+    }
+
+    const currentWorkout = await getCurrentWorkout()
+
+    if (currentWorkout) {
+      if (currentWorkout.dayNumber === dayNumber) {
+        return { type: 'workout', workout: currentWorkout }
+      }
+      return {
+        type: 'conflict',
+        workoutId: currentWorkout.id,
+        dayNumber: currentWorkout.dayNumber,
+      }
+    }
+
+    try {
+      const newWorkout = await startWorkout(dayNumber)
+      return { type: 'workout', workout: newWorkout }
+    } catch (err: unknown) {
+      if (
+        err &&
+        typeof err === 'object' &&
+        'error' in err &&
+        err.error === 'EXISTING_WORKOUT' &&
+        'workoutId' in err &&
+        'dayNumber' in err
+      ) {
+        return {
+          type: 'conflict',
+          workoutId: err.workoutId as number,
+          dayNumber: err.dayNumber as number,
+        }
+      }
+      throw err
+    }
+  },
   pendingComponent: () => (
     <div className={styles.page}>
       <LoadingSpinner />
+    </div>
+  ),
+  errorComponent: ({ error }) => (
+    <div className={styles.page}>
+      <ErrorMessage message={error instanceof Error ? error.message : 'Failed to load workout'} />
     </div>
   ),
   component: WorkoutPage,
 })
 
 function WorkoutPage() {
+  const loaderData = Route.useLoaderData()
   const { dayNumber: dayParam } = Route.useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  const [workout, setWorkout] = useState<Workout | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const dayNumber = parseInt(dayParam || '0', 10)
+
+  const [workout, setWorkout] = useState<Workout | null>(
+    loaderData.type === 'workout' ? loaderData.workout : null,
+  )
   const [error, setError] = useState<string | null>(null)
   const [progressions, setProgressions] = useState<ProgressionResult[]>([])
   const [isCompleting, setIsCompleting] = useState(false)
@@ -45,78 +98,31 @@ function WorkoutPage() {
   const [conflictWorkout, setConflictWorkout] = useState<{
     workoutId: number
     dayNumber: number
-  } | null>(null)
+  } | null>(
+    loaderData.type === 'conflict'
+      ? { workoutId: loaderData.workoutId, dayNumber: loaderData.dayNumber }
+      : null,
+  )
+  const [isStartingNew, setIsStartingNew] = useState(false)
 
-  const dayNumber = parseInt(dayParam || '0', 10)
-
-  const loadingRef = useRef(false)
-  const debounceMap = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map())
-
+  // Sync state from loader data when route params change (same component, different day)
   useEffect(() => {
-    if (loadingRef.current) return
-    loadingRef.current = true
-
-    async function loadWorkout() {
-      if (!dayNumber) {
-        setError('Invalid day number')
-        setIsLoading(false)
-        loadingRef.current = false
-        return
-      }
-
-      try {
-        setIsLoading(true)
-        setError(null)
-
-        const currentWorkout = await getCurrentWorkout()
-
-        if (currentWorkout) {
-          if (currentWorkout.dayNumber === dayNumber) {
-            setWorkout(currentWorkout)
-          } else {
-            setConflictWorkout({
-              workoutId: currentWorkout.id,
-              dayNumber: currentWorkout.dayNumber,
-            })
-            setIsLoading(false)
-            loadingRef.current = false
-            return
-          }
-        } else {
-          try {
-            const newWorkout = await startWorkout(dayNumber)
-            setWorkout(newWorkout)
-          } catch (startErr: unknown) {
-            if (
-              startErr &&
-              typeof startErr === 'object' &&
-              'error' in startErr &&
-              startErr.error === 'EXISTING_WORKOUT' &&
-              'workoutId' in startErr &&
-              'dayNumber' in startErr
-            ) {
-              setConflictWorkout({
-                workoutId: startErr.workoutId as number,
-                dayNumber: startErr.dayNumber as number,
-              })
-              setIsLoading(false)
-              loadingRef.current = false
-              return
-            }
-            throw startErr
-          }
-        }
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to load workout'
-        setError(message)
-      } finally {
-        setIsLoading(false)
-        loadingRef.current = false
-      }
+    if (loaderData.type === 'workout') {
+      setWorkout(loaderData.workout)
+      setConflictWorkout(null)
+      setError(null)
+      setIsCompleted(false)
+      setProgressions([])
+    } else {
+      setWorkout(null)
+      setConflictWorkout({
+        workoutId: loaderData.workoutId,
+        dayNumber: loaderData.dayNumber,
+      })
     }
+  }, [loaderData])
 
-    loadWorkout()
-  }, [dayNumber])
+  const debounceMap = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map())
 
   // Cleanup debounce timers on unmount
   useEffect(() => {
@@ -252,9 +258,9 @@ function WorkoutPage() {
     if (!conflictWorkout) return
 
     try {
+      setIsStartingNew(true)
       await cancelWorkout(conflictWorkout.workoutId)
       setConflictWorkout(null)
-      setIsLoading(true)
       setError(null)
       const remaining = await getCurrentWorkout()
       if (remaining) {
@@ -266,7 +272,7 @@ function WorkoutPage() {
       setError(err instanceof Error ? err.message : 'Failed to start new workout')
       setConflictWorkout(null)
     } finally {
-      setIsLoading(false)
+      setIsStartingNew(false)
     }
   }
 
@@ -286,7 +292,7 @@ function WorkoutPage() {
     )
   }
 
-  if (isLoading) {
+  if (isStartingNew) {
     return (
       <div className={styles.page}>
         <LoadingSpinner />
