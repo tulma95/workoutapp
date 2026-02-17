@@ -12,7 +12,7 @@ export default function Layout() {
 
   return (
     <div>
-      <header style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <header style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', viewTransitionName: 'header' }}>
         <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>nSuns 4-Day LP</h1>
         {user?.isAdmin && (
           <Link

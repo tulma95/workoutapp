@@ -4,6 +4,14 @@
   animation: none;
 }
 
+/* Keep header and bottom nav stable during transitions */
+::view-transition-old(header),
+::view-transition-new(header),
+::view-transition-old(bottom-nav),
+::view-transition-new(bottom-nav) {
+  animation: none;
+}
+
 /* Only animate the main content area between header and bottom nav */
 ::view-transition-old(main-content) {
   display: none;
