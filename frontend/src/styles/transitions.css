@@ -62,19 +62,6 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Keep header and bottom nav static during route transitions */
-::view-transition-old(header),
-::view-transition-new(header),
-::view-transition-old(bottom-nav),
-::view-transition-new(bottom-nav) {
-  animation: none;
-}
-
-/* Ensure header and bottom nav stay above content during view transitions */
-::view-transition-group(header),
-::view-transition-group(bottom-nav) {
-  z-index: 100;
-}
 
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
