@@ -1,20 +1,20 @@
 import { Outlet, Link, useLocation } from '@tanstack/react-router'
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { getMe } from '../api/user'
 import shared from '../styles/shared.module.css'
 
 export default function Layout() {
   const location = useLocation()
-  const { data: user } = useSuspenseQuery({
+  const { data: user } = useQuery({
     queryKey: ['user', 'me'],
     queryFn: getMe,
   })
 
   return (
     <div>
-      <header style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <header style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', viewTransitionName: 'header' }}>
         <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>nSuns 4-Day LP</h1>
-        {user.isAdmin && (
+        {user?.isAdmin && (
           <Link
             to="/admin"
             style={{
