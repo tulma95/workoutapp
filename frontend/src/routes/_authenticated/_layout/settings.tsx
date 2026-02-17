@@ -6,7 +6,7 @@ import { useAuth } from '../../../context/useAuth'
 import { getCurrentPlan } from '../../../api/plans'
 import { getTrainingMaxes, updateTrainingMax, type TrainingMax } from '../../../api/trainingMaxes'
 import { formatExerciseName, formatWeight, roundWeight } from '../../../utils/weight'
-import { LoadingSpinner } from '../../../components/LoadingSpinner'
+import { SkeletonLine, SkeletonHeading } from '../../../components/Skeleton'
 import { Button } from '../../../components/Button'
 import { ButtonLink } from '../../../components/ButtonLink'
 import styles from '../../../styles/SettingsPage.module.css'
@@ -18,7 +18,33 @@ export const Route = createFileRoute('/_authenticated/_layout/settings')({
       queryClient.ensureQueryData({ queryKey: ['plan', 'current'], queryFn: getCurrentPlan }),
       queryClient.ensureQueryData({ queryKey: ['training-maxes'], queryFn: getTrainingMaxes }),
     ]),
-  pendingComponent: LoadingSpinner,
+  pendingComponent: () => (
+    <div>
+      <h2>Settings</h2>
+
+      {[1, 2, 3].map((i) => (
+        <div key={i} className={styles.card}>
+          <SkeletonLine width="30%" height="0.875rem" />
+          <SkeletonLine width="60%" height="1rem" />
+        </div>
+      ))}
+
+      <section className={styles.tmSection}>
+        <SkeletonHeading width="40%" />
+        <div className={styles.tmList}>
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className={styles.tmItem}>
+              <div className={styles.tmInfo}>
+                <SkeletonLine width="8rem" height="1rem" />
+                <SkeletonLine width="4rem" height="1rem" />
+              </div>
+              <SkeletonLine width="4rem" height="2.5rem" />
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  ),
   component: SettingsPage,
 })
 

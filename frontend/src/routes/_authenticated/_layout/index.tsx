@@ -3,8 +3,8 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { getCurrentPlan } from '../../../api/plans'
 import { getTrainingMaxes } from '../../../api/trainingMaxes'
 import { getCurrentWorkout } from '../../../api/workouts'
-import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { ErrorMessage } from '../../../components/ErrorMessage'
+import { SkeletonLine, SkeletonHeading, SkeletonCard } from '../../../components/Skeleton'
 import WorkoutCard from '../../../components/WorkoutCard'
 import styles from '../../../styles/DashboardPage.module.css'
 
@@ -45,7 +45,31 @@ export const Route = createFileRoute('/_authenticated/_layout/')({
       throw redirect({ to: '/setup', search: { missingTMs: true } })
     }
   },
-  pendingComponent: LoadingSpinner,
+  pendingComponent: () => (
+    <div className={styles.page}>
+      <SkeletonHeading width="40%" />
+
+      <section className={styles.planSection}>
+        <SkeletonLine width="30%" height="1rem" />
+        <SkeletonLine width="60%" height="1.25rem" />
+        <SkeletonLine width="80%" height="0.875rem" />
+      </section>
+
+      <section className={styles.daysSection}>
+        <SkeletonHeading width="50%" />
+        <div className={styles.cards}>
+          {[1, 2, 3, 4].map((i) => (
+            <SkeletonCard key={i}>
+              <SkeletonHeading width="30%" />
+              <SkeletonLine width="70%" />
+              <SkeletonLine width="50%" />
+              <SkeletonLine width="100%" height="3rem" />
+            </SkeletonCard>
+          ))}
+        </div>
+      </section>
+    </div>
+  ),
   errorComponent: ({ error }) => (
     <ErrorMessage message={error instanceof Error ? error.message : 'Failed to load dashboard'} />
   ),

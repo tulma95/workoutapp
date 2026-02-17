@@ -4,7 +4,7 @@ import { useSuspenseQuery, useMutation, useQueryClient } from '@tanstack/react-q
 import { getPlans, subscribeToPlan, getCurrentPlan, type WorkoutPlan, type Exercise } from '../../../api/plans'
 import { getCurrentWorkout } from '../../../api/workouts'
 import { getTrainingMaxes } from '../../../api/trainingMaxes'
-import { LoadingSpinner } from '../../../components/LoadingSpinner'
+import { SkeletonLine, SkeletonHeading, SkeletonCard } from '../../../components/Skeleton'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import { PlanSwitchConfirmModal, type PlanSwitchWarnings } from '../../../components/PlanSwitchConfirmModal'
 import { Button } from '../../../components/Button'
@@ -18,7 +18,30 @@ export const Route = createFileRoute('/_authenticated/_layout/select-plan')({
     }),
   pendingComponent: () => (
     <div className={styles.page}>
-      <LoadingSpinner />
+      <div className={styles.header}>
+        <SkeletonHeading width="60%" />
+        <SkeletonLine width="80%" height="1rem" />
+      </div>
+
+      <div className={styles.list}>
+        <SkeletonCard className={styles.card}>
+          <div className={styles.cardHeader}>
+            <SkeletonLine width="50%" height="1.25rem" />
+            <SkeletonLine width="80%" height="0.875rem" />
+            <SkeletonLine width="30%" height="0.875rem" />
+          </div>
+          <div className={styles.days}>
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className={styles.day}>
+                <SkeletonLine width="25%" height="0.875rem" />
+                <SkeletonLine width="70%" height="0.875rem" />
+                <SkeletonLine width="55%" height="0.875rem" />
+              </div>
+            ))}
+          </div>
+          <SkeletonLine width="100%" height="3rem" />
+        </SkeletonCard>
+      </div>
     </div>
   ),
   errorComponent: ({ error }) => (
@@ -46,8 +69,8 @@ function PlanSelectionPage() {
   const subscribeMutation = useMutation({
     mutationFn: subscribeToPlan,
     onSuccess: async (result) => {
-      await queryClient.invalidateQueries({ queryKey: ['plan', 'current'] })
-      await queryClient.invalidateQueries({ queryKey: ['training-maxes'] })
+      queryClient.removeQueries({ queryKey: ['plan', 'current'] })
+      queryClient.removeQueries({ queryKey: ['training-maxes'] })
       await queryClient.invalidateQueries({ queryKey: ['workout', 'current'] })
 
       if (result.missingTMs.length > 0) {

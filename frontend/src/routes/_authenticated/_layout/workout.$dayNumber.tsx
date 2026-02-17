@@ -14,6 +14,7 @@ import SetRow from '../../../components/SetRow'
 import { ProgressionBanner } from '../../../components/ProgressionBanner'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { ErrorMessage } from '../../../components/ErrorMessage'
+import { SkeletonLine, SkeletonHeading } from '../../../components/Skeleton'
 import { ConflictDialog } from '../../../components/ConflictDialog'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
 import { Button } from '../../../components/Button'
@@ -67,7 +68,28 @@ export const Route = createFileRoute('/_authenticated/_layout/workout/$dayNumber
   },
   pendingComponent: () => (
     <div className={styles.page}>
-      <LoadingSpinner />
+      <SkeletonHeading width="30%" />
+
+      {[1, 2].map((i) => (
+        <section key={i} className={styles.section}>
+          <div className={styles.sectionTitle} style={{ border: 'none' }}>
+            <SkeletonLine width="40%" height="1.25rem" />
+          </div>
+          <div className={styles.sectionSets}>
+            {Array.from({ length: i === 1 ? 9 : 8 }, (_, j) => (
+              <div key={j} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '3rem' }}>
+                <SkeletonLine width="60%" height="1rem" />
+                <SkeletonLine width="3rem" height="2.5rem" />
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+
+      <div className={styles.actions}>
+        <SkeletonLine width="100%" height="3rem" />
+        <SkeletonLine width="100%" height="3rem" />
+      </div>
     </div>
   ),
   errorComponent: ({ error }) => (
