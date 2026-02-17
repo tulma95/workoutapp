@@ -67,8 +67,8 @@ echo "App is healthy."
 # Ensure Playwright browsers are installed
 npx playwright install --with-deps chromium 2>/dev/null || npx playwright install chromium
 
-# Run Playwright E2E tests pointing at port 3001 (app serves both API and frontend)
-BASE_URL="http://localhost:3001" npx playwright test
+# Run Playwright E2E tests pointing at port 3002 (avoids conflict with dev backend on 3001)
+BASE_URL="http://localhost:3002" npx playwright test
 
 echo ""
 echo "=== All tests passed! ==="
