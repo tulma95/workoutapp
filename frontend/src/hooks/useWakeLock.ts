@@ -2,8 +2,12 @@ import { useEffect, useRef } from 'react'
 
 export function useWakeLock() {
   const wakeLockRef = useRef<WakeLockSentinel | null>(null)
+  const acquiredRef = useRef(false)
 
   useEffect(() => {
+    if (acquiredRef.current) return
+    acquiredRef.current = true
+
     if (!('wakeLock' in navigator)) return
 
     const request = async () => {

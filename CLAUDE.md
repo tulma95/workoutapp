@@ -197,3 +197,5 @@ When you add or change API endpoints, DB schema, query keys, or invalidation rul
 Dont use typescript-code-review skill
 
 dont use co-author in commits
+
+After committing code, always invoke the `superpowers:requesting-code-review` skill on the recent commits.
