@@ -82,7 +82,6 @@
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: var(--space-xs);
-  view-transition-name: calendar-grid;
 }
 
 .day {
@@ -155,74 +154,5 @@
     width: 1rem;
     height: 1rem;
     font-size: 0.5rem;
-  }
-}
-
-/* View Transition API animations */
-/* Prevent default additive blending between old/new snapshots */
-:global(::view-transition-old(calendar-grid)),
-:global(::view-transition-new(calendar-grid)) {
-  mix-blend-mode: normal;
-}
-
-/* Next month: slide left (old exits left, new enters from right) */
-:global(:root[data-transition-direction='next']::view-transition-old(calendar-grid)) {
-  animation: slideOutLeft 200ms ease-in-out both;
-}
-
-:global(:root[data-transition-direction='next']::view-transition-new(calendar-grid)) {
-  animation: slideInRight 200ms ease-in-out both;
-}
-
-/* Previous month: slide right (old exits right, new enters from left) */
-:global(:root[data-transition-direction='prev']::view-transition-old(calendar-grid)) {
-  animation: slideOutRight 200ms ease-in-out both;
-}
-
-:global(:root[data-transition-direction='prev']::view-transition-new(calendar-grid)) {
-  animation: slideInLeft 200ms ease-in-out both;
-}
-
-@keyframes slideOutLeft {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideOutRight {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-}
-
-@keyframes slideInLeft {
-  from {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
   }
 }

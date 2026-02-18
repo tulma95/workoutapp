@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { flushSync } from 'react-dom'
 import { createFileRoute } from '@tanstack/react-router'
 import { getWorkoutCalendar, getWorkout, type CalendarWorkout, type Workout } from '../../../api/workouts'
 import WorkoutCalendar from '../../../components/WorkoutCalendar'
@@ -41,25 +40,10 @@ function HistoryPage() {
     }
   }
 
-  const handleMonthChange = (year: number, month: number, direction: 'prev' | 'next') => {
-    if (document.startViewTransition) {
-      document.documentElement.dataset.transitionDirection = direction
-      const transition = document.startViewTransition(() => {
-        flushSync(() => {
-          setCurrentYear(year)
-          setCurrentMonth(month)
-          setSelectedWorkout(null)
-        })
-      })
-      transition.finished.then(() => {
-        delete document.documentElement.dataset.transitionDirection
-      })
-    } else {
-      setCurrentYear(year)
-      setCurrentMonth(month)
-      setSelectedWorkout(null)
-    }
-
+  const handleMonthChange = (year: number, month: number, _direction: 'prev' | 'next') => {
+    setCurrentYear(year)
+    setCurrentMonth(month)
+    setSelectedWorkout(null)
     fetchCalendarData(year, month)
   }
 

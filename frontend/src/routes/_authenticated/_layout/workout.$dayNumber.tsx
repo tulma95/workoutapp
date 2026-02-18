@@ -388,7 +388,7 @@ function WorkoutPage() {
 
   return (
     <div className={styles.page}>
-      <h1 style={{ viewTransitionName: `workout-day-${dayNumber}` }}>{dayTitle}</h1>
+      <h1>{dayTitle}</h1>
 
       {exerciseGroups.map((group) => (
         <section key={group.exercise} className={styles.section}>
