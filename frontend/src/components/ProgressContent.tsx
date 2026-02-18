@@ -8,6 +8,7 @@ import {
 } from './ProgressSummaryCards'
 import { getTrainingMaxes, getTrainingMaxHistory } from '../api/trainingMaxes'
 import { LoadingSpinner } from './LoadingSpinner'
+import { ProgressChart } from './ProgressChart'
 import type { TrainingMax } from '../api/schemas'
 
 function getStoredRange(): TimeRange {
@@ -85,9 +86,18 @@ export function ProgressContent() {
           {isLoadingHistory ? (
             <LoadingSpinner />
           ) : (
-            <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginTop: 'var(--space-lg)' }}>
-              Chart coming next...
-            </p>
+            (() => {
+              const config = EXERCISE_CONFIGS.find((e) => e.slug === selectedExercise)
+              const exerciseHistory = histories.get(selectedExercise) ?? []
+              return config ? (
+                <ProgressChart
+                  history={exerciseHistory}
+                  color={config.color}
+                  exerciseName={config.name}
+                  timeRange={timeRange}
+                />
+              ) : null
+            })()
           )}
         </>
       ) : (
