@@ -1,12 +1,10 @@
+import type { Decimal } from '@prisma/client/runtime/client';
 import prisma from '../lib/db';
 import { roundWeight } from '../lib/weightRounding';
 import type { WorkoutStatus } from '../types';
 import { ExistingWorkoutError } from '../types';
 import { logger } from '../lib/logger';
 
-function decimalToNumber(val: { toString(): string }): number {
-  return Number(val.toString());
-}
 
 function formatWorkout(
   workout: {
@@ -23,7 +21,7 @@ function formatWorkout(
       exercise: { slug: string; name: string };
       exerciseOrder: number;
       setOrder: number;
-      prescribedWeight: unknown;
+      prescribedWeight: Decimal;
       prescribedReps: number;
       isAmrap: boolean;
       isProgression?: boolean;
@@ -39,7 +37,7 @@ function formatWorkout(
     sets: workout.sets.map((s) => ({
       ...s,
       exercise: s.exercise.name,
-      prescribedWeight: decimalToNumber(s.prescribedWeight as { toString(): string }),
+      prescribedWeight: s.prescribedWeight.toNumber(),
     })),
   };
 }
@@ -120,7 +118,7 @@ export async function startWorkout(userId: number, dayNumber: number) {
     for (const tmExId of tmExerciseIds) {
       const tmRecord = tmRecords.find((tm) => tm.exerciseId === tmExId);
       if (tmRecord) {
-        tmMapById[tmExId] = decimalToNumber(tmRecord.weight);
+        tmMapById[tmExId] = tmRecord.weight.toNumber();
       }
     }
 
@@ -146,7 +144,7 @@ export async function startWorkout(userId: number, dayNumber: number) {
     for (const planDayExercise of planDay.exercises) {
       const tm = tmMapById[planDayExercise.tmExerciseId]!;
       for (const planSet of planDayExercise.sets) {
-        const percentage = decimalToNumber(planSet.percentage);
+        const percentage = planSet.percentage.toNumber();
         const weight = roundWeight(tm * percentage);
         setsToCreate.push({
           exerciseId: planDayExercise.exerciseId,
@@ -281,7 +279,7 @@ export async function logSet(
   return {
     ...updated,
     exercise: updated.exercise.name,
-    prescribedWeight: decimalToNumber(updated.prescribedWeight),
+    prescribedWeight: updated.prescribedWeight.toNumber(),
   };
 }
 
@@ -367,7 +365,7 @@ export async function completeWorkout(workoutId: number, userId: number) {
         continue;
       }
 
-      const increase = decimalToNumber(matchingRule.increase);
+      const increase = matchingRule.increase.toNumber();
       if (increase <= 0) continue;
 
       // Get current TM for this exercise
@@ -381,7 +379,7 @@ export async function completeWorkout(workoutId: number, userId: number) {
 
       if (!currentTMRow) continue;
 
-      const currentTMKg = decimalToNumber(currentTMRow.weight);
+      const currentTMKg = currentTMRow.weight.toNumber();
       const newWeightKg = currentTMKg + increase;
       const today = new Date();
       today.setHours(0, 0, 0, 0);

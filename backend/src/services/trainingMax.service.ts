@@ -2,9 +2,6 @@ import prisma from '../lib/db';
 import { roundWeight } from '../lib/weightRounding';
 import { logger } from '../lib/logger';
 
-function decimalToNumber(val: { toString(): string }): number {
-  return Number(val.toString());
-}
 
 export async function getCurrentTMs(userId: number) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -68,7 +65,7 @@ export async function getCurrentTMs(userId: number) {
   return deduplicated.map((tm) => ({
     ...tm,
     exercise: tm.exercise.slug,
-    weight: decimalToNumber(tm.weight),
+    weight: tm.weight.toNumber(),
   }));
 }
 
@@ -107,7 +104,7 @@ export async function setupFromExerciseTMs(
       return {
         ...row,
         exercise: row.exercise.slug,
-        weight: decimalToNumber(row.weight)
+        weight: row.weight.toNumber()
       };
     }),
   );
@@ -155,7 +152,7 @@ export async function updateTM(
   return {
     ...row,
     exercise: row.exercise.slug,
-    weight: decimalToNumber(row.weight)
+    weight: row.weight.toNumber()
   };
 }
 
@@ -182,6 +179,6 @@ export async function getHistory(userId: number, exerciseSlug: string) {
   return rows.map((row) => ({
     ...row,
     exercise: row.exercise.slug,
-    weight: decimalToNumber(row.weight),
+    weight: row.weight.toNumber(),
   }));
 }
