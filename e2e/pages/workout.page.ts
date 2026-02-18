@@ -9,6 +9,10 @@ export class WorkoutPage {
   readonly backToDashboardButton;
   readonly confirmDialog;
   readonly progressionBanner;
+  readonly restTimerBanner;
+  readonly skipRestButton;
+  readonly increaseRestButton;
+  readonly decreaseRestButton;
 
   constructor(page: Page) {
     this.page = page;
@@ -18,6 +22,10 @@ export class WorkoutPage {
     this.backToDashboardButton = page.getByRole('link', { name: 'Back to Dashboard' });
     this.confirmDialog = page.locator('[data-testid="confirm-dialog"]');
     this.progressionBanner = page.getByText(/progression|increase|bench.*\+/i);
+    this.restTimerBanner = page.getByTestId('rest-timer');
+    this.skipRestButton = page.getByRole('button', { name: /skip/i });
+    this.increaseRestButton = page.getByRole('button', { name: /increase rest/i });
+    this.decreaseRestButton = page.getByRole('button', { name: /decrease rest/i });
   }
 
   dayHeading(dayNumber: number) {
