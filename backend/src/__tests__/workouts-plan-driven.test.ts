@@ -391,4 +391,59 @@ describe('Workouts API - Plan-Driven Generation', () => {
       expect(ids).not.toContain(workoutId);
     });
   });
+
+  describe('GET /api/workouts/:id (progressions)', () => {
+    it('should return progressions array after completing a workout with AMRAP', async () => {
+      // Cancel any existing in-progress workout
+      const current = await request(app)
+        .get('/api/workouts/current')
+        .set('Authorization', `Bearer ${token}`);
+      if (current.body?.id) {
+        await request(app)
+          .delete(`/api/workouts/${current.body.id}`)
+          .set('Authorization', `Bearer ${token}`);
+      }
+
+      // Start workout
+      const startRes = await request(app)
+        .post('/api/workouts')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ dayNumber: 1 });
+      const workoutId = startRes.body.id;
+
+      // Log AMRAP reps on the progression set (set with isProgression: true)
+      const progressionSet = startRes.body.sets.find((s: { isProgression?: boolean }) => s.isProgression);
+      if (progressionSet) {
+        await request(app)
+          .patch(`/api/workouts/${workoutId}/sets/${progressionSet.id}`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ actualReps: 10, completed: true });
+      }
+
+      // Complete workout
+      const completeRes = await request(app)
+        .post(`/api/workouts/${workoutId}/complete`)
+        .set('Authorization', `Bearer ${token}`);
+
+      // Fetch workout and verify progressions
+      const res = await request(app)
+        .get(`/api/workouts/${workoutId}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.progressions).toBeDefined();
+      expect(Array.isArray(res.body.progressions)).toBe(true);
+
+      // If the complete endpoint returned progressions, the getWorkout should too
+      const completedProgressions = completeRes.body.progressions || [];
+      if (completedProgressions.length > 0) {
+        expect(res.body.progressions.length).toBe(completedProgressions.length);
+        expect(res.body.progressions[0]).toHaveProperty('exercise');
+        expect(res.body.progressions[0]).toHaveProperty('previousTM');
+        expect(res.body.progressions[0]).toHaveProperty('newTM');
+        expect(res.body.progressions[0]).toHaveProperty('increase');
+        expect(res.body.progressions[0].increase).toBeGreaterThan(0);
+      }
+    });
+  });
 });

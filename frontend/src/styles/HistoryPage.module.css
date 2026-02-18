@@ -108,13 +108,16 @@
   font-size: 1rem;
   cursor: pointer;
   min-height: 3rem;
+}
+
+.dialog__cancel {
   border: 1px solid var(--border);
   background: var(--bg);
   color: var(--text-primary);
 }
 
 .dialog__confirm {
-  background: var(--danger) !important;
-  color: white !important;
-  border-color: var(--danger) !important;
+  background: var(--danger);
+  color: white;
+  border: 1px solid var(--danger);
 }

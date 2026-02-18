@@ -75,10 +75,11 @@ function HistoryPage() {
       queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
       setSelectedWorkout(null)
       setDayWorkouts(null)
+      dialogRef.current?.close()
     } catch (error) {
       console.error('Failed to delete workout:', error)
+      dialogRef.current?.close()
     }
-    dialogRef.current?.close()
   }
 
   return (
@@ -105,7 +106,7 @@ function HistoryPage() {
           <p>Delete this workout from history?</p>
           <p className={styles.dialog__note}>Training max changes will not be affected.</p>
           <div className={styles.dialog__actions}>
-            <button onClick={() => dialogRef.current?.close()}>Cancel</button>
+            <button className={styles.dialog__cancel} onClick={() => dialogRef.current?.close()}>Cancel</button>
             <button className={styles.dialog__confirm} onClick={handleConfirmDelete}>Delete</button>
           </div>
         </div>
