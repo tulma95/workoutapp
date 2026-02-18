@@ -4,7 +4,7 @@ import styles from './WorkoutCalendar.module.css';
 
 interface WorkoutCalendarProps {
   workouts: CalendarWorkout[];
-  onSelectWorkout: (workoutId: number) => void;
+  onSelectDay: (workouts: CalendarWorkout[]) => void;
   onMonthChange: (year: number, month: number, direction: 'prev' | 'next') => void;
   year: number;
   month: number; // 1-indexed (1 = January, 12 = December)
@@ -29,7 +29,7 @@ const MONTH_NAMES = [
 
 export default function WorkoutCalendar({
   workouts,
-  onSelectWorkout,
+  onSelectDay,
   onMonthChange,
   year,
   month,
@@ -38,15 +38,16 @@ export default function WorkoutCalendar({
   const currentYear = year;
   const currentMonth = month - 1; // Convert to 0-indexed for Date constructor
 
-  // Build a map from date string (YYYY-MM-DD) to workout
+  // Build a map from date string (YYYY-MM-DD) to workouts array
   const workoutMap = useMemo(() => {
-    const map = new Map<string, CalendarWorkout>();
+    const map = new Map<string, CalendarWorkout[]>();
     workouts.forEach((workout) => {
-      // Use completedAt if available, otherwise createdAt
       const dateStr = workout.completedAt || workout.createdAt;
       const date = new Date(dateStr);
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-      map.set(key, workout);
+      const existing = map.get(key) || [];
+      existing.push(workout);
+      map.set(key, existing);
     });
     return map;
   }, [workouts]);
@@ -67,7 +68,7 @@ export default function WorkoutCalendar({
       dateKey: string;
       isCurrentMonth: boolean;
       isToday: boolean;
-      workout?: CalendarWorkout;
+      workouts: CalendarWorkout[];
     }> = [];
 
     // Add previous month's trailing days
@@ -82,7 +83,7 @@ export default function WorkoutCalendar({
         dateKey,
         isCurrentMonth: false,
         isToday: false,
-        workout: workoutMap.get(dateKey),
+        workouts: workoutMap.get(dateKey) || [],
       });
     }
 
@@ -98,7 +99,7 @@ export default function WorkoutCalendar({
         dateKey,
         isCurrentMonth: true,
         isToday,
-        workout: workoutMap.get(dateKey),
+        workouts: workoutMap.get(dateKey) || [],
       });
     }
 
@@ -114,7 +115,7 @@ export default function WorkoutCalendar({
           dateKey,
           isCurrentMonth: false,
           isToday: false,
-          workout: workoutMap.get(dateKey),
+          workouts: workoutMap.get(dateKey) || [],
         });
       }
     }
@@ -133,8 +134,8 @@ export default function WorkoutCalendar({
   };
 
   const handleDayClick = (day: typeof calendarDays[0]) => {
-    if (day.workout) {
-      onSelectWorkout(day.workout.id);
+    if (day.workouts.length > 0) {
+      onSelectDay(day.workouts);
     }
   };
 
@@ -180,15 +181,15 @@ export default function WorkoutCalendar({
             className={`${styles.day} ${
               !day.isCurrentMonth ? styles.outside : ''
             } ${day.isToday ? styles.today : ''} ${
-              day.workout ? styles.workout : ''
+              day.workouts.length > 0 ? styles.workout : ''
             }`}
             onClick={() => handleDayClick(day)}
-            disabled={!day.workout}
+            disabled={day.workouts.length === 0}
           >
             <span className={styles.dayNumber}>{day.date}</span>
-            {day.workout && (
+            {day.workouts.length > 0 && (
               <span className={styles.dayBadge}>
-                {day.workout.dayNumber}
+                {day.workouts.length > 1 ? day.workouts.length : day.workouts[0]!.dayNumber}
               </span>
             )}
           </button>

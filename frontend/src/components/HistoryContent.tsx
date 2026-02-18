@@ -11,10 +11,13 @@ type Props = {
   isFetchingCalendar: boolean
   selectedWorkout: Workout | null
   isLoadingWorkout: boolean
+  dayWorkouts: CalendarWorkout[] | null
   currentYear: number
   currentMonth: number
   onMonthChange: (year: number, month: number, direction: 'prev' | 'next') => void
+  onSelectDay: (workouts: CalendarWorkout[]) => void
   onSelectWorkout: (workoutId: number) => void
+  onDeleteWorkout?: () => void
   onRetry: () => void
 }
 
@@ -25,13 +28,17 @@ export function HistoryContent({
   isFetchingCalendar,
   selectedWorkout,
   isLoadingWorkout,
+  dayWorkouts,
   currentYear,
   currentMonth,
   onMonthChange,
+  onSelectDay,
   onSelectWorkout,
+  onDeleteWorkout,
   onRetry,
 }: Props) {
   const hasAnyWorkouts = calendarWorkouts.length > 0
+  const showPicker = dayWorkouts && dayWorkouts.length > 1 && !selectedWorkout && !isLoadingWorkout
 
   return (
     <div className={styles.page}>
@@ -46,7 +53,7 @@ export function HistoryContent({
         <>
           <WorkoutCalendar
             workouts={calendarWorkouts}
-            onSelectWorkout={onSelectWorkout}
+            onSelectDay={onSelectDay}
             onMonthChange={onMonthChange}
             year={currentYear}
             month={currentMonth}
@@ -54,13 +61,27 @@ export function HistoryContent({
           />
 
           <div className={styles.detail}>
-            {isLoadingWorkout ? (
+            {showPicker ? (
+              <div className={styles.picker}>
+                <p className={styles.pickerTitle}>Multiple workouts on this day</p>
+                {dayWorkouts.map(w => (
+                  <button
+                    key={w.id}
+                    className={styles.pickerItem}
+                    onClick={() => onSelectWorkout(w.id)}
+                  >
+                    Day {w.dayNumber}
+                  </button>
+                ))}
+              </div>
+            ) : isLoadingWorkout ? (
               <WorkoutDetail
                 isLoading={true}
               />
             ) : selectedWorkout ? (
               <WorkoutDetail
                 workout={selectedWorkout}
+                onDelete={onDeleteWorkout}
               />
             ) : hasAnyWorkouts ? (
               <div className={styles.prompt}>
