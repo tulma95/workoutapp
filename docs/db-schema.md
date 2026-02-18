@@ -1,0 +1,18 @@
+# Database Schema
+
+## Core Tables
+
+- **users**: `id, email (unique), password_hash, display_name, is_admin (default false), created_at, updated_at`
+- **exercises**: `id, name, slug (unique), category, is_compound, is_upper_body, created_at, updated_at`
+- **training_maxes** (append-only): `id, user_id (FK), exercise, exercise_id (FK exercises), weight (kg), effective_date, created_at` - Unique constraint: (user_id, exercise, effective_date)
+- **workouts**: `id, user_id (FK), day_number, plan_day_id (FK plan_days), status ('in_progress'/'completed'/'discarded'), completed_at, created_at`
+- **workout_sets**: `id, workout_id (FK CASCADE), exercise, exercise_id (FK exercises), exercise_order (Int), set_order, prescribed_weight (kg), prescribed_reps, is_amrap, is_progression, actual_reps (nullable), completed, created_at`
+
+## Plan Tables
+
+- **workout_plans**: `id, name, slug (unique), description, days_per_week, is_public, is_system, archived_at, created_at, updated_at`
+- **plan_days**: `id, plan_id (FK CASCADE), day_number, name` - Unique: (plan_id, day_number)
+- **plan_day_exercises**: `id, plan_day_id (FK CASCADE), exercise_id (FK), tm_exercise_id (FK), display_name, sort_order`
+- **plan_sets**: `id, plan_day_exercise_id (FK CASCADE), set_order, percentage (Decimal 5,4), reps, is_amrap, is_progression`
+- **plan_progression_rules**: `id, plan_id (FK CASCADE), exercise_id (FK, nullable), category ('upper'/'lower', nullable), min_reps, max_reps, increase_amount (kg)`
+- **user_plans**: `id, user_id (FK), plan_id (FK CASCADE), is_active, started_at, ended_at`
