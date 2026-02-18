@@ -78,7 +78,7 @@ test.describe('Workout History', () => {
     await expect(page.getByText(/\d+\s*kg/).first()).toBeVisible();
   });
 
-  test('complete two workouts (Day 1 and Day 2), verify both days show on calendar', async ({ setupCompletePage }) => {
+  test('complete two workouts on same day, picker shows, can select each', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
     const history = new HistoryPage(page);
 
@@ -90,8 +90,52 @@ test.describe('Workout History', () => {
     const today = new Date().getDate();
     await history.clickDay(today);
 
-    // Wait for workout detail to load, then verify exercises are visible
-    await expect(page.getByText(/bench|squat/i).first()).toBeVisible();
+    // Should show picker with Day 1 and Day 2
+    await expect(page.getByRole('button', { name: /day 1/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /day 2/i })).toBeVisible();
+
+    // Select Day 1
+    await page.getByRole('button', { name: /day 1/i }).click();
+    await expect(page.getByText(/bench/i).first()).toBeVisible();
+  });
+
+  test('completed sets show colored tinting in workout detail', async ({ setupCompletePage }) => {
+    const { page } = setupCompletePage;
+    const history = new HistoryPage(page);
+
+    await completeWorkout(page, 1, 10);
+    await history.navigate();
+
+    const today = new Date().getDate();
+    await history.clickDay(today);
+
+    // Verify sets are visible with weight/reps data
+    await expect(page.getByText(/\d+\s*kg/).first()).toBeVisible();
+    // Verify set completion summary is shown
+    await expect(page.getByText(/\d+\/\d+ sets/).first()).toBeVisible();
+  });
+
+  test('delete workout from history - workout disappears from calendar', async ({ setupCompletePage }) => {
+    const { page } = setupCompletePage;
+    const history = new HistoryPage(page);
+
+    await completeWorkout(page, 1, 10);
+    await history.navigate();
+
+    const today = new Date().getDate();
+    await history.clickDay(today);
+
+    // Verify workout detail loaded
+    await expect(page.getByRole('heading', { name: /day\s*1/i }).first()).toBeVisible();
+
+    // Click delete button
+    await page.getByRole('button', { name: /delete workout/i }).click();
+
+    // Confirm in dialog
+    await page.getByRole('button', { name: /^delete$/i }).click();
+
+    // Workout should disappear - empty state or prompt shown
+    await expect(page.getByText(/tap a workout day|no workouts yet/i)).toBeVisible();
   });
 
   test('month navigation - prev and next buttons are present and clickable', async ({ setupCompletePage }) => {

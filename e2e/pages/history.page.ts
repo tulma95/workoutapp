@@ -27,7 +27,7 @@ export class HistoryPage {
   }
 
   async clickDay(dayOfMonth: number) {
-    await this.page.getByRole('button').filter({ hasText: dayOfMonth.toString() }).first().click();
+    await this.calendarGrid.getByRole('button').filter({ hasText: dayOfMonth.toString() }).first().click();
   }
 
   async goToPreviousMonth() {
