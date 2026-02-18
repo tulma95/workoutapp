@@ -1,9 +1,10 @@
-import { useState, useEffect, type FormEvent } from 'react'
+import { useState, useMemo, type FormEvent } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useQueryClient } from '@tanstack/react-query'
+import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
 import { setupTrainingMaxesFromExercises, getTrainingMaxes, type ExerciseTM } from '../../../api/trainingMaxes'
 import { getCurrentPlan, type Exercise } from '../../../api/plans'
 import { ErrorMessage } from '../../../components/ErrorMessage'
+import { SkeletonLine, SkeletonHeading } from '../../../components/Skeleton'
 import { Button } from '../../../components/Button'
 import { ButtonLink } from '../../../components/ButtonLink'
 import styles from '../../../styles/SetupPage.module.css'
@@ -12,6 +13,28 @@ export const Route = createFileRoute('/_authenticated/_layout/setup')({
   validateSearch: (search: Record<string, unknown>) => ({
     missingTMs: search.missingTMs === true,
   }),
+  loader: ({ context: { queryClient } }) =>
+    Promise.all([
+      queryClient.ensureQueryData({ queryKey: ['plan', 'current'], queryFn: getCurrentPlan }),
+      queryClient.ensureQueryData({ queryKey: ['training-maxes'], queryFn: getTrainingMaxes }),
+    ]),
+  pendingComponent: () => (
+    <div className={styles.page}>
+      <div className={styles.container}>
+        <SkeletonHeading width="60%" />
+        <SkeletonLine width="80%" height="1rem" />
+        <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i}>
+              <SkeletonLine width="30%" height="0.875rem" />
+              <SkeletonLine width="100%" height="2.75rem" />
+            </div>
+          ))}
+        </div>
+        <SkeletonLine width="100%" height="3rem" />
+      </div>
+    </div>
+  ),
   component: SetupPage,
 })
 
@@ -20,65 +43,32 @@ function SetupPage() {
   const queryClient = useQueryClient()
   const { missingTMs: isMissingTMsMode } = Route.useSearch()
 
-  const [requiredExercises, setRequiredExercises] = useState<Exercise[]>([])
+  const { data: currentPlan } = useSuspenseQuery({ queryKey: ['plan', 'current'], queryFn: getCurrentPlan })
+  const { data: trainingMaxes } = useSuspenseQuery({ queryKey: ['training-maxes'], queryFn: getTrainingMaxes })
+
   const [formData, setFormData] = useState<Record<string, string>>({})
   const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  useEffect(() => {
-    async function loadRequiredExercises() {
-      try {
-        const plan = await getCurrentPlan()
-        if (!plan) {
-          setError('No active plan found. Please select a plan first.')
-          setIsLoading(false)
-          return
+  const requiredExercises = useMemo(() => {
+    if (!currentPlan) return []
+
+    const tmExercisesMap = new Map<number, Exercise>()
+    currentPlan.days.forEach(day => {
+      day.exercises.forEach(planExercise => {
+        if (!tmExercisesMap.has(planExercise.tmExerciseId)) {
+          tmExercisesMap.set(planExercise.tmExerciseId, planExercise.tmExercise)
         }
+      })
+    })
 
-        if (isMissingTMsMode) {
-          // In missing TMs mode, we need to figure out which exercises are missing
-          // The plan has all exercises; we need to filter to those without TMs
-          const tms = await getTrainingMaxes()
-          const existingTMSlugs = new Set(tms.map((tm: { exercise: string }) => tm.exercise))
-
-          const tmExercisesMap = new Map<number, Exercise>()
-          plan.days.forEach(day => {
-            day.exercises.forEach(planExercise => {
-              if (!tmExercisesMap.has(planExercise.tmExerciseId)) {
-                tmExercisesMap.set(planExercise.tmExerciseId, planExercise.tmExercise)
-              }
-            })
-          })
-
-          const missing = Array.from(tmExercisesMap.values())
-            .filter(ex => !existingTMSlugs.has(ex.slug))
-          setRequiredExercises(missing)
-        } else {
-          // Full setup: all plan exercises
-          const tmExerciseIds = new Set<number>()
-          const tmExercisesMap = new Map<number, Exercise>()
-
-          plan.days.forEach(day => {
-            day.exercises.forEach(planExercise => {
-              if (!tmExerciseIds.has(planExercise.tmExerciseId)) {
-                tmExerciseIds.add(planExercise.tmExerciseId)
-                tmExercisesMap.set(planExercise.tmExerciseId, planExercise.tmExercise)
-              }
-            })
-          })
-
-          setRequiredExercises(Array.from(tmExercisesMap.values()))
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load exercises')
-      } finally {
-        setIsLoading(false)
-      }
+    if (isMissingTMsMode) {
+      const existingTMSlugs = new Set(trainingMaxes.map((tm: { exercise: string }) => tm.exercise))
+      return Array.from(tmExercisesMap.values()).filter(ex => !existingTMSlugs.has(ex.slug))
     }
 
-    loadRequiredExercises()
-  }, [isMissingTMsMode])
+    return Array.from(tmExercisesMap.values())
+  }, [currentPlan, trainingMaxes, isMissingTMsMode])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -123,17 +113,7 @@ function SetupPage() {
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className={styles.page}>
-        <div className={styles.container}>
-          <p>Loading exercises...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (requiredExercises.length === 0) {
+  if (!currentPlan || requiredExercises.length === 0) {
     return (
       <div className={styles.page}>
         <div className={styles.container}>
