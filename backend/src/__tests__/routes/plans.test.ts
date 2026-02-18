@@ -394,8 +394,8 @@ describe('Plans routes', () => {
       });
 
       expect(previousPlan).toBeDefined();
-      expect(previousPlan!.isActive).toBe(false);
-      expect(previousPlan!.endedAt).toBeDefined();
+      expect(previousPlan?.isActive).toBe(false);
+      expect(previousPlan?.endedAt).toBeDefined();
     });
 
     it('returns 404 for non-existent plan', async () => {

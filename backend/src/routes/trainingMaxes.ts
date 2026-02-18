@@ -2,7 +2,7 @@ import { Router, Response } from 'express';
 import { z } from 'zod';
 import { validate } from '../middleware/validate';
 import { authenticate } from '../middleware/auth';
-import { AuthRequest } from '../types';
+import { AuthRequest, getUserId } from '../types';
 import prisma from '../lib/db';
 import * as trainingMaxService from '../services/trainingMax.service';
 
@@ -11,7 +11,7 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/', async (req: AuthRequest, res: Response) => {
-  const tms = await trainingMaxService.getCurrentTMs(req.userId!);
+  const tms = await trainingMaxService.getCurrentTMs(getUserId(req));
   res.json(tms);
 });
 
@@ -32,7 +32,7 @@ router.post('/setup', validate(setupSchema), async (req: AuthRequest, res: Respo
   }
 
   const tms = await trainingMaxService.setupFromExerciseTMs(
-    req.userId!,
+    getUserId(req),
     req.body.exerciseTMs,
   );
   res.status(201).json(tms);
@@ -60,7 +60,7 @@ router.patch('/:exercise', validate(updateSchema), async (req: AuthRequest, res:
     return;
   }
 
-  const tm = await trainingMaxService.updateTM(req.userId!, exercise, req.body.weight);
+  const tm = await trainingMaxService.updateTM(getUserId(req), exercise, req.body.weight);
   res.json(tm);
 });
 
@@ -76,7 +76,7 @@ router.get('/:exercise/history', async (req: AuthRequest, res: Response) => {
     return;
   }
 
-  const history = await trainingMaxService.getHistory(req.userId!, exercise);
+  const history = await trainingMaxService.getHistory(getUserId(req), exercise);
   res.json(history);
 });
 

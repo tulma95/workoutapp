@@ -344,7 +344,7 @@ describe('Workout Completion - Plan-Driven', () => {
       });
 
       expect(tm).toBeDefined();
-      expect(tm!.exerciseId).toBe(benchExId);
+      expect(tm?.exerciseId).toBe(benchExId);
     });
   });
 });

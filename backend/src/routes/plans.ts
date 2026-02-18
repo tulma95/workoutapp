@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { authenticate } from '../middleware/auth';
-import { AuthRequest } from '../types';
+import { AuthRequest, getUserId } from '../types';
 import prisma from '../lib/db';
 
 const router = Router();
@@ -38,7 +38,7 @@ router.get('/', async (_req: AuthRequest, res: Response) => {
 router.get('/current', async (req: AuthRequest, res: Response) => {
   const userPlan = await prisma.userPlan.findFirst({
     where: {
-      userId: req.userId!,
+      userId: getUserId(req),
       isActive: true,
     },
     include: {
@@ -168,7 +168,7 @@ router.post('/:id/subscribe', async (req: AuthRequest, res: Response) => {
   // Get user's existing training maxes
   const existingTMs = await prisma.trainingMax.findMany({
     where: {
-      userId: req.userId!,
+      userId: getUserId(req),
       exerciseId: { in: requiredExerciseIds },
     },
     distinct: ['exerciseId'],
@@ -198,7 +198,7 @@ router.post('/:id/subscribe', async (req: AuthRequest, res: Response) => {
     // Deactivate previous active plans
     await tx.userPlan.updateMany({
       where: {
-        userId: req.userId!,
+        userId: getUserId(req),
         isActive: true,
       },
       data: {
@@ -210,7 +210,7 @@ router.post('/:id/subscribe', async (req: AuthRequest, res: Response) => {
     // Discard any in-progress workout from the old plan
     await tx.workout.updateMany({
       where: {
-        userId: req.userId!,
+        userId: getUserId(req),
         status: 'in_progress',
       },
       data: {
@@ -221,7 +221,7 @@ router.post('/:id/subscribe', async (req: AuthRequest, res: Response) => {
     // Create new subscription
     return await tx.userPlan.create({
       data: {
-        userId: req.userId!,
+        userId: getUserId(req),
         planId: id,
         isActive: true,
       },

@@ -13,6 +13,17 @@ export interface AuthRequest extends Request {
   isAdmin?: boolean;
 }
 
+/**
+ * Extract userId from an authenticated request.
+ * Use in route handlers behind the authenticate middleware.
+ */
+export function getUserId(req: AuthRequest): number {
+  if (req.userId == null) {
+    throw new Error('userId missing from authenticated request');
+  }
+  return req.userId;
+}
+
 export class ExistingWorkoutError extends Error {
   constructor(
     public workoutId: number,

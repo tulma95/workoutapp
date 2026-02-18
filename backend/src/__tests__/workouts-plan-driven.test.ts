@@ -282,9 +282,9 @@ describe('Workouts API - Plan-Driven Generation', () => {
       });
 
       expect(workout).not.toBeNull();
-      expect(workout!.planDayId).not.toBeNull();
+      expect(workout?.planDayId).not.toBeNull();
 
-      const sets = workout!.sets;
+      const sets = workout?.sets ?? [];
       expect(sets.every((s) => s.exerciseId !== null)).toBe(true);
 
       const progressionSets = sets.filter((s) => s.isProgression);

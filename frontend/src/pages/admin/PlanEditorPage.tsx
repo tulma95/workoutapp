@@ -89,8 +89,8 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
           exerciseName={state.editingSets.exerciseName}
           initialSets={
             state.days
-              .find(d => d.dayNumber === state.editingSets!.dayNumber)
-              ?.exercises.find(ex => ex.tempId === state.editingSets!.tempId)
+              .find(d => d.dayNumber === state.editingSets?.dayNumber)
+              ?.exercises.find(ex => ex.tempId === state.editingSets?.tempId)
               ?.sets || []
           }
           onSave={state.saveSetScheme}

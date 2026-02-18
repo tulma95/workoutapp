@@ -25,7 +25,8 @@ describe('Log Set - actualReps nullable', () => {
     const bench = await prisma.exercise.findUnique({
       where: { slug: 'bench-press' },
     });
-    benchExId = bench!.id;
+    if (!bench) throw new Error('bench-press exercise not found in seed data');
+    benchExId = bench.id;
 
     // Create a simple test plan
     const plan = await prisma.workoutPlan.create({

@@ -2,7 +2,7 @@ import { Router, Response } from 'express';
 import { z } from 'zod';
 import { validate } from '../middleware/validate';
 import { authenticate } from '../middleware/auth';
-import { AuthRequest, ExistingWorkoutError } from '../types';
+import { AuthRequest, ExistingWorkoutError, getUserId } from '../types';
 import * as workoutService from '../services/workout.service';
 
 const router = Router();
@@ -15,7 +15,7 @@ const startSchema = z.object({
 
 router.post('/', validate(startSchema), async (req: AuthRequest, res: Response) => {
   try {
-    const workout = await workoutService.startWorkout(req.userId!, req.body.dayNumber);
+    const workout = await workoutService.startWorkout(getUserId(req), req.body.dayNumber);
     res.status(201).json(workout);
   } catch (err: unknown) {
     if (err instanceof ExistingWorkoutError) {
@@ -37,14 +37,14 @@ router.post('/', validate(startSchema), async (req: AuthRequest, res: Response) 
 });
 
 router.get('/current', async (req: AuthRequest, res: Response) => {
-  const workout = await workoutService.getCurrentWorkout(req.userId!);
+  const workout = await workoutService.getCurrentWorkout(getUserId(req));
   res.json(workout);
 });
 
 router.get('/history', async (req: AuthRequest, res: Response) => {
   const page = parseInt(req.query.page as string, 10) || 1;
   const limit = parseInt(req.query.limit as string, 10) || 10;
-  const result = await workoutService.getHistory(req.userId!, page, limit);
+  const result = await workoutService.getHistory(getUserId(req), page, limit);
   res.json(result);
 });
 
@@ -57,7 +57,7 @@ router.get('/calendar', async (req: AuthRequest, res: Response) => {
     return;
   }
 
-  const result = await workoutService.getCalendar(req.userId!, year, month);
+  const result = await workoutService.getCalendar(getUserId(req), year, month);
   res.json(result);
 });
 
@@ -67,7 +67,7 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     res.status(400).json({ error: { code: 'INVALID_ID', message: 'Invalid workout ID' } });
     return;
   }
-  const workout = await workoutService.getWorkout(id, req.userId!);
+  const workout = await workoutService.getWorkout(id, getUserId(req));
   if (!workout) {
     res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Workout not found' } });
     return;
@@ -86,7 +86,7 @@ router.patch('/:id/sets/:setId', validate(logSetSchema), async (req: AuthRequest
     res.status(400).json({ error: { code: 'INVALID_ID', message: 'Invalid set ID' } });
     return;
   }
-  const result = await workoutService.logSet(setId, req.userId!, req.body);
+  const result = await workoutService.logSet(setId, getUserId(req), req.body);
   if (!result) {
     res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Set not found' } });
     return;
@@ -100,7 +100,7 @@ router.post('/:id/complete', async (req: AuthRequest, res: Response) => {
     res.status(400).json({ error: { code: 'INVALID_ID', message: 'Invalid workout ID' } });
     return;
   }
-  const result = await workoutService.completeWorkout(id, req.userId!);
+  const result = await workoutService.completeWorkout(id, getUserId(req));
   if (!result) {
     res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Workout not found' } });
     return;
@@ -115,7 +115,7 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
     return;
   }
   try {
-    const result = await workoutService.cancelWorkout(id, req.userId!);
+    const result = await workoutService.cancelWorkout(id, getUserId(req));
     if (!result) {
       res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Workout not found' } });
       return;

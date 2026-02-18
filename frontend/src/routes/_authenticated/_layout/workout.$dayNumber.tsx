@@ -35,7 +35,9 @@ type WorkoutPhase =
   | { phase: 'canceling' }
   | { phase: 'error'; message: string }
 
-export const Route = createFileRoute('/_authenticated/_layout/workout/$dayNumber')({
+export const Route = createFileRoute(
+  '/_authenticated/_layout/workout/$dayNumber',
+)({
   preload: false,
   loader: async ({ params }): Promise<LoaderResult> => {
     const dayNumber = parseInt(params.dayNumber || '0', 10)
@@ -69,7 +71,15 @@ export const Route = createFileRoute('/_authenticated/_layout/workout/$dayNumber
           </div>
           <div className={styles.sectionSets}>
             {Array.from({ length: i === 1 ? 9 : 8 }, (_, j) => (
-              <div key={j} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '3rem' }}>
+              <div
+                key={j}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  minHeight: '3rem',
+                }}
+              >
                 <SkeletonLine width="60%" height="1rem" />
                 <SkeletonLine width="3rem" height="2.5rem" />
               </div>
@@ -86,7 +96,11 @@ export const Route = createFileRoute('/_authenticated/_layout/workout/$dayNumber
   ),
   errorComponent: ({ error }) => (
     <div className={styles.page}>
-      <ErrorMessage message={error instanceof Error ? error.message : 'Failed to load workout'} />
+      <ErrorMessage
+        message={
+          error instanceof Error ? error.message : 'Failed to load workout'
+        }
+      />
     </div>
   ),
   component: WorkoutPage,
@@ -169,15 +183,20 @@ function WorkoutPage() {
         } else {
           setPhase({
             phase: 'error',
-            message: err instanceof Error ? err.message : 'Failed to start workout',
+            message:
+              err instanceof Error ? err.message : 'Failed to start workout',
           })
         }
       })
 
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [loaderData.type, dayNumber])
 
-  const debounceMap = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map())
+  const debounceMap = useRef<Map<number, ReturnType<typeof setTimeout>>>(
+    new Map(),
+  )
 
   // Cleanup debounce timers on unmount
   useEffect(() => {
@@ -189,7 +208,7 @@ function WorkoutPage() {
 
   const debouncedLogSet = (
     setId: number,
-    data: { actualReps?: number | null; completed?: boolean }
+    data: { actualReps?: number | null; completed?: boolean },
   ) => {
     if (!workout) return
 
@@ -223,7 +242,7 @@ function WorkoutPage() {
       sets: workout.sets.map((s) =>
         s.id === setId
           ? { ...s, actualReps: s.prescribedReps, completed: true }
-          : s
+          : s,
       ),
     })
 
@@ -239,7 +258,7 @@ function WorkoutPage() {
     setWorkout({
       ...workout,
       sets: workout.sets.map((s) =>
-        s.id === setId ? { ...s, actualReps: reps, completed: true } : s
+        s.id === setId ? { ...s, actualReps: reps, completed: true } : s,
       ),
     })
 
@@ -264,7 +283,8 @@ function WorkoutPage() {
     setPhase({ phase: 'completing' })
 
     try {
-      const result = await completeWorkout(workout!.id)
+      if (!workout) return
+      const result = await completeWorkout(workout.id)
       const progressionArray =
         result.progressions || (result.progression ? [result.progression] : [])
       await queryClient.invalidateQueries({ queryKey: ['workout'] })
@@ -274,7 +294,8 @@ function WorkoutPage() {
     } catch (err) {
       setPhase({
         phase: 'error',
-        message: err instanceof Error ? err.message : 'Failed to complete workout',
+        message:
+          err instanceof Error ? err.message : 'Failed to complete workout',
       })
     }
   }
@@ -289,14 +310,16 @@ function WorkoutPage() {
     setPhase({ phase: 'canceling' })
 
     try {
-      await cancelWorkout(workout!.id)
+      if (!workout) return
+      await cancelWorkout(workout.id)
       await queryClient.invalidateQueries({ queryKey: ['workout'] })
       await queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
       navigate({ to: '/' })
     } catch (err) {
       setPhase({
         phase: 'error',
-        message: err instanceof Error ? err.message : 'Failed to cancel workout',
+        message:
+          err instanceof Error ? err.message : 'Failed to cancel workout',
       })
     }
   }
@@ -305,7 +328,10 @@ function WorkoutPage() {
     if (phase.phase !== 'conflict') return
     const { existingDayNumber } = phase
     setPhase({ phase: 'loading' })
-    navigate({ to: '/workout/$dayNumber', params: { dayNumber: String(existingDayNumber) } })
+    navigate({
+      to: '/workout/$dayNumber',
+      params: { dayNumber: String(existingDayNumber) },
+    })
   }
 
   const handleDiscardAndStartNew = async () => {
@@ -326,7 +352,8 @@ function WorkoutPage() {
     } catch (err) {
       setPhase({
         phase: 'error',
-        message: err instanceof Error ? err.message : 'Failed to start new workout',
+        message:
+          err instanceof Error ? err.message : 'Failed to start new workout',
       })
     }
   }
@@ -374,7 +401,8 @@ function WorkoutPage() {
     )
   }
 
-  const exerciseGroups: Array<{ exercise: string; sets: typeof workout.sets }> = []
+  const exerciseGroups: Array<{ exercise: string; sets: typeof workout.sets }> =
+    []
   for (const set of workout.sets) {
     const last = exerciseGroups[exerciseGroups.length - 1]
     if (last && last.exercise === set.exercise) {
@@ -391,9 +419,7 @@ function WorkoutPage() {
       <div className={styles.page}>
         <h1>Workout Complete!</h1>
         <ProgressionBanner progressions={phase.progressions} />
-        <ButtonLink to="/">
-          Back to Dashboard
-        </ButtonLink>
+        <ButtonLink to="/">Back to Dashboard</ButtonLink>
       </div>
     )
   }

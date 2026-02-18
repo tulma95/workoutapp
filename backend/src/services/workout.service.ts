@@ -328,6 +328,9 @@ export async function completeWorkout(workoutId: number, userId: number) {
     });
 
     for (const progressionSet of progressionSets) {
+      const actualReps = progressionSet.actualReps;
+      if (actualReps == null) continue;
+
       // Get the exercise details
       const exercise = await prisma.exercise.findUnique({
         where: { id: progressionSet.exerciseId },
@@ -341,8 +344,8 @@ export async function completeWorkout(workoutId: number, userId: number) {
       let matchingRule = planDay.plan.progressionRules.find(
         (rule) =>
           rule.exerciseId === exercise.id &&
-          progressionSet.actualReps! >= rule.minReps &&
-          progressionSet.actualReps! <= rule.maxReps,
+          actualReps >= rule.minReps &&
+          actualReps <= rule.maxReps,
       );
 
       if (!matchingRule) {
@@ -351,8 +354,8 @@ export async function completeWorkout(workoutId: number, userId: number) {
         matchingRule = planDay.plan.progressionRules.find(
           (rule) =>
             rule.category === category &&
-            progressionSet.actualReps! >= rule.minReps &&
-            progressionSet.actualReps! <= rule.maxReps,
+            actualReps >= rule.minReps &&
+            actualReps <= rule.maxReps,
         );
       }
 
