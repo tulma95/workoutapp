@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useCallback } from 'react'
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import styles from './ProgressChart.module.css'
 import { formatWeight } from '../utils/weight'
 import type { TrainingMax } from '../api/schemas'
@@ -37,6 +37,8 @@ export function ProgressChart({ history, color, exerciseName, timeRange }: Props
   const [tooltip, setTooltip] = useState<TooltipData | null>(null)
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const pathRef = useRef<SVGPathElement>(null)
+  const [pathLength, setPathLength] = useState(0)
 
   const measuredRef = useCallback((node: HTMLDivElement | null) => {
     if (node) {
@@ -56,6 +58,42 @@ export function ProgressChart({ history, color, exerciseName, timeRange }: Props
     return sorted.filter((tm) => new Date(tm.effectiveDate) >= rangeStart)
   }, [history, timeRange])
 
+  const { width, height } = dimensions
+  const plotWidth = width - CHART_PADDING.left - CHART_PADDING.right
+  const plotHeight = height - CHART_PADDING.top - CHART_PADDING.bottom
+
+  const linePath = useMemo(() => {
+    if (filteredData.length < 2 || plotWidth <= 0 || plotHeight <= 0) return ''
+    const weights = filteredData.map((d) => d.weight)
+    const minWeight = Math.floor(Math.min(...weights) / 2.5) * 2.5 - 2.5
+    const maxWeight = Math.ceil(Math.max(...weights) / 2.5) * 2.5 + 2.5
+    const weightRange = maxWeight - minWeight || 5
+    const dates = filteredData.map((d) => new Date(d.effectiveDate).getTime())
+    const minDate = dates[0]!
+    const maxDate = dates[dates.length - 1]!
+    const dateRange = maxDate - minDate || 1
+    const sx = (ts: number) => CHART_PADDING.left + ((ts - minDate) / dateRange) * plotWidth
+    const sy = (w: number) => CHART_PADDING.top + (1 - (w - minWeight) / weightRange) * plotHeight
+    const parts: string[] = []
+    filteredData.forEach((point, i) => {
+      const x = sx(new Date(point.effectiveDate).getTime())
+      const y = sy(point.weight)
+      if (i === 0) {
+        parts.push(`M ${x} ${y}`)
+      } else {
+        parts.push(`H ${x} V ${y}`)
+      }
+    })
+    parts.push(`H ${CHART_PADDING.left + plotWidth}`)
+    return parts.join(' ')
+  }, [filteredData, plotWidth, plotHeight])
+
+  useEffect(() => {
+    if (pathRef.current) {
+      setPathLength(pathRef.current.getTotalLength())
+    }
+  }, [linePath])
+
   if (filteredData.length < 2) {
     return (
       <div className={styles.chartCard}>
@@ -66,10 +104,6 @@ export function ProgressChart({ history, color, exerciseName, timeRange }: Props
       </div>
     )
   }
-
-  const { width, height } = dimensions
-  const plotWidth = width - CHART_PADDING.left - CHART_PADDING.right
-  const plotHeight = height - CHART_PADDING.top - CHART_PADDING.bottom
 
   const weights = filteredData.map((d) => d.weight)
   const minWeight = Math.floor(Math.min(...weights) / 2.5) * 2.5 - 2.5
@@ -85,19 +119,6 @@ export function ProgressChart({ history, color, exerciseName, timeRange }: Props
     CHART_PADDING.left + ((timestamp - minDate) / dateRange) * plotWidth
   const scaleY = (weight: number) =>
     CHART_PADDING.top + (1 - (weight - minWeight) / weightRange) * plotHeight
-
-  const pathParts: string[] = []
-  filteredData.forEach((point, i) => {
-    const x = scaleX(new Date(point.effectiveDate).getTime())
-    const y = scaleY(point.weight)
-    if (i === 0) {
-      pathParts.push(`M ${x} ${y}`)
-    } else {
-      pathParts.push(`H ${x} V ${y}`)
-    }
-  })
-  pathParts.push(`H ${CHART_PADDING.left + plotWidth}`)
-  const linePath = pathParts.join(' ')
 
   const areaPath = `${linePath} V ${CHART_PADDING.top + plotHeight} H ${CHART_PADDING.left} Z`
 
@@ -195,6 +216,7 @@ export function ProgressChart({ history, color, exerciseName, timeRange }: Props
             <path d={areaPath} fill={`url(#${gradientId})`} />
 
             <path
+              ref={pathRef}
               d={linePath}
               fill="none"
               stroke={color}
@@ -202,6 +224,10 @@ export function ProgressChart({ history, color, exerciseName, timeRange }: Props
               strokeLinecap="round"
               strokeLinejoin="round"
               className={styles.chartLine}
+              style={{
+                strokeDasharray: pathLength || undefined,
+                strokeDashoffset: pathLength || undefined,
+              }}
             />
 
             {filteredData.map((point) => {
