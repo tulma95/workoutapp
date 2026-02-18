@@ -8,9 +8,9 @@
  * Commands: list, add, show, move, status, delete, next, readme
  */
 
-import * as fs from "node:fs";
-import * as path from "node:path";
-import { parseArgs } from "node:util";
+const fs = require("node:fs") as typeof import("node:fs");
+const path = require("node:path") as typeof import("node:path");
+const { parseArgs } = require("node:util") as typeof import("node:util");
 
 // ---------------------------------------------------------------------------
 // Types
@@ -37,7 +37,7 @@ const VALID_STATUSES: TicketStatus[] = [
 // Paths
 // ---------------------------------------------------------------------------
 
-const BACKLOG_DIR = path.dirname(new URL(import.meta.url).pathname);
+const BACKLOG_DIR = __dirname;
 const PROJECT_ROOT = path.resolve(BACKLOG_DIR, "..", "..");
 const BACKLOG_PATH = path.join(BACKLOG_DIR, "backlog.json");
 const README_PATH = path.join(BACKLOG_DIR, "README.md");
