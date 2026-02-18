@@ -18,4 +18,8 @@ export class NavigationBar {
   async goToSettings() {
     await this.page.getByRole('link', { name: /settings/i }).click();
   }
+
+  async goToProgress() {
+    await this.page.getByRole('link', { name: /progress/i }).click();
+  }
 }
