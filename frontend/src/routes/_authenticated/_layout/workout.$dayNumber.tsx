@@ -17,6 +17,7 @@ import { ConflictDialog } from '../../../components/ConflictDialog'
 import { ButtonLink } from '../../../components/ButtonLink'
 import { ActiveWorkoutView } from '../../../components/ActiveWorkoutView'
 import { useRestTimer } from '../../../hooks/useRestTimer'
+import { useWakeLock } from '../../../hooks/useWakeLock'
 import { getRestTimerSettings } from '../../../utils/restTimerSettings'
 import styles from '../../../styles/WorkoutPage.module.css'
 
@@ -300,6 +301,7 @@ function ActiveWorkout({
   )
   const restTimer = useRestTimer()
   const settingsRef = useRef(getRestTimerSettings())
+  useWakeLock()
 
   // Cleanup debounce timers on unmount
   useEffect(() => {

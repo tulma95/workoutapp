@@ -8,7 +8,7 @@
   {
     "id": "007",
     "title": "Screen Wake Lock",
-    "status": "backlog",
+    "status": "done",
     "description": "Keep screen on during active workouts using the Screen Wake Lock API. Auto-acquire on workout page mount, release on leave/complete. Re-acquire on visibilitychange for iOS. No UI needed, graceful no-op on unsupported browsers."
   },
   {
