@@ -1,6 +1,7 @@
 import { type Workout, type ProgressionResult } from '../api/workouts'
 import SetRow from './SetRow'
 import { ProgressionBanner } from './ProgressionBanner'
+import { RestTimerBanner } from './RestTimerBanner'
 import { Button } from './Button'
 import { ButtonLink } from './ButtonLink'
 import { ConfirmDialog } from './ConfirmDialog'
@@ -28,6 +29,12 @@ type Props = {
   onDoCancelWorkout: () => void
   onDismissCompleteConfirm: () => void
   onDismissCancelConfirm: () => void
+  restTimer: {
+    secondsRemaining: number
+    totalSeconds: number
+    onAdjust: (delta: number) => void
+    onSkip: () => void
+  } | null
 }
 
 export function ActiveWorkoutView({
@@ -44,6 +51,7 @@ export function ActiveWorkoutView({
   onDoCancelWorkout,
   onDismissCompleteConfirm,
   onDismissCancelConfirm,
+  restTimer,
 }: Props) {
   if (phase.phase === 'error') {
     return (
@@ -79,6 +87,15 @@ export function ActiveWorkoutView({
   return (
     <div className={styles.page}>
       <h1>Day {dayNumber}</h1>
+
+      {restTimer && (
+        <RestTimerBanner
+          secondsRemaining={restTimer.secondsRemaining}
+          totalSeconds={restTimer.totalSeconds}
+          onAdjust={restTimer.onAdjust}
+          onSkip={restTimer.onSkip}
+        />
+      )}
 
       {exerciseGroups.map((group) => (
         <section key={group.exercise} className={styles.section}>

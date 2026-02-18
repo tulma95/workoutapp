@@ -16,6 +16,8 @@ import { SkeletonLine, SkeletonHeading } from '../../../components/Skeleton'
 import { ConflictDialog } from '../../../components/ConflictDialog'
 import { ButtonLink } from '../../../components/ButtonLink'
 import { ActiveWorkoutView } from '../../../components/ActiveWorkoutView'
+import { useRestTimer } from '../../../hooks/useRestTimer'
+import { getRestTimerSettings } from '../../../utils/restTimerSettings'
 import styles from '../../../styles/WorkoutPage.module.css'
 
 type LoaderResult =
@@ -296,6 +298,8 @@ function ActiveWorkout({
   const debounceMap = useRef<Map<number, ReturnType<typeof setTimeout>>>(
     new Map(),
   )
+  const restTimer = useRestTimer()
+  const settingsRef = useRef(getRestTimerSettings())
 
   // Cleanup debounce timers on unmount
   useEffect(() => {
@@ -326,6 +330,14 @@ function ActiveWorkout({
     debounceMap.current.set(setId, timer)
   }
 
+  const triggerRestTimer = (setId: number) => {
+    const settings = settingsRef.current
+    if (!settings.enabled) return
+    const setIndex = workout.sets.findIndex(s => s.id === setId)
+    if (setIndex === workout.sets.length - 1) return
+    restTimer.start(settings.durationSeconds)
+  }
+
   const handleConfirmSet = (setId: number) => {
     const set = workout.sets.find((s) => s.id === setId)
     if (!set) return
@@ -343,9 +355,12 @@ function ActiveWorkout({
       actualReps: set.prescribedReps,
       completed: true,
     })
+    triggerRestTimer(setId)
   }
 
   const handleRepsChange = (setId: number, reps: number) => {
+    const wasCompleted = workout.sets.find(s => s.id === setId)?.completed
+
     onWorkoutChange({
       ...workout,
       sets: workout.sets.map((s) =>
@@ -354,6 +369,10 @@ function ActiveWorkout({
     })
 
     debouncedLogSet(setId, { actualReps: reps, completed: true })
+
+    if (!wasCompleted) {
+      triggerRestTimer(setId)
+    }
   }
 
   const handleCompleteWorkout = async () => {
@@ -425,6 +444,12 @@ function ActiveWorkout({
       onDoCancelWorkout={doCancelWorkout}
       onDismissCompleteConfirm={() => setShowCompleteConfirm(false)}
       onDismissCancelConfirm={() => setShowCancelConfirm(false)}
+      restTimer={restTimer.state.isRunning ? {
+        secondsRemaining: restTimer.state.secondsRemaining,
+        totalSeconds: restTimer.state.totalSeconds,
+        onAdjust: restTimer.adjust,
+        onSkip: restTimer.skip,
+      } : null}
     />
   )
 }
