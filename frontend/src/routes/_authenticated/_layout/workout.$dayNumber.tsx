@@ -30,6 +30,10 @@ type WorkoutPhase =
   | { phase: 'loading' }
   | { phase: 'conflict'; existingWorkoutId: number; existingDayNumber: number }
   | { phase: 'active' }
+  | { phase: 'error'; message: string }
+
+type ActivePhase =
+  | { phase: 'active' }
   | { phase: 'completing' }
   | { phase: 'completed'; progressions: ProgressionResult[] }
   | { phase: 'canceling' }
@@ -110,14 +114,13 @@ function WorkoutPage() {
   const loaderData = Route.useLoaderData()
   const { dayNumber: dayParam } = Route.useParams()
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
 
   const dayNumber = parseInt(dayParam || '0', 10)
 
-  const [workout, setWorkout] = useState<Workout | null>(
-    loaderData.type === 'existing' ? loaderData.workout : null,
-  )
   const [phase, setPhase] = useState<WorkoutPhase>(() => {
+    if (loaderData.type === 'existing') {
+      return { phase: 'active' }
+    }
     if (loaderData.type === 'conflict') {
       return {
         phase: 'conflict',
@@ -125,13 +128,11 @@ function WorkoutPage() {
         existingDayNumber: loaderData.dayNumber,
       }
     }
-    if (loaderData.type === 'none') {
-      return { phase: 'loading' }
-    }
-    return { phase: 'active' }
+    return { phase: 'loading' }
   })
-  const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
-  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [workout, setWorkout] = useState<Workout | null>(
+    loaderData.type === 'existing' ? loaderData.workout : null,
+  )
   const createRef = useRef(false)
 
   // Sync state from loader data when route params change (same component, different day)
@@ -193,136 +194,6 @@ function WorkoutPage() {
       cancelled = true
     }
   }, [loaderData.type, dayNumber])
-
-  const debounceMap = useRef<Map<number, ReturnType<typeof setTimeout>>>(
-    new Map(),
-  )
-
-  // Cleanup debounce timers on unmount
-  useEffect(() => {
-    return () => {
-      debounceMap.current.forEach((timer) => clearTimeout(timer))
-      debounceMap.current.clear()
-    }
-  }, [])
-
-  const debouncedLogSet = (
-    setId: number,
-    data: { actualReps?: number | null; completed?: boolean },
-  ) => {
-    if (!workout) return
-
-    // Clear existing timer for this set
-    const existingTimer = debounceMap.current.get(setId)
-    if (existingTimer) {
-      clearTimeout(existingTimer)
-    }
-
-    // Set new timer
-    const timer = setTimeout(async () => {
-      try {
-        await logSet(workout.id, setId, data)
-        debounceMap.current.delete(setId)
-      } catch (err) {
-        console.error('Failed to update set:', err)
-      }
-    }, 300)
-
-    debounceMap.current.set(setId, timer)
-  }
-
-  const handleConfirmSet = (setId: number) => {
-    if (!workout) return
-
-    const set = workout.sets.find((s) => s.id === setId)
-    if (!set) return
-
-    setWorkout({
-      ...workout,
-      sets: workout.sets.map((s) =>
-        s.id === setId
-          ? { ...s, actualReps: s.prescribedReps, completed: true }
-          : s,
-      ),
-    })
-
-    debouncedLogSet(setId, {
-      actualReps: set.prescribedReps,
-      completed: true,
-    })
-  }
-
-  const handleRepsChange = (setId: number, reps: number) => {
-    if (!workout) return
-
-    setWorkout({
-      ...workout,
-      sets: workout.sets.map((s) =>
-        s.id === setId ? { ...s, actualReps: reps, completed: true } : s,
-      ),
-    })
-
-    debouncedLogSet(setId, { actualReps: reps, completed: true })
-  }
-
-  const handleCompleteWorkout = async () => {
-    if (!workout) return
-
-    const progressionSets = workout.sets.filter((s) => s.isProgression)
-    const missingReps = progressionSets.some((s) => s.actualReps === null)
-    if (missingReps && progressionSets.length > 0) {
-      setShowCompleteConfirm(true)
-      return
-    }
-
-    await doCompleteWorkout()
-  }
-
-  const doCompleteWorkout = async () => {
-    setShowCompleteConfirm(false)
-    setPhase({ phase: 'completing' })
-
-    try {
-      if (!workout) return
-      const result = await completeWorkout(workout.id)
-      const progressionArray =
-        result.progressions || (result.progression ? [result.progression] : [])
-      await queryClient.invalidateQueries({ queryKey: ['workout'] })
-      await queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
-      await queryClient.invalidateQueries({ queryKey: ['training-maxes'] })
-      setPhase({ phase: 'completed', progressions: progressionArray })
-    } catch (err) {
-      setPhase({
-        phase: 'error',
-        message:
-          err instanceof Error ? err.message : 'Failed to complete workout',
-      })
-    }
-  }
-
-  const handleCancelWorkout = () => {
-    if (!workout) return
-    setShowCancelConfirm(true)
-  }
-
-  const doCancelWorkout = async () => {
-    setShowCancelConfirm(false)
-    setPhase({ phase: 'canceling' })
-
-    try {
-      if (!workout) return
-      await cancelWorkout(workout.id)
-      await queryClient.invalidateQueries({ queryKey: ['workout'] })
-      await queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
-      navigate({ to: '/' })
-    } catch (err) {
-      setPhase({
-        phase: 'error',
-        message:
-          err instanceof Error ? err.message : 'Failed to cancel workout',
-      })
-    }
-  }
 
   const handleContinueExisting = () => {
     if (phase.phase !== 'conflict') return
@@ -401,18 +272,157 @@ function WorkoutPage() {
     )
   }
 
-  const exerciseGroups: Array<{ exercise: string; sets: typeof workout.sets }> =
-    []
-  for (const set of workout.sets) {
-    const last = exerciseGroups[exerciseGroups.length - 1]
-    if (last && last.exercise === set.exercise) {
-      last.sets.push(set)
-    } else {
-      exerciseGroups.push({ exercise: set.exercise, sets: [set] })
+  return (
+    <ActiveWorkout
+      workout={workout}
+      dayNumber={dayNumber}
+      onWorkoutChange={setWorkout}
+    />
+  )
+}
+
+function ActiveWorkout({
+  workout,
+  dayNumber,
+  onWorkoutChange,
+}: {
+  workout: Workout
+  dayNumber: number
+  onWorkoutChange: (workout: Workout) => void
+}) {
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+
+  const [phase, setPhase] = useState<ActivePhase>({ phase: 'active' })
+  const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const debounceMap = useRef<Map<number, ReturnType<typeof setTimeout>>>(
+    new Map(),
+  )
+
+  // Cleanup debounce timers on unmount
+  useEffect(() => {
+    return () => {
+      debounceMap.current.forEach((timer) => clearTimeout(timer))
+      debounceMap.current.clear()
+    }
+  }, [])
+
+  const debouncedLogSet = (
+    setId: number,
+    data: { actualReps?: number | null; completed?: boolean },
+  ) => {
+    const existingTimer = debounceMap.current.get(setId)
+    if (existingTimer) {
+      clearTimeout(existingTimer)
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        await logSet(workout.id, setId, data)
+        debounceMap.current.delete(setId)
+      } catch (err) {
+        console.error('Failed to update set:', err)
+      }
+    }, 300)
+
+    debounceMap.current.set(setId, timer)
+  }
+
+  const handleConfirmSet = (setId: number) => {
+    const set = workout.sets.find((s) => s.id === setId)
+    if (!set) return
+
+    onWorkoutChange({
+      ...workout,
+      sets: workout.sets.map((s) =>
+        s.id === setId
+          ? { ...s, actualReps: s.prescribedReps, completed: true }
+          : s,
+      ),
+    })
+
+    debouncedLogSet(setId, {
+      actualReps: set.prescribedReps,
+      completed: true,
+    })
+  }
+
+  const handleRepsChange = (setId: number, reps: number) => {
+    onWorkoutChange({
+      ...workout,
+      sets: workout.sets.map((s) =>
+        s.id === setId ? { ...s, actualReps: reps, completed: true } : s,
+      ),
+    })
+
+    debouncedLogSet(setId, { actualReps: reps, completed: true })
+  }
+
+  const handleCompleteWorkout = async () => {
+    const progressionSets = workout.sets.filter((s) => s.isProgression)
+    const missingReps = progressionSets.some((s) => s.actualReps === null)
+    if (missingReps && progressionSets.length > 0) {
+      setShowCompleteConfirm(true)
+      return
+    }
+
+    await doCompleteWorkout()
+  }
+
+  const doCompleteWorkout = async () => {
+    setShowCompleteConfirm(false)
+    setPhase({ phase: 'completing' })
+
+    try {
+      const result = await completeWorkout(workout.id)
+      const progressionArray =
+        result.progressions || (result.progression ? [result.progression] : [])
+      await queryClient.invalidateQueries({ queryKey: ['workout'] })
+      await queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
+      await queryClient.invalidateQueries({ queryKey: ['training-maxes'] })
+      setPhase({ phase: 'completed', progressions: progressionArray })
+    } catch (err) {
+      setPhase({
+        phase: 'error',
+        message:
+          err instanceof Error ? err.message : 'Failed to complete workout',
+      })
     }
   }
 
-  const dayTitle = `Day ${dayNumber}`
+  const handleCancelWorkout = () => {
+    setShowCancelConfirm(true)
+  }
+
+  const doCancelWorkout = async () => {
+    setShowCancelConfirm(false)
+    setPhase({ phase: 'canceling' })
+
+    try {
+      await cancelWorkout(workout.id)
+      await queryClient.invalidateQueries({ queryKey: ['workout'] })
+      await queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
+      navigate({ to: '/' })
+    } catch (err) {
+      setPhase({
+        phase: 'error',
+        message:
+          err instanceof Error ? err.message : 'Failed to cancel workout',
+      })
+    }
+  }
+
+  if (phase.phase === 'error') {
+    return (
+      <div className={styles.page}>
+        <ErrorMessage message={phase.message} />
+        <ButtonLink variant="secondary" to="/">
+          Back to Dashboard
+        </ButtonLink>
+      </div>
+    )
+  }
 
   if (phase.phase === 'completed') {
     return (
@@ -424,9 +434,20 @@ function WorkoutPage() {
     )
   }
 
+  const exerciseGroups: Array<{ exercise: string; sets: typeof workout.sets }> =
+    []
+  for (const set of workout.sets) {
+    const last = exerciseGroups[exerciseGroups.length - 1]
+    if (last && last.exercise === set.exercise) {
+      last.sets.push(set)
+    } else {
+      exerciseGroups.push({ exercise: set.exercise, sets: [set] })
+    }
+  }
+
   return (
     <div className={styles.page}>
-      <h1>{dayTitle}</h1>
+      <h1>Day {dayNumber}</h1>
 
       {exerciseGroups.map((group) => (
         <section key={group.exercise} className={styles.section}>
