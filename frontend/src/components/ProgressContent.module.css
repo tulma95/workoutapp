@@ -7,3 +7,21 @@
   font-weight: 700;
   margin: 0 0 var(--space-md);
 }
+
+.empty {
+  text-align: center;
+  margin-top: var(--space-xl);
+  padding: var(--space-lg);
+}
+
+.emptyTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 var(--space-sm);
+}
+
+.emptyText {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 0;
+}

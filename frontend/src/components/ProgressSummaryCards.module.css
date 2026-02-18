@@ -1,0 +1,60 @@
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0.625rem 0.75rem;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--space-sm);
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease;
+  text-align: left;
+  min-height: 4.5rem;
+}
+
+.cardSelected {
+  border-width: 2px;
+}
+
+.exerciseName {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.125rem;
+}
+
+.currentWeight {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.gain {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--success);
+  margin-top: 0.125rem;
+}
+
+.noChange {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-top: 0.125rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}
