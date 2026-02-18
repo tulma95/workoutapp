@@ -50,7 +50,7 @@ describe('errorHandler middleware', () => {
         message: 'Internal server error',
       },
     });
-    const jsonArg = vi.mocked(res.json).mock.calls[0][0] as { error: { stack?: string } };
+    const jsonArg = vi.mocked(res.json).mock.calls[0]![0] as { error: { stack?: string } };
     expect(jsonArg.error.stack).toBeUndefined();
   });
 });

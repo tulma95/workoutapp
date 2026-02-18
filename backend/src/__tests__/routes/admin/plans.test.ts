@@ -688,7 +688,7 @@ describe('Admin Plans routes', () => {
         where: { planId: testPlanId },
       });
       expect(allRules).toHaveLength(1);
-      expect(allRules[0].category).toBe('lower');
+      expect(allRules[0]!.category).toBe('lower');
     });
 
     it('sets exercise-specific progression rules', async () => {

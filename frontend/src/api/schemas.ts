@@ -96,6 +96,104 @@ export const OneRepMaxesSchema = z.object({
 export const SetupResponseSchema = z.array(TrainingMaxSchema);
 export const TrainingMaxHistorySchema = z.array(TrainingMaxSchema);
 
+// Plan schemas
+export const ExerciseSchema = z.object({
+  id: z.number(),
+  slug: z.string(),
+  name: z.string(),
+  muscleGroup: z.string().nullable().optional(),
+  category: z.string(),
+  isUpperBody: z.boolean(),
+});
+
+export const PlanDayExerciseSchema = z.object({
+  id: z.number(),
+  planDayId: z.number(),
+  exerciseId: z.number(),
+  sortOrder: z.number(),
+  tmExerciseId: z.number(),
+  displayName: z.string().nullable(),
+  exercise: ExerciseSchema,
+  tmExercise: ExerciseSchema,
+});
+
+export const PlanDaySchema = z.object({
+  id: z.number(),
+  planId: z.number(),
+  dayNumber: z.number(),
+  name: z.string().nullable(),
+  exercises: z.array(PlanDayExerciseSchema),
+});
+
+export const WorkoutPlanBasicSchema = z.object({
+  id: z.number(),
+  slug: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+  daysPerWeek: z.number(),
+  isPublic: z.boolean(),
+  isSystem: z.boolean(),
+  archivedAt: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export const WorkoutPlanSchema = WorkoutPlanBasicSchema.extend({
+  days: z.array(PlanDaySchema),
+});
+
+export const UserPlanSchema = z.object({
+  id: z.number(),
+  userId: z.number(),
+  planId: z.number(),
+  isActive: z.boolean(),
+  startedAt: z.string(),
+  plan: WorkoutPlanBasicSchema,
+});
+
+export const SubscribeResponseSchema = z.object({
+  userPlan: UserPlanSchema,
+  requiredExercises: z.array(ExerciseSchema),
+  missingTMs: z.array(ExerciseSchema),
+});
+
+export const PlanSetSchema = z.object({
+  id: z.number(),
+  planDayExerciseId: z.number(),
+  setOrder: z.number(),
+  percentage: z.coerce.number(),
+  reps: z.number(),
+  isAmrap: z.boolean(),
+  isProgression: z.boolean(),
+});
+
+export const PlanDayExerciseWithSetsSchema = PlanDayExerciseSchema.extend({
+  sets: z.array(PlanSetSchema),
+});
+
+export const PlanDayWithSetsSchema = PlanDaySchema.extend({
+  exercises: z.array(PlanDayExerciseWithSetsSchema),
+});
+
+export const ProgressionRuleSchema = z.object({
+  id: z.number().optional(),
+  exerciseId: z.number().nullable().optional(),
+  category: z.string().nullable().optional(),
+  minReps: z.number(),
+  maxReps: z.number(),
+  increase: z.coerce.number(),
+  exercise: ExerciseSchema.optional(),
+});
+
+export const PlanWithDetailsSchema = WorkoutPlanSchema.extend({
+  days: z.array(PlanDayWithSetsSchema),
+  progressionRules: z.array(ProgressionRuleSchema),
+});
+
+export const AdminPlanListItemSchema = WorkoutPlanBasicSchema.extend({
+  subscriberCount: z.number(),
+});
+
 // Infer TypeScript types from schemas
 export type WorkoutSet = z.infer<typeof WorkoutSetSchema>;
 export type Workout = z.infer<typeof WorkoutSchema>;
@@ -111,3 +209,13 @@ export type TrainingMax = z.infer<typeof TrainingMaxSchema>;
 export type OneRepMaxes = z.infer<typeof OneRepMaxesSchema>;
 export type SetupResponse = z.infer<typeof SetupResponseSchema>;
 export type TrainingMaxHistory = z.infer<typeof TrainingMaxHistorySchema>;
+
+export type Exercise = z.infer<typeof ExerciseSchema>;
+export type PlanDayExercise = z.infer<typeof PlanDayExerciseSchema>;
+export type PlanDay = z.infer<typeof PlanDaySchema>;
+export type WorkoutPlan = z.infer<typeof WorkoutPlanSchema>;
+export type SubscribeResponse = z.infer<typeof SubscribeResponseSchema>;
+export type PlanSet = z.infer<typeof PlanSetSchema>;
+export type ProgressionRule = z.infer<typeof ProgressionRuleSchema>;
+export type PlanWithDetails = z.infer<typeof PlanWithDetailsSchema>;
+export type AdminPlanListItem = z.infer<typeof AdminPlanListItemSchema>;

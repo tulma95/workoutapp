@@ -1,9 +1,13 @@
 import { apiFetch } from './client';
-import { WorkoutPlan, Exercise } from './plans';
-
-export interface AdminPlanListItem extends WorkoutPlan {
-  subscriberCount: number;
-}
+import {
+  WorkoutPlanBasicSchema,
+  AdminPlanListItemSchema,
+  PlanWithDetailsSchema,
+  type AdminPlanListItem,
+  type PlanWithDetails,
+  type ProgressionRule,
+} from './schemas';
+export type { AdminPlanListItem, PlanWithDetails, ProgressionRule } from './schemas';
 
 export interface PlanSet {
   setOrder: number;
@@ -36,69 +40,29 @@ export interface CreatePlanInput {
   days: PlanDayInput[];
 }
 
-export interface ProgressionRule {
-  id?: number;
-  exerciseId?: number;
-  category?: string;
-  minReps: number;
-  maxReps: number;
-  increase: number;
-  exercise?: Exercise;
-}
-
-export interface PlanWithDetails extends WorkoutPlan {
-  days: Array<{
-    id: number;
-    planId: number;
-    dayNumber: number;
-    name: string | null;
-    exercises: Array<{
-      id: number;
-      planDayId: number;
-      exerciseId: number;
-      sortOrder: number;
-      tmExerciseId: number;
-      displayName: string | null;
-      exercise: Exercise;
-      tmExercise: Exercise;
-      sets: Array<{
-        id: number;
-        planDayExerciseId: number;
-        setOrder: number;
-        percentage: number;
-        reps: number;
-        isAmrap: boolean;
-        isProgression: boolean;
-      }>;
-    }>;
-  }>;
-  progressionRules: ProgressionRule[];
-}
-
 export async function getAdminPlans(): Promise<AdminPlanListItem[]> {
   const data = await apiFetch('/admin/plans');
-  return data as AdminPlanListItem[];
+  return (data as unknown[]).map((item) => AdminPlanListItemSchema.parse(item));
 }
 
 export async function getAdminPlan(planId: number): Promise<PlanWithDetails> {
   const data = await apiFetch(`/admin/plans/${planId}`);
-  return data as PlanWithDetails;
+  return PlanWithDetailsSchema.parse(data);
 }
 
-export async function createPlan(input: CreatePlanInput): Promise<WorkoutPlan> {
+export async function createPlan(input: CreatePlanInput): Promise<{ id: number }> {
   const data = await apiFetch('/admin/plans', {
     method: 'POST',
     body: JSON.stringify(input),
   });
-  return data as WorkoutPlan;
+  return WorkoutPlanBasicSchema.parse(data);
 }
 
-export async function updatePlan(planId: number, input: CreatePlanInput): Promise<WorkoutPlan> {
-  const data = await apiFetch(`/admin/plans/${planId}`, {
+export async function updatePlan(planId: number, input: CreatePlanInput): Promise<void> {
+  await apiFetch(`/admin/plans/${planId}`, {
     method: 'PUT',
     body: JSON.stringify(input),
   });
-  return data as WorkoutPlan;
 }
 
 export async function archivePlan(planId: number): Promise<void> {

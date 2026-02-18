@@ -1,73 +1,25 @@
 import { apiFetch } from './client';
-
-export interface Exercise {
-  id: number;
-  slug: string;
-  name: string;
-  muscleGroup: string | null;
-  category: string;
-  isUpperBody: boolean;
-}
-
-export interface PlanDayExercise {
-  id: number;
-  planDayId: number;
-  exerciseId: number;
-  sortOrder: number;
-  tmExerciseId: number;
-  displayName: string | null;
-  exercise: Exercise;
-  tmExercise: Exercise;
-}
-
-export interface PlanDay {
-  id: number;
-  planId: number;
-  dayNumber: number;
-  name: string | null;
-  exercises: PlanDayExercise[];
-}
-
-export interface WorkoutPlan {
-  id: number;
-  slug: string;
-  name: string;
-  description: string | null;
-  daysPerWeek: number;
-  isPublic: boolean;
-  isSystem: boolean;
-  archivedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-  days: PlanDay[];
-}
-
-export interface SubscribeResponse {
-  userPlan: {
-    id: number;
-    userId: number;
-    planId: number;
-    isActive: boolean;
-    startedAt: string;
-    plan: WorkoutPlan;
-  };
-  requiredExercises: Exercise[];
-  missingTMs: Exercise[];
-}
+import {
+  WorkoutPlanSchema,
+  SubscribeResponseSchema,
+  type WorkoutPlan,
+  type SubscribeResponse,
+} from './schemas';
+export type { WorkoutPlan, SubscribeResponse, Exercise, PlanDay, PlanDayExercise } from './schemas';
 
 export async function getPlans(): Promise<WorkoutPlan[]> {
   const data = await apiFetch('/plans');
-  return data as WorkoutPlan[];
+  return (data as unknown[]).map((item) => WorkoutPlanSchema.parse(item));
 }
 
 export async function getCurrentPlan(): Promise<WorkoutPlan | null> {
   const data = await apiFetch('/plans/current');
-  return data as WorkoutPlan | null;
+  return data === null ? null : WorkoutPlanSchema.parse(data);
 }
 
 export async function subscribeToPlan(planId: number): Promise<SubscribeResponse> {
   const data = await apiFetch(`/plans/${planId}/subscribe`, {
     method: 'POST',
   });
-  return data as SubscribeResponse;
+  return SubscribeResponseSchema.parse(data);
 }

@@ -129,45 +129,37 @@ function SettingsPage() {
       <h2>Settings</h2>
 
       <div className={styles.card}>
-        <p style={{ margin: '0 0 12px', fontWeight: 500 }}>Current Plan</p>
+        <p className={styles.cardLabel}>Current Plan</p>
         {currentPlan ? (
           <>
-            <p style={{ margin: '0 0 4px', fontWeight: 600 }}>{currentPlan.name}</p>
+            <p className={styles.cardTitle}>{currentPlan.name}</p>
             {currentPlan.description && (
-              <p style={{ margin: '0 0 12px', color: 'var(--text-muted)', fontSize: '14px' }}>
-                {currentPlan.description}
-              </p>
+              <p className={styles.cardMeta}>{currentPlan.description}</p>
             )}
             <ButtonLink
               variant="secondary"
               to="/select-plan"
-              style={{ marginTop: '8px' }}
+              className={styles.changePlanLink}
             >
               Change Plan
             </ButtonLink>
           </>
         ) : (
           <>
-            <p style={{ margin: '0 0 12px', color: 'var(--text-muted)', fontSize: '14px' }}>
-              No plan selected
-            </p>
-            <ButtonLink
-              to="/select-plan"
-            >
-              Browse Plans
-            </ButtonLink>
+            <p className={styles.cardMeta}>No plan selected</p>
+            <ButtonLink to="/select-plan">Browse Plans</ButtonLink>
           </>
         )}
       </div>
 
       <div className={styles.card}>
-        <p style={{ margin: '0 0 4px', color: 'var(--text-muted)', fontSize: '14px' }}>Display Name</p>
-        <p style={{ margin: '0', fontWeight: 600 }}>{user?.displayName}</p>
+        <p className={styles.cardSubLabel}>Display Name</p>
+        <p className={styles.cardValue}>{user?.displayName}</p>
       </div>
 
       <div className={styles.card}>
-        <p style={{ margin: '0 0 4px', color: 'var(--text-muted)', fontSize: '14px' }}>Email</p>
-        <p style={{ margin: '0', fontWeight: 600 }}>{user?.email}</p>
+        <p className={styles.cardSubLabel}>Email</p>
+        <p className={styles.cardValue}>{user?.email}</p>
       </div>
 
       {trainingMaxes.length > 0 && (
@@ -192,7 +184,7 @@ function SettingsPage() {
         </section>
       )}
 
-      <Button variant="secondary" style={{ color: 'var(--danger)' }} onClick={handleLogout}>
+      <Button variant="secondary" className={styles.logoutBtn} onClick={handleLogout}>
         Log Out
       </Button>
 

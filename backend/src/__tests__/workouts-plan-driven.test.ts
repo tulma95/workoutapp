@@ -118,7 +118,7 @@ describe('Workouts API - Plan-Driven Generation', () => {
         data: {
           planDayExerciseId: t1Exercise.id,
           setOrder: i + 1,
-          ...t1Sets[i],
+          ...t1Sets[i]!,
         },
       });
     }
@@ -150,8 +150,8 @@ describe('Workouts API - Plan-Driven Generation', () => {
         data: {
           planDayExerciseId: t2Exercise.id,
           setOrder: i + 1,
-          percentage: t2Sets[i].percentage,
-          reps: t2Sets[i].reps,
+          percentage: t2Sets[i]!.percentage,
+          reps: t2Sets[i]!.reps,
           isAmrap: false,
           isProgression: false,
         },
@@ -289,9 +289,9 @@ describe('Workouts API - Plan-Driven Generation', () => {
 
       const progressionSets = sets.filter((s) => s.isProgression);
       expect(progressionSets).toHaveLength(1);
-      expect(progressionSets[0].isProgression).toBe(true);
-      expect(progressionSets[0].exerciseOrder).toBe(1);
-      expect(progressionSets[0].isAmrap).toBe(true);
+      expect(progressionSets[0]!.isProgression).toBe(true);
+      expect(progressionSets[0]!.exerciseOrder).toBe(1);
+      expect(progressionSets[0]!.isAmrap).toBe(true);
     });
   });
 

@@ -2,8 +2,8 @@ import prisma from '../lib/db';
 import { roundWeight } from '../lib/weightRounding';
 import { logger } from '../lib/logger';
 
-function decimalToNumber(val: unknown): number {
-  return Number(val);
+function decimalToNumber(val: { toString(): string }): number {
+  return Number(val.toString());
 }
 
 export async function getCurrentTMs(userId: number) {

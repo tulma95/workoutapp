@@ -4,8 +4,8 @@ import type { WorkoutStatus } from '../types';
 import { ExistingWorkoutError } from '../types';
 import { logger } from '../lib/logger';
 
-function decimalToNumber(val: unknown): number {
-  return Number(val);
+function decimalToNumber(val: { toString(): string }): number {
+  return Number(val.toString());
 }
 
 function formatWorkout(
@@ -39,7 +39,7 @@ function formatWorkout(
     sets: workout.sets.map((s) => ({
       ...s,
       exercise: s.exercise.name,
-      prescribedWeight: decimalToNumber(s.prescribedWeight),
+      prescribedWeight: decimalToNumber(s.prescribedWeight as { toString(): string }),
     })),
   };
 }
@@ -144,7 +144,7 @@ export async function startWorkout(userId: number, dayNumber: number) {
     }> = [];
 
     for (const planDayExercise of planDay.exercises) {
-      const tm = tmMapById[planDayExercise.tmExerciseId];
+      const tm = tmMapById[planDayExercise.tmExerciseId]!;
       for (const planSet of planDayExercise.sets) {
         const percentage = decimalToNumber(planSet.percentage);
         const weight = roundWeight(tm * percentage);
@@ -317,26 +317,25 @@ export async function completeWorkout(workoutId: number, userId: number) {
       increase: number;
     }> = [];
 
-    for (const progressionSet of progressionSets) {
-      if (progressionSet.exerciseId === null) continue;
+    // Hoist planDay query outside the loop — it is always the same planDayId
+    const planDay = await prisma.planDay.findUnique({
+      where: { id: workout.planDayId },
+      include: {
+        plan: {
+          include: {
+            progressionRules: true,
+          },
+        },
+      },
+    });
 
+    for (const progressionSet of progressionSets) {
       // Get the exercise details
       const exercise = await prisma.exercise.findUnique({
         where: { id: progressionSet.exerciseId },
       });
       if (!exercise) continue;
 
-      // Get the plan (via planDay) to access progression rules
-      const planDay = await prisma.planDay.findUnique({
-        where: { id: workout.planDayId },
-        include: {
-          plan: {
-            include: {
-              progressionRules: true,
-            },
-          },
-        },
-      });
       if (!planDay) continue;
 
       // Find matching progression rule
@@ -359,7 +358,14 @@ export async function completeWorkout(workoutId: number, userId: number) {
         );
       }
 
-      if (!matchingRule) continue;
+      if (!matchingRule) {
+        logger.warn('No matching progression rule found', {
+          exerciseId: exercise.id,
+          exerciseSlug: exercise.slug,
+          actualReps: progressionSet.actualReps,
+        });
+        continue;
+      }
 
       const increase = decimalToNumber(matchingRule.increase);
       if (increase <= 0) continue;

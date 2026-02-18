@@ -27,14 +27,18 @@ const updateExerciseSchema = z.object({
   isUpperBody: z.boolean().optional(),
 });
 
+function isPrismaError(e: unknown, code: string): boolean {
+  return e instanceof Error && 'code' in e && (e as Record<string, unknown>).code === code;
+}
+
 router.post('/', validate(createExerciseSchema), async (req: AuthRequest, res: Response) => {
   try {
     const exercise = await prisma.exercise.create({
       data: req.body,
     });
     res.status(201).json(exercise);
-  } catch (error: any) {
-    if (error.code === 'P2002') {
+  } catch (error: unknown) {
+    if (isPrismaError(error, 'P2002')) {
       res.status(409).json({
         error: { code: 'CONFLICT', message: 'Exercise with this slug already exists' }
       });
@@ -60,8 +64,8 @@ router.patch('/:id', validate(updateExerciseSchema), async (req: AuthRequest, re
       data: req.body,
     });
     res.json(exercise);
-  } catch (error: any) {
-    if (error.code === 'P2025') {
+  } catch (error: unknown) {
+    if (isPrismaError(error, 'P2025')) {
       res.status(404).json({
         error: { code: 'NOT_FOUND', message: 'Exercise not found' }
       });
@@ -96,8 +100,8 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
       where: { id },
     });
     res.status(204).send();
-  } catch (error: any) {
-    if (error.code === 'P2025') {
+  } catch (error: unknown) {
+    if (isPrismaError(error, 'P2025')) {
       res.status(404).json({
         error: { code: 'NOT_FOUND', message: 'Exercise not found' }
       });

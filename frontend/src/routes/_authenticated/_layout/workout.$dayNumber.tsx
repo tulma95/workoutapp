@@ -26,6 +26,15 @@ type LoaderResult =
   | { type: 'conflict'; workoutId: number; dayNumber: number }
   | { type: 'none' }
 
+type WorkoutPhase =
+  | { phase: 'loading' }
+  | { phase: 'conflict'; existingWorkoutId: number; existingDayNumber: number }
+  | { phase: 'active' }
+  | { phase: 'completing' }
+  | { phase: 'completed'; progressions: ProgressionResult[] }
+  | { phase: 'canceling' }
+  | { phase: 'error'; message: string }
+
 export const Route = createFileRoute('/_authenticated/_layout/workout/$dayNumber')({
   preload: false,
   loader: async ({ params }): Promise<LoaderResult> => {
@@ -94,38 +103,34 @@ function WorkoutPage() {
   const [workout, setWorkout] = useState<Workout | null>(
     loaderData.type === 'existing' ? loaderData.workout : null,
   )
-  const [isCreating, setIsCreating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [progressions, setProgressions] = useState<ProgressionResult[]>([])
-  const [isCompleting, setIsCompleting] = useState(false)
-  const [isCompleted, setIsCompleted] = useState(false)
-  const [isCanceling, setIsCanceling] = useState(false)
+  const [phase, setPhase] = useState<WorkoutPhase>(() => {
+    if (loaderData.type === 'conflict') {
+      return {
+        phase: 'conflict',
+        existingWorkoutId: loaderData.workoutId,
+        existingDayNumber: loaderData.dayNumber,
+      }
+    }
+    if (loaderData.type === 'none') {
+      return { phase: 'loading' }
+    }
+    return { phase: 'active' }
+  })
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
-  const [conflictWorkout, setConflictWorkout] = useState<{
-    workoutId: number
-    dayNumber: number
-  } | null>(
-    loaderData.type === 'conflict'
-      ? { workoutId: loaderData.workoutId, dayNumber: loaderData.dayNumber }
-      : null,
-  )
-  const [isStartingNew, setIsStartingNew] = useState(false)
   const createRef = useRef(false)
 
   // Sync state from loader data when route params change (same component, different day)
   useEffect(() => {
     if (loaderData.type === 'existing') {
       setWorkout(loaderData.workout)
-      setConflictWorkout(null)
-      setError(null)
-      setIsCompleted(false)
-      setProgressions([])
+      setPhase({ phase: 'active' })
     } else if (loaderData.type === 'conflict') {
       setWorkout(null)
-      setConflictWorkout({
-        workoutId: loaderData.workoutId,
-        dayNumber: loaderData.dayNumber,
+      setPhase({
+        phase: 'conflict',
+        existingWorkoutId: loaderData.workoutId,
+        existingDayNumber: loaderData.dayNumber,
       })
     }
   }, [loaderData])
@@ -137,13 +142,13 @@ function WorkoutPage() {
     createRef.current = true
 
     let cancelled = false
-    setIsCreating(true)
+    setPhase({ phase: 'loading' })
 
     startWorkout(dayNumber)
       .then((newWorkout) => {
         if (!cancelled) {
           setWorkout(newWorkout)
-          setIsCreating(false)
+          setPhase({ phase: 'active' })
         }
       })
       .catch((err: unknown) => {
@@ -156,14 +161,17 @@ function WorkoutPage() {
           'workoutId' in err &&
           'dayNumber' in err
         ) {
-          setConflictWorkout({
-            workoutId: err.workoutId as number,
-            dayNumber: err.dayNumber as number,
+          setPhase({
+            phase: 'conflict',
+            existingWorkoutId: err.workoutId as number,
+            existingDayNumber: err.dayNumber as number,
           })
         } else {
-          setError(err instanceof Error ? err.message : 'Failed to start workout')
+          setPhase({
+            phase: 'error',
+            message: err instanceof Error ? err.message : 'Failed to start workout',
+          })
         }
-        setIsCreating(false)
       })
 
     return () => { cancelled = true }
@@ -253,23 +261,21 @@ function WorkoutPage() {
 
   const doCompleteWorkout = async () => {
     setShowCompleteConfirm(false)
-    setIsCompleting(true)
+    setPhase({ phase: 'completing' })
 
     try {
       const result = await completeWorkout(workout!.id)
       const progressionArray =
         result.progressions || (result.progression ? [result.progression] : [])
-      setProgressions(progressionArray)
-      setIsCompleted(true)
       await queryClient.invalidateQueries({ queryKey: ['workout'] })
       await queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
       await queryClient.invalidateQueries({ queryKey: ['training-maxes'] })
+      setPhase({ phase: 'completed', progressions: progressionArray })
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to complete workout',
-      )
-    } finally {
-      setIsCompleting(false)
+      setPhase({
+        phase: 'error',
+        message: err instanceof Error ? err.message : 'Failed to complete workout',
+      })
     }
   }
 
@@ -280,7 +286,7 @@ function WorkoutPage() {
 
   const doCancelWorkout = async () => {
     setShowCancelConfirm(false)
-    setIsCanceling(true)
+    setPhase({ phase: 'canceling' })
 
     try {
       await cancelWorkout(workout!.id)
@@ -288,48 +294,52 @@ function WorkoutPage() {
       await queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
       navigate({ to: '/' })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to cancel workout')
-      setIsCanceling(false)
+      setPhase({
+        phase: 'error',
+        message: err instanceof Error ? err.message : 'Failed to cancel workout',
+      })
     }
   }
 
   const handleContinueExisting = () => {
-    if (!conflictWorkout) return
-    setConflictWorkout(null)
-    navigate({ to: '/workout/$dayNumber', params: { dayNumber: String(conflictWorkout.dayNumber) } })
+    if (phase.phase !== 'conflict') return
+    const { existingDayNumber } = phase
+    setPhase({ phase: 'loading' })
+    navigate({ to: '/workout/$dayNumber', params: { dayNumber: String(existingDayNumber) } })
   }
 
   const handleDiscardAndStartNew = async () => {
-    if (!conflictWorkout) return
+    if (phase.phase !== 'conflict') return
+    const { existingWorkoutId } = phase
+
+    setPhase({ phase: 'loading' })
 
     try {
-      setIsStartingNew(true)
-      await cancelWorkout(conflictWorkout.workoutId)
-      setConflictWorkout(null)
-      setError(null)
+      await cancelWorkout(existingWorkoutId)
       const remaining = await getCurrentWorkout()
       if (remaining) {
         await cancelWorkout(remaining.id)
       }
       const newWorkout = await startWorkout(dayNumber)
       setWorkout(newWorkout)
+      setPhase({ phase: 'active' })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to start new workout')
-      setConflictWorkout(null)
-    } finally {
-      setIsStartingNew(false)
+      setPhase({
+        phase: 'error',
+        message: err instanceof Error ? err.message : 'Failed to start new workout',
+      })
     }
   }
 
   const handleCloseConflictDialog = () => {
-    setConflictWorkout(null)
+    setPhase({ phase: 'loading' })
     navigate({ to: '/' })
   }
 
-  if (conflictWorkout) {
+  if (phase.phase === 'conflict') {
     return (
       <ConflictDialog
-        existingDayNumber={conflictWorkout.dayNumber}
+        existingDayNumber={phase.existingDayNumber}
         onContinue={handleContinueExisting}
         onDiscard={handleDiscardAndStartNew}
         onClose={handleCloseConflictDialog}
@@ -337,7 +347,7 @@ function WorkoutPage() {
     )
   }
 
-  if (isStartingNew || isCreating) {
+  if (phase.phase === 'loading') {
     return (
       <div className={styles.page}>
         <LoadingSpinner />
@@ -345,10 +355,10 @@ function WorkoutPage() {
     )
   }
 
-  if (error) {
+  if (phase.phase === 'error') {
     return (
       <div className={styles.page}>
-        <ErrorMessage message={error} />
+        <ErrorMessage message={phase.message} />
         <ButtonLink variant="secondary" to="/">
           Back to Dashboard
         </ButtonLink>
@@ -376,11 +386,11 @@ function WorkoutPage() {
 
   const dayTitle = `Day ${dayNumber}`
 
-  if (isCompleted) {
+  if (phase.phase === 'completed') {
     return (
       <div className={styles.page}>
         <h1>Workout Complete!</h1>
-        <ProgressionBanner progressions={progressions} />
+        <ProgressionBanner progressions={phase.progressions} />
         <ButtonLink to="/">
           Back to Dashboard
         </ButtonLink>
@@ -417,17 +427,17 @@ function WorkoutPage() {
         <Button
           size="large"
           onClick={handleCompleteWorkout}
-          disabled={isCompleting || isCanceling}
+          disabled={phase.phase === 'completing' || phase.phase === 'canceling'}
         >
-          {isCompleting ? 'Completing...' : 'Complete Workout'}
+          {phase.phase === 'completing' ? 'Completing...' : 'Complete Workout'}
         </Button>
         <Button
           variant="secondary"
           size="large"
           onClick={handleCancelWorkout}
-          disabled={isCanceling || isCompleting}
+          disabled={phase.phase === 'canceling' || phase.phase === 'completing'}
         >
-          {isCanceling ? 'Canceling...' : 'Cancel Workout'}
+          {phase.phase === 'canceling' ? 'Canceling...' : 'Cancel Workout'}
         </Button>
       </div>
 

@@ -42,6 +42,10 @@ const createPlanSchema = z.object({
   days: z.array(planDaySchema).min(1),
 });
 
+function isPrismaError(e: unknown, code: string): boolean {
+  return e instanceof Error && 'code' in e && (e as Record<string, unknown>).code === code;
+}
+
 router.post('/', validate(createPlanSchema), async (req: AuthRequest, res: Response) => {
   const { slug, name, description, daysPerWeek, isPublic, days } = req.body;
 
@@ -116,8 +120,8 @@ router.post('/', validate(createPlanSchema), async (req: AuthRequest, res: Respo
     });
 
     res.status(201).json(plan);
-  } catch (error: any) {
-    if (error.code === 'P2002') {
+  } catch (error: unknown) {
+    if (isPrismaError(error, 'P2002')) {
       res.status(409).json({
         error: { code: 'CONFLICT', message: 'Plan with this slug already exists' }
       });
@@ -313,8 +317,8 @@ router.put('/:id', validate(updatePlanSchema), async (req: AuthRequest, res: Res
     });
 
     res.json(plan);
-  } catch (error: any) {
-    if (error.code === 'P2002') {
+  } catch (error: unknown) {
+    if (isPrismaError(error, 'P2002')) {
       res.status(409).json({
         error: { code: 'CONFLICT', message: 'Plan with this slug already exists' }
       });
@@ -386,6 +390,16 @@ router.post('/:id/progression-rules', validate(setProgressionRulesSchema), async
   }
 
   const { rules } = req.body;
+
+  // Validate that minReps <= maxReps for every rule
+  for (const rule of rules) {
+    if (rule.minReps > rule.maxReps) {
+      res.status(400).json({
+        error: { code: 'BAD_REQUEST', message: 'minReps must be less than or equal to maxReps' }
+      });
+      return;
+    }
+  }
 
   // Check if plan exists
   const plan = await prisma.workoutPlan.findUnique({
