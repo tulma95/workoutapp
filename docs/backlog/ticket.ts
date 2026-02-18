@@ -175,6 +175,8 @@ function cmdAdd(commandArgs: string[]): void {
   writeBacklog(tickets);
 
   console.log(`Added ticket #${tickets.length} [${newId}]: ${title}`);
+  console.log("");
+  cmdList();
 }
 
 function cmdShow(ref: string): void {
@@ -231,6 +233,8 @@ function cmdStatus(ref: string, newStatus: string): void {
   writeBacklog(tickets);
 
   console.log(`[${ticket.id}] "${ticket.title}": ${oldStatus} -> ${newStatus}`);
+  console.log("");
+  cmdList();
 }
 
 function cmdDelete(ref: string): void {
@@ -240,6 +244,8 @@ function cmdDelete(ref: string): void {
   writeBacklog(tickets);
 
   console.log(`Deleted [${ticket.id}]: ${ticket.title}`);
+  console.log("");
+  cmdList();
 }
 
 function cmdNext(): void {

@@ -24,13 +24,28 @@ node --experimental-strip-types docs/backlog/ticket.ts <command> [args]
 
 Parse the user's argument after `/ticket` to determine the subcommand. If no argument is given, run `list`.
 
+**IMPORTANT:** After ANY mutation command (add, move, status, delete), the script prints the updated backlog table. You MUST always display this full table output to the user so they can see the current state.
+
 ### list
 
-Run the script and display the output:
+Run the script and display the output to the user:
 
 ```bash
 node --experimental-strip-types docs/backlog/ticket.ts list
 ```
+
+Output is a formatted table grouped by status (in-progress first, then planned, backlog, done). Show it to the user exactly as returned:
+
+```
+ #  ID    Status        Title
+11  011   in-progress   Admin Plan Editor UX
+ 1  007   backlog       Screen Wake Lock
+ 2  006   backlog       Workout Progress Indicator
+ 3  001   backlog       Rest Timer
+...
+```
+
+`#` is the ticket's position (for use with move/show/etc). `ID` is the stable identifier.
 
 ### show <pos|id>
 
@@ -47,7 +62,7 @@ If the ticket has a `Doc:` path in the output, also read that file and display i
 Ask the user for:
 1. **Title** (required)
 2. **Full doc or inline description?**
-   - If doc: ask for the path or create a new stub file at `docs/features/<id>-<slug>.md`
+   - If doc: ask for the path or create a new stub file at `docs/backlog/features/<id>-<slug>.md`
    - If inline: ask for the description text
 
 Then run:
