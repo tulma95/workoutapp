@@ -24,11 +24,16 @@ async function createSecondPlan(page: import('@playwright/test').Page) {
 
   // Get user email from the page
   const emailEl = page.locator('p').filter({ hasText: /@example\.com/ });
+  await expect(emailEl).toBeVisible();
   const email = await emailEl.textContent();
+  expect(email).toBeTruthy();
 
   await settings.logout();
 
-  await page.getByLabel(/email/i).fill(email!);
+  // Fill login form — verify email stuck before submitting (guards against re-render race)
+  const emailInput = page.getByLabel(/email/i);
+  await emailInput.fill(email!);
+  await expect(emailInput).toHaveValue(email!);
   await page.getByLabel(/password/i).fill('ValidPassword123');
   await page.getByRole('button', { name: /log in/i }).click();
   await expect(page.getByText('Workout Days')).toBeVisible();
@@ -109,6 +114,8 @@ test.describe('Plan switch discards in-progress workout', () => {
     await workout.expectLoaded(1);
 
     // 2. Complete some reps so the workout is actually in progress with data
+    // Wait for set rows to be rendered (workout creation via useEffect may still be in progress)
+    await expect(page.locator('[data-testid="set-row"]').first()).toBeVisible();
     await workout.confirmSet(0);
     await workout.confirmSet(1);
     await workout.confirmSet(2);
