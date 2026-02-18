@@ -12,6 +12,7 @@
 | `['plans']` | All public plans | PlanSelectionPage |
 | `['admin-exercises']` | All exercises (admin) | ExerciseListPage |
 | `['admin-plans']` | All plans (admin) | PlanListPage |
+| `['training-maxes', slug, 'history']` | TM history for exercise | ProgressPage |
 
 ## Invalidation Rules
 
@@ -38,7 +39,7 @@ WorkoutPage --cancel----> Dashboard (current workout), History (calendar)
 HistoryPage --delete---> History (calendar)
 PlanSelectionPage --subscribe--> Dashboard (plan, TMs, current workout), Settings (plan, TMs)
 SetupPage --save TMs--> Dashboard (TMs), Settings (TMs)
-SettingsPage --edit TM--> Dashboard (TMs)
+SettingsPage --edit TM--> Dashboard (TMs), Progress (TM history)
 SettingsPage --logout---> ALL pages (cache cleared)
 Admin: ExerciseList --CRUD--> ExerciseList only
 Admin: PlanEditor --create--> PlanList only

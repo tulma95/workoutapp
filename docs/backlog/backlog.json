@@ -1,5 +1,17 @@
 [
   {
+    "id": "003",
+    "title": "Progression Charts",
+    "status": "done",
+    "description": "New /progress page with charts: TM progression lines per lift, AMRAP performance scatter plot, workout frequency heatmap. Time range selector (1M/3M/6M/All). New backend endpoint for AMRAP history. Lightweight chart library (uPlot or similar)."
+  },
+  {
+    "id": "024",
+    "title": "Workout History Refinement",
+    "status": "planned",
+    "description": "Improve the workout history view: better readability and visual design, ability to delete old workouts, and overall UI/UX polish. Current history is hard to read and lacks basic management features."
+  },
+  {
     "id": "001",
     "title": "Rest Timer",
     "status": "done",
@@ -60,12 +72,6 @@
     "description": "System-aware dark mode following device preference, with manual toggle in Settings (System/Light/Dark). Redefine existing CSS custom properties under data-theme attribute. Store preference in localStorage. Instant switch, no reload."
   },
   {
-    "id": "024",
-    "title": "Workout History Refinement",
-    "status": "backlog",
-    "description": "Improve the workout history view: better readability and visual design, ability to delete old workouts, and overall UI/UX polish. Current history is hard to read and lacks basic management features."
-  },
-  {
     "id": "010",
     "title": "Workout Notes",
     "status": "backlog",
@@ -106,12 +112,6 @@
     "title": "Plate Calculator",
     "status": "backlog",
     "description": "Tap weight on any set to see plate breakdown per side. Greedy algorithm from heaviest plate down. Configurable bar weight and available plates in Settings. Frontend-only, no backend changes."
-  },
-  {
-    "id": "003",
-    "title": "Progression Charts",
-    "status": "backlog",
-    "description": "New /progress page with charts: TM progression lines per lift, AMRAP performance scatter plot, workout frequency heatmap. Time range selector (1M/3M/6M/All). New backend endpoint for AMRAP history. Lightweight chart library (uPlot or similar)."
   },
   {
     "id": "011",
