@@ -10,15 +10,12 @@ import {
   type Workout,
   type ProgressionResult,
 } from '../../../api/workouts'
-import SetRow from '../../../components/SetRow'
-import { ProgressionBanner } from '../../../components/ProgressionBanner'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import { SkeletonLine, SkeletonHeading } from '../../../components/Skeleton'
 import { ConflictDialog } from '../../../components/ConflictDialog'
-import { ConfirmDialog } from '../../../components/ConfirmDialog'
-import { Button } from '../../../components/Button'
 import { ButtonLink } from '../../../components/ButtonLink'
+import { ActiveWorkoutView } from '../../../components/ActiveWorkoutView'
 import styles from '../../../styles/WorkoutPage.module.css'
 
 type LoaderResult =
@@ -413,100 +410,21 @@ function ActiveWorkout({
     }
   }
 
-  if (phase.phase === 'error') {
-    return (
-      <div className={styles.page}>
-        <ErrorMessage message={phase.message} />
-        <ButtonLink variant="secondary" to="/">
-          Back to Dashboard
-        </ButtonLink>
-      </div>
-    )
-  }
-
-  if (phase.phase === 'completed') {
-    return (
-      <div className={styles.page}>
-        <h1>Workout Complete!</h1>
-        <ProgressionBanner progressions={phase.progressions} />
-        <ButtonLink to="/">Back to Dashboard</ButtonLink>
-      </div>
-    )
-  }
-
-  const exerciseGroups: Array<{ exercise: string; sets: typeof workout.sets }> =
-    []
-  for (const set of workout.sets) {
-    const last = exerciseGroups[exerciseGroups.length - 1]
-    if (last && last.exercise === set.exercise) {
-      last.sets.push(set)
-    } else {
-      exerciseGroups.push({ exercise: set.exercise, sets: [set] })
-    }
-  }
-
   return (
-    <div className={styles.page}>
-      <h1>Day {dayNumber}</h1>
-
-      {exerciseGroups.map((group) => (
-        <section key={group.exercise} className={styles.section}>
-          <h2 className={styles.sectionTitle}>{group.exercise}</h2>
-          <div className={styles.sectionSets} data-set-list>
-            {group.sets.map((set, index) => (
-              <SetRow
-                key={set.id}
-                setNumber={index + 1}
-                weight={set.prescribedWeight}
-                reps={set.prescribedReps}
-                isAmrap={set.isAmrap}
-                completed={set.completed}
-                actualReps={set.actualReps}
-                onConfirm={() => handleConfirmSet(set.id)}
-                onRepsChange={(reps) => handleRepsChange(set.id, reps)}
-              />
-            ))}
-          </div>
-        </section>
-      ))}
-
-      <div className={styles.actions}>
-        <Button
-          size="large"
-          onClick={handleCompleteWorkout}
-          disabled={phase.phase === 'completing' || phase.phase === 'canceling'}
-        >
-          {phase.phase === 'completing' ? 'Completing...' : 'Complete Workout'}
-        </Button>
-        <Button
-          variant="secondary"
-          size="large"
-          onClick={handleCancelWorkout}
-          disabled={phase.phase === 'canceling' || phase.phase === 'completing'}
-        >
-          {phase.phase === 'canceling' ? 'Canceling...' : 'Cancel Workout'}
-        </Button>
-      </div>
-
-      <ConfirmDialog
-        open={showCompleteConfirm}
-        title="Missing Progression Reps"
-        message="You haven't entered reps for all progression sets. Complete workout without full progression tracking?"
-        confirmLabel="Complete Anyway"
-        variant="danger"
-        onConfirm={doCompleteWorkout}
-        onCancel={() => setShowCompleteConfirm(false)}
-      />
-
-      <ConfirmDialog
-        open={showCancelConfirm}
-        title="Cancel Workout"
-        message="Cancel this workout? All progress will be lost."
-        confirmLabel="Cancel Workout"
-        variant="danger"
-        onConfirm={doCancelWorkout}
-        onCancel={() => setShowCancelConfirm(false)}
-      />
-    </div>
+    <ActiveWorkoutView
+      workout={workout}
+      dayNumber={dayNumber}
+      phase={phase}
+      showCompleteConfirm={showCompleteConfirm}
+      showCancelConfirm={showCancelConfirm}
+      onConfirmSet={handleConfirmSet}
+      onRepsChange={handleRepsChange}
+      onCompleteWorkout={handleCompleteWorkout}
+      onDoCompleteWorkout={doCompleteWorkout}
+      onCancelWorkout={handleCancelWorkout}
+      onDoCancelWorkout={doCancelWorkout}
+      onDismissCompleteConfirm={() => setShowCompleteConfirm(false)}
+      onDismissCancelConfirm={() => setShowCancelConfirm(false)}
+    />
   )
 }

@@ -1,10 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useAuth } from '../../context/useAuth'
-import { ErrorMessage } from '../../components/ErrorMessage'
-import { Button } from '../../components/Button'
-import styles from '../../styles/AuthForm.module.css'
-import shared from '../../styles/shared.module.css'
+import { RegisterForm } from '../../components/RegisterForm'
 
 export const Route = createFileRoute('/_public/register')({
   component: RegisterPage,
@@ -42,64 +39,27 @@ function RegisterPage() {
     }
   }
 
+  function handlePasswordBlur() {
+    if (password.length > 0 && password.length < 8) {
+      setPasswordError('Password must be at least 8 characters')
+    } else {
+      setPasswordError('')
+    }
+  }
+
   return (
-    <div className={`${shared.container} ${styles.page}`}>
-      <h1>Create Account</h1>
-
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <div>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-
-        <div>
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onBlur={() => {
-              if (password.length > 0 && password.length < 8) {
-                setPasswordError('Password must be at least 8 characters')
-              } else {
-                setPasswordError('')
-              }
-            }}
-            required
-          />
-          {passwordError && (
-            <p className={styles.error}>{passwordError}</p>
-          )}
-        </div>
-
-        <div>
-          <label htmlFor="displayName">Display Name</label>
-          <input
-            id="displayName"
-            type="text"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            required
-          />
-        </div>
-
-        {error && <ErrorMessage message={error} />}
-
-        <Button type="submit" disabled={loading}>
-          {loading ? 'Creating account...' : 'Create Account'}
-        </Button>
-      </form>
-
-      <p className={styles.footer}>
-        Already have an account? <Link to="/login">Log in</Link>
-      </p>
-    </div>
+    <RegisterForm
+      email={email}
+      password={password}
+      displayName={displayName}
+      error={error}
+      passwordError={passwordError}
+      loading={loading}
+      onEmailChange={setEmail}
+      onPasswordChange={setPassword}
+      onPasswordBlur={handlePasswordBlur}
+      onDisplayNameChange={setDisplayName}
+      onSubmit={handleSubmit}
+    />
   )
 }

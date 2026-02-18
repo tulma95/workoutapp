@@ -2,11 +2,8 @@ import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { getWorkoutCalendar, getWorkout, type Workout } from '../../../api/workouts'
-import WorkoutCalendar from '../../../components/WorkoutCalendar'
-import { WorkoutDetail } from '../../../components/WorkoutDetail'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
-import { ErrorMessage } from '../../../components/ErrorMessage'
-import styles from '../../../styles/HistoryPage.module.css'
+import { HistoryContent } from '../../../components/HistoryContent'
 
 export const Route = createFileRoute('/_authenticated/_layout/history')({
   pendingComponent: LoadingSpinner,
@@ -53,51 +50,19 @@ function HistoryPage() {
     }
   }
 
-  const hasAnyWorkouts = calendarWorkouts.length > 0
-
   return (
-    <div className={styles.page}>
-      <h1 className={styles.title}>History</h1>
-
-      {calendarError ? (
-        <ErrorMessage
-          message={calendarError instanceof Error ? calendarError.message : 'Failed to load calendar'}
-          onRetry={() => refetchCalendar()}
-        />
-      ) : (
-        <>
-          <WorkoutCalendar
-            workouts={calendarWorkouts}
-            onSelectWorkout={handleSelectWorkout}
-            onMonthChange={handleMonthChange}
-            year={currentYear}
-            month={currentMonth}
-            isLoading={!isLoadingCalendar && isFetchingCalendar}
-          />
-
-          <div className={styles.detail}>
-            {isLoadingWorkout ? (
-              <WorkoutDetail
-                progression={null}
-                isLoading={true}
-              />
-            ) : selectedWorkout ? (
-              <WorkoutDetail
-                workout={selectedWorkout}
-                progression={null}
-              />
-            ) : hasAnyWorkouts ? (
-              <div className={styles.prompt}>
-                Tap a workout day to see details
-              </div>
-            ) : (
-              <div className={styles.empty}>
-                No workouts yet. Complete your first workout to see it here!
-              </div>
-            )}
-          </div>
-        </>
-      )}
-    </div>
+    <HistoryContent
+      calendarWorkouts={calendarWorkouts}
+      calendarError={calendarError}
+      isLoadingCalendar={isLoadingCalendar}
+      isFetchingCalendar={isFetchingCalendar}
+      selectedWorkout={selectedWorkout}
+      isLoadingWorkout={isLoadingWorkout}
+      currentYear={currentYear}
+      currentMonth={currentMonth}
+      onMonthChange={handleMonthChange}
+      onSelectWorkout={handleSelectWorkout}
+      onRetry={() => refetchCalendar()}
+    />
   )
 }

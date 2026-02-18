@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Exercise, CreateExerciseInput, UpdateExerciseInput } from '../api/exercises';
-import { Button } from './Button';
+import { ExerciseForm } from './ExerciseForm';
 import styles from './ExerciseFormModal.module.css';
 
 interface ExerciseFormModalProps {
@@ -88,87 +88,24 @@ export function ExerciseFormModal({ exercise, onClose, onSubmit }: ExerciseFormM
 
   return (
     <dialog ref={dialogRef} className={styles.dialog} onClick={handleDialogClick}>
-      <div className={styles.content}>
-        <div className={styles.header}>
-          <h2>{isEdit ? 'Edit Exercise' : 'Add Exercise'}</h2>
-          <button className={styles.closeBtn} onClick={onClose}>&times;</button>
-        </div>
-
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.formGroup}>
-            <label htmlFor="name">Name *</label>
-            <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Bench Press"
-              required
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label htmlFor="slug">Slug *</label>
-            <input
-              id="slug"
-              type="text"
-              value={slug}
-              onChange={(e) => handleSlugChange(e.target.value)}
-              placeholder="e.g., bench-press"
-              required
-            />
-            <small className={styles.formHint}>
-              {autoSlug ? 'Auto-generated from name' : 'Custom slug'}
-            </small>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label htmlFor="muscleGroup">Muscle Group</label>
-            <input
-              id="muscleGroup"
-              type="text"
-              value={muscleGroup}
-              onChange={(e) => setMuscleGroup(e.target.value)}
-              placeholder="e.g., Chest, Legs, Back"
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label htmlFor="category">Category *</label>
-            <select
-              id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              required
-            >
-              <option value="compound">Compound</option>
-              <option value="isolation">Isolation</option>
-            </select>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                checked={isUpperBody}
-                onChange={(e) => setIsUpperBody(e.target.checked)}
-              />
-              <span>Upper Body Exercise</span>
-            </label>
-          </div>
-
-          {error && <div className={styles.formError}>{error}</div>}
-
-          <div className={styles.formActions}>
-            <Button type="button" variant="secondary" onClick={onClose} disabled={submitting}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={submitting}>
-              {submitting ? 'Saving...' : (isEdit ? 'Update' : 'Create')}
-            </Button>
-          </div>
-        </form>
-      </div>
+      <ExerciseForm
+        isEdit={isEdit}
+        name={name}
+        slug={slug}
+        muscleGroup={muscleGroup}
+        category={category}
+        isUpperBody={isUpperBody}
+        autoSlug={autoSlug}
+        submitting={submitting}
+        error={error}
+        onNameChange={setName}
+        onSlugChange={handleSlugChange}
+        onMuscleGroupChange={setMuscleGroup}
+        onCategoryChange={setCategory}
+        onIsUpperBodyChange={setIsUpperBody}
+        onSubmit={handleSubmit}
+        onClose={onClose}
+      />
     </dialog>
   );
 }

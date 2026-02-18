@@ -5,7 +5,7 @@ import { getTrainingMaxes } from '../../../api/trainingMaxes'
 import { getCurrentWorkout } from '../../../api/workouts'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import { SkeletonLine, SkeletonHeading, SkeletonCard } from '../../../components/Skeleton'
-import WorkoutCard from '../../../components/WorkoutCard'
+import { DashboardContent } from '../../../components/DashboardContent'
 import styles from '../../../styles/DashboardPage.module.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/')({
@@ -86,45 +86,10 @@ function DashboardPage() {
     queryFn: getCurrentWorkout,
   })
 
-  function getWorkoutStatus(dayNumber: number): 'upcoming' | 'in_progress' | 'completed' {
-    if (currentWorkout && currentWorkout.dayNumber === dayNumber) {
-      return 'in_progress'
-    }
-    return 'upcoming'
-  }
-
   return (
-    <div className={styles.page}>
-      <h1>Dashboard</h1>
-
-      {plan && (
-        <section className={styles.planSection}>
-          <h2>Current Plan</h2>
-          <p className={styles.planName}>{plan.name}</p>
-          {plan.description && (
-            <p className={styles.planDescription}>{plan.description}</p>
-          )}
-        </section>
-      )}
-
-      <section className={styles.daysSection}>
-        <h2>Workout Days</h2>
-        <div className={styles.cards}>
-          {plan?.days.map((day) => {
-            const exerciseNames = day.exercises.map(
-              (ex) => ex.displayName || ex.exercise.name
-            )
-            return (
-              <WorkoutCard
-                key={day.dayNumber}
-                dayNumber={day.dayNumber}
-                exercises={exerciseNames}
-                status={getWorkoutStatus(day.dayNumber)}
-              />
-            )
-          })}
-        </div>
-      </section>
-    </div>
+    <DashboardContent
+      plan={plan!}
+      currentWorkout={currentWorkout}
+    />
   )
 }

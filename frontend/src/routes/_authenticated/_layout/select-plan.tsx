@@ -6,8 +6,8 @@ import { getCurrentWorkout } from '../../../api/workouts'
 import { getTrainingMaxes } from '../../../api/trainingMaxes'
 import { SkeletonLine, SkeletonHeading, SkeletonCard } from '../../../components/Skeleton'
 import { ErrorMessage } from '../../../components/ErrorMessage'
-import { PlanSwitchConfirmModal, type PlanSwitchWarnings } from '../../../components/PlanSwitchConfirmModal'
-import { Button } from '../../../components/Button'
+import { type PlanSwitchWarnings } from '../../../components/PlanSwitchConfirmModal'
+import { PlanSelectionContent } from '../../../components/PlanSelectionContent'
 import styles from '../../../styles/PlanSelectionPage.module.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/select-plan')({
@@ -167,72 +167,16 @@ function PlanSelectionPage() {
   }
 
   return (
-    <div className={styles.page}>
-      <div className={styles.header}>
-        <h1>Choose a Workout Plan</h1>
-        <p>Select a plan that fits your training goals</p>
-      </div>
-
-      {error && (
-        <ErrorMessage message={error} />
-      )}
-
-      <div className={styles.list}>
-        {plans.map((plan) => (
-          <div key={plan.id} className={styles.card}>
-            <div className={styles.cardHeader}>
-              <h2>{plan.name}</h2>
-              {plan.description && (
-                <p className={styles.description}>{plan.description}</p>
-              )}
-              <div className={styles.meta}>
-                <span className={styles.daysPerWeek}>{plan.daysPerWeek} days/week</span>
-              </div>
-            </div>
-
-            <div className={styles.days}>
-              {plan.days.map((day) => (
-                <div key={day.id} className={styles.day}>
-                  <div className={styles.dayLabel}>
-                    {day.name || `Day ${day.dayNumber}`}
-                  </div>
-                  <div className={styles.dayExercises}>
-                    {day.exercises.map((ex) => (
-                      <div key={ex.id} className={styles.exerciseItem}>
-                        <span className={styles.exerciseName}>
-                          {ex.displayName || ex.exercise.name}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <Button
-              onClick={() => handleSelectPlan(plan.id)}
-              disabled={subscribing !== null}
-            >
-              {subscribing === plan.id ? 'Subscribing...' : 'Select Plan'}
-            </Button>
-          </div>
-        ))}
-      </div>
-
-      {plans.length === 0 && (
-        <div className={styles.noPlans}>
-          <p>No workout plans available at the moment.</p>
-        </div>
-      )}
-
-      {showModal && modalWarnings && pendingPlanId && (
-        <PlanSwitchConfirmModal
-          targetPlanName={plans.find(p => p.id === pendingPlanId)?.name || 'this plan'}
-          warnings={modalWarnings}
-          onConfirm={confirmPlanSwitch}
-          onCancel={cancelPlanSwitch}
-        />
-      )}
-    </div>
+    <PlanSelectionContent
+      plans={plans}
+      subscribing={subscribing}
+      error={error}
+      showModal={showModal}
+      modalWarnings={modalWarnings}
+      pendingPlanId={pendingPlanId}
+      onSelectPlan={handleSelectPlan}
+      onConfirmSwitch={confirmPlanSwitch}
+      onCancelSwitch={cancelPlanSwitch}
+    />
   )
 }

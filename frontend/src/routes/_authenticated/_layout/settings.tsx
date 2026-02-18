@@ -4,19 +4,24 @@ import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
 import { getMe } from '../../../api/user'
 import { useAuth } from '../../../context/useAuth'
 import { getCurrentPlan } from '../../../api/plans'
-import { getTrainingMaxes, updateTrainingMax, type TrainingMax } from '../../../api/trainingMaxes'
-import { formatExerciseName, formatWeight, roundWeight } from '../../../utils/weight'
+import { getTrainingMaxes, updateTrainingMax } from '../../../api/trainingMaxes'
+import { roundWeight } from '../../../utils/weight'
 import { SkeletonLine, SkeletonHeading } from '../../../components/Skeleton'
-import { Button } from '../../../components/Button'
-import { ButtonLink } from '../../../components/ButtonLink'
+import { SettingsContent } from '../../../components/SettingsContent'
 import styles from '../../../styles/SettingsPage.module.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/settings')({
   loader: ({ context: { queryClient } }) =>
     Promise.all([
       queryClient.ensureQueryData({ queryKey: ['user', 'me'], queryFn: getMe }),
-      queryClient.ensureQueryData({ queryKey: ['plan', 'current'], queryFn: getCurrentPlan }),
-      queryClient.ensureQueryData({ queryKey: ['training-maxes'], queryFn: getTrainingMaxes }),
+      queryClient.ensureQueryData({
+        queryKey: ['plan', 'current'],
+        queryFn: getCurrentPlan,
+      }),
+      queryClient.ensureQueryData({
+        queryKey: ['training-maxes'],
+        queryFn: getTrainingMaxes,
+      }),
     ]),
   pendingComponent: () => (
     <div>
@@ -52,9 +57,18 @@ function SettingsPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { logout } = useAuth()
-  const { data: user } = useSuspenseQuery({ queryKey: ['user', 'me'], queryFn: getMe })
-  const { data: currentPlan } = useSuspenseQuery({ queryKey: ['plan', 'current'], queryFn: getCurrentPlan })
-  const { data: trainingMaxes } = useSuspenseQuery({ queryKey: ['training-maxes'], queryFn: getTrainingMaxes })
+  const { data: user } = useSuspenseQuery({
+    queryKey: ['user', 'me'],
+    queryFn: getMe,
+  })
+  const { data: currentPlan } = useSuspenseQuery({
+    queryKey: ['plan', 'current'],
+    queryFn: getCurrentPlan,
+  })
+  const { data: trainingMaxes } = useSuspenseQuery({
+    queryKey: ['training-maxes'],
+    queryFn: getTrainingMaxes,
+  })
 
   const [editingExercise, setEditingExercise] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
@@ -112,7 +126,9 @@ function SettingsPage() {
       await queryClient.invalidateQueries({ queryKey: ['training-maxes'] })
       closeEditModal()
     } catch (err) {
-      setTmError(err instanceof Error ? err.message : 'Failed to update training max')
+      setTmError(
+        err instanceof Error ? err.message : 'Failed to update training max',
+      )
     } finally {
       setTmSaving(false)
     }
@@ -125,105 +141,20 @@ function SettingsPage() {
   }
 
   return (
-    <div>
-      <h2>Settings</h2>
-
-      <div className={styles.card}>
-        <p className={styles.cardLabel}>Current Plan</p>
-        {currentPlan ? (
-          <>
-            <p className={styles.cardTitle}>{currentPlan.name}</p>
-            {currentPlan.description && (
-              <p className={styles.cardMeta}>{currentPlan.description}</p>
-            )}
-            <ButtonLink
-              variant="secondary"
-              to="/select-plan"
-              className={styles.changePlanLink}
-            >
-              Change Plan
-            </ButtonLink>
-          </>
-        ) : (
-          <>
-            <p className={styles.cardMeta}>No plan selected</p>
-            <ButtonLink to="/select-plan">Browse Plans</ButtonLink>
-          </>
-        )}
-      </div>
-
-      <div className={styles.card}>
-        <p className={styles.cardSubLabel}>Display Name</p>
-        <p className={styles.cardValue}>{user?.displayName}</p>
-      </div>
-
-      <div className={styles.card}>
-        <p className={styles.cardSubLabel}>Email</p>
-        <p className={styles.cardValue}>{user?.email}</p>
-      </div>
-
-      {trainingMaxes.length > 0 && (
-        <section className={styles.tmSection}>
-          <h3>Training Maxes</h3>
-          <div className={styles.tmList}>
-            {trainingMaxes.map((tm: TrainingMax) => (
-              <div key={tm.exercise} className={styles.tmItem} data-testid="tm-item">
-                <div className={styles.tmInfo}>
-                  <span className={styles.tmExercise}>{formatExerciseName(tm.exercise)}</span>
-                  <span className={styles.tmWeight}>{formatWeight(tm.weight)}</span>
-                </div>
-                <button
-                  className={styles.editBtn}
-                  onClick={() => openEditModal(tm.exercise, tm.weight)}
-                >
-                  Edit
-                </button>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <Button variant="secondary" className={styles.logoutBtn} onClick={handleLogout}>
-        Log Out
-      </Button>
-
-      <dialog ref={dialogRef} className={styles.editDialog} onClick={(e) => { if (e.target === dialogRef.current) closeEditModal() }}>
-        <div className={styles.editDialogContent}>
-          <h3>Edit {editingExercise ? formatExerciseName(editingExercise) : ''}</h3>
-
-          <div className={styles.editDialogBody}>
-            <label htmlFor="tm-input">Training Max (kg)</label>
-            <input
-              id="tm-input"
-              type="number"
-              inputMode="decimal"
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              step="0.1"
-              min="0"
-              autoFocus
-            />
-            {tmError && <p className={styles.editDialogError} role="alert">{tmError}</p>}
-          </div>
-
-          <div className={styles.editDialogActions}>
-            <Button
-              variant="secondary"
-              onClick={closeEditModal}
-              disabled={tmSaving}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleTmSave}
-              disabled={tmSaving}
-            >
-              {tmSaving ? 'Saving...' : 'Save'}
-            </Button>
-          </div>
-        </div>
-      </dialog>
-    </div>
+    <SettingsContent
+      user={user}
+      currentPlan={currentPlan}
+      trainingMaxes={trainingMaxes}
+      editingExercise={editingExercise}
+      editValue={editValue}
+      tmSaving={tmSaving}
+      tmError={tmError}
+      dialogRef={dialogRef}
+      onOpenEditModal={openEditModal}
+      onCloseEditModal={closeEditModal}
+      onEditValueChange={setEditValue}
+      onTmSave={handleTmSave}
+      onLogout={handleLogout}
+    />
   )
 }

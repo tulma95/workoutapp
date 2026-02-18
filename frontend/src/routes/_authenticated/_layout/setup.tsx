@@ -3,10 +3,8 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
 import { setupTrainingMaxesFromExercises, getTrainingMaxes, type ExerciseTM } from '../../../api/trainingMaxes'
 import { getCurrentPlan, type Exercise } from '../../../api/plans'
-import { ErrorMessage } from '../../../components/ErrorMessage'
 import { SkeletonLine, SkeletonHeading } from '../../../components/Skeleton'
-import { Button } from '../../../components/Button'
-import { ButtonLink } from '../../../components/ButtonLink'
+import { SetupForm } from '../../../components/SetupForm'
 import styles from '../../../styles/SetupPage.module.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/setup')({
@@ -51,7 +49,7 @@ function SetupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const requiredExercises = useMemo(() => {
-    if (!currentPlan) return []
+    if (!currentPlan) return [] as Exercise[]
 
     const tmExercisesMap = new Map<number, Exercise>()
     currentPlan.days.forEach(day => {
@@ -113,58 +111,14 @@ function SetupPage() {
     }
   }
 
-  if (!currentPlan || requiredExercises.length === 0) {
-    return (
-      <div className={styles.page}>
-        <div className={styles.container}>
-          <h1>No Exercises Found</h1>
-          <p className={styles.description}>
-            Please select a workout plan first.
-          </p>
-          {error && <ErrorMessage message={error} />}
-          <ButtonLink to="/select-plan">
-            Select a Plan
-          </ButtonLink>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className={styles.page}>
-      <div className={styles.container}>
-        <h1>Enter Your 1 Rep Maxes</h1>
-        <p className={styles.description}>
-          These will be used to calculate your training maxes (90% of 1RM).
-        </p>
-
-        <form onSubmit={handleSubmit} className={styles.form}>
-          {requiredExercises.map((exercise) => (
-            <div key={exercise.id} className={styles.formGroup}>
-              <label htmlFor={`exercise-${exercise.id}`}>
-                {exercise.name} (kg)
-              </label>
-              <input
-                type="number"
-                inputMode="decimal"
-                id={`exercise-${exercise.id}`}
-                name={exercise.id.toString()}
-                value={formData[exercise.id.toString()] || ''}
-                onChange={handleInputChange}
-                placeholder={`Enter ${exercise.name} 1RM (kg)`}
-                step="0.1"
-                min="0"
-              />
-            </div>
-          ))}
-
-          {error && <ErrorMessage message={error} />}
-
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Calculate Training Maxes'}
-          </Button>
-        </form>
-      </div>
-    </div>
+    <SetupForm
+      requiredExercises={!currentPlan ? [] : requiredExercises}
+      formData={formData}
+      error={error}
+      isSubmitting={isSubmitting}
+      onInputChange={handleInputChange}
+      onSubmit={handleSubmit}
+    />
   )
 }
