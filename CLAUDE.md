@@ -182,6 +182,10 @@ NODE_ENV=development
 
 These are exported by `start_local_env.sh` and `run_test.sh`. No .env files.
 
+## Backlog Tickets
+
+Always create a new ticket (`/ticket add`) when you discover a bug, identify a potential new feature, or notice an improvement opportunity during any work. Err on the side of adding — it's better to have a ticket you later delete than to lose track of an idea.
+
 ## Keeping Docs Up to Date
 
 When you add or change API endpoints, DB schema, query keys, or invalidation rules, update the corresponding reference doc:
