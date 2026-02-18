@@ -58,5 +58,89 @@
     "title": "Workout Notes",
     "status": "backlog",
     "doc": "docs/backlog/features/010-workout-notes.md"
+  },
+  {
+    "id": "011",
+    "title": "Bodyweight Tracking",
+    "status": "backlog",
+    "description": "Log bodyweight (daily or per-session) with a trend line chart. Casual users want weekly weigh-ins to see if training is working. Power users want daily logging, strength-to-bodyweight ratios, and correlation with TM progression."
+  },
+  {
+    "id": "012",
+    "title": "Exercise Substitution",
+    "status": "backlog",
+    "description": "Swap a plan exercise for an alternative per-session or permanently. Casual users need it when equipment is taken or they have minor soreness. Power users want same TM reference and set scheme preserved, with approved alternatives per exercise."
+  },
+  {
+    "id": "013",
+    "title": "Effort / RPE Logging",
+    "status": "backlog",
+    "description": "Log perceived effort after workouts or per-set. Simple mode: post-workout Easy/Good/Hard rating. Advanced mode: per-set RPE 1-10 scale. Track trends over time to detect under-recovery or peaking."
+  },
+  {
+    "id": "014",
+    "title": "Quick Rep Edit",
+    "status": "backlog",
+    "description": "Improve rep entry UX with bigger +/- buttons or a number spinner directly on set rows. Current entry feels like too many taps, especially with sweaty hands between sets."
+  },
+  {
+    "id": "015",
+    "title": "Missed Workout Reschedule",
+    "status": "backlog",
+    "description": "When a user skips a planned workout day, prompt them: skip it and move on, or do it today? Removes guesswork about what to do after missing a session."
+  },
+  {
+    "id": "016",
+    "title": "Workout Duration",
+    "status": "backlog",
+    "description": "Track and display how long each workout took. Show duration badge on history calendar entries. Helps users plan gym visits around their schedule."
+  },
+  {
+    "id": "017",
+    "title": "Set Completion Haptic",
+    "status": "backlog",
+    "description": "Vibration or sound feedback when a set is logged. Confirms the tap registered, especially useful with sweaty/chalky hands or dim screens."
+  },
+  {
+    "id": "018",
+    "title": "Recent Workout Peek",
+    "status": "backlog",
+    "description": "Before starting a workout, show a summary of last session for that day: key weights and reps. Helps users mentally prepare and know what to expect."
+  },
+  {
+    "id": "019",
+    "title": "Custom TM Override",
+    "status": "backlog",
+    "description": "Manually adjust a training max with a reason note (e.g. deload reset, injury setback, form correction). Uses existing append-only TM history. Critical when auto-progression overshoots reality."
+  },
+  {
+    "id": "020",
+    "title": "Set Weight Override",
+    "status": "backlog",
+    "description": "Override auto-calculated weight for individual sets during a workout. For when plates don't work out cleanly at your gym, or you want to be conservative on a bad day. Avoids having to change the TM for one-off adjustments."
+  },
+  {
+    "id": "021",
+    "title": "Workout Schedule",
+    "status": "backlog",
+    "description": "Assign plan days to specific weekdays (e.g. Day 1 = Monday, Day 2 = Wednesday) and visualize upcoming sessions in the calendar. Set once, referenced often for planning rest days and travel."
+  },
+  {
+    "id": "022",
+    "title": "Volume Load History",
+    "status": "backlog",
+    "description": "Track total volume load (sets x reps x weight) per exercise per session and chart it over time. Volume load is the best proxy for training stress and hypertrophy stimulus. Surfaces plateaus that raw TM numbers miss."
+  },
+  {
+    "id": "023",
+    "title": "Failed Set Tracking",
+    "status": "backlog",
+    "description": "Explicitly mark a set as failed rather than just logging low reps. Track failure patterns across sessions. Surface warnings when consecutive failures on the same weight suggest a TM reset is needed."
+  },
+  {
+    "id": "024",
+    "title": "Workout History Refinement",
+    "status": "backlog",
+    "description": "Improve the workout history view: better readability and visual design, ability to delete old workouts, and overall UI/UX polish. Current history is hard to read and lacks basic management features."
   }
 ]
