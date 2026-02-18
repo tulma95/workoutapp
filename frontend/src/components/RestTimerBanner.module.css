@@ -1,0 +1,64 @@
+.banner {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  margin: 0 calc(-1 * var(--space-md));
+  margin-bottom: var(--space-md);
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-md);
+}
+
+.time {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.controls {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.adjustBtn,
+.skipBtn {
+  min-height: 2.75rem;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--border);
+  border-radius: var(--space-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color 0.2s;
+}
+
+.adjustBtn:active,
+.skipBtn:active {
+  background-color: var(--border);
+}
+
+.skipBtn {
+  background-color: transparent;
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.progressTrack {
+  height: 3px;
+  background-color: var(--border);
+}
+
+.progressBar {
+  height: 100%;
+  background-color: var(--primary);
+  transition: width 1s linear;
+}
