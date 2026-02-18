@@ -22,6 +22,7 @@
 | **TM manual update** | settings.tsx | `['training-maxes']` |
 | **Workout complete** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']`, `['training-maxes']` |
 | **Workout cancel** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']` |
+| **Workout delete (history)** | history.tsx | `['workoutCalendar']` |
 | **Exercise CRUD** | admin/exercises.tsx | `['admin-exercises']` |
 | **Plan archive** | admin/plans.index.tsx | `['admin-plans']` |
 | **Plan create** | PlanEditorPage.tsx | `['admin-plans']` |
@@ -34,6 +35,7 @@ Which pages need fresh data after an action on another page:
 ```
 WorkoutPage --complete--> Dashboard (current workout), History (calendar), Settings (TMs)
 WorkoutPage --cancel----> Dashboard (current workout), History (calendar)
+HistoryPage --delete---> History (calendar)
 PlanSelectionPage --subscribe--> Dashboard (plan, TMs, current workout), Settings (plan, TMs)
 SetupPage --save TMs--> Dashboard (TMs), Settings (TMs)
 SettingsPage --edit TM--> Dashboard (TMs)

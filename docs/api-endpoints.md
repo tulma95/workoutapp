@@ -14,10 +14,10 @@
 - `GET /api/training-maxes/:exercise/history`
 - `POST /api/workouts` - `{ dayNumber }` -> generates sets from active plan + TMs
 - `GET /api/workouts/current` - in-progress workout (or null)
-- `GET /api/workouts/:id`
+- `GET /api/workouts/:id` - includes `progressions` array (TM changes linked to this workout)
 - `PATCH /api/workouts/:id/sets/:setId` - `{ actualReps, completed }`
 - `POST /api/workouts/:id/complete` - applies progression, returns `{ progressions: [...] }`
-- `DELETE /api/workouts/:id` - soft-delete (sets status to 'discarded')
+- `DELETE /api/workouts/:id` - soft-delete (sets status to 'discarded'), works on both in_progress and completed workouts
 - `GET /api/workouts/history?page=1&limit=10`
 - `GET /api/workouts/calendar?year=2026&month=2` - calendar view (must be before /:id route)
 
