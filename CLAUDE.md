@@ -152,7 +152,7 @@ Round calculated weights to nearest **2.5 kg**.
 - `SetupPage` - dynamic 1RM inputs based on active plan's exercises (supports partial setup for missing TMs)
 - `DashboardPage` - plan-driven workout day cards, current TMs, current plan section
 - `WorkoutPage` - active session with conflict dialog for duplicate workouts
-- `HistoryPage` - calendar view (WorkoutCalendar) + workout detail (WorkoutDetail) with View Transition animations
+- `HistoryPage` - calendar view (WorkoutCalendar) + workout detail (WorkoutDetail)
 - `SettingsPage` - current plan display, training maxes, logout
 
 ### Admin Pages (purple accent, /admin/*)
@@ -188,9 +188,11 @@ Round calculated weights to nearest **2.5 kg**.
 - **Weight display**: All display uses `formatWeight()` from `frontend/src/utils/weight.ts` (always kg, rounds to 2.5).
 - **CSS Modules**: Component-scoped styles via `.module.css` files, rem units on 8-point grid, shared custom properties in `global.css`, border widths stay as px
 - **Touch targets**: All interactive elements min 44px (3rem)
-- **View Transitions**: `document.startViewTransition()` with feature detection for calendar navigation
+- **No view transitions**: Removed due to Safari/iOS issues.
 - **Controlled components**: Complex stateful UI (e.g., WorkoutCalendar) uses props not internal state to prevent reset on re-render
-- **Loading overlays**: Keep components mounted during loading, use opacity + pointer-events: none instead of unmounting
+- **Loading states**: Calendar uses a thin animated progress bar (not opacity fade). Skeleton loading screens for initial page loads. Never unmount components during loading.
+- **Caching**: `defaultPreloadStaleTime: 0` delegates all caching to React Query. Route loaders use `ensureQueryData()` for preloading. Calendar uses `keepPreviousData` for smooth month transitions.
+- **Workout creation**: Done in component `useEffect` with `useRef` guard (not in route loader) to prevent phantom workouts from preloading. Route preloading disabled on workout page.
 - **Modals**: Use native `<dialog>` element with `showModal()`. Dialog fills viewport (transparent background), visual content in inner `__content` div. Gives free backdrop, focus trapping, and Escape key handling. Listen for `close` event to sync parent state.
 - **Navigation**: Never use `<Button onClick={() => navigate(...)}>` for navigation. Use `<ButtonLink to="...">` (renders an `<a>` tag) for all navigational actions. Only use `navigate()` for post-action redirects (after form submit, login, logout, API call).
 
@@ -240,7 +242,7 @@ Admin: PlanList --archive--> PlanList only
 ```
 
 ### Notes
-- Route loaders use `ensureQueryData()` with `staleTime: 30_000` for preloading
+- `defaultPreloadStaleTime: 0` — all caching delegated to React Query (no stale preloads)
 - Pages use `useSuspenseQuery` for data guaranteed by route loaders
 - `removeQueries` = delete from cache (data no longer valid, e.g. plan switch); `invalidateQueries` = mark stale, refetch on next access
 - When adding new mutations that affect workout/calendar/TM data, update the invalidation rules above
