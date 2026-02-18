@@ -3,13 +3,13 @@
     "id": "001",
     "title": "Rest Timer",
     "status": "done",
-    "doc": "docs/backlog/features/001-rest-timer.md"
+    "description": "Configurable rest timer that auto-starts on set completion with countdown display, adjust/skip controls, and settings for duration."
   },
   {
     "id": "007",
     "title": "Screen Wake Lock",
     "status": "backlog",
-    "doc": "docs/backlog/features/007-screen-wake-lock.md"
+    "description": "Keep screen on during active workouts using the Screen Wake Lock API. Auto-acquire on workout page mount, release on leave/complete. Re-acquire on visibilitychange for iOS. No UI needed, graceful no-op on unsupported browsers."
   },
   {
     "id": "014",
@@ -27,7 +27,7 @@
     "id": "006",
     "title": "Workout Progress Indicator",
     "status": "backlog",
-    "doc": "docs/backlog/features/006-workout-progress-indicator.md"
+    "description": "Progress bar and set counter at top of workout page showing 'X / 17 sets completed'. Bar fills as sets complete, color transitions gray to blue to green. Frontend-only, derived from existing set data."
   },
   {
     "id": "018",
@@ -57,7 +57,7 @@
     "id": "005",
     "title": "Dark Mode",
     "status": "backlog",
-    "doc": "docs/backlog/features/005-dark-mode.md"
+    "description": "System-aware dark mode following device preference, with manual toggle in Settings (System/Light/Dark). Redefine existing CSS custom properties under data-theme attribute. Store preference in localStorage. Instant switch, no reload."
   },
   {
     "id": "024",
@@ -69,7 +69,7 @@
     "id": "010",
     "title": "Workout Notes",
     "status": "backlog",
-    "doc": "docs/backlog/features/010-workout-notes.md"
+    "description": "Optional free-text notes on workouts. 'Add note' link on workout page opens textarea (max 500 chars), auto-saves on blur. Notes shown in history detail view. Requires new DB column and API update."
   },
   {
     "id": "023",
@@ -87,7 +87,7 @@
     "id": "008",
     "title": "PR Detection",
     "status": "backlog",
-    "doc": "docs/backlog/features/008-pr-detection.md"
+    "description": "Detect personal records in real-time during workouts. PR = more weight at same or higher rep count than ever before for that exercise. Show animated celebration banner on AMRAP completion. New backend endpoint for per-exercise records by rep count."
   },
   {
     "id": "013",
@@ -105,13 +105,13 @@
     "id": "004",
     "title": "Plate Calculator",
     "status": "backlog",
-    "doc": "docs/backlog/features/004-plate-calculator.md"
+    "description": "Tap weight on any set to see plate breakdown per side. Greedy algorithm from heaviest plate down. Configurable bar weight and available plates in Settings. Frontend-only, no backend changes."
   },
   {
     "id": "003",
     "title": "Progression Charts",
     "status": "backlog",
-    "doc": "docs/backlog/features/003-progression-charts.md"
+    "description": "New /progress page with charts: TM progression lines per lift, AMRAP performance scatter plot, workout frequency heatmap. Time range selector (1M/3M/6M/All). New backend endpoint for AMRAP history. Lightweight chart library (uPlot or similar)."
   },
   {
     "id": "011",
@@ -135,12 +135,12 @@
     "id": "009",
     "title": "Deload Detection",
     "status": "backlog",
-    "doc": "docs/backlog/features/009-deload-detection.md"
+    "description": "Track AMRAP trends and suggest deload when user hits 0-1 reps on progression AMRAP for 3 consecutive workouts. Suggest 10% TM reduction with one-tap apply. New backend stall-check endpoint, no new DB tables needed."
   },
   {
     "id": "002",
     "title": "PWA + Offline",
     "status": "backlog",
-    "doc": "docs/backlog/features/002-pwa-offline.md"
+    "description": "Convert to PWA for home screen install and offline support. Phase 1: service worker + cached assets via vite-plugin-pwa. Phase 2: IndexedDB for offline workout sessions with mutation queue and sync-on-reconnect. Large effort, phased rollout."
   }
 ]
