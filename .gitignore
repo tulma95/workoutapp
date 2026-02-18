@@ -17,3 +17,4 @@ frontend/src/routeTree.gen.ts
 tasks/
 .env
 .ci-artifacts/
+.worktrees/
