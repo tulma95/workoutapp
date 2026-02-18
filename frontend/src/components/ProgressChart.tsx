@@ -1,7 +1,8 @@
-import { useState, useMemo, useRef, useCallback, useEffect } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import styles from './ProgressChart.module.css'
 import { formatWeight } from '../utils/weight'
 import type { TrainingMax } from '../api/schemas'
+import { getRangeStartDate } from './TimeRangeSelector'
 import type { TimeRange } from './TimeRangeSelector'
 
 interface Props {
@@ -12,14 +13,6 @@ interface Props {
 }
 
 const CHART_PADDING = { top: 12, right: 16, bottom: 28, left: 44 }
-
-function getRangeStartDate(range: TimeRange): Date | null {
-  if (range === 'all') return null
-  const now = new Date()
-  const months = range === '1m' ? 1 : range === '3m' ? 3 : 6
-  now.setMonth(now.getMonth() - months)
-  return now
-}
 
 function formatDateLabel(date: Date): string {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -36,17 +29,20 @@ interface TooltipData {
 export function ProgressChart({ history, color, exerciseName, timeRange }: Props) {
   const [tooltip, setTooltip] = useState<TooltipData | null>(null)
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
-  const containerRef = useRef<HTMLDivElement | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const pathRef = useRef<SVGPathElement>(null)
   const [pathLength, setPathLength] = useState(0)
 
-  const measuredRef = useCallback((node: HTMLDivElement | null) => {
-    if (node) {
-      containerRef.current = node
-      const { width } = node.getBoundingClientRect()
+  useEffect(() => {
+    if (!containerRef.current) return
+    const observer = new ResizeObserver(([entry]) => {
+      if (!entry) return
+      const width = entry.contentRect.width
       const height = Math.min(width * 0.52, 220)
       setDimensions({ width, height })
-    }
+    })
+    observer.observe(containerRef.current)
+    return () => observer.disconnect()
   }, [])
 
   const filteredData = useMemo(() => {
@@ -155,7 +151,7 @@ export function ProgressChart({ history, color, exerciseName, timeRange }: Props
   return (
     <div className={styles.chartCard}>
       <div className={styles.chartHeader}>{exerciseName}</div>
-      <div ref={measuredRef} className={styles.chartContainer}>
+      <div ref={containerRef} className={styles.chartContainer}>
         {width > 0 && (
           <svg
             width={width}

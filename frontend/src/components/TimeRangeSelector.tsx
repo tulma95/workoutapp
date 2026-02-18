@@ -2,6 +2,14 @@ import styles from './TimeRangeSelector.module.css'
 
 export type TimeRange = '1m' | '3m' | '6m' | 'all'
 
+export function getRangeStartDate(range: TimeRange): Date | null {
+  if (range === 'all') return null
+  const now = new Date()
+  const months = range === '1m' ? 1 : range === '3m' ? 3 : 6
+  now.setMonth(now.getMonth() - months)
+  return now
+}
+
 const OPTIONS: { value: TimeRange; label: string }[] = [
   { value: '1m', label: '1M' },
   { value: '3m', label: '3M' },

@@ -1,5 +1,6 @@
 import styles from './ProgressSummaryCards.module.css'
 import { formatWeight } from '../utils/weight'
+import { getRangeStartDate } from './TimeRangeSelector'
 import type { TimeRange } from './TimeRangeSelector'
 import type { TrainingMax } from '../api/schemas'
 
@@ -21,14 +22,6 @@ interface Props {
   timeRange: TimeRange
   selectedExercise: string | null
   onSelectExercise: (slug: string) => void
-}
-
-function getRangeStartDate(range: TimeRange): Date | null {
-  if (range === 'all') return null
-  const now = new Date()
-  const months = range === '1m' ? 1 : range === '3m' ? 3 : 6
-  now.setMonth(now.getMonth() - months)
-  return now
 }
 
 function computeGain(history: TrainingMax[], rangeStart: Date | null): number {
@@ -70,7 +63,7 @@ export function ProgressSummaryCards({
         return (
           <button
             key={ex.slug}
-            className={`${styles.card} ${isSelected ? styles.cardSelected : ''}`}
+            className={styles.card}
             style={{
               borderColor: isSelected ? ex.color : undefined,
               backgroundColor: isSelected ? `${ex.color}08` : undefined,

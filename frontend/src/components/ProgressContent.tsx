@@ -75,21 +75,17 @@ export function ProgressContent() {
 
   const isLoadingHistory = historyQueries.some((q) => q.isLoading && q.fetchStatus !== 'idle')
 
-  // Use individual data references so the memo only re-runs when data actually changes
-  const d0 = historyQueries[0]?.data
-  const d1 = historyQueries[1]?.data
-  const d2 = historyQueries[2]?.data
-  const d3 = historyQueries[3]?.data
+  const historyData = historyQueries.map((q) => q.data)
 
   const histories = useMemo(() => {
     const map = new Map<string, TrainingMax[]>()
-    const allData = [d0, d1, d2, d3]
     EXERCISE_CONFIGS.forEach((ex, i) => {
-      const data = allData[i]
+      const data = historyData[i]
       if (data) map.set(ex.slug, data)
     })
     return map
-  }, [d0, d1, d2, d3])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, historyData)
 
   if (isLoadingTMs) {
     return (
