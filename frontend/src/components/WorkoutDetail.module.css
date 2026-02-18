@@ -104,6 +104,19 @@
   margin-top: var(--space-xs);
 }
 
+.deleteButton {
+  width: 100%;
+  padding: var(--space-md);
+  margin-top: var(--space-lg);
+  background: none;
+  border: 1px solid var(--danger);
+  border-radius: var(--space-xs);
+  color: var(--danger);
+  font-size: 1rem;
+  cursor: pointer;
+  min-height: 3rem;
+}
+
 @media (max-width: 480px) {
   .root {
     padding: var(--space-md);

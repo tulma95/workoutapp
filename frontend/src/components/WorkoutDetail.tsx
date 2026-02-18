@@ -7,6 +7,7 @@ import styles from './WorkoutDetail.module.css';
 interface WorkoutDetailProps {
   workout?: Workout;
   isLoading?: boolean;
+  onDelete?: () => void;
 }
 
 function formatDate(dateString: string): string {
@@ -23,6 +24,7 @@ function formatDate(dateString: string): string {
 export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
   workout,
   isLoading = false,
+  onDelete,
 }) => {
   if (isLoading || !workout) {
     return (
@@ -98,6 +100,12 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
           </section>
         );
       })}
+
+      {onDelete && (
+        <button className={styles.deleteButton} onClick={onDelete}>
+          Delete Workout
+        </button>
+      )}
     </div>
   );
 };
