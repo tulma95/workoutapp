@@ -182,6 +182,14 @@ NODE_ENV=development
 
 These are exported by `start_local_env.sh` and `run_test.sh`. No .env files.
 
+## Keeping Docs Up to Date
+
+When you add or change API endpoints, DB schema, query keys, or invalidation rules, update the corresponding reference doc:
+- New/changed endpoints -> `docs/api-endpoints.md`
+- Schema migrations -> `docs/db-schema.md`
+- New queries or invalidation changes -> `docs/react-query-cache.md`
+- Architecture, patterns, or gotchas -> this file (`CLAUDE.md`)
+
 Dont use typescript-code-review skill
 
 dont use co-author in commits
