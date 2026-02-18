@@ -80,21 +80,21 @@ test.describe('Progress Page', () => {
     await expect(page.getByRole('radio', { name: '6M' })).toBeChecked();
   });
 
-  test('shows chart after completing a workout', async ({ setupCompletePage }) => {
+  test('shows updated TM after completing a workout with progression', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
 
-    // Complete a workout to create progression data
+    // Complete Day 1 with high AMRAP reps to trigger bench progression
     await completeWorkout(page, 1, 10);
 
     const progress = new ProgressPage(page);
     await progress.navigate();
     await progress.expectLoaded();
 
-    // Motivational text should be gone, legend should appear
-    await expect(page.getByText(/complete your first workout/i)).not.toBeVisible();
+    // Bench TM should have increased from 90 kg to 95 kg (10 reps = +5 kg)
+    await expect(page.getByText('95 kg').first()).toBeVisible();
 
-    // Exercise toggle buttons should be visible (legend)
-    const toggleButtons = page.getByRole('list', { name: /toggle exercises/i }).getByRole('button');
-    await expect(toggleButtons.first()).toBeVisible();
+    // Cards should still be visible with all exercises
+    await expect(page.getByText(/squat/i).first()).toBeVisible();
+    await expect(page.getByText(/deadlift/i).first()).toBeVisible();
   });
 });
