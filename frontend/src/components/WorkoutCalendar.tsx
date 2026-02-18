@@ -141,7 +141,7 @@ export default function WorkoutCalendar({
   };
 
   return (
-    <div className={`${styles.calendar} ${isLoading ? styles.loading : ''}`}>
+    <div className={styles.calendar}>
       <div className={styles.header}>
         <button
           className={styles.navButton}
@@ -163,6 +163,8 @@ export default function WorkoutCalendar({
           →
         </button>
       </div>
+
+      <div className={isLoading ? styles.loadingBar : styles.loadingBarHidden} />
 
       <div className={styles.weekdays}>
         {WEEKDAYS.map((day) => (

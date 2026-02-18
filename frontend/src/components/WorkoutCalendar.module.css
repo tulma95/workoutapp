@@ -9,27 +9,39 @@
   border-radius: var(--space-sm);
 }
 
-.loading {
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-.loading::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: var(--space-sm);
-}
-
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--space-md);
+}
+
+.loadingBar {
+  height: 2px;
+  margin-bottom: var(--space-md);
+  background-color: var(--border);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.loadingBar::after {
+  content: '';
+  display: block;
+  height: 100%;
+  width: 40%;
+  background-color: var(--primary);
+  border-radius: 1px;
+  animation: slide 1s ease-in-out infinite;
+}
+
+.loadingBarHidden {
+  composes: loadingBar;
+  visibility: hidden;
+}
+
+@keyframes slide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
 }
 
 .navButton {
