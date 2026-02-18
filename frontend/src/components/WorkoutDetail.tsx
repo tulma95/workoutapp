@@ -46,6 +46,8 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
   }
 
   const workoutDate = workout.completedAt || workout.createdAt;
+  const totalSets = workout.sets.length;
+  const completedSets = workout.sets.filter(s => s.completed || s.actualReps !== null).length;
 
   return (
     <div className={styles.root}>
@@ -54,34 +56,40 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
           Day {workout.dayNumber}{exerciseGroups.length > 0 ? ` - ${exerciseGroups.at(0)?.exercise}` : ''}
         </h2>
         <p className={styles.date}>{formatDate(workoutDate)}</p>
+        <p className={styles.summary}>{completedSets}/{totalSets} sets</p>
       </div>
 
       {exerciseGroups.map((group) => (
         <section key={group.exercise} className={styles.section}>
           <h3 className={styles.sectionTitle}>{group.exercise}</h3>
           <div className={styles.sets}>
-            {group.sets.map((set, index) => (
-              <div key={set.id} className={styles.setRow}>
-                <span className={styles.setNumber}>Set {index + 1}</span>
-                <span className={styles.setWeight}>
-                  {formatWeight(set.prescribedWeight)}
-                </span>
-                <span className={styles.setReps}>
-                  {set.prescribedReps}
-                  {set.isAmrap ? '+' : ''} reps
-                </span>
-                {set.actualReps !== null && set.actualReps !== set.prescribedReps && (
-                  <span className={styles.setActual}>
-                    ({set.actualReps} done)
+            {group.sets.map((set, index) => {
+              const isCompleted = set.completed || set.actualReps !== null;
+              const isUnder = isCompleted && set.actualReps !== null && set.actualReps < set.prescribedReps;
+              const stateClass = !isCompleted
+                ? styles.setMissed
+                : isUnder
+                  ? styles.setUnder
+                  : styles.setCompleted;
+
+              return (
+                <div key={set.id} className={`${styles.setRow} ${stateClass}`}>
+                  <span className={styles.setNumber}>{index + 1}</span>
+                  <span className={styles.setWeight}>
+                    {formatWeight(set.prescribedWeight)}
                   </span>
-                )}
-                {(set.completed || set.actualReps !== null) && (
-                  <span className={styles.setCompleted} aria-label="completed">
-                    ✓
+                  <span className={styles.setReps}>
+                    {set.prescribedReps}
+                    {set.isAmrap ? '+' : ''}
                   </span>
-                )}
-              </div>
-            ))}
+                  {set.actualReps !== null && set.actualReps !== set.prescribedReps && (
+                    <span className={styles.setActual}>
+                      {set.actualReps}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </section>
       ))}

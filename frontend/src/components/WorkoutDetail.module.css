@@ -87,9 +87,21 @@
 }
 
 .setCompleted {
-  color: var(--success);
-  font-size: 1.5rem;
-  line-height: 1;
+  background-color: rgba(22, 163, 74, 0.1);
+}
+
+.setUnder {
+  background-color: rgba(234, 146, 22, 0.15);
+}
+
+.setMissed {
+  opacity: 0.5;
+}
+
+.summary {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-top: var(--space-xs);
 }
 
 .progression {
