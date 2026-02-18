@@ -326,4 +326,69 @@ describe('Workouts API - Plan-Driven Generation', () => {
       expect(res.body).toEqual([]);
     });
   });
+
+  describe('DELETE /api/workouts/:id (discard completed)', () => {
+    it('should discard a completed workout', async () => {
+      // Cancel any existing in-progress workout
+      const current = await request(app)
+        .get('/api/workouts/current')
+        .set('Authorization', `Bearer ${token}`);
+      if (current.body?.id) {
+        await request(app)
+          .delete(`/api/workouts/${current.body.id}`)
+          .set('Authorization', `Bearer ${token}`);
+      }
+
+      const startRes = await request(app)
+        .post('/api/workouts')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ dayNumber: 1 });
+      const workoutId = startRes.body.id;
+
+      await request(app)
+        .post(`/api/workouts/${workoutId}/complete`)
+        .set('Authorization', `Bearer ${token}`);
+
+      const res = await request(app)
+        .delete(`/api/workouts/${workoutId}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+    });
+
+    it('should hide discarded completed workout from calendar', async () => {
+      // Cancel any existing in-progress workout
+      const current = await request(app)
+        .get('/api/workouts/current')
+        .set('Authorization', `Bearer ${token}`);
+      if (current.body?.id) {
+        await request(app)
+          .delete(`/api/workouts/${current.body.id}`)
+          .set('Authorization', `Bearer ${token}`);
+      }
+
+      const startRes = await request(app)
+        .post('/api/workouts')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ dayNumber: 1 });
+      const workoutId = startRes.body.id;
+
+      await request(app)
+        .post(`/api/workouts/${workoutId}/complete`)
+        .set('Authorization', `Bearer ${token}`);
+
+      await request(app)
+        .delete(`/api/workouts/${workoutId}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      const now = new Date();
+      const calRes = await request(app)
+        .get(`/api/workouts/calendar?year=${now.getFullYear()}&month=${now.getMonth() + 1}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      const ids = calRes.body.workouts.map((w: { id: number }) => w.id);
+      expect(ids).not.toContain(workoutId);
+    });
+  });
 });

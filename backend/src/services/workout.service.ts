@@ -507,9 +507,8 @@ export async function cancelWorkout(workoutId: number, userId: number) {
     return null;
   }
 
-  // Check if workout is in_progress
-  if (workout.status !== 'in_progress') {
-    throw new Error('CONFLICT: Cannot cancel a completed workout');
+  if (workout.status === 'discarded') {
+    throw new Error('CONFLICT: Workout is already discarded');
   }
 
   // Soft delete: update status to 'discarded' instead of hard deleting
