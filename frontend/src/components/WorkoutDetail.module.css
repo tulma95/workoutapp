@@ -104,21 +104,6 @@
   margin-top: var(--space-xs);
 }
 
-.progression {
-  margin-top: var(--space-lg);
-  padding-top: var(--space-md);
-  border-top: 2px solid var(--border);
-}
-
-.noProgression {
-  text-align: center;
-  padding: var(--space-md);
-  color: var(--text-muted);
-  font-size: 1rem;
-  background: var(--bg);
-  border-radius: var(--space-xs);
-}
-
 @media (max-width: 480px) {
   .root {
     padding: var(--space-md);

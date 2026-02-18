@@ -241,11 +241,25 @@ export async function getWorkout(workoutId: number, userId: number) {
       sets: {
         orderBy: [{ exerciseOrder: 'asc' }, { setOrder: 'asc' }],
         include: { exercise: true }
-      }
+      },
+      progressions: {
+        include: { exercise: true },
+      },
     },
   });
 
-  return workout ? formatWorkout(workout) : null;
+  if (!workout) return null;
+
+  const progressions = workout.progressions.map((tm) => ({
+    exercise: tm.exercise.name,
+    previousTM: tm.previousWeight ? tm.previousWeight.toNumber() : tm.weight.toNumber(),
+    newTM: tm.weight.toNumber(),
+    increase: tm.previousWeight
+      ? tm.weight.toNumber() - tm.previousWeight.toNumber()
+      : 0,
+  }));
+
+  return { ...formatWorkout(workout), progressions };
 }
 
 export async function logSet(
@@ -387,7 +401,7 @@ export async function completeWorkout(workoutId: number, userId: number) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      // Create new TM row
+      // Create new TM row linked to this workout
       await prisma.trainingMax.upsert({
         where: {
           userId_exerciseId_effectiveDate: {
@@ -396,11 +410,13 @@ export async function completeWorkout(workoutId: number, userId: number) {
             effectiveDate: today,
           },
         },
-        update: { weight: newWeightKg },
+        update: { weight: newWeightKg, previousWeight: currentTMKg, workoutId },
         create: {
           userId,
           exerciseId: exercise.id,
           weight: newWeightKg,
+          previousWeight: currentTMKg,
+          workoutId,
           effectiveDate: today,
         },
       });

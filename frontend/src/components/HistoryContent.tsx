@@ -56,13 +56,11 @@ export function HistoryContent({
           <div className={styles.detail}>
             {isLoadingWorkout ? (
               <WorkoutDetail
-                progression={null}
                 isLoading={true}
               />
             ) : selectedWorkout ? (
               <WorkoutDetail
                 workout={selectedWorkout}
-                progression={null}
               />
             ) : hasAnyWorkouts ? (
               <div className={styles.prompt}>

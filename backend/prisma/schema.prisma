@@ -110,12 +110,15 @@ model TrainingMax {
   id            Int      @id @default(autoincrement())
   userId        Int      @map("user_id")
   exerciseId    Int      @map("exercise_id")
+  workoutId     Int?     @map("workout_id")
   weight        Decimal  @db.Decimal(6, 2)
+  previousWeight Decimal? @map("previous_weight") @db.Decimal(6, 2)
   effectiveDate DateTime @default(now()) @map("effective_date") @db.Timestamptz(3)
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   user     User     @relation(fields: [userId], references: [id])
   exercise Exercise @relation(fields: [exerciseId], references: [id])
+  workout  Workout? @relation(fields: [workoutId], references: [id])
 
   @@unique([userId, exerciseId, effectiveDate])
   @@map("training_maxes")
@@ -130,9 +133,10 @@ model Workout {
   completedAt DateTime? @map("completed_at") @db.Timestamptz(3)
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
 
-  user    User      @relation(fields: [userId], references: [id])
-  planDay PlanDay?  @relation(fields: [planDayId], references: [id])
-  sets    WorkoutSet[]
+  user         User          @relation(fields: [userId], references: [id])
+  planDay      PlanDay?      @relation(fields: [planDayId], references: [id])
+  sets         WorkoutSet[]
+  progressions TrainingMax[]
 
   @@map("workouts")
 }
