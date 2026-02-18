@@ -23,8 +23,8 @@ export interface EditorDay extends Omit<PlanDayInput, 'exercises'> {
 
 export interface EditorProgressionRule {
   tempId: string;
-  exerciseId?: number;
-  category?: string;
+  exerciseId?: number | null;
+  category?: string | null;
   minReps: number;
   maxReps: number;
   increase: number;
@@ -322,7 +322,11 @@ export function usePlanEditorState(planId?: string) {
       if (idx <= 0) return day;
 
       const reordered = [...day.exercises];
-      [reordered[idx - 1], reordered[idx]] = [reordered[idx], reordered[idx - 1]];
+      const prev = reordered.at(idx - 1);
+      const curr = reordered.at(idx);
+      if (!prev || !curr) return day;
+      reordered[idx - 1] = curr;
+      reordered[idx] = prev;
 
       return {
         ...day,
@@ -340,7 +344,11 @@ export function usePlanEditorState(planId?: string) {
       if (idx < 0 || idx >= day.exercises.length - 1) return day;
 
       const reordered = [...day.exercises];
-      [reordered[idx], reordered[idx + 1]] = [reordered[idx + 1], reordered[idx]];
+      const curr = reordered.at(idx);
+      const next = reordered.at(idx + 1);
+      if (!curr || !next) return day;
+      reordered[idx] = next;
+      reordered[idx + 1] = curr;
 
       return {
         ...day,

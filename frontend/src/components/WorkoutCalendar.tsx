@@ -5,7 +5,6 @@ import styles from './WorkoutCalendar.module.css';
 interface WorkoutCalendarProps {
   workouts: CalendarWorkout[];
   onSelectWorkout: (workoutId: number) => void;
-  selectedDate?: Date;
   onMonthChange: (year: number, month: number, direction: 'prev' | 'next') => void;
   year: number;
   month: number; // 1-indexed (1 = January, 12 = December)
@@ -31,7 +30,6 @@ const MONTH_NAMES = [
 export default function WorkoutCalendar({
   workouts,
   onSelectWorkout,
-  selectedDate,
   onMonthChange,
   year,
   month,

@@ -5,8 +5,8 @@ import styles from './ProgressionRulesEditor.module.css';
 
 interface EditorRule {
   tempId: string;
-  exerciseId?: number;
-  category?: string;
+  exerciseId?: number | null;
+  category?: string | null;
   minReps: number;
   maxReps: number;
   increase: number;

@@ -98,7 +98,7 @@ function PlanSelectionPage() {
   async function showSwitchConfirmation(planId: number) {
     setError('')
     try {
-      const [currentPlan, currentWorkout, trainingMaxes] = await Promise.all([
+      const [currentPlan, currentWorkout] = await Promise.all([
         getCurrentPlan(),
         getCurrentWorkout(),
         getTrainingMaxes(),

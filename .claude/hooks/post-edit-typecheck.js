@@ -49,7 +49,7 @@ process.stdin.on("end", () => {
 
       if (fs.existsSync(path.join(dir, "tsconfig.json"))) {
         try {
-          execFileSync("npx", ["tsc", "--noEmit", "--pretty", "false"], {
+          execFileSync("npx", ["tsc", "--build", "--noEmit", "--pretty", "false"], {
             cwd: dir,
             encoding: "utf8",
             stdio: ["pipe", "pipe", "pipe"],

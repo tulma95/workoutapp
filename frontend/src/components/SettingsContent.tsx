@@ -15,7 +15,7 @@ type Props = {
   editValue: string
   tmSaving: boolean
   tmError: string
-  dialogRef: RefObject<HTMLDialogElement>
+  dialogRef: RefObject<HTMLDialogElement | null>
   onOpenEditModal: (exercise: string, currentWeight: number) => void
   onCloseEditModal: () => void
   onEditValueChange: (value: string) => void
@@ -81,10 +81,18 @@ export function SettingsContent({
           <h3>Training Maxes</h3>
           <div className={styles.tmList}>
             {trainingMaxes.map((tm: TrainingMax) => (
-              <div key={tm.exercise} className={styles.tmItem} data-testid="tm-item">
+              <div
+                key={tm.exercise}
+                className={styles.tmItem}
+                data-testid="tm-item"
+              >
                 <div className={styles.tmInfo}>
-                  <span className={styles.tmExercise}>{formatExerciseName(tm.exercise)}</span>
-                  <span className={styles.tmWeight}>{formatWeight(tm.weight)}</span>
+                  <span className={styles.tmExercise}>
+                    {formatExerciseName(tm.exercise)}
+                  </span>
+                  <span className={styles.tmWeight}>
+                    {formatWeight(tm.weight)}
+                  </span>
                 </div>
                 <button
                   className={styles.editBtn}
@@ -98,17 +106,25 @@ export function SettingsContent({
         </section>
       )}
 
-      <Button variant="secondary" className={styles.logoutBtn} onClick={onLogout}>
+      <Button
+        variant="secondary"
+        className={styles.logoutBtn}
+        onClick={onLogout}
+      >
         Log Out
       </Button>
 
       <dialog
         ref={dialogRef}
         className={styles.editDialog}
-        onClick={(e) => { if (e.target === dialogRef.current) onCloseEditModal() }}
+        onClick={(e) => {
+          if (e.target === dialogRef.current) onCloseEditModal()
+        }}
       >
         <div className={styles.editDialogContent}>
-          <h3>Edit {editingExercise ? formatExerciseName(editingExercise) : ''}</h3>
+          <h3>
+            Edit {editingExercise ? formatExerciseName(editingExercise) : ''}
+          </h3>
 
           <div className={styles.editDialogBody}>
             <label htmlFor="tm-input">Training Max (kg)</label>
@@ -122,7 +138,11 @@ export function SettingsContent({
               min="0"
               autoFocus
             />
-            {tmError && <p className={styles.editDialogError} role="alert">{tmError}</p>}
+            {tmError && (
+              <p className={styles.editDialogError} role="alert">
+                {tmError}
+              </p>
+            )}
           </div>
 
           <div className={styles.editDialogActions}>
@@ -133,10 +153,7 @@ export function SettingsContent({
             >
               Cancel
             </Button>
-            <Button
-              onClick={onTmSave}
-              disabled={tmSaving}
-            >
+            <Button onClick={onTmSave} disabled={tmSaving}>
               {tmSaving ? 'Saving...' : 'Save'}
             </Button>
           </div>

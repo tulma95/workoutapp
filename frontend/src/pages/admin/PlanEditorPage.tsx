@@ -112,26 +112,29 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
         onCancel={() => state.setRemovingExercise(null)}
       />
 
-      {state.blocker.status === 'blocked' && (
-        <div
-          className={styles.unsavedModal}
-          onClick={() => state.blocker.reset()}
-          data-testid="unsaved-modal"
-        >
-          <div className={styles.unsavedModalContent} onClick={(e) => e.stopPropagation()}>
-            <h3>Unsaved Changes</h3>
-            <p>You have unsaved changes. Leave without saving?</p>
-            <div className={styles.unsavedModalActions}>
-              <button className={styles.stayBtn} onClick={() => state.blocker.reset()}>
-                Stay
-              </button>
-              <button className={styles.leaveBtn} onClick={() => state.blocker.proceed()}>
-                Leave
-              </button>
+      {state.blocker.status === 'blocked' && (() => {
+        const { reset, proceed } = state.blocker;
+        return (
+          <div
+            className={styles.unsavedModal}
+            onClick={() => reset()}
+            data-testid="unsaved-modal"
+          >
+            <div className={styles.unsavedModalContent} onClick={(e) => e.stopPropagation()}>
+              <h3>Unsaved Changes</h3>
+              <p>You have unsaved changes. Leave without saving?</p>
+              <div className={styles.unsavedModalActions}>
+                <button className={styles.stayBtn} onClick={() => reset()}>
+                  Stay
+                </button>
+                <button className={styles.leaveBtn} onClick={() => proceed()}>
+                  Leave
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

@@ -51,7 +51,7 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
     <div className={styles.root}>
       <div className={styles.header}>
         <h2 className={styles.title}>
-          Day {workout.dayNumber}{exerciseGroups.length > 0 ? ` - ${exerciseGroups[0].exercise}` : ''}
+          Day {workout.dayNumber}{exerciseGroups.length > 0 ? ` - ${exerciseGroups.at(0)?.exercise}` : ''}
         </h2>
         <p className={styles.date}>{formatDate(workoutDate)}</p>
       </div>

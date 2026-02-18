@@ -118,7 +118,7 @@ Always write tests for new code.
 - **Playwright**: Use locator-based API, prefer `getByRole`/`getByLabel`/`getByText` over CSS selectors, wait with `expect` assertions (never `waitForTimeout`), use `.first()` when multiple elements match.
 - Run tests before committing: `npm test` or `./run_test.sh`
 - **Backend typecheck**: `npm run build -w backend`
-- **Frontend typecheck**: `cd frontend && npx tsc --noEmit`
+- **Frontend typecheck**: `cd frontend && npx tsc --build --noEmit` (must use `--build` because `tsconfig.json` uses project references)
 
 ## Commands
 

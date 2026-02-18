@@ -95,8 +95,8 @@ export default function PlanDayEditor({
             const allHaveSets = hasExercises && day.exercises.every(ex => ex.sets.length > 0);
 
             let statusClass = '';
-            if (allHaveSets) statusClass = styles.dayTabComplete;
-            else if (hasExercises) statusClass = styles.dayTabIncomplete;
+            if (allHaveSets) statusClass = styles.dayTabComplete ?? '';
+            else if (hasExercises) statusClass = styles.dayTabIncomplete ?? '';
 
             return (
               <button
