@@ -6,6 +6,7 @@ import { useAuth } from '../../../context/useAuth'
 import { getCurrentPlan } from '../../../api/plans'
 import { getTrainingMaxes, updateTrainingMax } from '../../../api/trainingMaxes'
 import { roundWeight } from '../../../utils/weight'
+import { getRestTimerSettings, saveRestTimerSettings, type RestTimerSettings } from '../../../utils/restTimerSettings'
 import { SkeletonLine, SkeletonHeading } from '../../../components/Skeleton'
 import { SettingsContent } from '../../../components/SettingsContent'
 import styles from '../../../styles/SettingsPage.module.css'
@@ -70,6 +71,7 @@ function SettingsPage() {
     queryFn: getTrainingMaxes,
   })
 
+  const [restTimerSettings, setRestTimerSettings] = useState<RestTimerSettings>(getRestTimerSettings)
   const [editingExercise, setEditingExercise] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
   const [tmSaving, setTmSaving] = useState(false)
@@ -95,6 +97,14 @@ function SettingsPage() {
     dialog.addEventListener('close', handleClose)
     return () => dialog.removeEventListener('close', handleClose)
   }, [])
+
+  const handleRestTimerChange = (updates: Partial<RestTimerSettings>) => {
+    setRestTimerSettings(prev => {
+      const next = { ...prev, ...updates }
+      saveRestTimerSettings(next)
+      return next
+    })
+  }
 
   function openEditModal(exercise: string, currentWeight: number) {
     setEditingExercise(exercise)
@@ -155,6 +165,8 @@ function SettingsPage() {
       onEditValueChange={setEditValue}
       onTmSave={handleTmSave}
       onLogout={handleLogout}
+      restTimerSettings={restTimerSettings}
+      onRestTimerChange={handleRestTimerChange}
     />
   )
 }

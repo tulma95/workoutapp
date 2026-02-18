@@ -21,6 +21,8 @@ type Props = {
   onEditValueChange: (value: string) => void
   onTmSave: () => void
   onLogout: () => void
+  restTimerSettings: { enabled: boolean; durationSeconds: number }
+  onRestTimerChange: (updates: Partial<{ enabled: boolean; durationSeconds: number }>) => void
 }
 
 export function SettingsContent({
@@ -37,6 +39,8 @@ export function SettingsContent({
   onEditValueChange,
   onTmSave,
   onLogout,
+  restTimerSettings,
+  onRestTimerChange,
 }: Props) {
   return (
     <div>
@@ -105,6 +109,43 @@ export function SettingsContent({
           </div>
         </section>
       )}
+
+      <section className={styles.card}>
+        <h3 className={styles.cardLabel}>Rest Timer</h3>
+
+        <div className={styles.settingRow}>
+          <label htmlFor="rest-timer-enabled">Enabled</label>
+          <input
+            id="rest-timer-enabled"
+            type="checkbox"
+            checked={restTimerSettings.enabled}
+            onChange={(e) => onRestTimerChange({ enabled: e.target.checked })}
+          />
+        </div>
+
+        <div className={styles.settingRow}>
+          <label htmlFor="rest-timer-duration">Duration</label>
+          <div className={styles.durationPicker}>
+            <button
+              onClick={() => onRestTimerChange({ durationSeconds: Math.max(30, restTimerSettings.durationSeconds - 15) })}
+              disabled={restTimerSettings.durationSeconds <= 30}
+              aria-label="Decrease rest duration"
+            >
+              -
+            </button>
+            <span id="rest-timer-duration" className={styles.durationValue}>
+              {Math.floor(restTimerSettings.durationSeconds / 60)}:{(restTimerSettings.durationSeconds % 60).toString().padStart(2, '0')}
+            </span>
+            <button
+              onClick={() => onRestTimerChange({ durationSeconds: Math.min(600, restTimerSettings.durationSeconds + 15) })}
+              disabled={restTimerSettings.durationSeconds >= 600}
+              aria-label="Increase rest duration"
+            >
+              +
+            </button>
+          </div>
+        </div>
+      </section>
 
       <Button
         variant="secondary"

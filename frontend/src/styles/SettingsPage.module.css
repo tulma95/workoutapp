@@ -174,3 +174,57 @@
   gap: 1rem;
   justify-content: flex-end;
 }
+
+.settingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) 0;
+}
+
+.settingRow label {
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.settingRow input[type="checkbox"] {
+  width: 1.25rem;
+  height: 1.25rem;
+  min-height: auto;
+  accent-color: var(--primary);
+}
+
+.durationPicker {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.durationPicker button {
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--space-sm);
+  background-color: var(--bg);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.durationPicker button:active {
+  background-color: var(--border);
+}
+
+.durationPicker button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.durationValue {
+  min-width: 3rem;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
