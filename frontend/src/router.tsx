@@ -15,7 +15,6 @@ export const router = createRouter({
   routeTree,
   defaultPreload: 'intent',
   defaultPreloadStaleTime: 0,
-  defaultViewTransition: true,
   context: {
     queryClient,
   },
