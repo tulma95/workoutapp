@@ -147,7 +147,6 @@ export default function WorkoutCalendar({
           className={styles.navButton}
           onClick={handlePrevMonth}
           aria-label="Previous month"
-          disabled={isLoading}
         >
           ←
         </button>
@@ -158,7 +157,6 @@ export default function WorkoutCalendar({
           className={styles.navButton}
           onClick={handleNextMonth}
           aria-label="Next month"
-          disabled={isLoading}
         >
           →
         </button>

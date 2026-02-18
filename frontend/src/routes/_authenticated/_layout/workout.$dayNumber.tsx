@@ -262,6 +262,7 @@ function WorkoutPage() {
       setProgressions(progressionArray)
       setIsCompleted(true)
       await queryClient.invalidateQueries({ queryKey: ['workout'] })
+      await queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
       await queryClient.invalidateQueries({ queryKey: ['training-maxes'] })
     } catch (err) {
       setError(
@@ -284,6 +285,7 @@ function WorkoutPage() {
     try {
       await cancelWorkout(workout!.id)
       await queryClient.invalidateQueries({ queryKey: ['workout'] })
+      await queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
       navigate({ to: '/' })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to cancel workout')

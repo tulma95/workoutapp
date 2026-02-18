@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { getWorkoutCalendar, getWorkout, type CalendarWorkout, type Workout } from '../../../api/workouts'
+import { useQuery, keepPreviousData } from '@tanstack/react-query'
+import { getWorkoutCalendar, getWorkout, type Workout } from '../../../api/workouts'
 import WorkoutCalendar from '../../../components/WorkoutCalendar'
 import { WorkoutDetail } from '../../../components/WorkoutDetail'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
@@ -13,38 +14,30 @@ export const Route = createFileRoute('/_authenticated/_layout/history')({
 })
 
 function HistoryPage() {
-  const [calendarWorkouts, setCalendarWorkouts] = useState<CalendarWorkout[]>([])
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null)
-  const [isLoadingCalendar, setIsLoadingCalendar] = useState(true)
   const [isLoadingWorkout, setIsLoadingWorkout] = useState(false)
-  const [calendarError, setCalendarError] = useState('')
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1)
 
-  useEffect(() => {
-    fetchCalendarData(currentYear, currentMonth)
-  }, [])
-
-  const fetchCalendarData = async (year: number, month: number) => {
-    setIsLoadingCalendar(true)
-    setCalendarError('')
-    try {
-      const response = await getWorkoutCalendar(year, month)
-      setCalendarWorkouts(response.workouts)
-    } catch (error) {
-      console.error('Failed to fetch calendar data:', error)
-      setCalendarError(error instanceof Error ? error.message : 'Failed to load calendar')
-      setCalendarWorkouts([])
-    } finally {
-      setIsLoadingCalendar(false)
-    }
-  }
+  const {
+    data: calendarWorkouts = [],
+    isLoading: isLoadingCalendar,
+    isFetching: isFetchingCalendar,
+    error: calendarError,
+    refetch: refetchCalendar,
+  } = useQuery({
+    queryKey: ['workoutCalendar', currentYear, currentMonth],
+    queryFn: async () => {
+      const response = await getWorkoutCalendar(currentYear, currentMonth)
+      return response.workouts
+    },
+    placeholderData: keepPreviousData,
+  })
 
   const handleMonthChange = (year: number, month: number, _direction: 'prev' | 'next') => {
     setCurrentYear(year)
     setCurrentMonth(month)
     setSelectedWorkout(null)
-    fetchCalendarData(year, month)
   }
 
   const handleSelectWorkout = async (workoutId: number) => {
@@ -68,8 +61,8 @@ function HistoryPage() {
 
       {calendarError ? (
         <ErrorMessage
-          message={calendarError}
-          onRetry={() => fetchCalendarData(currentYear, currentMonth)}
+          message={calendarError instanceof Error ? calendarError.message : 'Failed to load calendar'}
+          onRetry={() => refetchCalendar()}
         />
       ) : (
         <>
@@ -79,7 +72,7 @@ function HistoryPage() {
             onMonthChange={handleMonthChange}
             year={currentYear}
             month={currentMonth}
-            isLoading={isLoadingCalendar}
+            isLoading={!isLoadingCalendar && isFetchingCalendar}
           />
 
           <div className={styles.detail}>
