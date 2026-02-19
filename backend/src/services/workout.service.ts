@@ -351,6 +351,19 @@ export async function completeWorkout(workoutId: number, userId: number) {
       },
     });
 
+    // Batch-fetch current TMs for all progression exercises before the loop
+    const progressionExerciseIds = new Set(progressionSets.map((s) => s.exerciseId));
+    const tmRows = await prisma.trainingMax.findMany({
+      where: { userId, exerciseId: { in: [...progressionExerciseIds] } },
+      orderBy: { effectiveDate: 'desc' },
+    });
+    const tmByExerciseId = new Map<number, (typeof tmRows)[number]>();
+    for (const row of tmRows) {
+      if (!tmByExerciseId.has(row.exerciseId)) {
+        tmByExerciseId.set(row.exerciseId, row);
+      }
+    }
+
     for (const progressionSet of progressionSets) {
       const actualReps = progressionSet.actualReps;
       if (actualReps == null) continue;
@@ -392,14 +405,8 @@ export async function completeWorkout(workoutId: number, userId: number) {
       const increase = matchingRule.increase.toNumber();
       if (increase <= 0) continue;
 
-      // Get current TM for this exercise
-      const currentTMRow = await prisma.trainingMax.findFirst({
-        where: {
-          userId,
-          exerciseId: exercise.id,
-        },
-        orderBy: { effectiveDate: 'desc' },
-      });
+      // Get current TM for this exercise from pre-fetched batch
+      const currentTMRow = tmByExerciseId.get(exercise.id);
 
       if (!currentTMRow) continue;
 
