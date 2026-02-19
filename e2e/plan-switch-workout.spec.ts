@@ -34,7 +34,7 @@ test.describe('Plan switch discards in-progress workout', () => {
     ).toBeVisible();
 
     // 4. Create a second plan (promotes user to admin, re-logs in, creates plan via API)
-    await createSecondPlan(page);
+    const planName = await createSecondPlan(page);
 
     // 5. Navigate to settings and switch plans
     const settings = new SettingsPage(page);
@@ -43,11 +43,10 @@ test.describe('Plan switch discards in-progress workout', () => {
     await page.getByRole('link', { name: /change plan/i }).click();
     await expect(page.getByRole('heading', { name: /choose a workout plan/i })).toBeVisible();
 
-    // Select the "Simple Test Plan" — find the button following the plan heading
+    // Select the created test plan
     await page
-      .getByRole('heading', { name: 'Simple Test Plan', exact: true })
-      .locator('..')
-      .locator('..')
+      .getByRole('article')
+      .filter({ has: page.getByRole('heading', { name: planName, exact: true }) })
       .getByRole('button', { name: /select plan/i })
       .click();
 

@@ -5,7 +5,7 @@ import { SettingsPage } from '../pages/settings.page';
  * Helper: promote current user to admin, re-login, and create a simple plan
  * that uses the same exercises as nSuns (bench-press, squat) so TMs carry over.
  */
-export async function createSecondPlan(page: import('@playwright/test').Page) {
+export async function createSecondPlan(page: import('@playwright/test').Page): Promise<string> {
   const token = await page.evaluate(() => localStorage.getItem('accessToken'));
 
   // Promote to admin
@@ -46,13 +46,15 @@ export async function createSecondPlan(page: import('@playwright/test').Page) {
   const bench = exercises.find((e: { slug: string }) => e.slug === 'bench-press');
   const squat = exercises.find((e: { slug: string }) => e.slug === 'squat');
 
-  // Create a simple 2-day plan with same exercises
-  const slug = `test-plan-${crypto.randomUUID().slice(0, 8)}`;
+  // Create a simple 2-day plan with same exercises (unique name to avoid parallel worker collisions)
+  const uniqueId = crypto.randomUUID().slice(0, 8);
+  const slug = `test-plan-${uniqueId}`;
+  const planName = `Test Plan ${uniqueId}`;
   const createRes = await page.request.post('/api/admin/plans', {
     headers: { Authorization: `Bearer ${adminToken}` },
     data: {
       slug,
-      name: 'Simple Test Plan',
+      name: planName,
       description: 'A simple plan for testing plan switching',
       daysPerWeek: 2,
       isPublic: true,
@@ -95,4 +97,6 @@ export async function createSecondPlan(page: import('@playwright/test').Page) {
     },
   });
   expect(createRes.ok()).toBeTruthy();
+
+  return planName;
 }

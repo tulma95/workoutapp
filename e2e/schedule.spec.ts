@@ -160,18 +160,17 @@ test.describe('Workout Schedule', () => {
     await settings.saveSchedule();
 
     // Step 2: Create a second plan (promotes user to admin, re-logs in, creates plan via API)
-    await createSecondPlan(page);
+    const planName = await createSecondPlan(page);
 
-    // Step 3: Navigate to Settings → Change Plan → select Simple Test Plan → confirm switch
+    // Step 3: Navigate to Settings → Change Plan → select test plan → confirm switch
     await settings.navigate();
     await settings.expectLoaded();
     await page.getByRole('link', { name: /change plan/i }).click();
     await expect(page.getByRole('heading', { name: /choose a workout plan/i })).toBeVisible();
 
     await page
-      .getByRole('heading', { name: 'Simple Test Plan', exact: true })
-      .locator('..')
-      .locator('..')
+      .getByRole('article')
+      .filter({ has: page.getByRole('heading', { name: planName, exact: true }) })
       .getByRole('button', { name: /select plan/i })
       .click();
 

@@ -40,7 +40,7 @@ export function PlanSelectionContent({
 
       <div className={styles.list}>
         {plans.map((plan) => (
-          <div key={plan.id} className={styles.card}>
+          <article key={plan.id} className={styles.card}>
             <div className={styles.cardHeader}>
               <h2>{plan.name}</h2>
               {plan.description && (
@@ -76,7 +76,7 @@ export function PlanSelectionContent({
             >
               {subscribing === plan.id ? 'Subscribing...' : 'Select Plan'}
             </Button>
-          </div>
+          </article>
         ))}
       </div>
 

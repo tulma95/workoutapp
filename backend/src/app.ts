@@ -56,6 +56,20 @@ if (config.nodeEnv === 'test' || config.nodeEnv === 'development') {
     });
     res.json({ ok: true });
   });
+
+  // Create a backdated TM entry for testing progress charts
+  app.post('/api/dev/backdate-tm', authenticate, async (req: AuthRequest, res) => {
+    const { exerciseSlug, weight, daysAgo } = req.body;
+    const exercise = await prisma.exercise.findUnique({ where: { slug: exerciseSlug } });
+    if (!exercise) { res.status(400).json({ error: 'Exercise not found' }); return; }
+    const date = new Date();
+    date.setDate(date.getDate() - daysAgo);
+    date.setHours(0, 0, 0, 0);
+    const row = await prisma.trainingMax.create({
+      data: { userId: req.userId!, exerciseId: exercise.id, weight, effectiveDate: date },
+    });
+    res.json({ ok: true, id: row.id });
+  });
 }
 
 // Serve frontend static files and handle SPA routing

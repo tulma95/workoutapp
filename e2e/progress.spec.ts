@@ -104,11 +104,16 @@ test.describe('Progress Page', () => {
     const { page } = setupCompletePage;
     const dashboard = new DashboardPage(page);
 
-    // Complete Day 1 to build bench TM history (initial TM + post-workout TM = 2 data points)
-    await completeWorkout(page, 1, 10);
+    // Create a backdated squat TM entry (7 days ago) so the chart has 2 data points on different dates
+    const token = await page.evaluate(() => localStorage.getItem('accessToken'));
+    const backdateRes = await page.request.post('/api/dev/backdate-tm', {
+      headers: { Authorization: `Bearer ${token}` },
+      data: { exerciseSlug: 'squat', weight: 120, daysAgo: 7 },
+    });
+    expect(backdateRes.ok()).toBeTruthy();
 
     // Create a second plan (promotes to admin, re-logs in, creates plan via API)
-    await createSecondPlan(page);
+    const planName = await createSecondPlan(page);
 
     // Navigate to settings and switch plans
     const settings = new SettingsPage(page);
@@ -117,11 +122,10 @@ test.describe('Progress Page', () => {
     await page.getByRole('link', { name: /change plan/i }).click();
     await expect(page.getByRole('heading', { name: /choose a workout plan/i })).toBeVisible();
 
-    // Select the "Simple Test Plan"
+    // Select the created test plan
     await page
-      .getByRole('heading', { name: 'Simple Test Plan', exact: true })
-      .locator('..')
-      .locator('..')
+      .getByRole('article')
+      .filter({ has: page.getByRole('heading', { name: planName, exact: true }) })
       .getByRole('button', { name: /select plan/i })
       .click();
 
@@ -132,23 +136,13 @@ test.describe('Progress Page', () => {
     // Should be on dashboard with the second plan active
     await dashboard.expectLoaded();
 
-    // Patch squat TM after the plan switch to create a TM entry AFTER the plan switch date.
-    // This ensures the plan switch date falls between the earliest and latest TM entries on
-    // the squat chart, making the plan switch marker visible.
-    const token = await page.evaluate(() => localStorage.getItem('accessToken'));
-    const patchRes = await page.request.patch('/api/training-maxes/squat', {
-      headers: { Authorization: `Bearer ${token}` },
-      data: { weight: 130 },
-    });
-    expect(patchRes.ok()).toBeTruthy();
-
     // Navigate to progress page and select "All" time range
     const progress = new ProgressPage(page);
     await progress.navigate();
     await progress.expectLoaded();
     await progress.selectTimeRange('All');
 
-    // The squat chart now has: initial TM (before plan switch) + 130 kg (after plan switch).
+    // The squat chart now has: backdated TM (7 days ago) + today's TM (from setup).
     // The plan switch date falls between these two entries, so the marker should render.
     await expect(
       page.locator('svg title').filter({ hasText: /Plan switch:/ }).first(),
