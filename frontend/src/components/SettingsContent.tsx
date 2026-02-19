@@ -13,12 +13,14 @@ type Props = {
   trainingMaxes: TrainingMax[]
   editingExercise: string | null
   editValue: string
+  editReason: string
   tmSaving: boolean
   tmError: string
   dialogRef: RefObject<HTMLDialogElement | null>
   onOpenEditModal: (exercise: string, currentWeight: number) => void
   onCloseEditModal: () => void
   onEditValueChange: (value: string) => void
+  onEditReasonChange: (value: string) => void
   onTmSave: () => void
   onLogout: () => void
   restTimerSettings: { enabled: boolean; durationSeconds: number }
@@ -31,12 +33,14 @@ export function SettingsContent({
   trainingMaxes,
   editingExercise,
   editValue,
+  editReason: _editReason,
   tmSaving,
   tmError,
   dialogRef,
   onOpenEditModal,
   onCloseEditModal,
   onEditValueChange,
+  onEditReasonChange: _onEditReasonChange,
   onTmSave,
   onLogout,
   restTimerSettings,

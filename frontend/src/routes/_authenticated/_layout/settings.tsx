@@ -74,6 +74,7 @@ function SettingsPage() {
   const [restTimerSettings, setRestTimerSettings] = useState<RestTimerSettings>(getRestTimerSettings)
   const [editingExercise, setEditingExercise] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
+  const [editReason, setEditReason] = useState('')
   const [tmSaving, setTmSaving] = useState(false)
   const [tmError, setTmError] = useState('')
   const dialogRef = useRef<HTMLDialogElement>(null)
@@ -110,12 +111,14 @@ function SettingsPage() {
     setEditingExercise(exercise)
     const weightInUserUnit = roundWeight(currentWeight).toString()
     setEditValue(weightInUserUnit)
+    setEditReason('')
     setTmError('')
   }
 
   function closeEditModal() {
     setEditingExercise(null)
     setEditValue('')
+    setEditReason('')
     setTmError('')
   }
 
@@ -132,7 +135,7 @@ function SettingsPage() {
     setTmError('')
 
     try {
-      await updateTrainingMax(editingExercise, weightInKg)
+      await updateTrainingMax(editingExercise, weightInKg, editReason.trim() || undefined)
       await queryClient.invalidateQueries({ queryKey: ['training-maxes'] })
       await queryClient.invalidateQueries({ queryKey: ['progress'] })
       closeEditModal()
@@ -158,12 +161,14 @@ function SettingsPage() {
       trainingMaxes={trainingMaxes}
       editingExercise={editingExercise}
       editValue={editValue}
+      editReason={editReason}
       tmSaving={tmSaving}
       tmError={tmError}
       dialogRef={dialogRef}
       onOpenEditModal={openEditModal}
       onCloseEditModal={closeEditModal}
       onEditValueChange={setEditValue}
+      onEditReasonChange={setEditReason}
       onTmSave={handleTmSave}
       onLogout={handleLogout}
       restTimerSettings={restTimerSettings}
