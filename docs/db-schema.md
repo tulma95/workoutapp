@@ -17,3 +17,8 @@
 - **plan_progression_rules**: `id, plan_id (FK CASCADE), exercise_id (FK, nullable), category ('upper'/'lower', nullable), min_reps, max_reps, increase_amount (kg)`
 - **user_plans**: `id, user_id (FK), plan_id (FK CASCADE), is_active, started_at, ended_at` — Index: (user_id) optimizes active plan lookups (`WHERE user_id AND is_active = true`).
 - **user_plan_schedules**: `id, user_plan_id (FK user_plans CASCADE), day_number, weekday (0=Sun…6=Sat), created_at` — Unique: (user_plan_id, day_number). Stores which weekday each plan day is scheduled on. Rows are delete-and-recreated on every save (no updatedAt).
+
+## Social Tables
+
+- **friendships**: `id, requester_id (FK users), addressee_id (FK users), status (TEXT default 'pending'), created_at, updated_at` — Unique: (requester_id, addressee_id). Indexes: (requester_id), (addressee_id). CHECK constraint `requester_id < addressee_id` enforces canonical ordering (lower user ID is always stored as requester_id). Status values: `'pending'`, `'accepted'`, `'declined'`, `'removed'`. Application code must normalise by assigning `min(callerId, targetId)` → requester_id when inserting.
+- **feed_events**: `id, user_id (FK users — the actor), event_type (TEXT), payload (JSONB), created_at` — Index: (user_id, created_at) for efficient feed queries. `event_type` values: `'workout_completed'` (payload: `{ workoutId, dayNumber }`), `'tm_increased'` (payload: `{ exerciseSlug, exerciseName, newTM, increase }`).

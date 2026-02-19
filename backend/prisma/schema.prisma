@@ -99,9 +99,12 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  trainingMaxes TrainingMax[]
-  workouts      Workout[]
-  plans         UserPlan[]
+  trainingMaxes    TrainingMax[]
+  workouts         Workout[]
+  plans            UserPlan[]
+  sentRequests     Friendship[] @relation("SentRequests")
+  receivedRequests Friendship[] @relation("ReceivedRequests")
+  feedEvents       FeedEvent[]
 
   @@map("users")
 }
@@ -206,4 +209,34 @@ model UserPlanSchedule {
 
   @@unique([userPlanId, dayNumber])
   @@map("user_plan_schedules")
+}
+
+model Friendship {
+  id          Int      @id @default(autoincrement())
+  requesterId Int      @map("requester_id")
+  addresseeId Int      @map("addressee_id")
+  status      String   @default("pending") @db.Text
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  requester User @relation("SentRequests", fields: [requesterId], references: [id])
+  addressee User @relation("ReceivedRequests", fields: [addresseeId], references: [id])
+
+  @@unique([requesterId, addresseeId])
+  @@index([requesterId])
+  @@index([addresseeId])
+  @@map("friendships")
+}
+
+model FeedEvent {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  eventType String   @map("event_type") @db.Text
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@map("feed_events")
 }
