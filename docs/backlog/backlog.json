@@ -1,5 +1,11 @@
 [
   {
+    "id": "045",
+    "title": "Social / Gym Buddy Features",
+    "status": "backlog",
+    "description": "Share workouts with friends, compare progress on the same plan, leaderboard, simple feed. Friend system, notifications (e.g. 'Your friend just hit a new Bench TM'). Multi-layer: DB (friend relationships, feed events), API (social endpoints), frontend (feed, profiles, friend management)."
+  },
+  {
     "id": "038",
     "title": "N+1 queries in workout completion logic",
     "status": "done",
@@ -14,7 +20,7 @@
   {
     "id": "040",
     "title": "Flaky E2E: replace waitForTimeout in rest-timer tests",
-    "status": "backlog",
+    "status": "done",
     "description": "rest-timer.spec.ts lines 87 and 111 use page.waitForTimeout(200) before asserting timer is not visible. This is a classic flakiness pattern. Replace with expect(restTimerBanner).not.toBeVisible() which polls automatically. Also line 98 uses page.locator('#rest-timer-enabled') instead of semantic getByRole locator."
   },
   {
