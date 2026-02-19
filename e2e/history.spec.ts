@@ -67,7 +67,7 @@ test.describe('Workout History', () => {
 
     await completeWorkout(page, 1, 10);
 
-    await history.navigate();
+    await history.navigateAndWaitForData();
 
     const today = new Date().getDate();
     await history.clickDay(today);
@@ -85,7 +85,7 @@ test.describe('Workout History', () => {
     await completeWorkout(page, 1, 10);
     await completeWorkout(page, 2, 8);
 
-    await history.navigate();
+    await history.navigateAndWaitForData();
 
     const today = new Date().getDate();
     await history.clickDay(today);
@@ -104,7 +104,7 @@ test.describe('Workout History', () => {
     const history = new HistoryPage(page);
 
     await completeWorkout(page, 1, 10);
-    await history.navigate();
+    await history.navigateAndWaitForData();
 
     const today = new Date().getDate();
     await history.clickDay(today);
@@ -120,7 +120,7 @@ test.describe('Workout History', () => {
     const history = new HistoryPage(page);
 
     await completeWorkout(page, 1, 10);
-    await history.navigate();
+    await history.navigateAndWaitForData();
 
     const today = new Date().getDate();
     await history.clickDay(today);

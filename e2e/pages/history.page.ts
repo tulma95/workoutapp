@@ -22,6 +22,14 @@ export class HistoryPage {
     await this.page.getByRole('link', { name: /history/i }).click();
   }
 
+  /** Navigate and wait for calendar API data to load before interacting with days */
+  async navigateAndWaitForData() {
+    await Promise.all([
+      this.page.waitForResponse(resp => resp.url().includes('/api/workouts/calendar') && resp.ok()),
+      this.navigate(),
+    ]);
+  }
+
   async expectLoaded() {
     await expect(this.heading).toBeVisible();
   }
