@@ -114,6 +114,7 @@ model TrainingMax {
   weight        Decimal  @db.Decimal(6, 2)
   previousWeight Decimal? @map("previous_weight") @db.Decimal(6, 2)
   effectiveDate DateTime @default(now()) @map("effective_date") @db.Timestamptz(3)
+  reason        String?  @db.VarChar(500)
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   user     User     @relation(fields: [userId], references: [id])
