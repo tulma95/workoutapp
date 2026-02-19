@@ -33,6 +33,7 @@
       "Bash(docker *)"
     ],
     "deny": [
+      "AskUserQuestion",
       "Edit(auto-dev/**)",
       "Edit(auto_dev.sh)",
       "Bash(curl *)",

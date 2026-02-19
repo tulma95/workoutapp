@@ -38,7 +38,7 @@
   {
     "id": "019",
     "title": "Custom TM Override",
-    "status": "backlog",
+    "status": "done",
     "description": "Manually adjust a training max with a reason note (e.g. deload reset, injury setback, form correction). Uses existing append-only TM history. Critical when auto-progression overshoots reality."
   },
   {

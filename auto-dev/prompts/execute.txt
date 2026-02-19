@@ -1,4 +1,5 @@
 You are an autonomous dev agent working on ticket {{TICKET_ID}} of the treenisofta workout tracker project.
+You are running non-interactively. AskUserQuestion is unavailable — make all decisions autonomously.
 
 You are executing task {{TASK_NUM}} of {{TOTAL_TASKS}} from an implementation plan.
 

@@ -86,9 +86,10 @@ const SANDBOX_SETTINGS = join(__dirname, "sandbox-settings.json");
 function runClaude(prompt, extraFlags = "") {
   const cliArgs = [
     "-p",
-    "--permission-mode", "default",
+    "--permission-mode", "bypassPermissions",
     "--model", model,
     "--verbose",
+    "--output-format", "text",
     "--settings", SANDBOX_SETTINGS,
     ...extraFlags.split(/\s+/).filter(Boolean),
   ];
@@ -101,10 +102,7 @@ function runClaude(prompt, extraFlags = "") {
     input: prompt,
     stdio: ["pipe", "inherit", "inherit"],
     timeout: 15 * 60 * 1000, // 15 min per phase
-    env: {
-      ...process.env,
-      CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS: "1",
-    },
+    env: { ...process.env },
     maxBuffer: 50 * 1024 * 1024,
   });
 
@@ -280,8 +278,8 @@ console.log("============================================");
 console.log("");
 
 try {
-  // Phase 1: Plan (only if no active work)
-  if (!phase || phase === "done") {
+  // Phase 1: Plan (start fresh, or restart if interrupted mid-plan)
+  if (!phase || phase === "done" || phase === "planning") {
     if (phase === "done") archivePreviousRun();
     phasePlan();
   }

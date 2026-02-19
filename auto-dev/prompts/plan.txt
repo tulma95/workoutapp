@@ -1,6 +1,7 @@
-You are the lead of an autonomous dev team working on the treenisofta workout tracker project.
+You are an autonomous dev agent working on the treenisofta workout tracker project.
+You are running non-interactively. AskUserQuestion is unavailable — make all decisions autonomously.
 
-Your job: pick the next ticket, then use an agent team to plan it through adversarial debate.
+Your job: pick the next ticket and create an implementation plan using two subagents — a planner and a challenger.
 
 ## Phase 1: Gather Context
 
@@ -9,26 +10,28 @@ Your job: pick the next ticket, then use an agent team to plan it through advers
 2. Run: node --experimental-strip-types docs/backlog/ticket.ts show <id>
    Read the full ticket details. If it has a doc path, read that file too.
 3. Read CLAUDE.md to understand project conventions.
-4. Explore the codebase enough to understand what exists. Note key files, patterns, and relevant code.
 
-## Phase 2: Team Planning Debate
+## Phase 2: Plan via Subagents
 
-Create an agent team called "planning". Spawn two teammates:
+Use the Task tool to spawn two subagents sequentially:
 
-1. **planner** (general-purpose agent): "You are the planner for ticket <id>: <title>. Your job is to create a concrete implementation plan. Think about what files need to change, backend/frontend changes, DB schema, tests needed, and edge cases. Read CLAUDE.md and explore the codebase. Write your plan proposal and defend it against the challenger's critiques. The plan should have discrete tasks, ordered by dependency, each small enough for one context window. Include test-writing as part of tasks, not separate."
+**Subagent 1 — Planner** (subagent_type: "general-purpose"):
+Prompt it with the ticket details and ask it to:
+- Read CLAUDE.md and explore the codebase
+- Create a concrete implementation plan with discrete tasks
+- Think about: files to change, backend/frontend changes, DB schema, tests, edge cases
+- Tasks should be ordered by dependency, each small enough for one context window
+- Include test-writing as part of implementation tasks, not separate
 
-2. **challenger** (general-purpose agent): "You are the devil's advocate for ticket <id>: <title>. Your job is to challenge the planner's implementation approach. Look for: missing edge cases, simpler alternatives, unnecessary complexity, missed CLAUDE.md conventions, incorrect assumptions about the codebase, missing tests, wrong task ordering or sizing. Read CLAUDE.md and explore the codebase yourself to form your own understanding. Push back constructively - don't just agree."
+**Subagent 2 — Challenger** (subagent_type: "general-purpose"):
+Pass the planner's output and prompt it to:
+- Read CLAUDE.md and explore the codebase independently
+- Challenge the plan: missing edge cases, simpler alternatives, unnecessary complexity, missed conventions, wrong assumptions, missing tests, bad task ordering/sizing
+- Return specific critiques and suggested improvements (not just "looks good")
 
-Create tasks for the team:
-- Task 1 (assign to planner): "Explore the codebase and create an initial implementation plan for the ticket. Share it with the challenger when ready."
-- Task 2 (assign to challenger): "Review the planner's proposal. Challenge assumptions, find gaps, and suggest improvements. Have a back-and-forth debate until you both converge on a solid plan."
-- Task 3 (assign to planner): "Incorporate the challenger's valid feedback and write the final agreed plan."
+## Phase 3: Synthesize and Write
 
-Wait for the team to complete all tasks. Then shut down both teammates and clean up the team.
-
-## Phase 3: Write Final Artifacts
-
-After the team debate is done, read the planner's final output and write the plan.
+Read both subagent outputs. Combine the planner's plan with the challenger's valid critiques into a final plan.
 
 Write the plan to {{PLAN_FILE}} with this format:
 
@@ -38,7 +41,7 @@ Write the plan to {{PLAN_FILE}} with this format:
    <what we're building and why>
 
    ## Debate Outcomes
-   <key decisions from the planner/challenger debate - what was challenged and why the final approach was chosen>
+   <what the challenger flagged and how the final plan addresses it>
 
    ## Tasks
    TASK: <first discrete task description - be specific about files and changes>
