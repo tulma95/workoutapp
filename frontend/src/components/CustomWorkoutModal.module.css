@@ -1,0 +1,192 @@
+.dialog {
+  border: none;
+  padding: 0;
+  background: transparent;
+  max-width: none;
+  max-height: none;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.dialog::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.content {
+  background: var(--bg-card);
+  border-radius: var(--space-sm);
+  padding: var(--space-lg);
+  max-width: 36rem;
+  width: 90%;
+  box-shadow: 0 var(--space-xs) var(--space-md) rgba(0, 0, 0, 0.2);
+  margin: 5vh auto;
+}
+
+.title {
+  margin: 0 0 var(--space-lg) 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.field {
+  margin-bottom: var(--space-lg);
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: var(--space-xs);
+}
+
+.exerciseList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-md);
+}
+
+.exerciseBlock {
+  border: 1px solid var(--border);
+  border-radius: var(--space-sm);
+  padding: var(--space-md);
+}
+
+.exerciseHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-sm);
+}
+
+.removeBtn {
+  background: none;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: var(--space-xs) var(--space-sm);
+  min-height: 3rem;
+  border-radius: var(--space-xs);
+}
+
+.removeBtn:hover {
+  background: rgba(220, 38, 38, 0.1);
+}
+
+.exerciseSelect {
+  width: 100%;
+  margin-bottom: var(--space-md);
+}
+
+.setList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.setRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.setLabel {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.setInputs {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: flex-end;
+}
+
+.inputGroup {
+  flex: 1;
+}
+
+.inputLabel {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: var(--space-xs);
+}
+
+.removeSetBtn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1.25rem;
+  width: 3rem;
+  min-height: 3rem;
+  border-radius: var(--space-xs);
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+
+.removeSetBtn:hover {
+  background: var(--bg);
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.addSetBtn {
+  background: none;
+  border: 1px dashed var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: var(--space-sm) var(--space-md);
+  min-height: 3rem;
+  border-radius: var(--space-xs);
+  width: 100%;
+}
+
+.addSetBtn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.addExerciseBtn {
+  background: none;
+  border: 1px dashed var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: var(--space-sm) var(--space-md);
+  min-height: 3rem;
+  border-radius: var(--space-xs);
+  width: 100%;
+  margin-bottom: var(--space-lg);
+}
+
+.addExerciseBtn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.error {
+  color: var(--danger);
+  font-size: 0.875rem;
+  margin: 0 0 var(--space-md) 0;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.actions button {
+  min-height: 3rem;
+  width: 100%;
+}
