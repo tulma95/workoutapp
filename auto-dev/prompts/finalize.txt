@@ -9,7 +9,7 @@ All implementation tasks are complete. Now finalize the work.
 
 2. Run the full test suite:
    ./run_test.sh
-   If tests fail, fix the issues and re-run until they pass.
+   If tests fail, use the `superpowers:systematic-debugging` skill to diagnose and fix the issues, then re-run until they pass.
    If you fix anything, commit the fix separately.
 
 3. Do a code review:
