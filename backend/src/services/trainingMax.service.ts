@@ -116,6 +116,7 @@ export async function updateTM(
   userId: number,
   exerciseSlug: string,
   weight: number,
+  reason?: string,
 ) {
   logger.info('Manual TM update', { userId, exerciseSlug, weight });
 
@@ -137,12 +138,13 @@ export async function updateTM(
         effectiveDate: today,
       },
     },
-    update: { weight: weightKg },
+    update: { weight: weightKg, reason: reason ?? null },
     create: {
       userId,
       exerciseId: exercise.id,
       weight: weightKg,
       effectiveDate: today,
+      reason: reason ?? null,
     },
     include: {
       exercise: true,
