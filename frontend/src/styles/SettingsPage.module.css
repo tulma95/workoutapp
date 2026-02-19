@@ -163,6 +163,25 @@
   border-color: var(--primary);
 }
 
+.editDialogTextarea {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background-color: var(--bg);
+  color: var(--text);
+  resize: vertical;
+  margin-top: var(--space-lg);
+  font-family: inherit;
+}
+
+.editDialogTextarea:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-color: var(--primary);
+}
+
 .editDialogError {
   margin-top: var(--space-sm);
   color: var(--danger);

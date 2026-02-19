@@ -33,14 +33,14 @@ export function SettingsContent({
   trainingMaxes,
   editingExercise,
   editValue,
-  editReason: _editReason,
+  editReason,
   tmSaving,
   tmError,
   dialogRef,
   onOpenEditModal,
   onCloseEditModal,
   onEditValueChange,
-  onEditReasonChange: _onEditReasonChange,
+  onEditReasonChange,
   onTmSave,
   onLogout,
   restTimerSettings,
@@ -182,6 +182,15 @@ export function SettingsContent({
               step="0.1"
               min="0"
               autoFocus
+            />
+            <label htmlFor="tm-reason">Reason (optional)</label>
+            <textarea
+              id="tm-reason"
+              value={editReason}
+              onChange={(e) => onEditReasonChange(e.target.value)}
+              maxLength={500}
+              rows={3}
+              className={styles.editDialogTextarea}
             />
             {tmError && (
               <p className={styles.editDialogError} role="alert">
