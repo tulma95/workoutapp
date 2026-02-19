@@ -233,6 +233,15 @@ function cmdStatus(ref: string, newStatus: string): void {
   ticket.status = newStatus as TicketStatus;
   writeBacklog(tickets);
 
+  // Auto-clear current ticket when marking it as done
+  if (newStatus === "done" && fs.existsSync(CURRENT_TICKET_PATH)) {
+    const currentId = fs.readFileSync(CURRENT_TICKET_PATH, "utf-8").trim();
+    if (currentId === ticket.id) {
+      fs.unlinkSync(CURRENT_TICKET_PATH);
+      console.log(`Cleared current ticket.`);
+    }
+  }
+
   console.log(`[${ticket.id}] "${ticket.title}": ${oldStatus} -> ${newStatus}`);
   console.log("");
   cmdList();
