@@ -50,6 +50,10 @@ build_image() {
   echo "=== Step 2: Building Docker image ==="
   cd "$PROJECT_ROOT"
 
+  # Stamp git hash into service worker cache name for cache busting
+  sed -i '' "s/const CACHE_NAME = 'setforge-v[^']*'/const CACHE_NAME = 'setforge-v$IMAGE_TAG'/" \
+    frontend/public/sw.js
+
   APP_IMAGE="$FULL_TAG" docker compose -f "$COMPOSE_FILE" --profile e2e build app
 
   echo "Docker image built: $FULL_TAG"
