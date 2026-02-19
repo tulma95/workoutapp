@@ -171,6 +171,10 @@ When E2E tests fail, check `backend-test.log` in the project root. Filter with `
 
 The workout API returns `exercise.name` (like "Bench Press") not `exercise.slug` (like "bench-press"). PlanDayExercise has `displayName` (like "Bench Volume") used only on dashboard day cards.
 
+### Service worker cache busting
+
+`frontend/public/sw.js` uses `CACHE_NAME = 'nsuns-v1'`. Bump this constant when deploying breaking changes that require users to receive fresh assets (e.g., renamed routes, changed API contracts). The old cache is deleted on SW activation.
+
 ## Environment Variables
 
 ```
