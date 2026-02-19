@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useSuspenseQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useSuspenseQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getMe } from '../../../api/user'
 import { useAuth } from '../../../context/useAuth'
 import { getCurrentPlan } from '../../../api/plans'
@@ -86,16 +86,22 @@ function SettingsPage() {
     queryKey: ['training-maxes'],
     queryFn: getTrainingMaxes,
   })
-  const { data: schedule } = useQuery({
+  const { data: schedule } = useSuspenseQuery({
     queryKey: ['schedule'],
     queryFn: getSchedule,
   })
 
+  const [scheduleError, setScheduleError] = useState('')
+
   const scheduleMutation = useMutation({
     mutationFn: saveSchedule,
     onSuccess: async (data) => {
+      setScheduleError('')
       queryClient.setQueryData(['schedule'], data)
       await queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
+    },
+    onError: (err) => {
+      setScheduleError(err instanceof Error ? err.message : 'Failed to save schedule')
     },
   })
 
@@ -205,6 +211,7 @@ function SettingsPage() {
       schedule={schedule}
       onScheduleSave={async (s: ScheduleEntry[]) => { await scheduleMutation.mutateAsync(s) }}
       isScheduleSaving={scheduleMutation.isPending}
+      scheduleError={scheduleError || undefined}
     />
   )
 }

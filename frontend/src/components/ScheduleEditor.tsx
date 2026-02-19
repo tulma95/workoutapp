@@ -18,6 +18,7 @@ type Props = {
   schedule: ScheduleEntry[]
   onSave: (schedule: ScheduleEntry[]) => Promise<void>
   isSaving: boolean
+  saveError?: string
 }
 
 function buildMap(schedule: ScheduleEntry[]): Record<number, number | null> {
@@ -28,7 +29,7 @@ function buildMap(schedule: ScheduleEntry[]): Record<number, number | null> {
   return map
 }
 
-export function ScheduleEditor({ planDays, schedule, onSave, isSaving }: Props) {
+export function ScheduleEditor({ planDays, schedule, onSave, isSaving, saveError }: Props) {
   const [localMap, setLocalMap] = useState<Record<number, number | null>>(() =>
     buildMap(schedule),
   )
@@ -61,6 +62,7 @@ export function ScheduleEditor({ planDays, schedule, onSave, isSaving }: Props) 
           <div key={day.dayNumber} className={styles.row}>
             <span className={styles.dayName}>{day.name ?? `Day ${day.dayNumber}`}</span>
             <select
+              aria-label={day.name ?? `Day ${day.dayNumber}`}
               className={styles.select}
               value={localMap[day.dayNumber] ?? ''}
               onChange={(e) => {
@@ -85,6 +87,12 @@ export function ScheduleEditor({ planDays, schedule, onSave, isSaving }: Props) 
       {hasDuplicate && (
         <p className={styles.warning} role="alert">
           Two or more days share the same weekday.
+        </p>
+      )}
+
+      {saveError && (
+        <p className={styles.warning} role="alert">
+          {saveError}
         </p>
       )}
 

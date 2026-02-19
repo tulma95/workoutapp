@@ -31,6 +31,7 @@ type Props = {
   schedule?: ScheduleEntry[]
   onScheduleSave?: (schedule: ScheduleEntry[]) => Promise<void>
   isScheduleSaving?: boolean
+  scheduleError?: string
 }
 
 export function SettingsContent({
@@ -55,6 +56,7 @@ export function SettingsContent({
   schedule,
   onScheduleSave,
   isScheduleSaving,
+  scheduleError,
 }: Props) {
   return (
     <div>
@@ -130,6 +132,7 @@ export function SettingsContent({
           schedule={schedule}
           onSave={onScheduleSave}
           isSaving={isScheduleSaving ?? false}
+          saveError={scheduleError}
         />
       )}
 
