@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execSync, spawnSync } from "node:child_process";
 import { readFileSync, writeFileSync, mkdirSync, existsSync, appendFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -85,21 +85,35 @@ function loadPrompt(name, vars = {}) {
 const SANDBOX_SETTINGS = join(__dirname, "sandbox-settings.json");
 
 function runClaude(prompt, extraFlags = "") {
-  const escaped = prompt.replace(/'/g, "'\\''");
-  const cmd = `claude -p --permission-mode default --model ${model} --verbose --settings ${SANDBOX_SETTINGS} ${extraFlags} '${escaped}'`;
+  const args = [
+    "-p",
+    "--permission-mode", "default",
+    "--model", model,
+    "--verbose",
+    "--settings", SANDBOX_SETTINGS,
+    ...extraFlags.split(/\s+/).filter(Boolean),
+  ];
 
-  try {
-    execSync(cmd, {
-      cwd: ROOT,
-      stdio: "inherit",
-      timeout: 15 * 60 * 1000, // 15 min per phase
-      env: { ...process.env },
-    });
-  } catch (err) {
-    log(`Claude exited with code ${err.status ?? "unknown"}`);
-    if (err.status && err.status !== 0) {
-      throw new Error(`Claude failed (exit ${err.status})`);
-    }
+  log(`Running: claude ${args.join(" ")}`);
+  log(`Prompt length: ${prompt.length} chars`);
+
+  const result = spawnSync("claude", args, {
+    cwd: ROOT,
+    input: prompt,
+    stdio: ["pipe", "inherit", "inherit"],
+    timeout: 15 * 60 * 1000, // 15 min per phase
+    env: { ...process.env },
+    maxBuffer: 50 * 1024 * 1024,
+  });
+
+  if (result.error) {
+    log(`Claude spawn error: ${result.error.message}`);
+    throw result.error;
+  }
+
+  if (result.status && result.status !== 0) {
+    log(`Claude exited with code ${result.status}`);
+    throw new Error(`Claude failed (exit ${result.status})`);
   }
 }
 
