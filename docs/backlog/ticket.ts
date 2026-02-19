@@ -5,7 +5,7 @@
  *
  * Usage: node --experimental-strip-types docs/backlog/ticket.ts <command> [args]
  *
- * Commands: list, add, show, move, status, delete, next, readme, start, current
+ * Commands: list, add, show, move, status, delete, next, readme, start, current, clear
  */
 
 const fs = require("node:fs") as typeof import("node:fs");
@@ -279,14 +279,11 @@ function cmdStart(ref: string): void {
 
   fs.writeFileSync(CURRENT_TICKET_PATH, ticket.id + "\n");
 
-  if (ticket.status === "backlog") {
+  if (ticket.status === "backlog" || ticket.status === "planned") {
+    const oldStatus = ticket.status;
     ticket.status = "in-progress";
     writeBacklog(tickets);
-    console.log(`[${ticket.id}] "${ticket.title}": backlog -> in-progress`);
-  } else if (ticket.status === "planned") {
-    ticket.status = "in-progress";
-    writeBacklog(tickets);
-    console.log(`[${ticket.id}] "${ticket.title}": planned -> in-progress`);
+    console.log(`[${ticket.id}] "${ticket.title}": ${oldStatus} -> in-progress`);
   } else {
     console.log(`[${ticket.id}] "${ticket.title}" (status: ${ticket.status})`);
   }
@@ -308,6 +305,17 @@ function cmdCurrent(): void {
   }
 
   console.log(ticket.id);
+}
+
+function cmdClear(): void {
+  if (!fs.existsSync(CURRENT_TICKET_PATH)) {
+    console.log("No current ticket set.");
+    return;
+  }
+
+  const id = fs.readFileSync(CURRENT_TICKET_PATH, "utf-8").trim();
+  fs.unlinkSync(CURRENT_TICKET_PATH);
+  console.log(`Cleared current ticket (was: ${id})`);
 }
 
 function cmdReadme(): void {
@@ -357,7 +365,7 @@ function cmdReadme(): void {
 const [command, ...commandArgs] = process.argv.slice(2);
 
 if (!command) {
-  die("Usage: ticket.ts <list|add|show|move|status|delete|next|readme|start|current> [args]");
+  die("Usage: ticket.ts <list|add|show|move|status|delete|next|readme|start|current|clear> [args]");
 }
 
 switch (command) {
@@ -408,8 +416,12 @@ switch (command) {
     cmdCurrent();
     break;
 
+  case "clear":
+    cmdClear();
+    break;
+
   default:
     die(
-      `Unknown command: "${command}". Valid commands: list, add, show, move, status, delete, next, readme, start, current`
+      `Unknown command: "${command}". Valid commands: list, add, show, move, status, delete, next, readme, start, current, clear`
     );
 }
