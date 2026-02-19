@@ -48,12 +48,21 @@ router.post('/request', validate(requestSchema), async (req: AuthRequest, res: R
     where: { requesterId_addresseeId: { requesterId, addresseeId } },
   });
   if (existing) {
-    res.status(409).json({ error: { code: 'ALREADY_EXISTS', message: 'Friend request already exists' } });
+    if (existing.status === 'pending' || existing.status === 'accepted') {
+      res.status(409).json({ error: { code: 'ALREADY_EXISTS', message: 'Friend request already exists' } });
+      return;
+    }
+    // Reset a previously declined or removed friendship to pending
+    const friendship = await prisma.friendship.update({
+      where: { id: existing.id },
+      data: { status: 'pending', initiatorId: callerId },
+    });
+    res.status(201).json({ id: friendship.id });
     return;
   }
 
   const friendship = await prisma.friendship.create({
-    data: { requesterId, addresseeId, status: 'pending' },
+    data: { requesterId, addresseeId, initiatorId: callerId, status: 'pending' },
   });
 
   res.status(201).json({ id: friendship.id });
@@ -87,12 +96,15 @@ router.get('/friends', async (req: AuthRequest, res: Response) => {
 router.get('/requests', async (req: AuthRequest, res: Response) => {
   const userId = getUserId(req);
 
+  // Only return pending requests where the current user is the recipient (not the initiator)
   const requests = await prisma.friendship.findMany({
     where: {
+      status: 'pending',
       OR: [
-        { requesterId: userId, status: 'pending' },
-        { addresseeId: userId, status: 'pending' },
+        { requesterId: userId },
+        { addresseeId: userId },
       ],
+      NOT: { initiatorId: userId },
     },
     include: {
       requester: { select: { id: true, displayName: true } },
@@ -128,6 +140,11 @@ router.patch('/requests/:id/accept', async (req: AuthRequest, res: Response) => 
     return;
   }
 
+  if (friendship.initiatorId === userId) {
+    res.status(403).json({ error: { code: 'FORBIDDEN', message: 'Cannot accept your own friend request' } });
+    return;
+  }
+
   const updated = await prisma.friendship.update({
     where: { id },
     data: { status: 'accepted' },
@@ -153,6 +170,11 @@ router.patch('/requests/:id/decline', async (req: AuthRequest, res: Response) =>
 
   if (friendship.requesterId !== userId && friendship.addresseeId !== userId) {
     res.status(403).json({ error: { code: 'FORBIDDEN', message: 'Not authorized' } });
+    return;
+  }
+
+  if (friendship.initiatorId === userId) {
+    res.status(403).json({ error: { code: 'FORBIDDEN', message: 'Cannot decline your own friend request' } });
     return;
   }
 
@@ -276,23 +298,30 @@ router.get('/leaderboard', async (req: AuthRequest, res: Response) => {
   });
   const participantMap = new Map(participants.map((p) => [p.id, p.displayName]));
 
+  // Fetch all TMs in one query, then group in memory
+  const allTMs = await prisma.trainingMax.findMany({
+    where: {
+      exerciseId: { in: Array.from(tmExerciseMap.keys()) },
+      userId: { in: participantIds },
+    },
+    orderBy: [{ exerciseId: 'asc' }, { userId: 'asc' }, { effectiveDate: 'desc' }],
+  });
+
+  // Group by exerciseId, then pick latest per user
+  const tmsByExercise = new Map<number, Map<number, number>>();
+  for (const tm of allTMs) {
+    if (!tmsByExercise.has(tm.exerciseId)) {
+      tmsByExercise.set(tm.exerciseId, new Map());
+    }
+    const byUser = tmsByExercise.get(tm.exerciseId)!;
+    if (!byUser.has(tm.userId)) {
+      byUser.set(tm.userId, tm.weight.toNumber());
+    }
+  }
+
   const exercises = [];
   for (const [exerciseId, exerciseInfo] of tmExerciseMap) {
-    const tms = await prisma.trainingMax.findMany({
-      where: {
-        exerciseId,
-        userId: { in: participantIds },
-      },
-      orderBy: [{ userId: 'asc' }, { effectiveDate: 'desc' }],
-    });
-
-    // Latest TM per user (first row per userId since ordered by effectiveDate desc)
-    const latestByUser = new Map<number, number>();
-    for (const tm of tms) {
-      if (!latestByUser.has(tm.userId)) {
-        latestByUser.set(tm.userId, tm.weight.toNumber());
-      }
-    }
+    const latestByUser = tmsByExercise.get(exerciseId) ?? new Map<number, number>();
 
     const rankings = Array.from(latestByUser.entries())
       .map(([uid, weight]) => ({

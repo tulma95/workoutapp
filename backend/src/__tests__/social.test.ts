@@ -129,6 +129,14 @@ describe('Social API', () => {
       expect(res.body.friends).toHaveLength(0);
     });
 
+    it('user A (sender) cannot accept their own request', async () => {
+      const res = await request(app)
+        .patch(`/api/social/requests/${friendshipId}/accept`)
+        .set('Authorization', `Bearer ${tokenA}`);
+      expect(res.status).toBe(403);
+      expect(res.body.error.code).toBe('FORBIDDEN');
+    });
+
     it('user B can accept the request', async () => {
       const res = await request(app)
         .patch(`/api/social/requests/${friendshipId}/accept`)
@@ -180,9 +188,36 @@ describe('Social API', () => {
   });
 
   describe('Decline flow', () => {
-    it('can send new request after removal (unique constraint allows it)', async () => {
-      // After removal, the old row has status 'removed'. We need a new pair.
-      // Use a third user for the decline test to avoid constraint issues.
+    it('can re-send a request after removal', async () => {
+      const emailD = `social-d-${uid}@example.com`;
+      const resD = await request(app).post('/api/auth/register').send({
+        email: emailD,
+        password: 'password123',
+        displayName: 'Social User D',
+      });
+      const tokenD = resD.body.accessToken;
+
+      // A sends to D, D accepts, A removes
+      const reqRes = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenA}`)
+        .send({ email: emailD });
+      const fid = reqRes.body.id;
+      await request(app).patch(`/api/social/requests/${fid}/accept`).set('Authorization', `Bearer ${tokenD}`);
+      await request(app).delete(`/api/social/friends/${fid}`).set('Authorization', `Bearer ${tokenA}`);
+
+      // A can re-send (resets to pending instead of 409)
+      const reRes = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenA}`)
+        .send({ email: emailD });
+      expect(reRes.status).toBe(201);
+
+      // D sees the incoming request; A does not see it in their own GET /requests
+      const dReqs = await request(app).get('/api/social/requests').set('Authorization', `Bearer ${tokenD}`);
+      expect(dReqs.body.requests).toHaveLength(1);
+      const aReqs = await request(app).get('/api/social/requests').set('Authorization', `Bearer ${tokenA}`);
+      expect(aReqs.body.requests.some((r: { displayName: string }) => r.displayName === 'Social User D')).toBe(false);
     });
 
     it('user can decline a pending request', async () => {

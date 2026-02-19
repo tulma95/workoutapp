@@ -215,6 +215,7 @@ model Friendship {
   id          Int      @id @default(autoincrement())
   requesterId Int      @map("requester_id")
   addresseeId Int      @map("addressee_id")
+  initiatorId Int?     @map("initiator_id")
   status      String   @default("pending") @db.Text
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
