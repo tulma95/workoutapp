@@ -7,7 +7,6 @@ export interface ProgressExercise {
   history: Array<{
     weight: number;
     effectiveDate: string;
-    previousWeight: number | null;
   }>;
 }
 
@@ -86,7 +85,6 @@ export async function getProgress(userId: number): Promise<{ exercises: Progress
       history: history.map((tm) => ({
         weight: tm.weight.toNumber(),
         effectiveDate: tm.effectiveDate.toISOString(),
-        previousWeight: tm.previousWeight != null ? tm.previousWeight.toNumber() : null,
       })),
     };
   });

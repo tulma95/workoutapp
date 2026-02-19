@@ -202,7 +202,6 @@ export const ProgressExerciseSchema = z.object({
   history: z.array(z.object({
     weight: z.number(),
     effectiveDate: z.string(),
-    previousWeight: z.number().nullable(),
   })),
 });
 

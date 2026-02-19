@@ -2,7 +2,7 @@ import styles from './ProgressSummaryCards.module.css'
 import { formatWeight } from '../utils/weight'
 import { getRangeStartDate } from './TimeRangeSelector'
 import type { TimeRange } from './TimeRangeSelector'
-import type { TrainingMax } from '../api/schemas'
+import type { HistoryEntry } from './ProgressChart'
 
 export interface ExerciseConfig {
   slug: string
@@ -12,13 +12,13 @@ export interface ExerciseConfig {
 
 interface Props {
   exercises: ExerciseConfig[]
-  histories: Map<string, TrainingMax[]>
+  histories: Map<string, HistoryEntry[]>
   timeRange: TimeRange
   selectedExercise: string | null
   onSelectExercise: (slug: string) => void
 }
 
-function computeGain(history: TrainingMax[], rangeStart: Date | null): number {
+function computeGain(history: HistoryEntry[], rangeStart: Date | null): number {
   const first = history[0]
   const last = history[history.length - 1]
   if (!first || !last) return 0

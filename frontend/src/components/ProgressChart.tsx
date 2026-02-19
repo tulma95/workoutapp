@@ -1,12 +1,16 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import styles from './ProgressChart.module.css'
 import { formatWeight } from '../utils/weight'
-import type { TrainingMax } from '../api/schemas'
 import { getRangeStartDate } from './TimeRangeSelector'
 import type { TimeRange } from './TimeRangeSelector'
 
+export interface HistoryEntry {
+  weight: number
+  effectiveDate: string
+}
+
 interface Props {
-  history: TrainingMax[]
+  history: HistoryEntry[]
   color: string
   exerciseName: string
   timeRange: TimeRange
@@ -133,7 +137,7 @@ export function ProgressChart({ history, color, exerciseName, timeRange }: Props
 
   const gradientId = `gradient-${exerciseName.replace(/\s/g, '')}`
 
-  const handleDotClick = (point: TrainingMax, x: number, y: number) => {
+  const handleDotClick = (point: HistoryEntry, x: number, y: number) => {
     setTooltip({
       x,
       y,
@@ -232,7 +236,7 @@ export function ProgressChart({ history, color, exerciseName, timeRange }: Props
               const isActive = tooltip?.date === formatDateLabel(new Date(point.effectiveDate))
               return (
                 <circle
-                  key={point.id}
+                  key={point.effectiveDate}
                   cx={x}
                   cy={y}
                   r={isActive ? 5.5 : 3}
@@ -275,7 +279,7 @@ export function ProgressChart({ history, color, exerciseName, timeRange }: Props
           </thead>
           <tbody>
             {filteredData.map((point) => (
-              <tr key={point.id}>
+              <tr key={point.effectiveDate}>
                 <th scope="row">
                   <time dateTime={point.effectiveDate}>
                     {formatDateLabel(new Date(point.effectiveDate))}

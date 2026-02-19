@@ -9,8 +9,7 @@ import {
 import { ExerciseLegend } from './ExerciseLegend'
 import { getProgress } from '../api/progress'
 import { LoadingSpinner } from './LoadingSpinner'
-import { ProgressChart } from './ProgressChart'
-import type { TrainingMax } from '../api/schemas'
+import { ProgressChart, type HistoryEntry } from './ProgressChart'
 
 const PALETTE = ['#2563eb', '#d97706', '#7c3aed', '#059669', '#dc2626', '#0891b2']
 
@@ -41,20 +40,10 @@ export function ProgressContent() {
   }, [data])
 
   const histories = useMemo(() => {
-    const map = new Map<string, TrainingMax[]>()
+    const map = new Map<string, HistoryEntry[]>()
     if (!data) return map
     for (const ex of data.exercises) {
-      map.set(
-        ex.slug,
-        ex.history.map((h, i) => ({
-          id: i,
-          userId: 0,
-          exercise: ex.slug,
-          weight: h.weight,
-          effectiveDate: h.effectiveDate,
-          createdAt: h.effectiveDate,
-        }))
-      )
+      map.set(ex.slug, ex.history)
     }
     return map
   }, [data])
