@@ -36,6 +36,12 @@
     "description": "When a user switches plans, TM values may not be directly comparable (e.g. different TM percentages). Add a visual vertical marker on the progression chart showing when a plan switch occurred, so users understand context for any jumps or drops in TM values."
   },
   {
+    "id": "019",
+    "title": "Custom TM Override",
+    "status": "backlog",
+    "description": "Manually adjust a training max with a reason note (e.g. deload reset, injury setback, form correction). Uses existing append-only TM history. Critical when auto-progression overshoots reality."
+  },
+  {
     "id": "027",
     "title": "Achievement Badges",
     "status": "backlog",
@@ -94,12 +100,6 @@
     "title": "Set Weight Override",
     "status": "backlog",
     "description": "Override auto-calculated weight for individual sets during a workout. For when plates don't work out cleanly at your gym, or you want to be conservative on a bad day. Avoids having to change the TM for one-off adjustments."
-  },
-  {
-    "id": "019",
-    "title": "Custom TM Override",
-    "status": "backlog",
-    "description": "Manually adjust a training max with a reason note (e.g. deload reset, injury setback, form correction). Uses existing append-only TM history. Critical when auto-progression overshoots reality."
   },
   {
     "id": "016",
