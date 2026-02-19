@@ -140,7 +140,7 @@ export function SettingsContent({
         <h3 className={styles.cardLabel}>Rest Timer</h3>
 
         <div className={styles.settingRow}>
-          <label htmlFor="rest-timer-enabled">Enabled</label>
+          <label htmlFor="rest-timer-enabled">Rest timer</label>
           <input
             id="rest-timer-enabled"
             type="checkbox"
