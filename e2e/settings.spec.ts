@@ -20,4 +20,27 @@ test.describe('Settings Page', () => {
     await settings.logout();
     expect(page.url()).toContain('/login');
   });
+
+  test('edit TM with a reason -> dialog closes without error', async ({ setupCompletePage }) => {
+    const { page } = setupCompletePage;
+    const settings = new SettingsPage(page);
+
+    await settings.navigate();
+    await settings.expectLoaded();
+    await settings.editTM(0, '120', 'deload reset');
+
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+    await expect(page.getByText(/error/i)).not.toBeVisible();
+  });
+
+  test('edit TM without a reason -> dialog closes (backward compatible)', async ({ setupCompletePage }) => {
+    const { page } = setupCompletePage;
+    const settings = new SettingsPage(page);
+
+    await settings.navigate();
+    await settings.expectLoaded();
+    await settings.editTM(0, '110');
+
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+  });
 });

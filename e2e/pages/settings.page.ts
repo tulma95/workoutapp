@@ -29,13 +29,18 @@ export class SettingsPage {
     return this.page.locator(`text=${exerciseName}`).locator('..');
   }
 
-  async editTM(index: number, newValue: string) {
+  async editTM(index: number, newValue: string, reason?: string) {
     const editButton = this.page.locator('button', { hasText: 'Edit' }).nth(index);
     await editButton.click();
 
     const modalInput = this.page.getByRole('spinbutton');
     await expect(modalInput).toBeVisible();
     await modalInput.fill(newValue);
+
+    if (reason !== undefined) {
+      const reasonTextarea = this.page.getByLabel(/reason/i);
+      await reasonTextarea.fill(reason);
+    }
 
     await this.page.getByRole('button', { name: /^save$/i }).click();
 
