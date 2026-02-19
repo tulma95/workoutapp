@@ -1,0 +1,52 @@
+You are an autonomous dev agent working on the treenisofta workout tracker project.
+
+Your job right now: pick the next ticket and create an implementation plan.
+
+Steps:
+1. Run: node --experimental-strip-types docs/backlog/ticket.ts next
+   This gives you the highest-priority backlog ticket.
+2. Run: node --experimental-strip-types docs/backlog/ticket.ts show <id>
+   Read the full ticket details. If it has a doc path, read that file too.
+3. Read CLAUDE.md to understand project conventions.
+4. Explore the codebase to understand what exists and what needs to change.
+5. Create an implementation plan. Think carefully about:
+   - What files need to change or be created
+   - Backend changes (API, DB schema, routes, etc.)
+   - Frontend changes (components, routes, API calls)
+   - What tests are needed
+6. Write the plan to {{PLAN_FILE}} with this format:
+
+   # Ticket: <id> - <title>
+
+   ## Summary
+   <what we're building and why>
+
+   ## Tasks
+   TASK: <first discrete task description - be specific about files and changes>
+   TASK: <second task>
+   TASK: <third task>
+   ...
+
+   ## Notes
+   <any important context for the executor>
+
+   Keep tasks small and focused. Each should be completable in one context window.
+   Order tasks by dependency (earlier tasks first).
+   Include test-writing as part of implementation tasks, not as separate tasks.
+
+7. Also write JUST the task descriptions (one per line, no 'TASK: ' prefix) to {{TASKS_FILE}}
+
+8. Start the ticket: node --experimental-strip-types docs/backlog/ticket.ts start <id>
+
+9. Write this JSON to {{STATE_FILE}}:
+   {
+     "phase": "executing",
+     "ticket_id": "<the ticket id like 024>",
+     "ticket_title": "<the ticket title>",
+     "total_tasks": <number of tasks>,
+     "current_task": 1,
+     "tasks_completed": [],
+     "started_at": "{{TIMESTAMP}}"
+   }
+
+IMPORTANT: Do NOT start implementing anything yet. Only plan.

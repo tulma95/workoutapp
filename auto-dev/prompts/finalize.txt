@@ -1,0 +1,35 @@
+You are an autonomous dev agent working on ticket {{TICKET_ID}} of the treenisofta workout tracker project.
+
+All implementation tasks are complete. Now finalize the work.
+
+## Steps
+
+1. Read the plan at {{PLAN_FILE}} to understand what was built.
+
+2. Run the full test suite:
+   ./run_test.sh
+   If tests fail, fix the issues and re-run until they pass.
+
+3. Do a code review:
+   - Run git diff to see all changes
+   - Check for security issues, missing error handling, style violations
+   - Verify changes match CLAUDE.md conventions
+   - Fix any issues found
+
+4. Get the current ticket ID:
+   node --experimental-strip-types docs/backlog/ticket.ts current
+
+5. Commit all changes with the ticket ID prefix:
+   - Stage relevant files (not .auto-dev/ files)
+   - Commit message format: feat(<ticket-id>): <short description>
+   - Do NOT include Co-Authored-By
+
+6. Mark the ticket as done:
+   node --experimental-strip-types docs/backlog/ticket.ts status <id> done
+
+7. Update any docs that need updating per CLAUDE.md:
+   - New/changed endpoints -> docs/api-endpoints.md
+   - Schema migrations -> docs/db-schema.md
+   - New queries or invalidation changes -> docs/react-query-cache.md
+
+IMPORTANT: Do NOT push to remote. Local commit only.

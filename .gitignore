@@ -19,3 +19,4 @@ tasks/
 .ci-artifacts/
 .worktrees/
 .current-ticket
+.auto-dev/
