@@ -22,6 +22,7 @@ Prompt it with the ticket details and ask it to:
 - Think about: files to change, backend/frontend changes, DB schema, tests, edge cases
 - Tasks should be ordered by dependency, each small enough for one context window
 - Include test-writing as part of implementation tasks, not separate
+- Identify tasks that are independent and can be executed in parallel. Combine them into a single TASK line prefixed with [PARALLEL], separated by `|||` (e.g., `[PARALLEL] Add backend route for X ||| Add frontend component for Y`). Only parallelize truly independent work with no shared file or data dependencies.
 
 **Subagent 2 — Challenger** (subagent_type: "general-purpose"):
 Pass the planner's output and prompt it to:
@@ -45,8 +46,8 @@ Write the plan to {{PLAN_FILE}} with this format:
 
    ## Tasks
    TASK: <first discrete task description - be specific about files and changes>
-   TASK: <second task>
-   TASK: <third task>
+   TASK: [PARALLEL] <task A description> ||| <task B description>
+   TASK: <next task that depends on the parallel ones>
    ...
 
    ## Notes
@@ -55,6 +56,7 @@ Write the plan to {{PLAN_FILE}} with this format:
    Keep tasks small and focused. Each should be completable in one context window.
    Order tasks by dependency (earlier tasks first).
    Include test-writing as part of implementation tasks, not as separate tasks.
+   Combine independent tasks into one [PARALLEL] line separated by ||| — the executor will split and run them concurrently via subagents.
 
 Also write JUST the task descriptions (one per line, no 'TASK: ' prefix) to {{TASKS_FILE}}
 

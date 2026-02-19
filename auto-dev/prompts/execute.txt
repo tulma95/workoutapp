@@ -20,6 +20,7 @@ Read {{INSIGHTS_FILE}} for notes from completed tasks — what was done, gotchas
    - Write the code changes
    - Write tests as appropriate (backend integration tests, NOT frontend unit tests - see CLAUDE.md)
    - Follow all patterns described in CLAUDE.md
+   - **Parallel tasks**: If your task description starts with [PARALLEL], it contains multiple sub-tasks separated by `|||`. Split on `|||` and spawn each as a separate subagent via the Task tool, running them concurrently. Pick the subagent_type based on the sub-task: use "backend-developer" for backend-only work, "frontend-react" for frontend-only work, "fullstack-developer" for mixed work, or "general-purpose" as fallback. Give each subagent the full plan context, CLAUDE.md path, and insights file path. After all subagents complete, verify the combined changes compile, then commit everything together.
 5. After implementing, verify your changes compile:
    - Backend: npm run build -w backend
    - Frontend: cd frontend && npx tsc --build --noEmit
