@@ -4,6 +4,7 @@ import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-quer
 import { getWorkoutCalendar, getWorkout, cancelWorkout, type Workout, type CalendarWorkout } from '../../../api/workouts'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { HistoryContent } from '../../../components/HistoryContent'
+import { CustomWorkoutModal } from '../../../components/CustomWorkoutModal'
 import styles from '../../../styles/HistoryPage.module.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/history')({
@@ -18,6 +19,7 @@ function HistoryPage() {
   const [dayWorkouts, setDayWorkouts] = useState<CalendarWorkout[] | null>(null)
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1)
+  const [customWorkoutDate, setCustomWorkoutDate] = useState<string | null>(null)
   const dialogRef = useRef<HTMLDialogElement>(null)
 
   const {
@@ -64,6 +66,14 @@ function HistoryPage() {
     }
   }
 
+  const handleAddCustomWorkout = (dateKey: string) => {
+    setCustomWorkoutDate(dateKey)
+  }
+
+  const handleCustomWorkoutSaved = () => {
+    queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
+  }
+
   const handleDeleteWorkout = () => {
     dialogRef.current?.showModal()
   }
@@ -100,6 +110,14 @@ function HistoryPage() {
         onSelectWorkout={handleSelectWorkout}
         onDeleteWorkout={handleDeleteWorkout}
         onRetry={() => refetchCalendar()}
+        onAddCustomWorkout={handleAddCustomWorkout}
+      />
+
+      <CustomWorkoutModal
+        open={customWorkoutDate !== null}
+        initialDate={customWorkoutDate ?? ''}
+        onClose={() => setCustomWorkoutDate(null)}
+        onSaved={handleCustomWorkoutSaved}
       />
 
       <dialog ref={dialogRef} className={styles.dialog}>

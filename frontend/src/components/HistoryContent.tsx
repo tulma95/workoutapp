@@ -20,6 +20,7 @@ type Props = {
   onSelectWorkout: (workoutId: number) => void
   onDeleteWorkout?: () => void
   onRetry: () => void
+  onAddCustomWorkout?: (dateKey: string) => void
 }
 
 export function HistoryContent({
@@ -38,6 +39,7 @@ export function HistoryContent({
   onSelectWorkout,
   onDeleteWorkout,
   onRetry,
+  onAddCustomWorkout,
 }: Props) {
   const hasAnyWorkouts = calendarWorkouts.length > 0
   const showPicker = dayWorkouts && dayWorkouts.length > 1 && !selectedWorkout && !isLoadingWorkout
@@ -61,6 +63,7 @@ export function HistoryContent({
             year={currentYear}
             month={currentMonth}
             isLoading={!isLoadingCalendar && isFetchingCalendar}
+            onAddCustomWorkout={onAddCustomWorkout}
           />
 
           <div className={styles.detail}>
