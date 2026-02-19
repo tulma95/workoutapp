@@ -34,6 +34,17 @@
 - `GET /api/plans/:id` - plan detail with full nested structure
 - `POST /api/plans/:id/subscribe` - subscribe to plan, returns `{ userPlan, requiredExercises, missingTMs }`
 
+## Social Endpoints (JWT required)
+
+- `POST /api/social/request` - `{ email }` — send friend request; 404 if email not found, 400 if self-friending, 409 if relationship already exists; inserts with canonical ordering (`requesterId = min(callerId, targetId)`)
+- `GET /api/social/friends` - list accepted friends: `{ friends: [{ id, userId, displayName }] }`
+- `GET /api/social/requests` - list pending friend requests involving the caller: `{ requests: [{ id, requesterId, displayName }] }`
+- `PATCH /api/social/requests/:id/accept` - accept a pending request; returns `{ id, status }`
+- `PATCH /api/social/requests/:id/decline` - decline a pending request; returns `{ id, status }`
+- `DELETE /api/social/friends/:id` - remove a friend (sets status to `'removed'`); returns `{ id, status }`
+- `GET /api/social/feed` - last 20 feed events from confirmed friends ordered by `createdAt DESC`; returns `{ events: [{ id, userId, displayName, eventType, payload, createdAt }] }`
+- `GET /api/social/leaderboard` - TM rankings across caller and accepted friends for each exercise in active plan; returns `{ exercises: [{ slug, name, rankings: [{ userId, displayName, weight }] }] }`; returns `{ exercises: [] }` if no active plan
+
 ## Admin Endpoints (JWT + isAdmin required)
 
 - `GET/POST /api/admin/exercises` - list/create exercises
