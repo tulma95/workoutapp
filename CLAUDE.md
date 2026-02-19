@@ -171,10 +171,6 @@ When E2E tests fail, check `backend-test.log` in the project root. Filter with `
 
 The workout API returns `exercise.name` (like "Bench Press") not `exercise.slug` (like "bench-press"). PlanDayExercise has `displayName` (like "Bench Volume") used only on dashboard day cards.
 
-## Ralph Post-Completion
-
-When Ralph finishes a task, read `progress.txt` to review what was done. Based on the progress, either create a new skill or add relevant insights into this CLAUDE.md if needed.
-
 ## Environment Variables
 
 ```

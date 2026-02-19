@@ -5,12 +5,6 @@ test-results/
 playwright-report/
 prd.json
 progress.txt
-!scripts/ralph/archive/**/prd.json
-!scripts/ralph/archive/**/progress.txt
-!scripts/ralph/archive/**/old-prd.json
-!scripts/ralph/archive/**/old-progress.txt
-scripts/ralph/progress.txt
-scripts/ralph/.last-branch
 *.log
 *.tsbuildinfo
 frontend/src/routeTree.gen.ts
