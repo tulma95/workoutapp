@@ -134,6 +134,7 @@ function SettingsPage() {
     try {
       await updateTrainingMax(editingExercise, weightInKg)
       await queryClient.invalidateQueries({ queryKey: ['training-maxes'] })
+      await queryClient.invalidateQueries({ queryKey: ['progress'] })
       closeEditModal()
     } catch (err) {
       setTmError(

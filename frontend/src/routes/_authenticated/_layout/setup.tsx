@@ -103,6 +103,7 @@ function SetupPage() {
     try {
       await setupTrainingMaxesFromExercises(exerciseTMs)
       await queryClient.invalidateQueries({ queryKey: ['training-maxes'] })
+      await queryClient.invalidateQueries({ queryKey: ['progress'] })
       navigate({ to: '/' })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to setup training maxes')
