@@ -203,7 +203,7 @@ Dont use typescript-code-review skill
 
 dont use co-author in commits
 
-Include the active ticket ID in all commit messages. Get the ID via `node --experimental-strip-types docs/backlog/ticket.ts current` and format commits as `feat(027): add achievement badges page`. Use `ticket start <id>` to set the active ticket before starting work.
+**Ticket workflow**: Use `ticket start <id>` to set the active ticket before starting work. Include the ticket ID in all commit messages — get it via `ticket current` and format as `feat(027): add achievement badges page`. When work is complete, mark the ticket done with `ticket status <id> done` (this auto-clears the current ticket).
 
 After committing code, always invoke the `superpowers:requesting-code-review` skill on the recent commits.
 
