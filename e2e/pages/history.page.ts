@@ -30,6 +30,12 @@ export class HistoryPage {
     await this.calendarGrid.getByRole('button').filter({ hasText: dayOfMonth.toString() }).first().click();
   }
 
+  /** Click an empty calendar day (past or today) with no workout, to open the custom workout modal */
+  async clickEmptyDay(dayOfMonth?: number) {
+    const day = dayOfMonth ?? new Date().getDate();
+    await this.calendarGrid.getByRole('button').filter({ hasText: day.toString() }).first().click();
+  }
+
   async goToPreviousMonth() {
     await this.prevButton.click();
   }
