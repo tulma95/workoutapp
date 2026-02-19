@@ -2,7 +2,7 @@
   {
     "id": "038",
     "title": "N+1 queries in workout completion logic",
-    "status": "backlog",
+    "status": "done",
     "description": "The completeWorkout service (workout.service.ts:354-406) runs individual Exercise.findUnique and TrainingMax.findFirst queries inside a loop over progression sets. Should batch-fetch all exercises and current TMs before the loop to avoid N+1."
   },
   {
