@@ -1,5 +1,11 @@
 [
   {
+    "id": "048",
+    "title": "Polish custom workout modal: pre-select clicked calendar day",
+    "status": "in-progress",
+    "description": "When opening the custom workout modal from a calendar day, the date should be pre-filled with the clicked day so users don't have to pick it again."
+  },
+  {
     "id": "047",
     "title": "Custom free-form workout logging",
     "status": "done",
@@ -274,5 +280,11 @@
     "title": "Flaky E2E: isVisible() snapshot check in rest-timer confirmSet loop",
     "status": "backlog",
     "description": "e2e/rest-timer.spec.ts line 79 uses isVisible() (point-in-time snapshot) inside a loop guard before skipRestButton.click(). If the timer banner appears a few ms after the check, the click is never reached. Pre-existing issue found during ticket 040 review."
+  },
+  {
+    "id": "049",
+    "title": "Fix UTC/local timezone inconsistency in date input max and calendar day comparison",
+    "status": "backlog",
+    "description": "The date input max attribute uses .toISOString().slice(0,10) (UTC) while WorkoutCalendar.handleDayClick compares dates in local time. For users east of UTC, after midnight UTC but before midnight local time, the max date could be set to yesterday while the calendar allows clicking today, causing an inconsistency. Both should use the same local-time date string (e.g., toLocaleDateString('en-CA'))."
   }
 ]
