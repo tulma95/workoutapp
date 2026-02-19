@@ -176,7 +176,7 @@ The workout API returns `exercise.name` (like "Bench Press") not `exercise.slug`
 
 ### Service worker cache busting
 
-`frontend/public/sw.js` uses `CACHE_NAME = 'nsuns-v1'`. Bump this constant when deploying breaking changes that require users to receive fresh assets (e.g., renamed routes, changed API contracts). The old cache is deleted on SW activation.
+`frontend/public/sw.js` uses `CACHE_NAME = 'setforge-v1'`. Bump this constant when deploying breaking changes that require users to receive fresh assets (e.g., renamed routes, changed API contracts). The old cache is deleted on SW activation.
 
 ## Environment Variables
 

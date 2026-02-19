@@ -28,7 +28,7 @@ test.describe('PWA assets', () => {
 
     await expect(page.locator('meta[name="apple-mobile-web-app-capable"]')).toHaveAttribute('content', 'yes');
     await expect(page.locator('meta[name="apple-mobile-web-app-status-bar-style"]')).toHaveAttribute('content', 'default');
-    await expect(page.locator('meta[name="apple-mobile-web-app-title"]')).toHaveAttribute('content', 'nSuns');
+    await expect(page.locator('meta[name="apple-mobile-web-app-title"]')).toHaveAttribute('content', 'SetForge');
     await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute('href', '/apple-touch-icon.png');
   });
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nsuns-v1';
+const CACHE_NAME = 'setforge-v1';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

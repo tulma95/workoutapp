@@ -1,7 +1,7 @@
 {
-  "name": "nSuns 4-Day LP",
-  "short_name": "nSuns",
-  "description": "Workout tracker for nSuns 4-Day Linear Progression",
+  "name": "SetForge",
+  "short_name": "SetForge",
+  "description": "Plan-driven workout tracker with auto-calculated weights",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
