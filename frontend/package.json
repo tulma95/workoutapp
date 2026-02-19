@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && tsc --build --noEmit",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-icons": "node generate-icons.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.21",

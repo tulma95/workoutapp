@@ -38,6 +38,14 @@ test.describe('PWA assets', () => {
     const iconContentType = iconResponse.headers()['content-type'];
     expect(iconContentType).toContain('image/png');
 
+    const icon192Response = await request.get(`${baseURL}/icon-192.png`);
+    expect(icon192Response.status()).toBe(200);
+    expect(icon192Response.headers()['content-type']).toContain('image/png');
+
+    const icon512Response = await request.get(`${baseURL}/icon-512.png`);
+    expect(icon512Response.status()).toBe(200);
+    expect(icon512Response.headers()['content-type']).toContain('image/png');
+
     const swResponse = await request.get(`${baseURL}/sw.js`);
     expect(swResponse.status()).toBe(200);
     const swContentType = swResponse.headers()['content-type'];

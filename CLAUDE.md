@@ -141,6 +141,9 @@ cd backend
 npx prisma generate
 npx prisma migrate dev
 npx prisma db seed
+
+# Regenerate PWA PNG icons after editing frontend/public/icon.svg
+cd frontend && npm run generate-icons
 ```
 
 ## Prisma v7 Notes
