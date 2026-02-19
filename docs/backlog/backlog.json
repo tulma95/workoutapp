@@ -1,5 +1,11 @@
 [
   {
+    "id": "021",
+    "title": "Workout Schedule",
+    "status": "done",
+    "description": "Assign plan days to specific weekdays (e.g. Day 1 = Monday, Day 2 = Wednesday) and visualize upcoming sessions in the calendar. Set once, referenced often for planning rest days and travel."
+  },
+  {
     "id": "003",
     "title": "Progression Charts",
     "status": "done",
@@ -172,12 +178,6 @@
     "title": "Volume Load History",
     "status": "backlog",
     "description": "Track total volume load (sets x reps x weight) per exercise per session and chart it over time. Volume load is the best proxy for training stress and hypertrophy stimulus. Surfaces plateaus that raw TM numbers miss."
-  },
-  {
-    "id": "021",
-    "title": "Workout Schedule",
-    "status": "backlog",
-    "description": "Assign plan days to specific weekdays (e.g. Day 1 = Monday, Day 2 = Wednesday) and visualize upcoming sessions in the calendar. Set once, referenced often for planning rest days and travel."
   },
   {
     "id": "009",
