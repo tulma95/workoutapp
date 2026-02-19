@@ -235,7 +235,8 @@ function cmdStatus(ref: string, newStatus: string): void {
 
   // Auto-clear current ticket when marking it as done
   if (newStatus === "done" && fs.existsSync(CURRENT_TICKET_PATH)) {
-    const currentId = fs.readFileSync(CURRENT_TICKET_PATH, "utf-8").trim();
+    const raw = fs.readFileSync(CURRENT_TICKET_PATH, "utf-8").trim();
+    const currentId = JSON.parse(raw).id;
     if (currentId === ticket.id) {
       fs.unlinkSync(CURRENT_TICKET_PATH);
       console.log(`Cleared current ticket.`);
@@ -286,7 +287,7 @@ function cmdStart(ref: string): void {
   const idx = resolveRef(tickets, ref);
   const ticket = tickets[idx];
 
-  fs.writeFileSync(CURRENT_TICKET_PATH, ticket.id + "\n");
+  fs.writeFileSync(CURRENT_TICKET_PATH, JSON.stringify({ id: ticket.id, title: ticket.title }) + "\n");
 
   if (ticket.status === "backlog" || ticket.status === "planned") {
     const oldStatus = ticket.status;
@@ -305,15 +306,16 @@ function cmdCurrent(): void {
     die("No current ticket set. Use: ticket start <pos|id>");
   }
 
-  const id = fs.readFileSync(CURRENT_TICKET_PATH, "utf-8").trim();
+  const raw = fs.readFileSync(CURRENT_TICKET_PATH, "utf-8").trim();
+  const data = JSON.parse(raw);
   const tickets = readBacklog();
-  const ticket = tickets.find((t) => t.id === id);
+  const ticket = tickets.find((t) => t.id === data.id);
 
   if (!ticket) {
-    die(`Current ticket ID "${id}" not found in backlog`);
+    die(`Current ticket ID "${data.id}" not found in backlog`);
   }
 
-  console.log(ticket.id);
+  console.log(`${data.id}: ${data.title}`);
 }
 
 function cmdClear(): void {
@@ -322,9 +324,10 @@ function cmdClear(): void {
     return;
   }
 
-  const id = fs.readFileSync(CURRENT_TICKET_PATH, "utf-8").trim();
+  const raw = fs.readFileSync(CURRENT_TICKET_PATH, "utf-8").trim();
+  const data = JSON.parse(raw);
   fs.unlinkSync(CURRENT_TICKET_PATH);
-  console.log(`Cleared current ticket (was: ${id})`);
+  console.log(`Cleared current ticket (was: ${data.id}: ${data.title})`);
 }
 
 function cmdReadme(): void {
