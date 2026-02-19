@@ -8,12 +8,14 @@
 ## Protected (JWT required)
 
 - `GET /api/users/me` | `PATCH /api/users/me`
+- `GET /api/exercises` - all exercises sorted by name: `[{ id, slug, name, category, isUpperBody }]`
 - `GET /api/training-maxes` - current TMs (plan-aware: returns TMs for active plan exercises)
 - `POST /api/training-maxes/setup` - accepts both `{ oneRepMaxes }` and `{ exerciseTMs: [{ exerciseId, oneRepMax }] }`
 - `PATCH /api/training-maxes/:exercise` - manual TM override; accepts `{ weight, reason? }` where `reason` is an optional string (max 500 chars) describing why the TM was changed (e.g. "deload reset", "injury setback")
 - `GET /api/training-maxes/:exercise/history`
 - `GET /api/progress` - all exercises from active plan with current TMs and full TM history; returns `{ exercises: [{ slug, name, currentTM, history: [{ weight, effectiveDate }] }], planSwitches: [{ date, planName }] }` (empty arrays if no active plan; `planSwitches` contains one entry per plan subscription after the first, representing each plan switch)
 - `POST /api/workouts` - `{ dayNumber }` -> generates sets from active plan + TMs
+- `POST /api/workouts/custom` - `{ date: "YYYY-MM-DD", exercises: [{ exerciseId, sets: [{ weight, reps }] }] }` -> creates a custom completed workout; returns workout with `isCustom: true`. **Must be registered before `/:id` routes in Express.**
 - `GET /api/workouts/current` - in-progress workout (or null)
 - `GET /api/workouts/:id` - includes `progressions` array (TM changes linked to this workout)
 - `PATCH /api/workouts/:id/sets/:setId` - `{ actualReps, completed }`
