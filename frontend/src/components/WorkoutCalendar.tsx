@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
-import { CalendarWorkout } from '../api/workouts';
+import { CalendarWorkout, ScheduledDay } from '../api/workouts';
 import styles from './WorkoutCalendar.module.css';
 
 interface WorkoutCalendarProps {
   workouts: CalendarWorkout[];
+  scheduledDays?: ScheduledDay[];
   onSelectDay: (workouts: CalendarWorkout[]) => void;
   onMonthChange: (year: number, month: number, direction: 'prev' | 'next') => void;
   year: number;
@@ -29,6 +30,7 @@ const MONTH_NAMES = [
 
 export default function WorkoutCalendar({
   workouts,
+  scheduledDays,
   onSelectDay,
   onMonthChange,
   year,
@@ -52,6 +54,17 @@ export default function WorkoutCalendar({
     return map;
   }, [workouts]);
 
+  // Build a map from date string (YYYY-MM-DD) to scheduled days array
+  const scheduledDayMap = useMemo(() => {
+    const map = new Map<string, ScheduledDay[]>();
+    (scheduledDays || []).forEach((sd) => {
+      const existing = map.get(sd.date) || [];
+      existing.push(sd);
+      map.set(sd.date, existing);
+    });
+    return map;
+  }, [scheduledDays]);
+
   // Calculate calendar grid
   const calendarDays = useMemo(() => {
     const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
@@ -69,6 +82,7 @@ export default function WorkoutCalendar({
       isCurrentMonth: boolean;
       isToday: boolean;
       workouts: CalendarWorkout[];
+      scheduled: ScheduledDay[];
     }> = [];
 
     // Add previous month's trailing days
@@ -84,6 +98,7 @@ export default function WorkoutCalendar({
         isCurrentMonth: false,
         isToday: false,
         workouts: workoutMap.get(dateKey) || [],
+        scheduled: scheduledDayMap.get(dateKey) || [],
       });
     }
 
@@ -100,6 +115,7 @@ export default function WorkoutCalendar({
         isCurrentMonth: true,
         isToday,
         workouts: workoutMap.get(dateKey) || [],
+        scheduled: scheduledDayMap.get(dateKey) || [],
       });
     }
 
@@ -116,12 +132,13 @@ export default function WorkoutCalendar({
           isCurrentMonth: false,
           isToday: false,
           workouts: workoutMap.get(dateKey) || [],
+          scheduled: scheduledDayMap.get(dateKey) || [],
         });
       }
     }
 
     return days;
-  }, [currentYear, currentMonth, workoutMap]);
+  }, [currentYear, currentMonth, workoutMap, scheduledDayMap]);
 
   const handlePrevMonth = () => {
     const newDate = new Date(currentYear, currentMonth - 1, 1);
@@ -175,25 +192,34 @@ export default function WorkoutCalendar({
         className={styles.grid}
         data-testid="calendar-grid"
       >
-        {calendarDays.map((day, index) => (
-          <button
-            key={index}
-            className={`${styles.day} ${
-              !day.isCurrentMonth ? styles.outside : ''
-            } ${day.isToday ? styles.today : ''} ${
-              day.workouts.length > 0 ? styles.workout : ''
-            }`}
-            onClick={() => handleDayClick(day)}
-            disabled={day.workouts.length === 0}
-          >
-            <span className={styles.dayNumber}>{day.date}</span>
-            {day.workouts.length > 0 && (
-              <span className={styles.dayBadge}>
-                {day.workouts.length > 1 ? day.workouts.length : day.workouts[0]!.dayNumber}
-              </span>
-            )}
-          </button>
-        ))}
+        {calendarDays.map((day, index) => {
+          const isScheduledOnly = day.isCurrentMonth && day.workouts.length === 0 && day.scheduled.length > 0;
+          return (
+            <button
+              key={index}
+              className={`${styles.day} ${
+                !day.isCurrentMonth ? styles.outside : ''
+              } ${day.isToday ? styles.today : ''} ${
+                day.workouts.length > 0 ? styles.workout : ''
+              } ${isScheduledOnly ? styles.scheduled : ''}`}
+              onClick={() => handleDayClick(day)}
+              disabled={day.workouts.length === 0}
+              data-testid={isScheduledOnly ? 'calendar-scheduled-day' : undefined}
+            >
+              <span className={styles.dayNumber}>{day.date}</span>
+              {day.workouts.length > 0 && (
+                <span className={styles.dayBadge}>
+                  {day.workouts.length > 1 ? day.workouts.length : day.workouts[0]!.dayNumber}
+                </span>
+              )}
+              {isScheduledOnly && (
+                <span className={styles.scheduledBadge}>
+                  {day.scheduled[0]!.dayNumber}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

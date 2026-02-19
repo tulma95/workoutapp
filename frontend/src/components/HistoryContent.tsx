@@ -2,10 +2,11 @@ import WorkoutCalendar from './WorkoutCalendar'
 import { WorkoutDetail } from './WorkoutDetail'
 import { ErrorMessage } from './ErrorMessage'
 import styles from '../styles/HistoryPage.module.css'
-import type { CalendarWorkout, Workout } from '../api/workouts'
+import type { CalendarWorkout, Workout, ScheduledDay } from '../api/workouts'
 
 type Props = {
   calendarWorkouts: CalendarWorkout[]
+  scheduledDays?: ScheduledDay[]
   calendarError: Error | null
   isLoadingCalendar: boolean
   isFetchingCalendar: boolean
@@ -23,6 +24,7 @@ type Props = {
 
 export function HistoryContent({
   calendarWorkouts,
+  scheduledDays,
   calendarError,
   isLoadingCalendar,
   isFetchingCalendar,
@@ -53,6 +55,7 @@ export function HistoryContent({
         <>
           <WorkoutCalendar
             workouts={calendarWorkouts}
+            scheduledDays={scheduledDays}
             onSelectDay={onSelectDay}
             onMonthChange={onMonthChange}
             year={currentYear}

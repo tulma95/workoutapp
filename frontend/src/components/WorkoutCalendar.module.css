@@ -156,6 +156,28 @@
   font-weight: 700;
 }
 
+.scheduled {
+  background-color: rgba(37, 99, 235, 0.08);
+  border: 1.5px dashed var(--primary);
+}
+
+.scheduledBadge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 1rem;
+  height: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--primary);
+  color: white;
+  border-radius: 50%;
+  font-size: 0.5rem;
+  font-weight: 700;
+  opacity: 0.7;
+}
+
 /* Responsive: smaller font on very small screens */
 @media (max-width: 360px) {
   .dayNumber {

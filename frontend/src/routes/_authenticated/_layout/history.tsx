@@ -21,19 +21,19 @@ function HistoryPage() {
   const dialogRef = useRef<HTMLDialogElement>(null)
 
   const {
-    data: calendarWorkouts = [],
+    data: calendarData,
     isLoading: isLoadingCalendar,
     isFetching: isFetchingCalendar,
     error: calendarError,
     refetch: refetchCalendar,
   } = useQuery({
     queryKey: ['workoutCalendar', currentYear, currentMonth],
-    queryFn: async () => {
-      const response = await getWorkoutCalendar(currentYear, currentMonth)
-      return response.workouts
-    },
+    queryFn: () => getWorkoutCalendar(currentYear, currentMonth),
     placeholderData: keepPreviousData,
   })
+
+  const calendarWorkouts = calendarData?.workouts ?? []
+  const scheduledDays = calendarData?.scheduledDays ?? []
 
   const handleMonthChange = (year: number, month: number, _direction: 'prev' | 'next') => {
     setCurrentYear(year)
@@ -86,6 +86,7 @@ function HistoryPage() {
     <>
       <HistoryContent
         calendarWorkouts={calendarWorkouts}
+        scheduledDays={scheduledDays}
         calendarError={calendarError}
         isLoadingCalendar={isLoadingCalendar}
         isFetchingCalendar={isFetchingCalendar}
