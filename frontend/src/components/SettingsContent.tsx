@@ -1,11 +1,13 @@
 import { Button } from './Button'
 import { ButtonLink } from './ButtonLink'
+import { ScheduleEditor } from './ScheduleEditor'
 import { formatExerciseName, formatWeight } from '../utils/weight'
 import styles from '../styles/SettingsPage.module.css'
 import type { RefObject } from 'react'
 import type { User } from '../api/schemas'
 import type { WorkoutPlan } from '../api/plans'
 import type { TrainingMax } from '../api/trainingMaxes'
+import type { ScheduleEntry } from '../api/schedule'
 
 type Props = {
   user: User
@@ -25,6 +27,10 @@ type Props = {
   onLogout: () => void
   restTimerSettings: { enabled: boolean; durationSeconds: number }
   onRestTimerChange: (updates: Partial<{ enabled: boolean; durationSeconds: number }>) => void
+  planDays?: { dayNumber: number; name: string | null }[]
+  schedule?: ScheduleEntry[]
+  onScheduleSave?: (schedule: ScheduleEntry[]) => Promise<void>
+  isScheduleSaving?: boolean
 }
 
 export function SettingsContent({
@@ -45,6 +51,10 @@ export function SettingsContent({
   onLogout,
   restTimerSettings,
   onRestTimerChange,
+  planDays,
+  schedule,
+  onScheduleSave,
+  isScheduleSaving,
 }: Props) {
   return (
     <div>
@@ -112,6 +122,15 @@ export function SettingsContent({
             ))}
           </div>
         </section>
+      )}
+
+      {planDays && planDays.length > 0 && schedule !== undefined && onScheduleSave && (
+        <ScheduleEditor
+          planDays={planDays}
+          schedule={schedule}
+          onSave={onScheduleSave}
+          isSaving={isScheduleSaving ?? false}
+        />
       )}
 
       <section className={styles.card}>

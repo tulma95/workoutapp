@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
+import { useSuspenseQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getMe } from '../../../api/user'
 import { useAuth } from '../../../context/useAuth'
 import { getCurrentPlan } from '../../../api/plans'
 import { getTrainingMaxes, updateTrainingMax } from '../../../api/trainingMaxes'
+import { getSchedule, saveSchedule, type ScheduleEntry } from '../../../api/schedule'
 import { roundWeight } from '../../../utils/weight'
 import { getRestTimerSettings, saveRestTimerSettings, type RestTimerSettings } from '../../../utils/restTimerSettings'
 import { SkeletonLine, SkeletonHeading } from '../../../components/Skeleton'
@@ -22,6 +23,10 @@ export const Route = createFileRoute('/_authenticated/_layout/settings')({
       queryClient.ensureQueryData({
         queryKey: ['training-maxes'],
         queryFn: getTrainingMaxes,
+      }),
+      queryClient.ensureQueryData({
+        queryKey: ['schedule'],
+        queryFn: getSchedule,
       }),
     ]),
   pendingComponent: () => (
@@ -49,6 +54,17 @@ export const Route = createFileRoute('/_authenticated/_layout/settings')({
           ))}
         </div>
       </section>
+
+      <div className={styles.card}>
+        <SkeletonLine width="40%" height="0.875rem" />
+        <SkeletonLine width="70%" height="0.75rem" />
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className={styles.tmItem}>
+            <SkeletonLine width="8rem" height="1rem" />
+            <SkeletonLine width="7rem" height="2.75rem" />
+          </div>
+        ))}
+      </div>
     </div>
   ),
   component: SettingsPage,
@@ -69,6 +85,17 @@ function SettingsPage() {
   const { data: trainingMaxes } = useSuspenseQuery({
     queryKey: ['training-maxes'],
     queryFn: getTrainingMaxes,
+  })
+  const { data: schedule } = useQuery({
+    queryKey: ['schedule'],
+    queryFn: getSchedule,
+  })
+
+  const scheduleMutation = useMutation({
+    mutationFn: saveSchedule,
+    onSuccess: (data) => {
+      queryClient.setQueryData(['schedule'], data)
+    },
   })
 
   const [restTimerSettings, setRestTimerSettings] = useState<RestTimerSettings>(getRestTimerSettings)
@@ -173,6 +200,10 @@ function SettingsPage() {
       onLogout={handleLogout}
       restTimerSettings={restTimerSettings}
       onRestTimerChange={handleRestTimerChange}
+      planDays={currentPlan?.days.map((d) => ({ dayNumber: d.dayNumber, name: d.name })) ?? undefined}
+      schedule={schedule}
+      onScheduleSave={async (s: ScheduleEntry[]) => { await scheduleMutation.mutateAsync(s) }}
+      isScheduleSaving={scheduleMutation.isPending}
     />
   )
 }
