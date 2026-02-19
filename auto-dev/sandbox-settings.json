@@ -3,7 +3,7 @@
     "enabled": true,
     "autoAllowBashIfSandboxed": true,
     "allowUnsandboxedCommands": false,
-    "excludedCommands": ["docker"],
+    "excludedCommands": [],
     "network": {
       "allowedDomains": [
         "registry.npmjs.org",
