@@ -1,11 +1,9 @@
-import { execSync, spawnSync } from "node:child_process";
-import { readFileSync, writeFileSync, mkdirSync, existsSync, appendFileSync } from "node:fs";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+const { spawnSync } = require("node:child_process");
+const { readFileSync, writeFileSync, mkdirSync, existsSync, appendFileSync, unlinkSync } = require("node:fs");
+const { join } = require("node:path");
 
 // ─── Paths ───
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
 const PROMPTS_DIR = join(__dirname, "prompts");
 const STATE_DIR = join(ROOT, ".auto-dev");
@@ -86,7 +84,7 @@ function loadPrompt(name, vars = {}) {
 const SANDBOX_SETTINGS = join(__dirname, "sandbox-settings.json");
 
 function runClaude(prompt, extraFlags = "") {
-  const args = [
+  const cliArgs = [
     "-p",
     "--permission-mode", "default",
     "--model", model,
@@ -95,10 +93,10 @@ function runClaude(prompt, extraFlags = "") {
     ...extraFlags.split(/\s+/).filter(Boolean),
   ];
 
-  log(`Running: claude ${args.join(" ")}`);
+  log(`Running: claude ${cliArgs.join(" ")}`);
   log(`Prompt length: ${prompt.length} chars`);
 
-  const result = spawnSync("claude", args, {
+  const result = spawnSync("claude", cliArgs, {
     cwd: ROOT,
     input: prompt,
     stdio: ["pipe", "inherit", "inherit"],
@@ -145,6 +143,11 @@ function archivePreviousRun() {
     if (existsSync(src)) {
       writeFileSync(join(archiveDir, name), readFileSync(src));
     }
+  }
+
+  // Clear files for the new run
+  for (const f of [STATE_FILE, PLAN_FILE, TASKS_FILE, LOG_FILE]) {
+    if (existsSync(f)) unlinkSync(f);
   }
 
   log(`Archived previous run (${state.ticket_id}) to ${archiveDir}`);
@@ -255,10 +258,7 @@ ensureStateDir();
 if (reset) {
   log("Resetting state...");
   for (const f of [STATE_FILE, PLAN_FILE, TASKS_FILE]) {
-    if (existsSync(f)) {
-      const { unlinkSync } = await import("node:fs");
-      unlinkSync(f);
-    }
+    if (existsSync(f)) unlinkSync(f);
   }
   log("State cleared. Run again to start fresh.");
   process.exit(0);

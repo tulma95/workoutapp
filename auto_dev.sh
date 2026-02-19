@@ -5,4 +5,4 @@
 #   ./auto_dev.sh --model opus # Use opus for complex tickets
 #   ./auto_dev.sh --reset      # Clear state and start fresh
 cd "$(dirname "$0")"
-exec node --experimental-strip-types auto-dev/run.js "$@"
+exec node auto-dev/run.js "$@"
