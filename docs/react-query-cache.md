@@ -34,6 +34,10 @@
 | **Plan create** | PlanEditorPage.tsx | `['admin-plans']` |
 | **Schedule save** | settings.tsx | set `['schedule']` (via setQueryData), invalidate `['workoutCalendar']` |
 | **Logout** | settings.tsx | ALL (`queryClient.clear()`) |
+| **Accept friend request** | FriendsTab.tsx | `['social', 'friend-requests']`, `['social', 'friends']` |
+| **Decline friend request** | FriendsTab.tsx | `['social', 'friend-requests']`, `['social', 'friends']` |
+| **Remove friend** | FriendsTab.tsx | `['social', 'friends']`, `['social', 'leaderboard']` |
+| **Send friend request** | FriendsTab.tsx | none (inline success message only) |
 
 ## Page Data Dependencies
 
