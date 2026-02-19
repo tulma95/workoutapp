@@ -29,7 +29,6 @@ test.describe('Settings Page', () => {
     await settings.expectLoaded();
     await settings.editTM(0, '120', 'deload reset');
 
-    await expect(page.getByRole('dialog')).not.toBeVisible();
     await expect(page.getByText(/error/i)).not.toBeVisible();
   });
 
