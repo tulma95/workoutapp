@@ -400,6 +400,7 @@ function ActiveWorkout({
       await queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
       await queryClient.invalidateQueries({ queryKey: ['training-maxes'] })
       await queryClient.invalidateQueries({ queryKey: ['progress'] })
+      await queryClient.invalidateQueries({ queryKey: ['social', 'feed'] })
       setPhase({ phase: 'completed', progressions: progressionArray })
     } catch (err) {
       setPhase({

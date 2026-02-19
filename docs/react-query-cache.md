@@ -14,6 +14,10 @@
 | `['admin-exercises']` | All exercises (admin) | ExerciseListPage |
 | `['admin-plans']` | All plans (admin) | PlanListPage |
 | `['progress']` | All exercises with current TMs and TM history | ProgressPage |
+| `['social', 'feed']` | Last 20 feed events from confirmed friends | SocialPage (FeedTab) |
+| `['social', 'friends']` | Accepted friends list | SocialPage (FriendsTab) |
+| `['social', 'friend-requests']` | Pending incoming friend requests | SocialPage (FriendsTab) |
+| `['social', 'leaderboard']` | TM rankings per exercise across friends | SocialPage (LeaderboardTab) |
 
 ## Invalidation Rules
 
@@ -22,7 +26,7 @@
 | **Plan subscription** | select-plan.tsx | remove `['plan', 'current']`, remove `['training-maxes']`, remove `['progress']`, remove `['schedule']`, invalidate `['workout', 'current']` |
 | **TM setup** | setup.tsx | `['training-maxes']`, `['progress']` |
 | **TM manual update** | settings.tsx | `['training-maxes']`, `['progress']` |
-| **Workout complete** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']`, `['training-maxes']`, `['progress']` |
+| **Workout complete** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']`, `['training-maxes']`, `['progress']`, `['social', 'feed']` |
 | **Workout cancel** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']` |
 | **Workout delete (history)** | history.tsx | `['workoutCalendar']` |
 | **Exercise CRUD** | admin/exercises.tsx | `['admin-exercises']` |
@@ -36,7 +40,7 @@
 Which pages need fresh data after an action on another page:
 
 ```
-WorkoutPage --complete--> Dashboard (current workout), History (calendar), Settings (TMs), Progress (progress)
+WorkoutPage --complete--> Dashboard (current workout), History (calendar), Settings (TMs), Progress (progress), Social (feed)
 WorkoutPage --cancel----> Dashboard (current workout), History (calendar)
 HistoryPage --delete---> History (calendar)
 PlanSelectionPage --subscribe--> Dashboard (plan, TMs, current workout), Settings (plan, TMs, schedule), Progress (progress)

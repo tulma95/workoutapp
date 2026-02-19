@@ -40,13 +40,16 @@ export default function Layout() {
 
       <nav className={shared.bottomNav}>
         <Link to="/" className={`${shared.bottomNavLink} ${location.pathname === '/' ? shared.bottomNavLinkActive : ''}`}>
-          Dashboard
+          Home
         </Link>
         <Link to="/history" className={`${shared.bottomNavLink} ${location.pathname === '/history' ? shared.bottomNavLinkActive : ''}`}>
           History
         </Link>
         <Link to="/progress" className={`${shared.bottomNavLink} ${location.pathname === '/progress' ? shared.bottomNavLinkActive : ''}`}>
           Progress
+        </Link>
+        <Link to="/social" className={`${shared.bottomNavLink} ${location.pathname === '/social' ? shared.bottomNavLinkActive : ''}`}>
+          Social
         </Link>
         <Link to="/settings" className={`${shared.bottomNavLink} ${location.pathname === '/settings' ? shared.bottomNavLinkActive : ''}`}>
           Settings
