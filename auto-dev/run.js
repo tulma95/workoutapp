@@ -119,6 +119,32 @@ function runClaude(prompt, extraFlags = "") {
 
 // ─── Phases ───
 
+function archivePreviousRun() {
+  const state = readState();
+  if (!state.ticket_id) return;
+
+  const dateStr = (state.started_at || new Date().toISOString()).slice(0, 10);
+  const slug = (state.ticket_title || "unknown")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+  const archiveDir = join(STATE_DIR, "archive", `${dateStr}-${state.ticket_id}-${slug}`);
+  mkdirSync(archiveDir, { recursive: true });
+
+  for (const [src, name] of [
+    [STATE_FILE, "state.json"],
+    [PLAN_FILE, "plan.md"],
+    [TASKS_FILE, "tasks.txt"],
+    [LOG_FILE, "log.txt"],
+  ]) {
+    if (existsSync(src)) {
+      writeFileSync(join(archiveDir, name), readFileSync(src));
+    }
+  }
+
+  log(`Archived previous run (${state.ticket_id}) to ${archiveDir}`);
+}
+
 function phasePlan() {
   log("Phase 1: Picking next ticket and planning...");
   updateState({ phase: "planning", started_at: new Date().toISOString() });
@@ -248,6 +274,7 @@ console.log("");
 try {
   // Phase 1: Plan (only if no active work)
   if (!phase || phase === "done") {
+    if (phase === "done") archivePreviousRun();
     phasePlan();
   }
 
