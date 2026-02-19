@@ -9,27 +9,21 @@ All implementation tasks are complete. Now finalize the work.
 2. Run the full test suite:
    ./run_test.sh
    If tests fail, fix the issues and re-run until they pass.
+   If you fix anything, commit the fix separately.
 
 3. Do a code review:
-   - Run git diff to see all changes
-   - Check for security issues, missing error handling, style violations
+   - Run git diff to see any uncommitted changes
+   - Check recent commits with git log to review what was done
    - Verify changes match CLAUDE.md conventions
-   - Fix any issues found
+   - Fix any issues found (and commit fixes)
 
-4. Get the current ticket ID:
-   node --experimental-strip-types docs/backlog/ticket.ts current
-
-5. Commit all changes with the ticket ID prefix:
-   - Stage relevant files (not .auto-dev/ files)
-   - Commit message format: feat(<ticket-id>): <short description>
-   - Do NOT include Co-Authored-By
-
-6. Mark the ticket as done:
-   node --experimental-strip-types docs/backlog/ticket.ts status <id> done
-
-7. Update any docs that need updating per CLAUDE.md:
+4. Update any docs that need updating per CLAUDE.md:
    - New/changed endpoints -> docs/api-endpoints.md
    - Schema migrations -> docs/db-schema.md
    - New queries or invalidation changes -> docs/react-query-cache.md
+   - If docs were updated, commit them.
 
-IMPORTANT: Do NOT push to remote. Local commit only.
+5. Mark the ticket as done:
+   node --experimental-strip-types docs/backlog/ticket.ts status <id> done
+
+IMPORTANT: Do NOT push to remote. Local commits only.

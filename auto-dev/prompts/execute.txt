@@ -18,7 +18,11 @@ Read the plan file at {{PLAN_FILE}} for full context.
 4. After implementing, verify your changes compile:
    - Backend: npm run build -w backend
    - Frontend: cd frontend && npx tsc --build --noEmit
-5. Do NOT run the full test suite yet (that happens after all tasks).
-6. Do NOT commit yet.
+5. Commit your changes:
+   - Get the ticket ID: node --experimental-strip-types docs/backlog/ticket.ts current
+   - Stage relevant files (not .auto-dev/ files)
+   - Commit message format: feat(<ticket-id>): <short description of this task>
+   - Do NOT include Co-Authored-By
+   - Do NOT push to remote
 
 IMPORTANT: Only implement this one task. Do not work on other tasks from the plan.
