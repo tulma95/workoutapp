@@ -7,6 +7,7 @@ import userRoutes from './routes/users';
 import trainingMaxRoutes from './routes/trainingMaxes';
 import workoutRoutes from './routes/workouts';
 import planRoutes from './routes/plans';
+import progressRoutes from './routes/progress';
 import adminExerciseRoutes from './routes/admin/exercises';
 import adminPlanRoutes from './routes/admin/plans';
 import { errorHandler } from './middleware/errorHandler';
@@ -40,6 +41,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/training-maxes', trainingMaxRoutes);
 app.use('/api/workouts', workoutRoutes);
 app.use('/api/plans', planRoutes);
+app.use('/api/progress', progressRoutes);
 app.use('/api/admin/exercises', adminExerciseRoutes);
 app.use('/api/admin/plans', adminPlanRoutes);
 
