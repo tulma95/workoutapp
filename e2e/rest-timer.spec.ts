@@ -83,8 +83,6 @@ test.describe('Rest Timer', () => {
     }
 
     // After last set, timer should NOT appear
-    // Small wait to ensure timer would have started if it was going to
-    await page.waitForTimeout(200);
     await expect(workout.restTimerBanner).not.toBeVisible();
   });
 
@@ -95,7 +93,7 @@ test.describe('Rest Timer', () => {
 
     // Disable rest timer via settings page
     await page.getByRole('link', { name: /settings/i }).click();
-    const checkbox = page.locator('#rest-timer-enabled');
+    const checkbox = page.getByLabel(/rest timer/i);
     await expect(checkbox).toBeVisible();
     await checkbox.uncheck();
 
@@ -108,7 +106,6 @@ test.describe('Rest Timer', () => {
     await workout.confirmSet(0);
 
     // Timer should NOT appear
-    await page.waitForTimeout(200);
     await expect(workout.restTimerBanner).not.toBeVisible();
   });
 });
