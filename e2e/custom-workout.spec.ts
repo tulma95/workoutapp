@@ -139,6 +139,18 @@ test.describe('Custom Workout', () => {
     await expect(page.getByText('2/2 sets')).toBeVisible();
   });
 
+  test('date input is pre-filled with the clicked calendar day date', async ({ setupCompletePage }) => {
+    const { page } = setupCompletePage;
+    const history = new HistoryPage(page);
+    const dashboard = new DashboardPage(page);
+
+    await openCustomWorkoutModal(page, history, dashboard);
+
+    const expectedDate = await page.evaluate(() => new Date().toLocaleDateString('en-CA'));
+    const dateInput = page.getByLabel('Date');
+    await expect(dateInput).toHaveValue(expectedDate);
+  });
+
   test('Save button is disabled without exercise selected or with empty sets', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
     const history = new HistoryPage(page);
