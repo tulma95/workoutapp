@@ -186,8 +186,22 @@ model UserPlan {
   startedAt DateTime  @default(now()) @map("started_at") @db.Timestamptz(3)
   endedAt   DateTime? @map("ended_at") @db.Timestamptz(3)
 
-  user User        @relation(fields: [userId], references: [id])
-  plan WorkoutPlan @relation(fields: [planId], references: [id])
+  user     User               @relation(fields: [userId], references: [id])
+  plan     WorkoutPlan        @relation(fields: [planId], references: [id])
+  schedule UserPlanSchedule[]
 
   @@map("user_plans")
+}
+
+model UserPlanSchedule {
+  id         Int      @id @default(autoincrement())
+  userPlanId Int      @map("user_plan_id")
+  dayNumber  Int      @map("day_number")
+  weekday    Int
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  userPlan UserPlan @relation(fields: [userPlanId], references: [id], onDelete: Cascade)
+
+  @@unique([userPlanId, dayNumber])
+  @@map("user_plan_schedules")
 }
