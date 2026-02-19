@@ -51,8 +51,12 @@ build_image() {
   cd "$PROJECT_ROOT"
 
   # Stamp git hash into service worker cache name for cache busting
-  sed -i '' "s/const CACHE_NAME = 'setforge-v[^']*'/const CACHE_NAME = 'setforge-v$IMAGE_TAG'/" \
-    frontend/public/sw.js
+  node -e "
+    const fs = require('fs');
+    const f = 'frontend/public/sw.js';
+    const s = fs.readFileSync(f, 'utf8');
+    fs.writeFileSync(f, s.replace(/const CACHE_NAME = 'setforge-v[^']*'/, \"const CACHE_NAME = 'setforge-v$IMAGE_TAG'\"));
+  "
 
   APP_IMAGE="$FULL_TAG" docker compose -f "$COMPOSE_FILE" --profile e2e build app
 
