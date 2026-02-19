@@ -202,5 +202,11 @@
     "title": "Gym Soundtrack Mode",
     "status": "backlog",
     "description": "Detect tempo of music playing (via mic permission) and pulse the UI to the beat. Rest timer syncs to song endings. Pure vibes, experimental feature."
+  },
+  {
+    "id": "036",
+    "title": "Rename app from nSuns to SetForge",
+    "status": "done",
+    "description": "Rename all user-facing surfaces: HTML title, PWA manifest, Layout header, SW cache name, E2E test assertions, and CLAUDE.md references"
   }
 ]
