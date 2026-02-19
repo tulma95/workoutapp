@@ -42,6 +42,12 @@
     "description": "Manually adjust a training max with a reason note (e.g. deload reset, injury setback, form correction). Uses existing append-only TM history. Critical when auto-progression overshoots reality."
   },
   {
+    "id": "035",
+    "title": "PWA support - installable to home screen",
+    "status": "done",
+    "description": "Add web app manifest (manifest.json) with app name, icons, theme color, display: standalone. Add minimal service worker for installability. Link manifest in index.html. Goal: be able to Add to Home Screen on iOS Safari and get a standalone app experience."
+  },
+  {
     "id": "027",
     "title": "Achievement Badges",
     "status": "backlog",
@@ -178,12 +184,6 @@
     "title": "Deload Detection",
     "status": "backlog",
     "description": "Track AMRAP trends and suggest deload when user hits 0-1 reps on progression AMRAP for 3 consecutive workouts. Suggest 10% TM reduction with one-tap apply. New backend stall-check endpoint, no new DB tables needed."
-  },
-  {
-    "id": "002",
-    "title": "PWA + Offline",
-    "status": "backlog",
-    "description": "Convert to PWA for home screen install and offline support. Phase 1: service worker + cached assets via vite-plugin-pwa. Phase 2: IndexedDB for offline workout sessions with mutation queue and sync-on-reconnect. Large effort, phased rollout."
   },
   {
     "id": "029",
