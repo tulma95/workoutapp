@@ -9,6 +9,7 @@
 | `['training-maxes']` | Current TMs for active plan | DashboardPage, SettingsPage |
 | `['workout', 'current']` | In-progress workout (or null) | DashboardPage |
 | `['workoutCalendar', year, month]` | Calendar workouts for month | HistoryPage (with `keepPreviousData`) |
+| `['schedule']` | User's current weekday schedule for active plan | SettingsPage |
 | `['plans']` | All public plans | PlanSelectionPage |
 | `['admin-exercises']` | All exercises (admin) | ExerciseListPage |
 | `['admin-plans']` | All plans (admin) | PlanListPage |

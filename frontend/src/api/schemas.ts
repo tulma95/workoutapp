@@ -57,8 +57,24 @@ export const CompleteWorkoutResponseSchema = z.object({
   progressions: z.array(ProgressionResultSchema).optional(),
 });
 
+export const ScheduledDaySchema = z.object({
+  date: z.string(),
+  dayNumber: z.number(),
+  planDayName: z.string().nullable(),
+});
+
+export const ScheduleEntrySchema = z.object({
+  dayNumber: z.number(),
+  weekday: z.number(),
+});
+
+export const ScheduleResponseSchema = z.object({
+  schedule: z.array(ScheduleEntrySchema),
+});
+
 export const WorkoutCalendarResponseSchema = z.object({
   workouts: z.array(CalendarWorkoutSchema),
+  scheduledDays: z.array(ScheduledDaySchema).default([]),
 });
 
 // Auth schemas
@@ -222,6 +238,9 @@ export type CalendarWorkout = z.infer<typeof CalendarWorkoutSchema>;
 export type ProgressionResult = z.infer<typeof ProgressionResultSchema>;
 export type CompleteWorkoutResponse = z.infer<typeof CompleteWorkoutResponseSchema>;
 export type WorkoutCalendarResponse = z.infer<typeof WorkoutCalendarResponseSchema>;
+export type ScheduledDay = z.infer<typeof ScheduledDaySchema>;
+export type ScheduleEntry = z.infer<typeof ScheduleEntrySchema>;
+export type ScheduleResponse = z.infer<typeof ScheduleResponseSchema>;
 
 export type User = z.infer<typeof UserSchema>;
 export type LoginResponse = z.infer<typeof LoginResponseSchema>;

@@ -13,6 +13,8 @@ export type {
   CalendarWorkout,
   ProgressionResult,
   CompleteWorkoutResponse,
+  WorkoutCalendarResponse,
+  ScheduledDay,
 } from './schemas';
 
 export async function startWorkout(dayNumber: number): Promise<typeof WorkoutSchema._output> {
@@ -69,7 +71,7 @@ export async function cancelWorkout(id: number): Promise<void> {
 export async function getWorkoutCalendar(
   year: number,
   month: number
-): Promise<{ workouts: typeof WorkoutCalendarResponseSchema._output['workouts'] }> {
+): Promise<typeof WorkoutCalendarResponseSchema._output> {
   const data = await apiFetch(`/workouts/calendar?year=${year}&month=${month}`);
   return WorkoutCalendarResponseSchema.parse(data);
 }
