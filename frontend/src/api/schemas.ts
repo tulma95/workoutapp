@@ -257,3 +257,76 @@ export type PlanSet = z.infer<typeof PlanSetSchema>;
 export type ProgressionRule = z.infer<typeof ProgressionRuleSchema>;
 export type PlanWithDetails = z.infer<typeof PlanWithDetailsSchema>;
 export type AdminPlanListItem = z.infer<typeof AdminPlanListItemSchema>;
+
+// Social schemas
+export const FriendSchema = z.object({
+  id: z.number(),
+  userId: z.number(),
+  displayName: z.string(),
+});
+
+export const FriendRequestSchema = z.object({
+  id: z.number(),
+  requesterId: z.number(),
+  displayName: z.string(),
+});
+
+export const FriendsResponseSchema = z.object({
+  friends: z.array(FriendSchema),
+});
+
+export const FriendRequestsResponseSchema = z.object({
+  requests: z.array(FriendRequestSchema),
+});
+
+export const FeedEventPayloadSchema = z.discriminatedUnion('eventType', [
+  z.object({
+    eventType: z.literal('workout_completed'),
+    workoutId: z.number(),
+    dayNumber: z.number(),
+  }),
+  z.object({
+    eventType: z.literal('tm_increased'),
+    exerciseSlug: z.string(),
+    exerciseName: z.string(),
+    newTM: z.number(),
+    increase: z.number(),
+  }),
+]);
+
+export const FeedEventSchema = z.object({
+  id: z.number(),
+  userId: z.number(),
+  displayName: z.string(),
+  eventType: z.string(),
+  payload: z.record(z.string(), z.unknown()),
+  createdAt: z.string(),
+});
+
+export const FeedResponseSchema = z.object({
+  events: z.array(FeedEventSchema),
+});
+
+export const LeaderboardRankingSchema = z.object({
+  userId: z.number(),
+  displayName: z.string(),
+  weight: z.number(),
+});
+
+export const LeaderboardExerciseSchema = z.object({
+  slug: z.string(),
+  name: z.string(),
+  rankings: z.array(LeaderboardRankingSchema),
+});
+
+export const LeaderboardResponseSchema = z.object({
+  exercises: z.array(LeaderboardExerciseSchema),
+});
+
+export type Friend = z.infer<typeof FriendSchema>;
+export type FriendRequest = z.infer<typeof FriendRequestSchema>;
+export type FeedEventPayload = z.infer<typeof FeedEventPayloadSchema>;
+export type FeedEvent = z.infer<typeof FeedEventSchema>;
+export type LeaderboardRanking = z.infer<typeof LeaderboardRankingSchema>;
+export type LeaderboardExercise = z.infer<typeof LeaderboardExerciseSchema>;
+export type LeaderboardResponse = z.infer<typeof LeaderboardResponseSchema>;
