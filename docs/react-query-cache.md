@@ -11,6 +11,7 @@
 | `['workoutCalendar', year, month]` | Calendar workouts for month | HistoryPage (with `keepPreviousData`) |
 | `['schedule']` | User's current weekday schedule for active plan | SettingsPage |
 | `['plans']` | All public plans | PlanSelectionPage |
+| `['exercises']` | All exercises (public, sorted by name) | CustomWorkoutModal (staleTime: 5min) |
 | `['admin-exercises']` | All exercises (admin) | ExerciseListPage |
 | `['admin-plans']` | All plans (admin) | PlanListPage |
 | `['progress']` | All exercises with current TMs and TM history | ProgressPage |
@@ -29,7 +30,8 @@
 | **Workout complete** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']`, `['training-maxes']`, `['progress']`, `['social', 'feed']` |
 | **Workout cancel** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']` |
 | **Workout delete (history)** | history.tsx | `['workoutCalendar']` |
-| **Exercise CRUD** | admin/exercises.tsx | `['admin-exercises']` |
+| **Custom workout save** | CustomWorkoutModal.tsx | `['workoutCalendar']` |
+| **Exercise CRUD** | admin/exercises.tsx | `['admin-exercises']`, `['exercises']` (admin adding an exercise should update the picker) |
 | **Plan archive** | admin/plans.index.tsx | `['admin-plans']` |
 | **Plan create** | PlanEditorPage.tsx | `['admin-plans']` |
 | **Schedule save** | settings.tsx | set `['schedule']` (via setQueryData), invalidate `['workoutCalendar']` |
@@ -47,6 +49,7 @@ Which pages need fresh data after an action on another page:
 WorkoutPage --complete--> Dashboard (current workout), History (calendar), Settings (TMs), Progress (progress), Social (feed)
 WorkoutPage --cancel----> Dashboard (current workout), History (calendar)
 HistoryPage --delete---> History (calendar)
+HistoryPage --custom workout save--> History (calendar)
 PlanSelectionPage --subscribe--> Dashboard (plan, TMs, current workout), Settings (plan, TMs, schedule), Progress (progress)
 SetupPage --save TMs--> Dashboard (TMs), Settings (TMs), Progress (progress)
 SettingsPage --edit TM--> Dashboard (TMs), Progress (TM history, progress)
