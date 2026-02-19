@@ -71,6 +71,7 @@ function PlanSelectionPage() {
     onSuccess: async (result) => {
       queryClient.removeQueries({ queryKey: ['plan', 'current'] })
       queryClient.removeQueries({ queryKey: ['training-maxes'] })
+      queryClient.removeQueries({ queryKey: ['progress'] })
       await queryClient.invalidateQueries({ queryKey: ['workout', 'current'] })
 
       if (result.missingTMs.length > 0) {
