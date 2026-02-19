@@ -134,8 +134,8 @@ test.describe('Custom Workout', () => {
     await history.clickDay(today);
 
     await expect(page.getByRole('heading', { name: /custom workout/i })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /bench press/i })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /^squat$/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Bench Press', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Squat', exact: true })).toBeVisible();
     await expect(page.getByText('2/2 sets')).toBeVisible();
   });
 
