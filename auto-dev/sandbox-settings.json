@@ -38,6 +38,7 @@
       "Bash(ssh *)",
       "Bash(scp *)",
       "Bash(sudo *)",
+      "Bash(git push *)",
       "Bash(rm -rf / *)",
       "Read(~/.ssh/**)",
       "Read(~/.aws/**)",
