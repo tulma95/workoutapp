@@ -10,7 +10,14 @@ export interface ProgressExercise {
   }>;
 }
 
-export async function getProgress(userId: number): Promise<{ exercises: ProgressExercise[] }> {
+export interface PlanSwitch {
+  date: string;
+  planName: string;
+}
+
+export async function getProgress(
+  userId: number,
+): Promise<{ exercises: ProgressExercise[]; planSwitches: PlanSwitch[] }> {
   // Find active plan with all plan day exercises and their TM exercise references
   const activePlan = await prisma.userPlan.findFirst({
     where: { userId, isActive: true },
@@ -31,8 +38,21 @@ export async function getProgress(userId: number): Promise<{ exercises: Progress
     },
   });
 
+  // Query all plan subscriptions to build plan switch markers
+  const allUserPlans = await prisma.userPlan.findMany({
+    where: { userId },
+    orderBy: { startedAt: 'asc' },
+    include: { plan: { select: { name: true } } },
+  });
+
+  // Every subscription after the first is a plan switch
+  const planSwitches: PlanSwitch[] = allUserPlans.slice(1).map((up) => ({
+    date: up.startedAt.toISOString(),
+    planName: up.plan.name,
+  }));
+
   if (!activePlan) {
-    return { exercises: [] };
+    return { exercises: [], planSwitches };
   }
 
   // Extract unique TM exercises in plan day order (by first appearance)
@@ -52,7 +72,7 @@ export async function getProgress(userId: number): Promise<{ exercises: Progress
   }
 
   if (tmExercises.length === 0) {
-    return { exercises: [] };
+    return { exercises: [], planSwitches };
   }
 
   // Fetch all TM history for these exercises in one query, ordered desc by effectiveDate
@@ -89,5 +109,5 @@ export async function getProgress(userId: number): Promise<{ exercises: Progress
     };
   });
 
-  return { exercises };
+  return { exercises, planSwitches };
 }

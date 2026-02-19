@@ -207,6 +207,7 @@ export const ProgressExerciseSchema = z.object({
 
 export const ProgressResponseSchema = z.object({
   exercises: z.array(ProgressExerciseSchema),
+  planSwitches: z.array(z.object({ date: z.string(), planName: z.string() })).optional().default([]),
 });
 
 export type ProgressExercise = z.infer<typeof ProgressExerciseSchema>;

@@ -139,6 +139,7 @@ export function ProgressContent() {
                     color={config.color}
                     exerciseName={config.name}
                     timeRange={timeRange}
+                    planSwitches={data?.planSwitches}
                   />
                 ) : null
               })()}

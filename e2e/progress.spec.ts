@@ -2,6 +2,8 @@ import { test, expect } from './fixtures';
 import { DashboardPage } from './pages/dashboard.page';
 import { WorkoutPage } from './pages/workout.page';
 import { ProgressPage } from './pages/progress.page';
+import { SettingsPage } from './pages/settings.page';
+import { createSecondPlan } from './helpers/create-second-plan';
 import type { Page } from '@playwright/test';
 
 async function completeWorkout(page: Page, dayNumber: number, amrapReps: number) {
@@ -96,5 +98,60 @@ test.describe('Progress Page', () => {
     // Cards should still be visible with all exercises
     await expect(page.getByText(/squat/i).first()).toBeVisible();
     await expect(page.getByText(/deadlift/i).first()).toBeVisible();
+  });
+
+  test('shows plan switch marker on chart after switching plans', async ({ setupCompletePage }) => {
+    const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+
+    // Complete Day 1 to build bench TM history (initial TM + post-workout TM = 2 data points)
+    await completeWorkout(page, 1, 10);
+
+    // Create a second plan (promotes to admin, re-logs in, creates plan via API)
+    await createSecondPlan(page);
+
+    // Navigate to settings and switch plans
+    const settings = new SettingsPage(page);
+    await settings.navigate();
+    await settings.expectLoaded();
+    await page.getByRole('link', { name: /change plan/i }).click();
+    await expect(page.getByRole('heading', { name: /choose a workout plan/i })).toBeVisible();
+
+    // Select the "Simple Test Plan"
+    await page
+      .getByRole('heading', { name: 'Simple Test Plan', exact: true })
+      .locator('..')
+      .locator('..')
+      .getByRole('button', { name: /select plan/i })
+      .click();
+
+    // Confirm the plan switch via the modal (appears even without in-progress workout)
+    await expect(page.getByRole('button', { name: /confirm switch/i })).toBeVisible();
+    await page.getByRole('button', { name: /confirm switch/i }).click();
+
+    // Should be on dashboard with the second plan active
+    await dashboard.expectLoaded();
+
+    // Patch squat TM after the plan switch to create a TM entry AFTER the plan switch date.
+    // This ensures the plan switch date falls between the earliest and latest TM entries on
+    // the squat chart, making the plan switch marker visible.
+    const token = await page.evaluate(() => localStorage.getItem('accessToken'));
+    const patchRes = await page.request.patch('/api/training-maxes/squat', {
+      headers: { Authorization: `Bearer ${token}` },
+      data: { weight: 130 },
+    });
+    expect(patchRes.ok()).toBeTruthy();
+
+    // Navigate to progress page and select "All" time range
+    const progress = new ProgressPage(page);
+    await progress.navigate();
+    await progress.expectLoaded();
+    await progress.selectTimeRange('All');
+
+    // The squat chart now has: initial TM (before plan switch) + 130 kg (after plan switch).
+    // The plan switch date falls between these two entries, so the marker should render.
+    await expect(
+      page.locator('svg title').filter({ hasText: /Plan switch:/ }).first(),
+    ).toBeAttached();
   });
 });

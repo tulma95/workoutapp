@@ -84,6 +84,10 @@
   margin: 0;
 }
 
+.planSwitchMarker {
+  pointer-events: none;
+}
+
 .srOnly {
   position: absolute;
   width: 1px;

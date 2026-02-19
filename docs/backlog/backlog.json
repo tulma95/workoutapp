@@ -8,7 +8,7 @@
   {
     "id": "024",
     "title": "Workout History Refinement",
-    "status": "planned",
+    "status": "done",
     "description": "Improve the workout history view: better readability and visual design, ability to delete old workouts, and overall UI/UX polish. Current history is hard to read and lacks basic management features."
   },
   {
@@ -32,7 +32,7 @@
   {
     "id": "026",
     "title": "Plan switch marker on progression chart",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "When a user switches plans, TM values may not be directly comparable (e.g. different TM percentages). Add a visual vertical marker on the progression chart showing when a plan switch occurred, so users understand context for any jumps or drops in TM values."
   },
   {

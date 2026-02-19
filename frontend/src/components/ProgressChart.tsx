@@ -14,6 +14,7 @@ interface Props {
   color: string
   exerciseName: string
   timeRange: TimeRange
+  planSwitches?: Array<{ date: string; planName: string }>
 }
 
 const CHART_PADDING = { top: 12, right: 16, bottom: 28, left: 44 }
@@ -30,7 +31,7 @@ interface TooltipData {
   weight: number
 }
 
-export function ProgressChart({ history, color, exerciseName, timeRange }: Props) {
+export function ProgressChart({ history, color, exerciseName, timeRange, planSwitches }: Props) {
   const [tooltip, setTooltip] = useState<TooltipData | null>(null)
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
   const containerRef = useRef<HTMLDivElement>(null)
@@ -246,6 +247,40 @@ export function ProgressChart({ history, color, exerciseName, timeRange }: Props
                   className={styles.dot}
                   onClick={() => handleDotClick(point, x, y)}
                 />
+              )
+            })}
+
+            {planSwitches?.filter((ps) => {
+              const ts = new Date(ps.date).getTime()
+              return ts >= minDate && ts <= maxDate
+            }).map((ps) => {
+              const ts = new Date(ps.date).getTime()
+              const x = scaleX(ts)
+              const label = ps.planName.length > 10 ? '▲ Plan' : `▲ ${ps.planName}`
+              return (
+                <g key={ps.date} className={styles.planSwitchMarker}>
+                  <title>Plan switch: {ps.planName}</title>
+                  <line
+                    x1={x}
+                    y1={CHART_PADDING.top}
+                    x2={x}
+                    y2={CHART_PADDING.top + plotHeight}
+                    stroke="var(--text-muted)"
+                    strokeWidth="1"
+                    strokeDasharray="4 3"
+                    opacity="0.7"
+                  />
+                  <text
+                    x={x}
+                    y={CHART_PADDING.top + 9}
+                    textAnchor="middle"
+                    fill="var(--text-muted)"
+                    fontSize="9"
+                    fontFamily="inherit"
+                  >
+                    {label}
+                  </text>
+                </g>
               )
             })}
           </svg>

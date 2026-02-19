@@ -26,7 +26,69 @@ describe('GET /api/progress', () => {
       .get('/api/progress')
       .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ exercises: [] });
+    expect(res.body).toEqual({ exercises: [], planSwitches: [] });
+  });
+
+  it('returns planSwitches with second plan start date when user switches plans', async () => {
+    const switchUid = randomUUID().slice(0, 8);
+    const { user: switchUser, token: switchToken } = await createTestUser({
+      email: `progress-switch-${switchUid}@example.com`,
+    });
+
+    // Create first plan
+    const firstPlan = await prisma.workoutPlan.create({
+      data: {
+        slug: `switch-plan-a-${switchUid}`,
+        name: 'First Plan',
+        description: 'First plan',
+        daysPerWeek: 3,
+        isPublic: true,
+      },
+    });
+
+    // Create second plan
+    const secondPlan = await prisma.workoutPlan.create({
+      data: {
+        slug: `switch-plan-b-${switchUid}`,
+        name: 'Second Plan',
+        description: 'Second plan',
+        daysPerWeek: 3,
+        isPublic: true,
+      },
+    });
+
+    const firstStartedAt = new Date('2024-01-01T00:00:00.000Z');
+    const secondStartedAt = new Date('2024-06-01T00:00:00.000Z');
+
+    // Subscribe user to first plan
+    await prisma.userPlan.create({
+      data: {
+        userId: switchUser.id,
+        planId: firstPlan.id,
+        isActive: false,
+        startedAt: firstStartedAt,
+        endedAt: secondStartedAt,
+      },
+    });
+
+    // Subscribe user to second plan (active)
+    await prisma.userPlan.create({
+      data: {
+        userId: switchUser.id,
+        planId: secondPlan.id,
+        isActive: true,
+        startedAt: secondStartedAt,
+      },
+    });
+
+    const res = await request(app)
+      .get('/api/progress')
+      .set('Authorization', `Bearer ${switchToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.planSwitches).toHaveLength(1);
+    expect(res.body.planSwitches[0].date).toBe(secondStartedAt.toISOString());
+    expect(res.body.planSwitches[0].planName).toBe('Second Plan');
   });
 
   it('returns exercises with TMs and history for active plan', async () => {
