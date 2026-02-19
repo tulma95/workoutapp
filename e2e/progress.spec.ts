@@ -44,7 +44,7 @@ test.describe('Progress Page', () => {
     // Should show all 4 exercises with kg weights
     await expect(page.getByText(/bench/i).first()).toBeVisible();
     await expect(page.getByText(/squat/i).first()).toBeVisible();
-    await expect(page.getByText(/ohp/i).first()).toBeVisible();
+    await expect(page.getByText(/overhead press/i).first()).toBeVisible();
     await expect(page.getByText(/deadlift/i).first()).toBeVisible();
     await expect(page.getByText(/kg/).first()).toBeVisible();
   });
