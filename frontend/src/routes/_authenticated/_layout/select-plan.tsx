@@ -72,6 +72,7 @@ function PlanSelectionPage() {
       queryClient.removeQueries({ queryKey: ['plan', 'current'] })
       queryClient.removeQueries({ queryKey: ['training-maxes'] })
       queryClient.removeQueries({ queryKey: ['progress'] })
+      queryClient.removeQueries({ queryKey: ['schedule'] })
       await queryClient.invalidateQueries({ queryKey: ['workout', 'current'] })
 
       if (result.missingTMs.length > 0) {

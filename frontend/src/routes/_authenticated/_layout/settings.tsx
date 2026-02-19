@@ -95,6 +95,7 @@ function SettingsPage() {
     mutationFn: saveSchedule,
     onSuccess: (data) => {
       queryClient.setQueryData(['schedule'], data)
+      queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
     },
   })
 
