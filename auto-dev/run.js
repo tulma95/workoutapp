@@ -132,10 +132,10 @@ function archivePreviousRun() {
   mkdirSync(archiveDir, { recursive: true });
 
   for (const [src, name] of [
-    [STATE_FILE, "state.json"],
-    [PLAN_FILE, "plan.md"],
-    [TASKS_FILE, "tasks.txt"],
-    [LOG_FILE, "log.txt"],
+    [STATE_FILE, "old-state.json"],
+    [PLAN_FILE, "old-plan.md"],
+    [TASKS_FILE, "old-tasks.txt"],
+    [LOG_FILE, "old-log.txt"],
   ]) {
     if (existsSync(src)) {
       writeFileSync(join(archiveDir, name), readFileSync(src));
