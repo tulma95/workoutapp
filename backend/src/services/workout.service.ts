@@ -5,6 +5,16 @@ import type { WorkoutStatus } from '../types';
 import { ExistingWorkoutError } from '../types';
 import { logger } from '../lib/logger';
 
+export type ScheduledDay = {
+  date: string;
+  dayNumber: number;
+  planDayName: string | null;
+};
+
+function formatDateLocal(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 
 function formatWorkout(
   workout: {
@@ -575,5 +585,70 @@ export async function getCalendar(userId: number, year: number, month: number) {
     },
   });
 
-  return { workouts };
+  // Build set of occupied dates from ALL workouts (any status) including discarded
+  const allWorkoutsInMonth = await prisma.workout.findMany({
+    where: {
+      userId,
+      OR: [
+        { completedAt: { gte: startDate, lt: endDate } },
+        { completedAt: null, createdAt: { gte: startDate, lt: endDate } },
+      ],
+    },
+    select: { completedAt: true, createdAt: true },
+  });
+
+  const occupiedDates = new Set<string>();
+  for (const w of allWorkoutsInMonth) {
+    const d = w.completedAt ?? w.createdAt;
+    occupiedDates.add(formatDateLocal(d));
+  }
+
+  // Fetch active plan's schedule with PlanDay names
+  const activePlan = await prisma.userPlan.findFirst({
+    where: { userId, isActive: true },
+    include: {
+      schedule: true,
+      plan: {
+        include: {
+          days: {
+            select: { dayNumber: true, name: true },
+          },
+        },
+      },
+    },
+  });
+
+  const scheduledDays: ScheduledDay[] = [];
+  if (activePlan && activePlan.schedule.length > 0) {
+    // Build dayNumber -> planDayName map
+    const dayNameMap = new Map<number, string | null>();
+    for (const planDay of activePlan.plan.days) {
+      dayNameMap.set(planDay.dayNumber, planDay.name);
+    }
+
+    for (const scheduleRow of activePlan.schedule) {
+      const { dayNumber, weekday } = scheduleRow;
+      const planDayName = dayNameMap.get(dayNumber) ?? null;
+
+      // Find first occurrence of weekday in the month
+      const firstDayWeekday = startDate.getDay(); // 0=Sun...6=Sat
+      const offset = (weekday - firstDayWeekday + 7) % 7;
+      let currentDate = new Date(year, month - 1, 1 + offset);
+
+      while (currentDate < endDate) {
+        const dateStr = formatDateLocal(currentDate);
+        if (!occupiedDates.has(dateStr)) {
+          scheduledDays.push({ date: dateStr, dayNumber, planDayName });
+        }
+        // Advance to same weekday next week
+        currentDate = new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          currentDate.getDate() + 7,
+        );
+      }
+    }
+  }
+
+  return { workouts, scheduledDays };
 }
