@@ -84,6 +84,7 @@ export const TrainingMaxSchema = z.object({
   exercise: z.string(),
   weight: z.number(),
   effectiveDate: z.string(),
+  reason: z.string().nullable().optional(),
   createdAt: z.string(),
 });
 
