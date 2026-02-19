@@ -2,7 +2,7 @@
   {
     "id": "045",
     "title": "Social / Gym Buddy Features",
-    "status": "backlog",
+    "status": "done",
     "description": "Share workouts with friends, compare progress on the same plan, leaderboard, simple feed. Friend system, notifications (e.g. 'Your friend just hit a new Bench TM'). Multi-layer: DB (friend relationships, feed events), API (social endpoints), frontend (feed, profiles, friend management)."
   },
   {
