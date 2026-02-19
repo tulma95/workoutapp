@@ -195,6 +195,25 @@ export const AdminPlanListItemSchema = WorkoutPlanBasicSchema.extend({
   subscriberCount: z.number(),
 });
 
+// Progress schemas
+export const ProgressExerciseSchema = z.object({
+  slug: z.string(),
+  name: z.string(),
+  currentTM: z.number().nullable(),
+  history: z.array(z.object({
+    weight: z.number(),
+    effectiveDate: z.string(),
+    previousWeight: z.number().nullable(),
+  })),
+});
+
+export const ProgressResponseSchema = z.object({
+  exercises: z.array(ProgressExerciseSchema),
+});
+
+export type ProgressExercise = z.infer<typeof ProgressExerciseSchema>;
+export type ProgressResponse = z.infer<typeof ProgressResponseSchema>;
+
 // Infer TypeScript types from schemas
 export type WorkoutSet = z.infer<typeof WorkoutSetSchema>;
 export type Workout = z.infer<typeof WorkoutSchema>;
