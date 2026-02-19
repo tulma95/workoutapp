@@ -22,6 +22,11 @@
 - `GET /api/workouts/history?page=1&limit=10`
 - `GET /api/workouts/calendar?year=2026&month=2` - calendar view (must be before /:id route)
 
+## Schedule Endpoints (JWT required)
+
+- `GET /api/schedule` - returns `{ schedule: [{ dayNumber, weekday }] }` for active plan; empty array if no active plan
+- `PUT /api/schedule` - `{ schedule: [{ dayNumber, weekday }] }` — atomically replaces all schedule rows for the active plan; validates weekday 0–6, dayNumber ≤ plan.daysPerWeek, no duplicate dayNumbers; empty array clears schedule
+
 ## Plan Endpoints (JWT required)
 
 - `GET /api/plans` - list public, non-archived plans
