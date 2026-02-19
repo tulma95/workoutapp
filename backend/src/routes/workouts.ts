@@ -61,6 +61,38 @@ router.get('/calendar', async (req: AuthRequest, res: Response) => {
   res.json(result);
 });
 
+const customWorkoutSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  exercises: z
+    .array(
+      z.object({
+        exerciseId: z.number().int().positive(),
+        sets: z
+          .array(
+            z.object({
+              weight: z.number().min(0),
+              reps: z.number().int().positive(),
+            }),
+          )
+          .min(1),
+      }),
+    )
+    .min(1),
+});
+
+router.post('/custom', validate(customWorkoutSchema), async (req: AuthRequest, res: Response) => {
+  try {
+    const workout = await workoutService.createCustomWorkout(getUserId(req), req.body);
+    res.status(201).json(workout);
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message.startsWith('BAD_REQUEST:')) {
+      res.status(400).json({ error: { code: 'BAD_REQUEST', message: err.message.slice(13) } });
+      return;
+    }
+    throw err;
+  }
+});
+
 router.get('/:id', async (req: AuthRequest, res: Response) => {
   const id = parseInt(req.params.id as string, 10);
   if (isNaN(id)) {

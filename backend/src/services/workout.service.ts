@@ -21,6 +21,7 @@ function formatWorkout(
     id: number;
     userId: number;
     dayNumber: number;
+    planDayId: number | null;
     status: string;
     completedAt: Date | null;
     createdAt: Date;
@@ -44,6 +45,7 @@ function formatWorkout(
   return {
     ...workout,
     status: workout.status as WorkoutStatus,
+    isCustom: workout.planDayId === null,
     sets: workout.sets.map((s) => ({
       ...s,
       exercise: s.exercise.name,
@@ -598,6 +600,90 @@ export async function cancelWorkout(workoutId: number, userId: number) {
   return { success: true };
 }
 
+export type CustomWorkoutPayload = {
+  date: string;
+  exercises: Array<{
+    exerciseId: number;
+    sets: Array<{ weight: number; reps: number }>;
+  }>;
+};
+
+export async function createCustomWorkout(userId: number, payload: CustomWorkoutPayload) {
+  // Parse and validate date
+  const workoutDate = new Date(`${payload.date}T12:00:00`);
+  if (isNaN(workoutDate.getTime())) {
+    throw new Error('BAD_REQUEST: Invalid date');
+  }
+
+  // Validate all exerciseIds exist
+  const exerciseIds = payload.exercises.map((e) => e.exerciseId);
+  const uniqueIds = [...new Set(exerciseIds)];
+  const foundExercises = await prisma.exercise.findMany({
+    where: { id: { in: uniqueIds } },
+    select: { id: true },
+  });
+  if (foundExercises.length !== uniqueIds.length) {
+    throw new Error('BAD_REQUEST: One or more exercise IDs are invalid');
+  }
+
+  const workout = await prisma.$transaction(async (tx) => {
+    const w = await tx.workout.create({
+      data: {
+        userId,
+        dayNumber: 0,
+        planDayId: null,
+        status: 'completed',
+        completedAt: workoutDate,
+        createdAt: workoutDate,
+      },
+    });
+
+    let exerciseOrder = 0;
+    for (const exercise of payload.exercises) {
+      exerciseOrder++;
+      let setOrder = 0;
+      for (const set of exercise.sets) {
+        setOrder++;
+        await tx.workoutSet.create({
+          data: {
+            workoutId: w.id,
+            exerciseId: exercise.exerciseId,
+            exerciseOrder,
+            setOrder,
+            prescribedWeight: set.weight,
+            prescribedReps: set.reps,
+            actualReps: set.reps,
+            isAmrap: false,
+            isProgression: false,
+            completed: true,
+          },
+        });
+      }
+    }
+
+    await tx.feedEvent.create({
+      data: {
+        userId,
+        eventType: 'workout_completed',
+        payload: { workoutId: w.id, dayNumber: 0, isCustom: true },
+      },
+    });
+
+    return tx.workout.findUniqueOrThrow({
+      where: { id: w.id },
+      include: {
+        sets: {
+          orderBy: [{ exerciseOrder: 'asc' }, { setOrder: 'asc' }],
+          include: { exercise: true },
+        },
+      },
+    });
+  });
+
+  logger.info('Custom workout created', { userId, workoutId: workout.id, date: payload.date });
+  return formatWorkout(workout);
+}
+
 export async function getCalendar(userId: number, year: number, month: number) {
   // Calculate date range for the given month
   const startDate = new Date(year, month - 1, 1); // month is 0-indexed in Date constructor
@@ -628,6 +714,7 @@ export async function getCalendar(userId: number, year: number, month: number) {
     select: {
       id: true,
       dayNumber: true,
+      planDayId: true,
       status: true,
       completedAt: true,
       createdAt: true,
@@ -702,5 +789,8 @@ export async function getCalendar(userId: number, year: number, month: number) {
     }
   }
 
-  return { workouts, scheduledDays };
+  return {
+    workouts: workouts.map((w) => ({ ...w, isCustom: w.planDayId === null })),
+    scheduledDays,
+  };
 }
