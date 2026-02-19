@@ -139,6 +139,7 @@ model Workout {
   sets         WorkoutSet[]
   progressions TrainingMax[]
 
+  @@index([userId, status])
   @@map("workouts")
 }
 
@@ -190,6 +191,7 @@ model UserPlan {
   plan     WorkoutPlan        @relation(fields: [planId], references: [id])
   schedule UserPlanSchedule[]
 
+  @@index([userId])
   @@map("user_plans")
 }
 
