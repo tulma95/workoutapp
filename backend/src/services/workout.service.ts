@@ -355,11 +355,8 @@ export async function completeWorkout(workoutId: number, userId: number) {
       const actualReps = progressionSet.actualReps;
       if (actualReps == null) continue;
 
-      // Get the exercise details
-      const exercise = await prisma.exercise.findUnique({
-        where: { id: progressionSet.exerciseId },
-      });
-      if (!exercise) continue;
+      // Exercise is already included via workout.sets include
+      const exercise = progressionSet.exercise;
 
       if (!planDay) continue;
 
