@@ -58,7 +58,12 @@ Write the plan to {{PLAN_FILE}} with this format:
    Include test-writing as part of implementation tasks, not as separate tasks.
    Combine independent tasks into one [PARALLEL] line separated by ||| — the executor will split and run them concurrently via subagents.
 
-Also write JUST the task descriptions (one per line, no 'TASK: ' prefix) to {{TASKS_FILE}}
+Also write the tasks as a JSON array to {{TASKS_FILE}} with this format:
+   [
+     { "task": 1, "description": "<first task description>" },
+     { "task": 2, "description": "[PARALLEL] <task A description> ||| <task B description>" },
+     { "task": 3, "description": "<next task description>" }
+   ]
 
 Start the ticket: node --experimental-strip-types docs/backlog/ticket.ts start <id>
 

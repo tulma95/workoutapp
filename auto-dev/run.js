@@ -9,7 +9,7 @@ const PROMPTS_DIR = join(__dirname, "prompts");
 const STATE_DIR = join(ROOT, ".auto-dev");
 const STATE_FILE = join(STATE_DIR, "state.json");
 const PLAN_FILE = join(STATE_DIR, "plan.md");
-const TASKS_FILE = join(STATE_DIR, "tasks.txt");
+const TASKS_FILE = join(STATE_DIR, "tasks.json");
 const INSIGHTS_FILE = join(STATE_DIR, "insights.md");
 const LOG_FILE = join(STATE_DIR, "log.txt");
 
@@ -132,7 +132,7 @@ function archivePreviousRun() {
   for (const [src, name] of [
     [STATE_FILE, "old-state.json"],
     [PLAN_FILE, "old-plan.md"],
-    [TASKS_FILE, "old-tasks.txt"],
+    [TASKS_FILE, "old-tasks.json"],
     [INSIGHTS_FILE, "old-insights.md"],
     [LOG_FILE, "old-log.txt"],
   ]) {
@@ -179,10 +179,9 @@ function phasePlan() {
 
 function readTasks() {
   if (!existsSync(TASKS_FILE)) return [];
-  return readFileSync(TASKS_FILE, "utf-8")
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean);
+  const raw = readFileSync(TASKS_FILE, "utf-8").trim();
+  const tasks = JSON.parse(raw);
+  return tasks.map((t) => t.description);
 }
 
 function phaseExecute() {
