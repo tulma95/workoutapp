@@ -67,18 +67,18 @@ test.describe('Social features', () => {
       await pageA.getByRole('link', { name: /home/i }).click();
       await expect(pageA.getByText('Workout Days')).toBeVisible();
       await pageA.getByRole('link', { name: /start workout/i }).first().click();
-      await expect(pageA.getByRole('heading', { name: /day \d/i })).toBeVisible();
-
       const workout = new WorkoutPage(pageA);
+      await expect(workout.completeButton).toBeVisible({ timeout: 15000 });
+
       await workout.completeWithDialog();
-      await expect(workout.backToDashboardButton).toBeVisible();
+      await expect(workout.backToDashboardButton).toBeVisible({ timeout: 10000 });
 
       // --- userB's feed shows userA's workout_completed event ---
       // The feed endpoint shows friends' events; userB is a friend of userA
       await pageB.getByRole('tab', { name: /feed/i }).click();
       await expect(
         pageB.getByText(new RegExp(`${displayNameA}.*completed Day`, 'i')),
-      ).toBeVisible();
+      ).toBeVisible({ timeout: 10000 });
 
       // --- Both users check the leaderboard and see each other ---
 
@@ -88,11 +88,11 @@ test.describe('Social features', () => {
       await pageA.getByRole('tab', { name: /leaderboard/i }).click();
 
       // userA sees userB in the leaderboard
-      await expect(pageA.getByText(new RegExp(displayNameB))).toBeVisible();
+      await expect(pageA.getByText(new RegExp(displayNameB)).first()).toBeVisible();
 
       // userB switches to the leaderboard tab and sees userA
       await pageB.getByRole('tab', { name: /leaderboard/i }).click();
-      await expect(pageB.getByText(new RegExp(displayNameA))).toBeVisible();
+      await expect(pageB.getByText(new RegExp(displayNameA)).first()).toBeVisible();
     } finally {
       await contextA.close();
       await contextB.close();

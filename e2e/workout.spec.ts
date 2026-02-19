@@ -214,7 +214,7 @@ test.describe('Workout Session', () => {
     const initialBenchTM = parseFloat(initialBenchTMMatch![1]);
 
     // Navigate back to dashboard and start Day 1 workout
-    await nav.goToDashboard();
+    await nav.goToHome();
     await dashboard.expectLoaded();
     await dashboard.startWorkout();
     await workout.expectLoaded(1);

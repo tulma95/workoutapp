@@ -7,8 +7,8 @@ export class NavigationBar {
     this.page = page;
   }
 
-  async goToDashboard() {
-    await this.page.getByRole('link', { name: /dashboard/i }).click();
+  async goToHome() {
+    await this.page.getByRole('link', { name: /home/i }).click();
   }
 
   async goToHistory() {

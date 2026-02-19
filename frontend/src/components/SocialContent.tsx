@@ -24,7 +24,7 @@ export function SocialContent() {
             key={tab.id}
             role="tab"
             aria-selected={activeTab === tab.id}
-            aria-controls={`tab-panel-${tab.id}`}
+            {...(activeTab === tab.id ? { 'aria-controls': `tab-panel-${tab.id}` } : {})}
             className={activeTab === tab.id ? `${styles.tab} ${styles.tabActive}` : styles.tab}
             onClick={() => setActiveTab(tab.id)}
           >
@@ -32,20 +32,16 @@ export function SocialContent() {
           </button>
         ))}
       </div>
-      {TABS.map((tab) => (
-        <div
-          key={tab.id}
-          id={`tab-panel-${tab.id}`}
-          role="tabpanel"
-          aria-label={tab.label}
-          className={styles.tabPanel}
-          hidden={activeTab !== tab.id}
-        >
-          {tab.id === 'feed' && <FeedTab />}
-          {tab.id === 'friends' && <FriendsTab />}
-          {tab.id === 'leaderboard' && <LeaderboardTab />}
-        </div>
-      ))}
+      <div
+        id={`tab-panel-${activeTab}`}
+        role="tabpanel"
+        aria-label={TABS.find((t) => t.id === activeTab)!.label}
+        className={styles.tabPanel}
+      >
+        {activeTab === 'feed' && <FeedTab />}
+        {activeTab === 'friends' && <FriendsTab />}
+        {activeTab === 'leaderboard' && <LeaderboardTab />}
+      </div>
     </div>
   );
 }

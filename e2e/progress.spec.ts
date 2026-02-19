@@ -74,7 +74,7 @@ test.describe('Progress Page', () => {
     await expect(page.getByRole('radio', { name: '6M' })).toBeChecked();
 
     // Navigate away and back
-    await page.getByRole('link', { name: /dashboard/i }).click();
+    await page.getByRole('link', { name: /home/i }).click();
     await progress.navigate();
     await progress.expectLoaded();
 

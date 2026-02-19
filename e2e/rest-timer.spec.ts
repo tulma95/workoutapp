@@ -98,7 +98,7 @@ test.describe('Rest Timer', () => {
     await checkbox.uncheck();
 
     // Go back and start workout
-    await page.getByRole('link', { name: /dashboard/i }).first().click();
+    await page.getByRole('link', { name: /home/i }).first().click();
     await dashboard.expectLoaded();
     await dashboard.startWorkout();
     await workout.expectLoaded(1);

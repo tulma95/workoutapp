@@ -38,6 +38,7 @@ export function FeedTab() {
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['social', 'feed'],
     queryFn: getFeed,
+    refetchOnMount: 'always',
   });
 
   if (isLoading) {
