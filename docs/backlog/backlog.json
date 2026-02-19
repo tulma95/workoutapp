@@ -8,7 +8,7 @@
   {
     "id": "039",
     "title": "Missing database indexes on foreign keys",
-    "status": "backlog",
+    "status": "done",
     "description": "Several high-query foreign keys lack explicit indexes: TrainingMax needs @@index([userId, exerciseId]) for 'get current TM' queries (the @@unique includes effectiveDate which is less efficient for latest-TM lookups), Workout needs @@index([userId, createdAt]) for calendar/history queries, UserPlan needs @@index([userId]) for subscription lookups. These become important as data grows."
   },
   {
