@@ -41,10 +41,6 @@ export function CustomWorkoutModal({ open, initialDate, onClose, onSaved }: Cust
   });
 
   useEffect(() => {
-    setDate(initialDate);
-  }, [initialDate]);
-
-  useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
     if (open) {
