@@ -12,16 +12,17 @@
 | `['plans']` | All public plans | PlanSelectionPage |
 | `['admin-exercises']` | All exercises (admin) | ExerciseListPage |
 | `['admin-plans']` | All plans (admin) | PlanListPage |
-| `['training-maxes', slug, 'history']` | TM history for exercise | ProgressPage |
+| `['training-maxes', slug, 'history']` | TM history for exercise | ProgressPage (legacy) |
+| `['progress']` | All exercises with current TMs and TM history | ProgressPage |
 
 ## Invalidation Rules
 
 | Action | Trigger file | Keys invalidated |
 |--------|-------------|-----------------|
-| **Plan subscription** | select-plan.tsx | remove `['plan', 'current']`, remove `['training-maxes']`, invalidate `['workout', 'current']` |
-| **TM setup** | setup.tsx | `['training-maxes']` |
-| **TM manual update** | settings.tsx | `['training-maxes']` |
-| **Workout complete** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']`, `['training-maxes']` |
+| **Plan subscription** | select-plan.tsx | remove `['plan', 'current']`, remove `['training-maxes']`, remove `['progress']`, invalidate `['workout', 'current']` |
+| **TM setup** | setup.tsx | `['training-maxes']`, `['progress']` |
+| **TM manual update** | settings.tsx | `['training-maxes']`, `['progress']` |
+| **Workout complete** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']`, `['training-maxes']`, `['progress']` |
 | **Workout cancel** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']` |
 | **Workout delete (history)** | history.tsx | `['workoutCalendar']` |
 | **Exercise CRUD** | admin/exercises.tsx | `['admin-exercises']` |
@@ -34,12 +35,12 @@
 Which pages need fresh data after an action on another page:
 
 ```
-WorkoutPage --complete--> Dashboard (current workout), History (calendar), Settings (TMs)
+WorkoutPage --complete--> Dashboard (current workout), History (calendar), Settings (TMs), Progress (progress)
 WorkoutPage --cancel----> Dashboard (current workout), History (calendar)
 HistoryPage --delete---> History (calendar)
-PlanSelectionPage --subscribe--> Dashboard (plan, TMs, current workout), Settings (plan, TMs)
-SetupPage --save TMs--> Dashboard (TMs), Settings (TMs)
-SettingsPage --edit TM--> Dashboard (TMs), Progress (TM history)
+PlanSelectionPage --subscribe--> Dashboard (plan, TMs, current workout), Settings (plan, TMs), Progress (progress)
+SetupPage --save TMs--> Dashboard (TMs), Settings (TMs), Progress (progress)
+SettingsPage --edit TM--> Dashboard (TMs), Progress (TM history, progress)
 SettingsPage --logout---> ALL pages (cache cleared)
 Admin: ExerciseList --CRUD--> ExerciseList only
 Admin: PlanEditor --create--> PlanList only

@@ -12,6 +12,7 @@
 - `POST /api/training-maxes/setup` - accepts both `{ oneRepMaxes }` and `{ exerciseTMs: [{ exerciseId, oneRepMax }] }`
 - `PATCH /api/training-maxes/:exercise` - manual TM override
 - `GET /api/training-maxes/:exercise/history`
+- `GET /api/progress` - all exercises from active plan with current TMs and full TM history; returns `{ exercises: [{ slug, name, currentTM, history: [{ weight, effectiveDate, previousWeight }] }] }` (empty array if no active plan)
 - `POST /api/workouts` - `{ dayNumber }` -> generates sets from active plan + TMs
 - `GET /api/workouts/current` - in-progress workout (or null)
 - `GET /api/workouts/:id` - includes `progressions` array (TM changes linked to this workout)
