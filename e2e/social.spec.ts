@@ -1,35 +1,26 @@
 import { test, expect, type Page } from '@playwright/test';
-
-const BASE_URL = process.env.BASE_URL || 'http://localhost:5173';
+import { RegisterPage } from './pages/register.page';
+import { PlanSelectionPage } from './pages/plan-selection.page';
+import { SetupPage } from './pages/setup.page';
+import { WorkoutPage } from './pages/workout.page';
 
 async function registerAndSetup(page: Page, email: string, displayName: string) {
-  await page.goto('/register');
-  await expect(page.getByRole('heading', { name: /create account/i })).toBeVisible();
-  await page.getByLabel(/email/i).fill(email);
-  await page.getByLabel(/password/i).fill('ValidPassword123');
-  await page.getByLabel(/display name/i).fill(displayName);
-  await page.getByRole('button', { name: /create account/i }).click();
+  const register = new RegisterPage(page);
+  await register.register(email, 'ValidPassword123', displayName);
 
-  // Select first plan
-  await page.getByRole('button', { name: /select plan/i }).first().click();
-  await page.waitForURL(/\/setup/);
+  const planSelection = new PlanSelectionPage(page);
+  await planSelection.selectFirstPlan();
 
-  // Fill 1RMs
-  await expect(page.getByRole('heading', { name: /enter your 1 rep maxes/i })).toBeVisible();
-  await page.getByLabel(/Bench Press/i).fill('100');
-  await page.getByLabel(/^Squat/i).fill('140');
-  await page.getByLabel(/Overhead Press/i).fill('60');
-  await page.getByLabel(/^Deadlift/i).fill('180');
-  await page.getByRole('button', { name: /calculate/i }).click();
-
-  await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
+  const setup = new SetupPage(page);
+  await setup.expectHeading();
+  await setup.fillOneRepMaxes('100', '140', '60', '180');
+  await setup.submitAndWaitForDashboard();
 }
 
 test.describe('Social features', () => {
-  test('friend request, feed event, and leaderboard with two users', async ({ browser }) => {
-    // Give this multi-step test more time than the default
-    test.setTimeout(60000);
+  test.setTimeout(60000);
 
+  test('friend request, feed event, and leaderboard with two users', async ({ browser, baseURL }) => {
     const uniqueA = crypto.randomUUID().slice(0, 8);
     const uniqueB = crypto.randomUUID().slice(0, 8);
     const emailA = `social-a-${uniqueA}@example.com`;
@@ -37,8 +28,8 @@ test.describe('Social features', () => {
     const displayNameA = `Alpha ${uniqueA}`;
     const displayNameB = `Beta ${uniqueB}`;
 
-    const contextA = await browser.newContext({ baseURL: BASE_URL });
-    const contextB = await browser.newContext({ baseURL: BASE_URL });
+    const contextA = await browser.newContext({ baseURL });
+    const contextB = await browser.newContext({ baseURL });
     const pageA = await contextA.newPage();
     const pageB = await contextB.newPage();
 
@@ -78,15 +69,9 @@ test.describe('Social features', () => {
       await pageA.getByRole('link', { name: /start workout/i }).first().click();
       await expect(pageA.getByRole('heading', { name: /day \d/i })).toBeVisible();
 
-      // Complete workout — skip AMRAP, use "complete anyway" dialog
-      await pageA.getByRole('button', { name: /complete workout/i }).click();
-      const confirmDialog = pageA.locator('[data-testid="confirm-dialog"]');
-      const backButton = pageA.getByRole('link', { name: 'Back to Dashboard' });
-      await expect(confirmDialog.or(backButton)).toBeVisible();
-      if (await confirmDialog.isVisible()) {
-        await confirmDialog.getByRole('button', { name: /complete anyway/i }).click();
-      }
-      await expect(backButton).toBeVisible();
+      const workout = new WorkoutPage(pageA);
+      await workout.completeWithDialog();
+      await expect(workout.backToDashboardButton).toBeVisible();
 
       // --- userB's feed shows userA's workout_completed event ---
       // The feed endpoint shows friends' events; userB is a friend of userA
@@ -97,7 +82,7 @@ test.describe('Social features', () => {
 
       // --- Both users check the leaderboard and see each other ---
 
-      // userA navigates back to Social > Leaderboard
+      // userA navigates to Social > Leaderboard
       await pageA.getByRole('link', { name: /social/i }).click();
       await expect(pageA.getByRole('heading', { name: /social/i })).toBeVisible();
       await pageA.getByRole('tab', { name: /leaderboard/i }).click();
