@@ -250,14 +250,11 @@ export function ProgressChart({ history, color, exerciseName, timeRange, planSwi
               )
             })}
 
-            {planSwitches?.filter((ps) => {
-              const d = new Date(ps.date)
-              d.setHours(0, 0, 0, 0)
-              return d.getTime() >= minDate && d.getTime() <= maxDate
-            }).map((ps) => {
+            {planSwitches?.flatMap((ps) => {
               const d = new Date(ps.date)
               d.setHours(0, 0, 0, 0)
               const ts = d.getTime()
+              if (ts < minDate || ts > maxDate) return []
               const x = scaleX(ts)
               const label = ps.planName.length > 10 ? '▲ Plan' : `▲ ${ps.planName}`
               return (

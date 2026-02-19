@@ -58,8 +58,13 @@ if (config.nodeEnv === 'test' || config.nodeEnv === 'development') {
   });
 
   // Create a backdated TM entry for testing progress charts
+  // Body: { exerciseSlug: string, weight: number, daysAgo: number }
   app.post('/api/dev/backdate-tm', authenticate, async (req: AuthRequest, res) => {
     const { exerciseSlug, weight, daysAgo } = req.body;
+    if (typeof exerciseSlug !== 'string' || typeof weight !== 'number' || typeof daysAgo !== 'number') {
+      res.status(400).json({ error: 'Required: exerciseSlug (string), weight (number), daysAgo (number)' });
+      return;
+    }
     const exercise = await prisma.exercise.findUnique({ where: { slug: exerciseSlug } });
     if (!exercise) { res.status(400).json({ error: 'Exercise not found' }); return; }
     const date = new Date();
