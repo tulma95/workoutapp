@@ -1,0 +1,195 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--space-sm);
+  padding: var(--space-md);
+}
+
+.sectionHeading {
+  margin: 0 0 var(--space-md) 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Send form */
+
+.sendForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.sendRow {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: flex-start;
+}
+
+.emailInput {
+  flex: 1;
+  min-height: 3rem;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--border);
+  border-radius: var(--space-sm);
+  font-size: 1rem;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.emailInput:focus {
+  outline: 0.125rem solid var(--primary);
+  outline-offset: -1px;
+  border-color: var(--primary);
+}
+
+.emailInput[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.emailInput[aria-invalid='true']:focus {
+  outline-color: var(--danger);
+}
+
+.sendBtn {
+  min-height: 3rem;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--space-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sendBtn:hover:not(:disabled) {
+  background: var(--primary-dark);
+}
+
+.sendBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.successMsg {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--success);
+}
+
+.errorMsg {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--danger);
+}
+
+/* Shared list */
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--space-sm);
+  min-height: 3rem;
+}
+
+.displayName {
+  font-weight: 500;
+  color: var(--text);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Action buttons shared base */
+
+.actions {
+  display: flex;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
+
+.acceptBtn,
+.declineBtn,
+.removeBtn {
+  min-height: 3rem;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--space-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.acceptBtn:disabled,
+.declineBtn:disabled,
+.removeBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.acceptBtn {
+  background: var(--success);
+  color: #fff;
+  border: none;
+}
+
+.acceptBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.declineBtn {
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.declineBtn:hover:not(:disabled) {
+  background: var(--bg);
+}
+
+.removeBtn {
+  background: var(--bg-card);
+  color: var(--danger);
+  border: 1px solid var(--border);
+}
+
+.removeBtn:hover:not(:disabled) {
+  background: var(--bg);
+}
+
+/* Empty state */
+
+.emptyMsg {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
