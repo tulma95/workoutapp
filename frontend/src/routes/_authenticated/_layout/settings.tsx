@@ -93,9 +93,9 @@ function SettingsPage() {
 
   const scheduleMutation = useMutation({
     mutationFn: saveSchedule,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.setQueryData(['schedule'], data)
-      queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
+      await queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
     },
   })
 
