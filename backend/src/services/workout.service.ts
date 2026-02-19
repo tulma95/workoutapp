@@ -332,13 +332,6 @@ export async function completeWorkout(workoutId: number, userId: number) {
     // Plan-driven progression logic
     const progressionSets = workout.sets.filter((s) => s.isProgression && s.actualReps !== null);
 
-    const progressions: Array<{
-      exercise: string;
-      previousTM: number;
-      newTM: number;
-      increase: number;
-    }> = [];
-
     // Hoist planDay query outside the loop — it is always the same planDayId
     const planDay = await prisma.planDay.findUnique({
       where: { id: workout.planDayId },
@@ -363,6 +356,19 @@ export async function completeWorkout(workoutId: number, userId: number) {
         tmByExerciseId.set(row.exerciseId, row);
       }
     }
+
+    // Compute all TM increases to apply (reads only, no writes yet)
+    type ProgressionWrite = {
+      exerciseId: number;
+      exerciseName: string;
+      exerciseSlug: string;
+      currentTM: number;
+      newTM: number;
+      increase: number;
+    };
+    const progressionWrites: ProgressionWrite[] = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     for (const progressionSet of progressionSets) {
       const actualReps = progressionSet.actualReps;
@@ -407,59 +413,74 @@ export async function completeWorkout(workoutId: number, userId: number) {
 
       // Get current TM for this exercise from pre-fetched batch
       const currentTMRow = tmByExerciseId.get(exercise.id);
-
       if (!currentTMRow) continue;
 
-      const currentTMKg = currentTMRow.weight.toNumber();
-      const newWeightKg = currentTMKg + increase;
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      // Create new TM row linked to this workout
-      await prisma.trainingMax.upsert({
-        where: {
-          userId_exerciseId_effectiveDate: {
-            userId,
-            exerciseId: exercise.id,
-            effectiveDate: today,
-          },
-        },
-        update: { weight: newWeightKg, previousWeight: currentTMKg, workoutId },
-        create: {
-          userId,
-          exerciseId: exercise.id,
-          weight: newWeightKg,
-          previousWeight: currentTMKg,
-          workoutId,
-          effectiveDate: today,
-        },
-      });
-
-      logger.info('TM progression (plan-driven)', {
-        exercise: exercise.slug,
-        previousTM: currentTMKg,
-        newTM: newWeightKg,
-        increase,
-      });
-
-      progressions.push({
-        exercise: exercise.name,
-        previousTM: currentTMKg,
-        newTM: newWeightKg,
+      progressionWrites.push({
+        exerciseId: exercise.id,
+        exerciseName: exercise.name,
+        exerciseSlug: exercise.slug,
+        currentTM: currentTMRow.weight.toNumber(),
+        newTM: currentTMRow.weight.toNumber() + increase,
         increase,
       });
     }
 
-    // Mark workout completed
-    const completed = await prisma.workout.update({
-      where: { id: workoutId },
-      data: { status: 'completed', completedAt: new Date() },
-      include: {
-        sets: {
-          orderBy: [{ exerciseOrder: 'asc' }, { setOrder: 'asc' }],
-          include: { exercise: true }
-        }
-      },
+    // Wrap all writes (TM upserts + workout status update) in a single transaction
+    const { completed, progressions } = await prisma.$transaction(async (tx) => {
+      const progressions: Array<{
+        exercise: string;
+        previousTM: number;
+        newTM: number;
+        increase: number;
+      }> = [];
+
+      for (const pw of progressionWrites) {
+        await tx.trainingMax.upsert({
+          where: {
+            userId_exerciseId_effectiveDate: {
+              userId,
+              exerciseId: pw.exerciseId,
+              effectiveDate: today,
+            },
+          },
+          update: { weight: pw.newTM, previousWeight: pw.currentTM, workoutId },
+          create: {
+            userId,
+            exerciseId: pw.exerciseId,
+            weight: pw.newTM,
+            previousWeight: pw.currentTM,
+            workoutId,
+            effectiveDate: today,
+          },
+        });
+
+        logger.info('TM progression (plan-driven)', {
+          exercise: pw.exerciseSlug,
+          previousTM: pw.currentTM,
+          newTM: pw.newTM,
+          increase: pw.increase,
+        });
+
+        progressions.push({
+          exercise: pw.exerciseName,
+          previousTM: pw.currentTM,
+          newTM: pw.newTM,
+          increase: pw.increase,
+        });
+      }
+
+      const completed = await tx.workout.update({
+        where: { id: workoutId },
+        data: { status: 'completed', completedAt: new Date() },
+        include: {
+          sets: {
+            orderBy: [{ exerciseOrder: 'asc' }, { setOrder: 'asc' }],
+            include: { exercise: true }
+          }
+        },
+      });
+
+      return { completed, progressions };
     });
 
     logger.info('Workout completed', {
@@ -474,15 +495,17 @@ export async function completeWorkout(workoutId: number, userId: number) {
 
   // No plan day ID - this workout was created without a plan (legacy data)
   // Mark it as completed without progression
-  const completed = await prisma.workout.update({
-    where: { id: workoutId },
-    data: { status: 'completed', completedAt: new Date() },
-    include: {
-      sets: {
-        orderBy: [{ exerciseOrder: 'asc' }, { setOrder: 'asc' }],
-        include: { exercise: true }
-      }
-    },
+  const completed = await prisma.$transaction(async (tx) => {
+    return tx.workout.update({
+      where: { id: workoutId },
+      data: { status: 'completed', completedAt: new Date() },
+      include: {
+        sets: {
+          orderBy: [{ exerciseOrder: 'asc' }, { setOrder: 'asc' }],
+          include: { exercise: true }
+        }
+      },
+    });
   });
 
   logger.info('Workout completed (no plan)', { workoutId, dayNumber: workout.dayNumber, userId });

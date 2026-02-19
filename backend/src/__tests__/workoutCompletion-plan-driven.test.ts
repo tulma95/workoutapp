@@ -347,4 +347,42 @@ describe('Workout Completion - Plan-Driven', () => {
       expect(tm?.exerciseId).toBe(benchExId);
     });
   });
+
+  describe('Transaction atomicity', () => {
+    it('commits both TM update and workout status change together', async () => {
+      const tmBefore = await prisma.trainingMax.findFirst({
+        where: { userId, exerciseId: benchExId },
+        orderBy: { effectiveDate: 'desc' },
+      });
+      expect(tmBefore).toBeDefined();
+      const tmWeightBefore = tmBefore!.weight.toNumber();
+
+      const workout = await startAndGetWorkout(1);
+      const progressionSet = workout.sets.find(
+        (s: { exerciseOrder: number; setOrder: number; isProgression: boolean }) =>
+          s.exerciseOrder === 1 && s.isProgression,
+      );
+      expect(progressionSet).toBeDefined();
+
+      await logSetReps(workout.id, progressionSet.id, 3); // 3 reps = +2.5kg for upper body
+
+      const result = await completeWorkout(workout.id);
+      expect(result.workout.status).toBe('completed');
+      expect(result.progressions).toHaveLength(1);
+
+      // Verify both mutations are visible in the DB (atomically committed)
+      const [dbWorkout, dbTM] = await Promise.all([
+        prisma.workout.findUnique({ where: { id: workout.id } }),
+        prisma.trainingMax.findFirst({
+          where: { userId, exerciseId: benchExId },
+          orderBy: { effectiveDate: 'desc' },
+        }),
+      ]);
+
+      // Both writes committed: workout is completed AND TM increased
+      expect(dbWorkout?.status).toBe('completed');
+      expect(dbWorkout?.completedAt).not.toBeNull();
+      expect(dbTM?.weight.toNumber()).toBe(tmWeightBefore + 2.5);
+    });
+  });
 });
