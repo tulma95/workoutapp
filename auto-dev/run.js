@@ -267,7 +267,7 @@ console.log("============================================");
 console.log("  AUTO-DEV: Workout Tracker");
 console.log(`  Model: ${model}`);
 if (phase && phase !== "done") {
-  console.log(`  Resuming: ticket ${state.ticket_id}, phase: ${phase}`);
+  console.log(`  Resuming: ticket ${state.ticket_id || "(not yet picked)"}, phase: ${phase}`);
 } else {
   console.log("  Starting new ticket");
 }
