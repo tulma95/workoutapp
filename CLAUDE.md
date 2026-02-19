@@ -56,8 +56,8 @@ Register -> Dashboard -> /select-plan redirect -> subscribe to plan -> /setup (i
 
 Seeded via `backend/prisma/seed.ts`. 4 lifts tracked: Bench, Squat, OHP, Deadlift. TM = 90% of 1RM.
 
-| Day | Primary (9 sets)        | Secondary (8 sets)                   |
-| --- | ----------------------- | ------------------------------------ |
+| Day | Primary (9 sets)        | Secondary (8 sets)                  |
+| --- | ----------------------- | ----------------------------------- |
 | 1   | Bench Volume (Bench TM) | OHP (OHP TM, 50-70%)                |
 | 2   | Squat (Squat TM)        | Sumo Deadlift (Deadlift TM, 50-70%) |
 | 3   | Bench Heavy (Bench TM)  | Close Grip Bench (Bench TM, 40-60%) |
@@ -134,7 +134,7 @@ npm run dev -w backend    # Express on :3001
 npm run dev -w frontend   # Vite on :5173
 
 # Run tests (starts test DB, migrates, runs backend + E2E tests, cleans up)
-npm test                  # or ./run_test.sh directly
+./run_test.sh
 
 # Prisma commands (MUST run from backend/ directory, not workspace flag)
 cd backend
@@ -156,15 +156,19 @@ npx prisma db seed
 ## Known Gotchas
 
 ### Stale dist/ artifacts
+
 The backend build (`tsc`) does NOT clean `dist/` before compiling. If a source file is moved, the old `.js` remains and shadows the new one. The build script now runs `rm -rf dist && tsc` to prevent this.
 
 ### React StrictMode double-fires useEffect
+
 In dev mode, effects run twice. Guard side-effectful API calls with `useRef`. The WorkoutPage uses `loadingRef` for this.
 
 ### E2E debugging: check backend-test.log
+
 When E2E tests fail, check `backend-test.log` in the project root. Filter with `grep -i "error\|500\|409"` to find API failures the frontend swallows silently.
 
 ### Exercise names vs slugs
+
 The workout API returns `exercise.name` (like "Bench Press") not `exercise.slug` (like "bench-press"). PlanDayExercise has `displayName` (like "Bench Volume") used only on dashboard day cards.
 
 ## Ralph Post-Completion
@@ -189,6 +193,7 @@ Always create a new ticket (`/ticket add`) when you discover a bug, identify a p
 ## Keeping Docs Up to Date
 
 When you add or change API endpoints, DB schema, query keys, or invalidation rules, update the corresponding reference doc:
+
 - New/changed endpoints -> `docs/api-endpoints.md`
 - Schema migrations -> `docs/db-schema.md`
 - New queries or invalidation changes -> `docs/react-query-cache.md`
@@ -198,4 +203,8 @@ Dont use typescript-code-review skill
 
 dont use co-author in commits
 
+Include the active ticket ID in all commit messages. Get the ID via `node --experimental-strip-types docs/backlog/ticket.ts current` and format commits as `feat(027): add achievement badges page`. Use `ticket start <id>` to set the active ticket before starting work.
+
 After committing code, always invoke the `superpowers:requesting-code-review` skill on the recent commits.
+
+!IMPORTANT! ALWAYS USE run_test.sh to run tests !IMPORTANT!

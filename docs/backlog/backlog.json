@@ -24,6 +24,48 @@
     "description": "Keep screen on during active workouts using the Screen Wake Lock API. Auto-acquire on workout page mount, release on leave/complete. Re-acquire on visibilitychange for iOS. No UI needed, graceful no-op on unsupported browsers."
   },
   {
+    "id": "025",
+    "title": "Dynamic exercise list on Progress page",
+    "status": "done",
+    "description": "The Progress page currently hardcodes 4 exercises (Bench, Squat, OHP, Deadlift) in EXERCISE_CONFIGS. Make the exercise list dynamic, driven by the active plan's exercises. This way if a user subscribes to a plan with different exercises, the Progress page adapts automatically."
+  },
+  {
+    "id": "026",
+    "title": "Plan switch marker on progression chart",
+    "status": "backlog",
+    "description": "When a user switches plans, TM values may not be directly comparable (e.g. different TM percentages). Add a visual vertical marker on the progression chart showing when a plan switch occurred, so users understand context for any jumps or drops in TM values."
+  },
+  {
+    "id": "027",
+    "title": "Achievement Badges",
+    "status": "backlog",
+    "description": "Unlock badges for workout milestones. Examples: 'Century Club' (100kg lift), 'Iron Streak' (4 weeks no missed days), 'AMRAP King' (+5 reps on progression set), 'Sunrise Grinder' (workout before 7am). Shareable badge cards. Requires defining achievement criteria, detection logic, and a display page."
+  },
+  {
+    "id": "034",
+    "title": "Rage Quit Button",
+    "status": "backlog",
+    "description": "Bad day? Slam a big red button that discards the workout with a dramatic animation and a random encouraging quote. Uses existing soft-delete (discarded status) under the hood."
+  },
+  {
+    "id": "032",
+    "title": "Workout Wrapped",
+    "status": "backlog",
+    "description": "Monthly/yearly Spotify Wrapped-style summary. Total tonnage lifted, favorite day of week, longest streak, biggest PR, fun comparisons ('You lifted the equivalent of 3 Toyota Corollas this month'). Shareable summary cards."
+  },
+  {
+    "id": "031",
+    "title": "Plate Math Speed Challenge",
+    "status": "backlog",
+    "description": "Mini-game: given a target weight, tap the plates to load the bar as fast as possible. Leaderboard against yourself. Trains useful gym math skills. Frontend-only game mode."
+  },
+  {
+    "id": "033",
+    "title": "Form Check Reminder",
+    "status": "backlog",
+    "description": "Every N workouts at a given weight, nudge: 'You have been at 100kg bench for 6 sessions. Film a form check?' Links to camera. No AI analysis, just the reminder habit to encourage good form."
+  },
+  {
     "id": "014",
     "title": "Quick Rep Edit",
     "status": "backlog",
@@ -142,5 +184,23 @@
     "title": "PWA + Offline",
     "status": "backlog",
     "description": "Convert to PWA for home screen install and offline support. Phase 1: service worker + cached assets via vite-plugin-pwa. Phase 2: IndexedDB for offline workout sessions with mutation queue and sync-on-reconnect. Large effort, phased rollout."
+  },
+  {
+    "id": "029",
+    "title": "Lift Personality Quiz",
+    "status": "backlog",
+    "description": "After 4+ weeks of data, generate a lifter personality based on patterns: 'The Grinder' (always hits exact reps), 'The Sandbagging Overachiever' (smashes AMRAPs), 'The Ghost' (disappears then PRs). Shareable personality card."
+  },
+  {
+    "id": "030",
+    "title": "Gym Bro Trash Talk",
+    "status": "backlog",
+    "description": "AI-generated motivational/trash-talk notifications before workout days. 'Your bench has been stuck at 80kg for 3 weeks. Are you even trying?' Adjustable sass level from encouraging to savage."
+  },
+  {
+    "id": "028",
+    "title": "Gym Soundtrack Mode",
+    "status": "backlog",
+    "description": "Detect tempo of music playing (via mic permission) and pulse the UI to the beat. Rest timer syncs to song endings. Pure vibes, experimental feature."
   }
 ]

@@ -18,3 +18,4 @@ tasks/
 .env
 .ci-artifacts/
 .worktrees/
+.current-ticket

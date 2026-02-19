@@ -103,12 +103,28 @@ Run:
 node --experimental-strip-types docs/backlog/ticket.ts delete <ref>
 ```
 
+### start <pos|id>
+
+Set a ticket as the active working ticket and mark it as in-progress. Writes the ticket ID to `.current-ticket` (gitignored). This ID is used in commit messages.
+
+```bash
+node --experimental-strip-types docs/backlog/ticket.ts start <ref>
+```
+
+### current
+
+Print the current active ticket ID. Use this before committing to get the ticket ID for the commit message prefix.
+
+```bash
+node --experimental-strip-types docs/backlog/ticket.ts current
+```
+
 ### next
 
 Pick the highest-priority backlog ticket and start planning it:
 
 1. Run `node --experimental-strip-types docs/backlog/ticket.ts next` to get the top ticket
-2. Mark it as `planned`: `node --experimental-strip-types docs/backlog/ticket.ts status <id> planned`
+2. Start it: `node --experimental-strip-types docs/backlog/ticket.ts start <id>`
 3. If it has a `doc` path, read the full feature document
 4. Invoke the `superpowers:brainstorming` skill to start designing the implementation for this feature
 

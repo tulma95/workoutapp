@@ -5,7 +5,7 @@
  *
  * Usage: node --experimental-strip-types docs/backlog/ticket.ts <command> [args]
  *
- * Commands: list, add, show, move, status, delete, next, readme
+ * Commands: list, add, show, move, status, delete, next, readme, start, current
  */
 
 const fs = require("node:fs") as typeof import("node:fs");
@@ -41,6 +41,7 @@ const BACKLOG_DIR = __dirname;
 const PROJECT_ROOT = path.resolve(BACKLOG_DIR, "..", "..");
 const BACKLOG_PATH = path.join(BACKLOG_DIR, "backlog.json");
 const README_PATH = path.join(BACKLOG_DIR, "README.md");
+const CURRENT_TICKET_PATH = path.join(PROJECT_ROOT, ".current-ticket");
 
 // ---------------------------------------------------------------------------
 // I/O helpers
@@ -271,6 +272,44 @@ function cmdNext(): void {
   }
 }
 
+function cmdStart(ref: string): void {
+  const tickets = readBacklog();
+  const idx = resolveRef(tickets, ref);
+  const ticket = tickets[idx];
+
+  fs.writeFileSync(CURRENT_TICKET_PATH, ticket.id + "\n");
+
+  if (ticket.status === "backlog") {
+    ticket.status = "in-progress";
+    writeBacklog(tickets);
+    console.log(`[${ticket.id}] "${ticket.title}": backlog -> in-progress`);
+  } else if (ticket.status === "planned") {
+    ticket.status = "in-progress";
+    writeBacklog(tickets);
+    console.log(`[${ticket.id}] "${ticket.title}": planned -> in-progress`);
+  } else {
+    console.log(`[${ticket.id}] "${ticket.title}" (status: ${ticket.status})`);
+  }
+
+  console.log(`Current ticket set to: ${ticket.id}`);
+}
+
+function cmdCurrent(): void {
+  if (!fs.existsSync(CURRENT_TICKET_PATH)) {
+    die("No current ticket set. Use: ticket start <pos|id>");
+  }
+
+  const id = fs.readFileSync(CURRENT_TICKET_PATH, "utf-8").trim();
+  const tickets = readBacklog();
+  const ticket = tickets.find((t) => t.id === id);
+
+  if (!ticket) {
+    die(`Current ticket ID "${id}" not found in backlog`);
+  }
+
+  console.log(ticket.id);
+}
+
 function cmdReadme(): void {
   const tickets = readBacklog();
 
@@ -318,7 +357,7 @@ function cmdReadme(): void {
 const [command, ...commandArgs] = process.argv.slice(2);
 
 if (!command) {
-  die("Usage: ticket.ts <list|add|show|move|status|delete|next|readme> [args]");
+  die("Usage: ticket.ts <list|add|show|move|status|delete|next|readme|start|current> [args]");
 }
 
 switch (command) {
@@ -360,8 +399,17 @@ switch (command) {
     cmdReadme();
     break;
 
+  case "start":
+    if (commandArgs.length === 0) die("Usage: start <pos|id>");
+    cmdStart(commandArgs[0]);
+    break;
+
+  case "current":
+    cmdCurrent();
+    break;
+
   default:
     die(
-      `Unknown command: "${command}". Valid commands: list, add, show, move, status, delete, next, readme`
+      `Unknown command: "${command}". Valid commands: list, add, show, move, status, delete, next, readme, start, current`
     );
 }
