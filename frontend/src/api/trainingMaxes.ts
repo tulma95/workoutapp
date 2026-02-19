@@ -35,10 +35,10 @@ export async function setupTrainingMaxesFromExercises(exerciseTMs: ExerciseTM[])
   return SetupResponseSchema.parse(data);
 }
 
-export async function updateTrainingMax(exercise: string, weight: number): Promise<typeof TrainingMaxSchema._output> {
+export async function updateTrainingMax(exercise: string, weight: number, reason?: string): Promise<typeof TrainingMaxSchema._output> {
   const data = await apiFetch(`/training-maxes/${exercise}`, {
     method: 'PATCH',
-    body: JSON.stringify({ weight }),
+    body: JSON.stringify({ weight, ...(reason ? { reason } : {}) }),
   });
   return TrainingMaxSchema.parse(data);
 }
