@@ -32,7 +32,7 @@
   {
     "id": "026",
     "title": "Plan switch marker on progression chart",
-    "status": "in-progress",
+    "status": "done",
     "description": "When a user switches plans, TM values may not be directly comparable (e.g. different TM percentages). Add a visual vertical marker on the progression chart showing when a plan switch occurred, so users understand context for any jumps or drops in TM values."
   },
   {
