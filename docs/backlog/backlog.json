@@ -262,5 +262,11 @@
     "title": "Validate URL params and query strings with Zod",
     "status": "backlog",
     "description": "Body validation is solid but params/query have gaps: (1) PATCH/DELETE /api/admin/exercises/:id have no isNaN check causing 500s, (2) All :id params allow 0 or negative values, (3) GET /api/workouts/history limit has no upper bound, (4) GET /api/workouts/calendar year has no range bounds, (5) PATCH /api/workouts/:id/sets/:setId never validates :id param. Fix: extend validate middleware or add Zod schemas for params/query on all routes."
+  },
+  {
+    "id": "046",
+    "title": "Flaky E2E: isVisible() snapshot check in rest-timer confirmSet loop",
+    "status": "backlog",
+    "description": "e2e/rest-timer.spec.ts line 79 uses isVisible() (point-in-time snapshot) inside a loop guard before skipRestButton.click(). If the timer banner appears a few ms after the check, the click is never reached. Pre-existing issue found during ticket 040 review."
   }
 ]
