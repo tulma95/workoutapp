@@ -3,12 +3,9 @@
     "enabled": true,
     "autoAllowBashIfSandboxed": true,
     "allowUnsandboxedCommands": false,
-    "excludedCommands": [],
+    "excludedCommands": ["docker:*", "docker-compose:*"],
     "network": {
-      "allowedDomains": [
-        "registry.npmjs.org",
-        "*.npmjs.org"
-      ],
+      "allowedDomains": ["registry.npmjs.org", "*.npmjs.org"],
       "allowLocalBinding": true
     }
   },
