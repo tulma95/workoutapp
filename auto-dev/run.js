@@ -80,35 +80,13 @@ function loadPrompt(name, vars = {}) {
   return text;
 }
 
-// Tools the auto-dev agent is allowed to use.
-// This restricts Claude to only repo-relevant operations — no curl, wget, rm -rf /, etc.
-const ALLOWED_TOOLS = [
-  // File operations (scoped to cwd by default)
-  "Read",
-  "Write",
-  "Edit",
-  "Glob",
-  "Grep",
-  // Bash commands — only whitelisted prefixes
-  "Bash(node *)",
-  "Bash(npm *)",
-  "Bash(npx *)",
-  "Bash(git *)",
-  "Bash(cd *)",
-  "Bash(./run_test.sh *)",
-  "Bash(rm -rf dist *)",
-  "Bash(mkdir *)",
-  "Bash(chmod *)",
-  "Bash(ls *)",
-  "Bash(cat *)",
-  "Bash(wc *)",
-  "Bash(docker *)",
-];
+// Sandbox settings file — OS-level filesystem + network isolation,
+// plus permission allow/deny rules for tool access.
+const SANDBOX_SETTINGS = join(__dirname, "sandbox-settings.json");
 
 function runClaude(prompt, extraFlags = "") {
   const escaped = prompt.replace(/'/g, "'\\''");
-  const toolsArg = ALLOWED_TOOLS.map((t) => `"${t}"`).join(" ");
-  const cmd = `claude -p --permission-mode default --model ${model} --verbose --allowedTools ${toolsArg} ${extraFlags} '${escaped}'`;
+  const cmd = `claude -p --permission-mode default --model ${model} --verbose --settings ${SANDBOX_SETTINGS} ${extraFlags} '${escaped}'`;
 
   try {
     execSync(cmd, {
