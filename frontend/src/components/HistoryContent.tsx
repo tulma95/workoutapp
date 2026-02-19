@@ -73,7 +73,7 @@ export function HistoryContent({
                     className={styles.pickerItem}
                     onClick={() => onSelectWorkout(w.id)}
                   >
-                    Day {w.dayNumber}
+                    {w.dayNumber === 0 ? 'Custom' : `Day ${w.dayNumber}`}
                   </button>
                 ))}
               </div>

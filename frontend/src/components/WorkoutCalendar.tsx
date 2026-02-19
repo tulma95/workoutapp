@@ -10,6 +10,7 @@ interface WorkoutCalendarProps {
   year: number;
   month: number; // 1-indexed (1 = January, 12 = December)
   isLoading?: boolean;
+  onAddCustomWorkout?: (dateKey: string) => void;
 }
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -36,6 +37,7 @@ export default function WorkoutCalendar({
   year,
   month,
   isLoading = false,
+  onAddCustomWorkout,
 }: WorkoutCalendarProps) {
   const currentYear = year;
   const currentMonth = month - 1; // Convert to 0-indexed for Date constructor
@@ -153,6 +155,12 @@ export default function WorkoutCalendar({
   const handleDayClick = (day: typeof calendarDays[0]) => {
     if (day.workouts.length > 0) {
       onSelectDay(day.workouts);
+    } else if (onAddCustomWorkout && day.isCurrentMonth) {
+      const today = new Date();
+      const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      if (day.dateKey <= todayKey) {
+        onAddCustomWorkout(day.dateKey);
+      }
     }
   };
 
@@ -203,7 +211,15 @@ export default function WorkoutCalendar({
                 day.workouts.length > 0 ? styles.workout : ''
               } ${isScheduledOnly ? styles.scheduled : ''}`}
               onClick={() => handleDayClick(day)}
-              disabled={day.workouts.length === 0}
+              disabled={(() => {
+                if (day.workouts.length > 0) return false;
+                if (onAddCustomWorkout && day.isCurrentMonth) {
+                  const today = new Date();
+                  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                  if (day.dateKey <= todayKey) return false;
+                }
+                return true;
+              })()}
               data-testid={isScheduledOnly ? 'calendar-scheduled-day' : undefined}
             >
               <span className={styles.dayNumber}>{day.date}</span>

@@ -32,6 +32,7 @@ export const WorkoutSchema = z.object({
   createdAt: z.string(),
   sets: z.array(WorkoutSetSchema),
   progressions: z.array(ProgressionResultSchema).optional().default([]),
+  isCustom: z.boolean().optional().default(false),
 });
 
 export const WorkoutHistoryItemSchema = z.object({
@@ -40,6 +41,7 @@ export const WorkoutHistoryItemSchema = z.object({
   status: z.enum(['in_progress', 'completed', 'discarded']),
   completedAt: z.string().nullable(),
   createdAt: z.string(),
+  isCustom: z.boolean().optional().default(false),
 });
 
 export const CalendarWorkoutSchema = z.object({
@@ -48,6 +50,7 @@ export const CalendarWorkoutSchema = z.object({
   status: z.enum(['in_progress', 'completed', 'discarded']),
   completedAt: z.string().nullable(),
   createdAt: z.string(),
+  isCustom: z.boolean().optional().default(false),
 });
 
 export const CompleteWorkoutResponseSchema = z.object({

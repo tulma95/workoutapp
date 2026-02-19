@@ -6,6 +6,18 @@ import {
   WorkoutHistoryItemSchema,
   WorkoutCalendarResponseSchema,
 } from './schemas';
+
+export interface CreateCustomWorkoutPayload {
+  date: string;
+  exercises: Array<{
+    exerciseId: number;
+    sets: Array<{
+      weight: number;
+      reps: number;
+    }>;
+  }>;
+}
+
 export type {
   WorkoutSet,
   Workout,
@@ -74,4 +86,12 @@ export async function getWorkoutCalendar(
 ): Promise<typeof WorkoutCalendarResponseSchema._output> {
   const data = await apiFetch(`/workouts/calendar?year=${year}&month=${month}`);
   return WorkoutCalendarResponseSchema.parse(data);
+}
+
+export async function createCustomWorkout(payload: CreateCustomWorkoutPayload): Promise<typeof WorkoutSchema._output> {
+  const data = await apiFetch('/workouts/custom', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  return WorkoutSchema.parse(data);
 }

@@ -54,7 +54,7 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
     <div className={styles.root}>
       <div className={styles.header}>
         <h2 className={styles.title}>
-          Day {workout.dayNumber}{exerciseGroups.length > 0 ? ` - ${exerciseGroups.at(0)?.exercise}` : ''}
+          {workout.isCustom ? 'Custom Workout' : `Day ${workout.dayNumber}`}{exerciseGroups.length > 0 ? ` - ${exerciseGroups.at(0)?.exercise}` : ''}
         </h2>
         <p className={styles.date}>{formatDate(workoutDate)}</p>
         <p className={styles.summary}>{completedSets}/{totalSets} sets</p>

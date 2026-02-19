@@ -15,6 +15,19 @@ export type Exercise = z.infer<typeof ExerciseSchema>;
 
 const ExercisesListSchema = z.array(ExerciseSchema);
 
+const PublicExerciseSchema = z.object({
+  id: z.number(),
+  slug: z.string(),
+  name: z.string(),
+  muscleGroup: z.string().nullable(),
+  category: z.string(),
+  isUpperBody: z.boolean(),
+});
+
+export type PublicExercise = z.infer<typeof PublicExerciseSchema>;
+
+const PublicExercisesListSchema = z.array(PublicExerciseSchema);
+
 export interface CreateExerciseInput {
   slug: string;
   name: string;
@@ -56,4 +69,9 @@ export async function deleteExercise(id: number): Promise<void> {
   await apiFetch(`/admin/exercises/${id}`, {
     method: 'DELETE',
   });
+}
+
+export async function getExerciseList(): Promise<PublicExercise[]> {
+  const data = await apiFetch('/exercises');
+  return PublicExercisesListSchema.parse(data);
 }
