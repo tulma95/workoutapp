@@ -162,6 +162,37 @@ describe('Training Maxes API', () => {
 
       expect(res.status).toBe(400);
     });
+
+    it('stores reason when provided and response includes reason field', async () => {
+      const res = await request(app)
+        .patch('/api/training-maxes/bench-press')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ weight: 100, reason: 'deload reset' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.weight).toBe(100);
+      expect(res.body.reason).toBe('deload reset');
+    });
+
+    it('stores null reason when not provided and response includes null reason', async () => {
+      const res = await request(app)
+        .patch('/api/training-maxes/bench-press')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ weight: 105 });
+
+      expect(res.status).toBe(200);
+      expect(res.body.weight).toBe(105);
+      expect(res.body.reason).toBeNull();
+    });
+
+    it('rejects reason longer than 500 chars with 400', async () => {
+      const res = await request(app)
+        .patch('/api/training-maxes/bench-press')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ weight: 105, reason: 'x'.repeat(501) });
+
+      expect(res.status).toBe(400);
+    });
   });
 
   describe('GET /api/training-maxes/:exercise/history', () => {
@@ -185,6 +216,18 @@ describe('Training Maxes API', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(400);
+    });
+
+    it('includes reason field on history entries', async () => {
+      const res = await request(app)
+        .get('/api/training-maxes/bench-press/history')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.length).toBeGreaterThan(0);
+      for (const entry of res.body) {
+        expect('reason' in entry).toBe(true);
+      }
     });
   });
 

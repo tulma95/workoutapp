@@ -40,6 +40,7 @@ router.post('/setup', validate(setupSchema), async (req: AuthRequest, res: Respo
 
 const updateSchema = z.object({
   weight: z.number().positive(),
+  reason: z.string().max(500).trim().optional(),
 });
 
 router.patch('/:exercise', validate(updateSchema), async (req: AuthRequest, res: Response) => {
@@ -60,7 +61,7 @@ router.patch('/:exercise', validate(updateSchema), async (req: AuthRequest, res:
     return;
   }
 
-  const tm = await trainingMaxService.updateTM(getUserId(req), exercise, req.body.weight);
+  const tm = await trainingMaxService.updateTM(getUserId(req), exercise, req.body.weight, req.body.reason);
   res.json(tm);
 });
 
