@@ -1,5 +1,47 @@
 [
   {
+    "id": "038",
+    "title": "N+1 queries in workout completion logic",
+    "status": "backlog",
+    "description": "The completeWorkout service (workout.service.ts:354-406) runs individual Exercise.findUnique and TrainingMax.findFirst queries inside a loop over progression sets. Should batch-fetch all exercises and current TMs before the loop to avoid N+1."
+  },
+  {
+    "id": "039",
+    "title": "Missing database indexes on foreign keys",
+    "status": "backlog",
+    "description": "Several high-query foreign keys lack explicit indexes: TrainingMax needs @@index([userId, exerciseId]) for 'get current TM' queries (the @@unique includes effectiveDate which is less efficient for latest-TM lookups), Workout needs @@index([userId, createdAt]) for calendar/history queries, UserPlan needs @@index([userId]) for subscription lookups. These become important as data grows."
+  },
+  {
+    "id": "040",
+    "title": "Flaky E2E: replace waitForTimeout in rest-timer tests",
+    "status": "backlog",
+    "description": "rest-timer.spec.ts lines 87 and 111 use page.waitForTimeout(200) before asserting timer is not visible. This is a classic flakiness pattern. Replace with expect(restTimerBanner).not.toBeVisible() which polls automatically. Also line 98 uses page.locator('#rest-timer-enabled') instead of semantic getByRole locator."
+  },
+  {
+    "id": "041",
+    "title": "Unsafe error handling in frontend catch blocks",
+    "status": "backlog",
+    "description": "Multiple frontend files use catch (err: any) and access err.message without type checking: ExerciseFormModal.tsx:76, usePlanEditorState.ts:118, login.tsx:26-28. Should use 'err instanceof Error ? err.message : String(err)' pattern consistently. Also api/client.ts line 53 throws raw response body without wrapping in a proper Error - callers have to guess the shape."
+  },
+  {
+    "id": "042",
+    "title": "Inconsistent getUserId() usage in backend routes",
+    "status": "backlog",
+    "description": "Some routes use the getUserId(req) helper (which throws if userId is missing) while others access req.userId directly (which is typed as optional). Inconsistent files: users.ts:13,28 and trainingMaxes.ts:28,58 use raw req.userId. All authenticated routes should use getUserId(req) for consistency and runtime safety."
+  },
+  {
+    "id": "043",
+    "title": "Missing DATABASE_URL validation in db.ts",
+    "status": "backlog",
+    "description": "backend/src/lib/db.ts passes process.env.DATABASE_URL to PrismaPg without checking if it's defined. If the env var is missing, the error will come from deep inside PrismaPg with a cryptic message. Add an explicit check: if (\\!process.env.DATABASE_URL) throw new Error('DATABASE_URL environment variable is required')."
+  },
+  {
+    "id": "044",
+    "title": "Update CLAUDE.md: vitest fileParallelism is true not false",
+    "status": "backlog",
+    "description": "CLAUDE.md states 'Backend vitest.config.ts uses fileParallelism: false' but the actual config has fileParallelism: true. Either update the docs to match reality, or change the config to false if test isolation requires it. Currently setup.ts only disconnects in afterAll (no table truncation per file), so parallel execution may be intentional."
+  },
+  {
     "id": "021",
     "title": "Workout Schedule",
     "status": "done",
@@ -208,5 +250,11 @@
     "title": "Rename app from nSuns to SetForge",
     "status": "done",
     "description": "Rename all user-facing surfaces: HTML title, PWA manifest, Layout header, SW cache name, E2E test assertions, and CLAUDE.md references"
+  },
+  {
+    "id": "037",
+    "title": "Validate URL params and query strings with Zod",
+    "status": "backlog",
+    "description": "Body validation is solid but params/query have gaps: (1) PATCH/DELETE /api/admin/exercises/:id have no isNaN check causing 500s, (2) All :id params allow 0 or negative values, (3) GET /api/workouts/history limit has no upper bound, (4) GET /api/workouts/calendar year has no range bounds, (5) PATCH /api/workouts/:id/sets/:setId never validates :id param. Fix: extend validate middleware or add Zod schemas for params/query on all routes."
   }
 ]
