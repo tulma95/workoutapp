@@ -12,7 +12,6 @@
 | `['plans']` | All public plans | PlanSelectionPage |
 | `['admin-exercises']` | All exercises (admin) | ExerciseListPage |
 | `['admin-plans']` | All plans (admin) | PlanListPage |
-| `['training-maxes', slug, 'history']` | TM history for exercise | ProgressPage (legacy) |
 | `['progress']` | All exercises with current TMs and TM history | ProgressPage |
 
 ## Invalidation Rules

@@ -2,13 +2,11 @@ import { apiFetch } from './client';
 import {
   TrainingMaxSchema,
   SetupResponseSchema,
-  TrainingMaxHistorySchema,
 } from './schemas';
 export type {
   TrainingMax,
   OneRepMaxes,
   SetupResponse,
-  TrainingMaxHistory,
 } from './schemas';
 
 export interface ExerciseTM {
@@ -43,9 +41,4 @@ export async function updateTrainingMax(exercise: string, weight: number): Promi
     body: JSON.stringify({ weight }),
   });
   return TrainingMaxSchema.parse(data);
-}
-
-export async function getTrainingMaxHistory(exercise: string): Promise<typeof TrainingMaxHistorySchema._output> {
-  const data = await apiFetch(`/training-maxes/${exercise}/history`);
-  return TrainingMaxHistorySchema.parse(data);
 }

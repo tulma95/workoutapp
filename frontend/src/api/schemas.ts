@@ -95,7 +95,6 @@ export const OneRepMaxesSchema = z.object({
 });
 
 export const SetupResponseSchema = z.array(TrainingMaxSchema);
-export const TrainingMaxHistorySchema = z.array(TrainingMaxSchema);
 
 // Plan schemas
 export const ExerciseSchema = z.object({
@@ -228,7 +227,6 @@ export type LoginResponse = z.infer<typeof LoginResponseSchema>;
 export type TrainingMax = z.infer<typeof TrainingMaxSchema>;
 export type OneRepMaxes = z.infer<typeof OneRepMaxesSchema>;
 export type SetupResponse = z.infer<typeof SetupResponseSchema>;
-export type TrainingMaxHistory = z.infer<typeof TrainingMaxHistorySchema>;
 
 export type Exercise = z.infer<typeof ExerciseSchema>;
 export type PlanDayExercise = z.infer<typeof PlanDayExerciseSchema>;
