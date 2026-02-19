@@ -3,10 +3,11 @@
     "enabled": true,
     "autoAllowBashIfSandboxed": true,
     "allowUnsandboxedCommands": false,
-    "excludedCommands": ["docker:*", "docker-compose:*"],
+    "excludedCommands": ["docker *", "docker-compose"],
     "network": {
       "allowedDomains": ["registry.npmjs.org", "*.npmjs.org"],
-      "allowLocalBinding": true
+      "allowLocalBinding": true,
+      "allowUnixSockets": ["/var/run/docker.sock", "~/.docker/run/docker.sock"]
     }
   },
   "permissions": {

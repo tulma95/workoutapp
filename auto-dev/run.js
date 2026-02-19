@@ -88,8 +88,6 @@ function runClaude(prompt, extraFlags = "") {
     "-p",
     "--permission-mode", "bypassPermissions",
     "--model", model,
-    "--verbose",
-    "--output-format", "text",
     "--settings", SANDBOX_SETTINGS,
     ...extraFlags.split(/\s+/).filter(Boolean),
   ];
