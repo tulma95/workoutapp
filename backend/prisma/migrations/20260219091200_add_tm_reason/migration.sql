@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE "training_maxes" ADD COLUMN     "reason" VARCHAR(500);
+ALTER TABLE "training_maxes" ADD COLUMN     "reason" TEXT;
