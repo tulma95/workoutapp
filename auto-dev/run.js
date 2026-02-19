@@ -12,6 +12,7 @@ const STATE_DIR = join(ROOT, ".auto-dev");
 const STATE_FILE = join(STATE_DIR, "state.json");
 const PLAN_FILE = join(STATE_DIR, "plan.md");
 const TASKS_FILE = join(STATE_DIR, "tasks.txt");
+const INSIGHTS_FILE = join(STATE_DIR, "insights.md");
 const LOG_FILE = join(STATE_DIR, "log.txt");
 
 // ─── Args ───
@@ -135,6 +136,7 @@ function archivePreviousRun() {
     [STATE_FILE, "old-state.json"],
     [PLAN_FILE, "old-plan.md"],
     [TASKS_FILE, "old-tasks.txt"],
+    [INSIGHTS_FILE, "old-insights.md"],
     [LOG_FILE, "old-log.txt"],
   ]) {
     if (existsSync(src)) {
@@ -148,6 +150,7 @@ function archivePreviousRun() {
 function phasePlan() {
   log("Phase 1: Picking next ticket and planning...");
   updateState({ phase: "planning", started_at: new Date().toISOString() });
+  writeFileSync(INSIGHTS_FILE, "# Task Insights\n\nNo tasks completed yet.\n");
 
   const prompt = loadPrompt("plan", {
     PLAN_FILE,
@@ -211,6 +214,7 @@ function phaseExecute() {
       TASK_NUM: taskNum,
       TOTAL_TASKS: totalTasks,
       PLAN_FILE,
+      INSIGHTS_FILE,
       TASK_DESCRIPTION: tasks[i],
     });
 
@@ -232,6 +236,7 @@ function phaseFinalize() {
   const prompt = loadPrompt("finalize", {
     TICKET_ID: ticketId,
     PLAN_FILE,
+    INSIGHTS_FILE,
   });
 
   runClaude(prompt, "--max-budget-usd 5");

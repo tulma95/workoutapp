@@ -5,24 +5,34 @@ You are executing task {{TASK_NUM}} of {{TOTAL_TASKS}} from an implementation pl
 ## Full Plan
 Read the plan file at {{PLAN_FILE}} for full context.
 
+## Previous Task Insights
+Read {{INSIGHTS_FILE}} for notes from completed tasks — what was done, gotchas, and decisions made. This helps you understand the current state of the codebase.
+
 ## Your Current Task
 {{TASK_DESCRIPTION}}
 
 ## Instructions
 1. Read CLAUDE.md for project conventions.
 2. Read the plan file for context on the overall ticket.
-3. Implement this specific task:
+3. Read the insights file to understand what previous tasks have done.
+4. Implement this specific task:
    - Write the code changes
    - Write tests as appropriate (backend integration tests, NOT frontend unit tests - see CLAUDE.md)
    - Follow all patterns described in CLAUDE.md
-4. After implementing, verify your changes compile:
+5. After implementing, verify your changes compile:
    - Backend: npm run build -w backend
    - Frontend: cd frontend && npx tsc --build --noEmit
-5. Commit your changes:
+6. Commit your changes:
    - Get the ticket ID: node --experimental-strip-types docs/backlog/ticket.ts current
    - Stage relevant files (not .auto-dev/ files)
    - Commit message format: feat(<ticket-id>): <short description of this task>
    - Do NOT include Co-Authored-By
    - Do NOT push to remote
+7. Append to {{INSIGHTS_FILE}} with this format:
+
+   ## Task {{TASK_NUM}}: <short title>
+   **What was done**: <1-3 sentences on what you implemented and which files changed>
+   **Key decisions**: <any non-obvious choices you made>
+   **Gotchas**: <anything surprising or tricky the next task should know>
 
 IMPORTANT: Only implement this one task. Do not work on other tasks from the plan.

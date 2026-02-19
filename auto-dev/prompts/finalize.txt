@@ -4,7 +4,7 @@ All implementation tasks are complete. Now finalize the work.
 
 ## Steps
 
-1. Read the plan at {{PLAN_FILE}} to understand what was built.
+1. Read the plan at {{PLAN_FILE}} and insights at {{INSIGHTS_FILE}} to understand what was built.
 
 2. Run the full test suite:
    ./run_test.sh
