@@ -10,7 +10,7 @@
 - `GET /api/users/me` | `PATCH /api/users/me`
 - `GET /api/training-maxes` - current TMs (plan-aware: returns TMs for active plan exercises)
 - `POST /api/training-maxes/setup` - accepts both `{ oneRepMaxes }` and `{ exerciseTMs: [{ exerciseId, oneRepMax }] }`
-- `PATCH /api/training-maxes/:exercise` - manual TM override
+- `PATCH /api/training-maxes/:exercise` - manual TM override; accepts `{ weight, reason? }` where `reason` is an optional string (max 500 chars) describing why the TM was changed (e.g. "deload reset", "injury setback")
 - `GET /api/training-maxes/:exercise/history`
 - `GET /api/progress` - all exercises from active plan with current TMs and full TM history; returns `{ exercises: [{ slug, name, currentTM, history: [{ weight, effectiveDate }] }], planSwitches: [{ date, planName }] }` (empty arrays if no active plan; `planSwitches` contains one entry per plan subscription after the first, representing each plan switch)
 - `POST /api/workouts` - `{ dayNumber }` -> generates sets from active plan + TMs
