@@ -103,7 +103,10 @@ function runClaude(prompt, extraFlags = "") {
     input: prompt,
     stdio: ["pipe", "inherit", "inherit"],
     timeout: 15 * 60 * 1000, // 15 min per phase
-    env: { ...process.env },
+    env: {
+      ...process.env,
+      CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS: "1",
+    },
     maxBuffer: 50 * 1024 * 1024,
   });
 
@@ -159,7 +162,7 @@ function phasePlan() {
     TIMESTAMP: new Date().toISOString(),
   });
 
-  runClaude(prompt);
+  runClaude(prompt, "--max-budget-usd 10");
 
   if (!existsSync(TASKS_FILE)) {
     log("ERROR: Planning did not produce tasks file. Aborting.");
