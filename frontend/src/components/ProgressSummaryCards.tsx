@@ -10,14 +10,8 @@ export interface ExerciseConfig {
   color: string
 }
 
-export const EXERCISE_CONFIGS: ExerciseConfig[] = [
-  { slug: 'bench-press', name: 'Bench', color: '#2563eb' },
-  { slug: 'squat', name: 'Squat', color: '#d97706' },
-  { slug: 'ohp', name: 'OHP', color: '#7c3aed' },
-  { slug: 'deadlift', name: 'Deadlift', color: '#059669' },
-]
-
 interface Props {
+  exercises: ExerciseConfig[]
   histories: Map<string, TrainingMax[]>
   timeRange: TimeRange
   selectedExercise: string | null
@@ -44,6 +38,7 @@ function computeGain(history: TrainingMax[], rangeStart: Date | null): number {
 }
 
 export function ProgressSummaryCards({
+  exercises,
   histories,
   timeRange,
   selectedExercise,
@@ -53,7 +48,7 @@ export function ProgressSummaryCards({
 
   return (
     <div className={styles.grid}>
-      {EXERCISE_CONFIGS.map((ex) => {
+      {exercises.map((ex) => {
         const history = histories.get(ex.slug) ?? []
         const currentTM = history[0]?.weight ?? null
         const gain = computeGain(history, rangeStart)
