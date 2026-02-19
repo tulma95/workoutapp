@@ -1,5 +1,11 @@
 [
   {
+    "id": "047",
+    "title": "Custom free-form workout logging",
+    "status": "done",
+    "description": "Allow users to log ad-hoc gym sessions (not from a plan) directly from the calendar view. User can pick a date, add exercises (from existing exercise list), specify sets with reps and weight for each, and save. These custom workouts appear in the calendar and workout history for later review. Key requirements: (1) Add workout entry point from calendar day tap/click, (2) Exercise picker from existing exercises, (3) Per-set logging: weight (kg) and reps, (4) Save as a new workout type (e.g. status=custom or a flag) so it's distinguishable from plan-generated workouts, (5) View saved custom workouts in history/calendar."
+  },
+  {
     "id": "045",
     "title": "Social / Gym Buddy Features",
     "status": "done",
