@@ -385,4 +385,89 @@ describe('Workout Completion - Plan-Driven', () => {
       expect(dbTM?.weight.toNumber()).toBe(tmWeightBefore + 2.5);
     });
   });
+
+  describe('FeedEvent creation on workout completion', () => {
+    it('creates a workout_completed feed event', async () => {
+      const workout = await startAndGetWorkout(1);
+      await completeWorkout(workout.id);
+
+      const events = await prisma.feedEvent.findMany({
+        where: { userId, eventType: 'workout_completed' },
+      });
+
+      const event = events.find(
+        (e) => (e.payload as { workoutId: number }).workoutId === workout.id,
+      );
+      expect(event).toBeDefined();
+      expect((event!.payload as { workoutId: number; dayNumber: number }).dayNumber).toBe(1);
+    });
+
+    it('creates tm_increased feed events matching progression count', async () => {
+      const workout = await startAndGetWorkout(1);
+      const progressionSet = workout.sets.find((s: { isProgression: boolean }) => s.isProgression);
+      expect(progressionSet).toBeDefined();
+
+      await logSetReps(workout.id, progressionSet.id, 3); // 3 reps = +2.5kg for upper body
+
+      const countBefore = await prisma.feedEvent.count({
+        where: { userId, eventType: 'tm_increased' },
+      });
+
+      const result = await completeWorkout(workout.id);
+      expect(result.progressions).toHaveLength(1);
+
+      const countAfter = await prisma.feedEvent.count({
+        where: { userId, eventType: 'tm_increased' },
+      });
+
+      expect(countAfter - countBefore).toBe(1); // event count matches progression count
+    });
+
+    it('creates no tm_increased events when there are no progressions', async () => {
+      const workout = await startAndGetWorkout(1);
+      // Complete without logging any reps — no actualReps means no progression
+
+      const countBefore = await prisma.feedEvent.count({
+        where: { userId, eventType: 'tm_increased' },
+      });
+
+      const result = await completeWorkout(workout.id);
+      expect(result.progressions).toHaveLength(0);
+
+      const countAfter = await prisma.feedEvent.count({
+        where: { userId, eventType: 'tm_increased' },
+      });
+
+      expect(countAfter).toBe(countBefore);
+    });
+
+    it('creates tm_increased event count matching multiple progressions', async () => {
+      const workout = await startAndGetWorkout(2);
+
+      const squatProgressionSet = workout.sets.find(
+        (s: { exercise: string; isProgression: boolean }) => s.exercise === 'Squat' && s.isProgression,
+      );
+      const deadliftProgressionSet = workout.sets.find(
+        (s: { exercise: string; isProgression: boolean }) => s.exercise === 'Deadlift' && s.isProgression,
+      );
+      expect(squatProgressionSet).toBeDefined();
+      expect(deadliftProgressionSet).toBeDefined();
+
+      await logSetReps(workout.id, squatProgressionSet.id, 4);
+      await logSetReps(workout.id, deadliftProgressionSet.id, 6);
+
+      const countBefore = await prisma.feedEvent.count({
+        where: { userId, eventType: 'tm_increased' },
+      });
+
+      const result = await completeWorkout(workout.id);
+      expect(result.progressions).toHaveLength(2);
+
+      const countAfter = await prisma.feedEvent.count({
+        where: { userId, eventType: 'tm_increased' },
+      });
+
+      expect(countAfter - countBefore).toBe(2); // event count matches progression count (2)
+    });
+  });
 });

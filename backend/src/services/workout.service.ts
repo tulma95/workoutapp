@@ -425,7 +425,7 @@ export async function completeWorkout(workoutId: number, userId: number) {
       });
     }
 
-    // Wrap all writes (TM upserts + workout status update) in a single transaction
+    // Wrap all writes (TM upserts + workout status update + feed events) in a single transaction
     const { completed, progressions } = await prisma.$transaction(async (tx) => {
       const progressions: Array<{
         exercise: string;
@@ -479,6 +479,31 @@ export async function completeWorkout(workoutId: number, userId: number) {
           }
         },
       });
+
+      // Create workout_completed feed event
+      await tx.feedEvent.createMany({
+        data: [{
+          userId,
+          eventType: 'workout_completed',
+          payload: { workoutId, dayNumber: workout.dayNumber },
+        }],
+      });
+
+      // Create tm_increased feed events (one per TM progression)
+      if (progressionWrites.length > 0) {
+        await tx.feedEvent.createMany({
+          data: progressionWrites.map((pw) => ({
+            userId,
+            eventType: 'tm_increased',
+            payload: {
+              exerciseSlug: pw.exerciseSlug,
+              exerciseName: pw.exerciseName,
+              newTM: pw.newTM,
+              increase: pw.increase,
+            },
+          })),
+        });
+      }
 
       return { completed, progressions };
     });
