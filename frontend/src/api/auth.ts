@@ -1,4 +1,5 @@
 import { LoginResponseSchema } from './schemas';
+import { ApiError } from './client';
 export type { User, LoginResponse } from './schemas';
 
 export async function login(email: string, password: string) {
@@ -10,7 +11,7 @@ export async function login(email: string, password: string) {
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: { message: 'Login failed' } }));
-    throw body;
+    throw new ApiError(body.error?.message || res.statusText, res.status);
   }
 
   const data = await res.json();
@@ -30,7 +31,7 @@ export async function register(
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: { message: 'Registration failed' } }));
-    throw body;
+    throw new ApiError(body.error?.message || res.statusText, res.status);
   }
 
   const data = await res.json();

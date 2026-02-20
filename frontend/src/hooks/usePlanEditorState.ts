@@ -115,8 +115,8 @@ export function usePlanEditorState(planId?: string) {
     try {
       const data = await getExercises();
       setExercises(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load exercises');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load exercises');
     }
   }
 
@@ -162,8 +162,8 @@ export function usePlanEditorState(planId?: string) {
         increase: Number(rule.increase),
       }));
       setProgressionRules(editorRules);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load plan');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load plan');
     } finally {
       setLoading(false);
     }
@@ -489,8 +489,8 @@ export function usePlanEditorState(planId?: string) {
         await queryClient.invalidateQueries({ queryKey: ['admin-plans'] });
         navigate({ to: '/admin/plans/$id', params: { id: String(savedPlanId) } });
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to save plan');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save plan');
     } finally {
       setSaving(false);
     }

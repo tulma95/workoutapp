@@ -73,8 +73,8 @@ export function ExerciseFormModal({ exercise, onClose, onSubmit }: ExerciseFormM
 
       await onSubmit(input);
       onClose();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setSubmitting(false);
     }

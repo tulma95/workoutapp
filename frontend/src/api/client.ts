@@ -1,3 +1,13 @@
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public status?: number,
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
 let isRefreshing = false;
 
 export async function apiFetch(path: string, options?: RequestInit): Promise<unknown> {
@@ -50,7 +60,7 @@ export async function apiFetch(path: string, options?: RequestInit): Promise<unk
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: { message: res.statusText } }));
-    throw body;
+    throw new ApiError(body.error?.message || res.statusText, res.status);
   }
 
   return res.json();

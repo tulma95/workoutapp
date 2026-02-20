@@ -22,11 +22,8 @@ function LoginPage() {
     try {
       await login(email, password)
       navigate({ to: '/' })
-    } catch (err: unknown) {
-      const msg = err && typeof err === 'object' && 'error' in err
-        ? (err as { error: { message: string } }).error.message
-        : 'Invalid email or password'
-      setError(msg)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Invalid email or password')
     } finally {
       setLoading(false)
     }
