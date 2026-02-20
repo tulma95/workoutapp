@@ -20,6 +20,7 @@ function HistoryPage() {
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1)
   const [customWorkoutDate, setCustomWorkoutDate] = useState<string | null>(null)
+  const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null)
   const dialogRef = useRef<HTMLDialogElement>(null)
 
   const {
@@ -42,6 +43,7 @@ function HistoryPage() {
     setCurrentMonth(month)
     setSelectedWorkout(null)
     setDayWorkouts(null)
+    setSelectedDateKey(null)
   }
 
   const handleSelectDay = async (workouts: CalendarWorkout[]) => {
@@ -50,6 +52,16 @@ function HistoryPage() {
       await handleSelectWorkout(workouts[0]!.id)
     } else {
       setDayWorkouts(workouts)
+    }
+  }
+
+  const handleDayClick = (dateKey: string, workouts: CalendarWorkout[]) => {
+    setSelectedDateKey(dateKey)
+    if (workouts.length > 0) {
+      handleSelectDay(workouts)
+    } else {
+      setSelectedWorkout(null)
+      setDayWorkouts(null)
     }
   }
 
@@ -106,11 +118,12 @@ function HistoryPage() {
         currentYear={currentYear}
         currentMonth={currentMonth}
         onMonthChange={handleMonthChange}
-        onSelectDay={handleSelectDay}
+        onDayClick={handleDayClick}
         onSelectWorkout={handleSelectWorkout}
         onDeleteWorkout={handleDeleteWorkout}
         onRetry={() => refetchCalendar()}
         onAddCustomWorkout={handleAddCustomWorkout}
+        selectedDateKey={selectedDateKey ?? undefined}
       />
 
       <CustomWorkoutModal

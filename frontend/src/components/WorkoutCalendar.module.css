@@ -161,6 +161,11 @@
   border: 1.5px dashed var(--primary);
 }
 
+.selected {
+  border: 2px solid var(--primary);
+  background-color: rgba(37, 99, 235, 0.12);
+}
+
 .scheduledBadge {
   position: absolute;
   top: 2px;

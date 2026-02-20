@@ -16,11 +16,12 @@ type Props = {
   currentYear: number
   currentMonth: number
   onMonthChange: (year: number, month: number, direction: 'prev' | 'next') => void
-  onSelectDay: (workouts: CalendarWorkout[]) => void
+  onDayClick: (dateKey: string, workouts: CalendarWorkout[]) => void
   onSelectWorkout: (workoutId: number) => void
   onDeleteWorkout?: () => void
   onRetry: () => void
   onAddCustomWorkout?: (dateKey: string) => void
+  selectedDateKey?: string
 }
 
 export function HistoryContent({
@@ -35,14 +36,38 @@ export function HistoryContent({
   currentYear,
   currentMonth,
   onMonthChange,
-  onSelectDay,
+  onDayClick,
   onSelectWorkout,
   onDeleteWorkout,
   onRetry,
   onAddCustomWorkout,
+  selectedDateKey,
 }: Props) {
   const hasAnyWorkouts = calendarWorkouts.length > 0
   const showPicker = dayWorkouts && dayWorkouts.length > 1 && !selectedWorkout && !isLoadingWorkout
+
+  const showAddCustomWorkoutButton = (() => {
+    if (!selectedDateKey || !onAddCustomWorkout) return false
+
+    const [yearStr, monthStr] = selectedDateKey.split('-')
+    const selYear = parseInt(yearStr!)
+    const selMonth = parseInt(monthStr!) // 1-indexed
+
+    if (selYear !== currentYear || selMonth !== currentMonth) return false
+
+    const today = new Date()
+    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+    if (selectedDateKey > todayKey) return false
+
+    const hasWorkouts = calendarWorkouts.some(w => {
+      const dateStr = w.completedAt || w.createdAt
+      const date = new Date(dateStr)
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+      return key === selectedDateKey
+    })
+
+    return !hasWorkouts
+  })()
 
   return (
     <div className={styles.page}>
@@ -58,13 +83,22 @@ export function HistoryContent({
           <WorkoutCalendar
             workouts={calendarWorkouts}
             scheduledDays={scheduledDays}
-            onSelectDay={onSelectDay}
+            onDayClick={onDayClick}
             onMonthChange={onMonthChange}
             year={currentYear}
             month={currentMonth}
             isLoading={!isLoadingCalendar && isFetchingCalendar}
-            onAddCustomWorkout={onAddCustomWorkout}
+            selectedDateKey={selectedDateKey}
           />
+
+          {showAddCustomWorkoutButton && (
+            <button
+              className={styles.addCustomWorkoutButton}
+              onClick={() => onAddCustomWorkout!(selectedDateKey!)}
+            >
+              Add Custom Workout
+            </button>
+          )}
 
           <div className={styles.detail}>
             {showPicker ? (

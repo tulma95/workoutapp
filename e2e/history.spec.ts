@@ -173,3 +173,104 @@ test.describe('Workout History', () => {
     await expect(history.calendarGrid).toBeVisible();
   });
 });
+
+test.describe('Calendar day selection', () => {
+  test('clicking an empty past/today day selects it and shows Add Custom Workout button', async ({ setupCompletePage }) => {
+    const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const history = new HistoryPage(page);
+
+    await dashboard.expectLoaded();
+    await history.navigate();
+    await history.expectLoaded();
+
+    const today = new Date().getDate();
+    // Click today (no workouts yet) - should select it without opening modal
+    await history.calendarGrid.getByRole('button').filter({ hasText: today.toString() }).first().click();
+
+    // "Add Custom Workout" button should appear below the calendar
+    await expect(page.getByRole('button', { name: /add custom workout/i })).toBeVisible();
+
+    // Modal should NOT be open yet
+    await expect(page.getByTestId('custom-workout-modal')).not.toBeVisible();
+  });
+
+  test('clicking Add Custom Workout button opens modal with correct date pre-filled', async ({ setupCompletePage }) => {
+    const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const history = new HistoryPage(page);
+
+    await dashboard.expectLoaded();
+    await history.navigate();
+    await history.expectLoaded();
+
+    const today = new Date().getDate();
+    await history.calendarGrid.getByRole('button').filter({ hasText: today.toString() }).first().click();
+    await page.getByRole('button', { name: /add custom workout/i }).click();
+
+    await expect(page.getByTestId('custom-workout-modal')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /log custom workout/i })).toBeVisible();
+
+    // Date input should be pre-filled with today
+    const expectedDate = await page.evaluate(() => new Date().toLocaleDateString('en-CA'));
+    await expect(page.getByLabel('Date')).toHaveValue(expectedDate);
+  });
+
+  test('clicking a different empty day changes selection', async ({ setupCompletePage }) => {
+    const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const history = new HistoryPage(page);
+
+    await dashboard.expectLoaded();
+    await history.navigate();
+    await history.expectLoaded();
+
+    const today = new Date();
+    const todayDate = today.getDate();
+
+    // Only run this test if today is not the 1st (so we have a previous day to click)
+    if (todayDate > 1) {
+      const yesterday = todayDate - 1;
+
+      // Click today first
+      await history.calendarGrid.getByRole('button').filter({ hasText: todayDate.toString() }).first().click();
+      await expect(page.getByRole('button', { name: /add custom workout/i })).toBeVisible();
+
+      // Click yesterday - selection changes, button still visible
+      await history.calendarGrid.getByRole('button').filter({ hasText: yesterday.toString() }).first().click();
+      await expect(page.getByRole('button', { name: /add custom workout/i })).toBeVisible();
+    } else {
+      // Skip by just verifying the basic selection still works
+      await history.calendarGrid.getByRole('button').filter({ hasText: todayDate.toString() }).first().click();
+      await expect(page.getByRole('button', { name: /add custom workout/i })).toBeVisible();
+    }
+  });
+
+  test('clicking a day with a workout loads workout detail (no Add Custom Workout button)', async ({ setupCompletePage }) => {
+    const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const history = new HistoryPage(page);
+    const workout = new WorkoutPage(page);
+
+    await dashboard.expectLoaded();
+    await dashboard.startWorkout(1);
+    await workout.expectLoaded(1);
+    await workout.fillAmrap('10');
+    await page.waitForResponse(
+      resp => resp.url().includes('/api/workouts/') && resp.request().method() === 'PATCH' && resp.ok(),
+    );
+    await workout.completeWithDialog();
+    await workout.goBackToDashboard();
+
+    await history.navigateAndWaitForData();
+
+    const today = new Date().getDate();
+    await history.clickDay(today);
+
+    // Workout detail should load
+    await expect(page.getByRole('heading', { name: /day\s*1/i }).first()).toBeVisible();
+
+    // "Add Custom Workout" button should NOT appear (day has a workout)
+    await expect(page.getByRole('button', { name: /add custom workout/i })).not.toBeVisible();
+  });
+});

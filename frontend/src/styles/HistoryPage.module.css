@@ -36,6 +36,26 @@
   font-size: 1rem;
 }
 
+.addCustomWorkoutButton {
+  display: block;
+  width: 100%;
+  max-width: 31.25rem;
+  margin: var(--space-md) auto 0;
+  padding: var(--space-md);
+  min-height: 3rem;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--space-xs);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.addCustomWorkoutButton:hover {
+  background-color: var(--primary-dark);
+}
+
 .picker {
   display: flex;
   flex-direction: column;
