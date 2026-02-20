@@ -18,6 +18,10 @@
 - **user_plans**: `id, user_id (FK), plan_id (FK CASCADE), is_active, started_at, ended_at` — Index: (user_id) optimizes active plan lookups (`WHERE user_id AND is_active = true`).
 - **user_plan_schedules**: `id, user_plan_id (FK user_plans CASCADE), day_number, weekday (0=Sun…6=Sat), created_at` — Unique: (user_plan_id, day_number). Stores which weekday each plan day is scheduled on. Rows are delete-and-recreated on every save (no updatedAt).
 
+## Achievement Tables
+
+- **user_achievements**: `id, user_id (FK users), slug (String — achievement identifier e.g. 'first-blood'), unlocked_at (Timestamptz, default now()), workout_id (FK workouts, nullable, onDelete SetNull)` — Unique: (user_id, slug). Index: (user_id). Stores each achievement a user has unlocked. `skipDuplicates` on insert preserves original `unlocked_at` on double-trigger. `workoutId` links the achievement to the workout that triggered it.
+
 ## Social Tables
 
 - **friendships**: `id, requester_id (FK users), addressee_id (FK users), initiator_id (nullable int — the user who actually sent the request), status (TEXT default 'pending'), created_at, updated_at` — Unique: (requester_id, addressee_id). Indexes: (requester_id), (addressee_id). CHECK constraint `requester_id < addressee_id` enforces canonical ordering (lower user ID is always stored as requester_id regardless of who initiated). `initiator_id` tracks the true sender so `GET /requests` and accept/decline can correctly restrict to the recipient only. Status values: `'pending'`, `'accepted'`, `'declined'`, `'removed'`. Declined/removed rows are reset to `pending` (not blocked by 409) when a new request is sent between the same pair.

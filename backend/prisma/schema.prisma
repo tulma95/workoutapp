@@ -105,6 +105,7 @@ model User {
   sentRequests     Friendship[] @relation("SentRequests")
   receivedRequests Friendship[] @relation("ReceivedRequests")
   feedEvents       FeedEvent[]
+  achievements     UserAchievement[]
 
   @@map("users")
 }
@@ -137,10 +138,11 @@ model Workout {
   completedAt DateTime? @map("completed_at") @db.Timestamptz(3)
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
 
-  user         User          @relation(fields: [userId], references: [id])
-  planDay      PlanDay?      @relation(fields: [planDayId], references: [id])
+  user         User              @relation(fields: [userId], references: [id])
+  planDay      PlanDay?          @relation(fields: [planDayId], references: [id])
   sets         WorkoutSet[]
   progressions TrainingMax[]
+  achievements UserAchievement[]
 
   @@index([userId, status])
   @@map("workouts")
@@ -240,4 +242,19 @@ model FeedEvent {
 
   @@index([userId, createdAt])
   @@map("feed_events")
+}
+
+model UserAchievement {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  slug       String
+  unlockedAt DateTime @default(now()) @map("unlocked_at") @db.Timestamptz(3)
+  workoutId  Int?     @map("workout_id")
+
+  user    User    @relation(fields: [userId], references: [id])
+  workout Workout? @relation(fields: [workoutId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, slug])
+  @@index([userId])
+  @@map("user_achievements")
 }
