@@ -44,7 +44,8 @@
 - `PATCH /api/social/requests/:id/accept` - accept a pending request; returns `{ id, status }`
 - `PATCH /api/social/requests/:id/decline` - decline a pending request; returns `{ id, status }`
 - `DELETE /api/social/friends/:id` - remove a friend (sets status to `'removed'`); returns `{ id, status }`
-- `GET /api/social/feed` - last 20 feed events from confirmed friends ordered by `createdAt DESC`; returns `{ events: [{ id, userId, displayName, eventType, payload, createdAt }] }`
+- `GET /api/social/feed` - last 20 feed events from confirmed friends ordered by `createdAt DESC`; returns `{ events: [{ id, userId, displayName, eventType, payload, createdAt, reactions: [{ emoji, count, reactedByMe }] }] }` — `reactions` is an empty array when no reactions exist
+- `POST /api/social/feed/:eventId/react` - `{ emoji }` (one of `🔥 👏 💀 💪 🤙`) — toggles reaction on/off; 404 if event not found or event owner is not a friend; returns `{ reacted: boolean, count: number }`
 - `GET /api/social/leaderboard` - TM rankings across caller and accepted friends for each exercise in active plan; returns `{ exercises: [{ slug, name, rankings: [{ userId, displayName, weight }] }] }`; returns `{ exercises: [] }` if no active plan
 
 ## Achievement Endpoints (JWT required)

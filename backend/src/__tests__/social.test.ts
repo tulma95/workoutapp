@@ -350,6 +350,178 @@ describe('Social API', () => {
     });
   });
 
+  describe('Feed reactions', () => {
+    let tokenReactA: string;
+    let tokenReactB: string;
+    let tokenReactC: string;
+    let feedEventId: number;
+
+    beforeAll(async () => {
+      const uidReact = randomUUID().slice(0, 8);
+
+      const resA = await request(app).post('/api/auth/register').send({
+        email: `react-a-${uidReact}@example.com`,
+        password: 'password123',
+        displayName: 'React User A',
+      });
+      tokenReactA = resA.body.accessToken;
+      const userIdReactA = resA.body.user.id;
+
+      const resB = await request(app).post('/api/auth/register').send({
+        email: `react-b-${uidReact}@example.com`,
+        password: 'password123',
+        displayName: 'React User B',
+      });
+      tokenReactB = resB.body.accessToken;
+      const userIdReactB = resB.body.user.id;
+
+      const resC = await request(app).post('/api/auth/register').send({
+        email: `react-c-${uidReact}@example.com`,
+        password: 'password123',
+        displayName: 'React User C',
+      });
+      tokenReactC = resC.body.accessToken;
+
+      // Make A and B friends
+      const reqRes = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenReactA}`)
+        .send({ email: `react-b-${uidReact}@example.com` });
+      await request(app)
+        .patch(`/api/social/requests/${reqRes.body.id}/accept`)
+        .set('Authorization', `Bearer ${tokenReactB}`);
+
+      // Create a feed event for B (friend of A)
+      const feedEvent = await prisma.feedEvent.create({
+        data: {
+          userId: userIdReactB,
+          eventType: 'workout_completed',
+          payload: { workoutId: 777, dayNumber: 1 },
+        },
+      });
+      feedEventId = feedEvent.id;
+
+      // Suppress unused variable warning
+      void userIdReactA;
+    });
+
+    it('POST /feed/:eventId/react requires auth', async () => {
+      const res = await request(app)
+        .post(`/api/social/feed/${feedEventId}/react`)
+        .send({ emoji: '🔥' });
+      expect(res.status).toBe(401);
+    });
+
+    it('returns 400 for invalid emoji', async () => {
+      const res = await request(app)
+        .post(`/api/social/feed/${feedEventId}/react`)
+        .set('Authorization', `Bearer ${tokenReactA}`)
+        .send({ emoji: '😀' });
+      expect(res.status).toBe(400);
+    });
+
+    it('returns 404 for non-existent eventId', async () => {
+      const res = await request(app)
+        .post('/api/social/feed/999999999/react')
+        .set('Authorization', `Bearer ${tokenReactA}`)
+        .send({ emoji: '🔥' });
+      expect(res.status).toBe(404);
+    });
+
+    it("returns 404 when reacting to a non-friend's event", async () => {
+      const res = await request(app)
+        .post(`/api/social/feed/${feedEventId}/react`)
+        .set('Authorization', `Bearer ${tokenReactC}`)
+        .send({ emoji: '🔥' });
+      expect(res.status).toBe(404);
+    });
+
+    it('toggle on returns { reacted: true, count: 1 }', async () => {
+      const res = await request(app)
+        .post(`/api/social/feed/${feedEventId}/react`)
+        .set('Authorization', `Bearer ${tokenReactA}`)
+        .send({ emoji: '🔥' });
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ reacted: true, count: 1 });
+    });
+
+    it('toggle off returns { reacted: false, count: 0 }', async () => {
+      const res = await request(app)
+        .post(`/api/social/feed/${feedEventId}/react`)
+        .set('Authorization', `Bearer ${tokenReactA}`)
+        .send({ emoji: '🔥' });
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ reacted: false, count: 0 });
+    });
+
+    it('two users reacting with same emoji gives count: 2', async () => {
+      // A reacts
+      await request(app)
+        .post(`/api/social/feed/${feedEventId}/react`)
+        .set('Authorization', `Bearer ${tokenReactA}`)
+        .send({ emoji: '💪' });
+
+      // Need B to also be friends with B's own event author — B is the event author
+      // B cannot react to their own event (they're not a friend of themselves)
+      // So we need another user who is friends with B
+      // tokenReactB's event — A is already a friend. Let's register user D as friend of B
+      const uidD = randomUUID().slice(0, 8);
+      const resD = await request(app).post('/api/auth/register').send({
+        email: `react-d-${uidD}@example.com`,
+        password: 'password123',
+        displayName: 'React User D',
+      });
+      const tokenD = resD.body.accessToken;
+
+      // Make B and D friends
+      const reqRes2 = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenReactB}`)
+        .send({ email: `react-d-${uidD}@example.com` });
+      await request(app)
+        .patch(`/api/social/requests/${reqRes2.body.id}/accept`)
+        .set('Authorization', `Bearer ${tokenD}`);
+
+      // D also reacts with same emoji
+      const res = await request(app)
+        .post(`/api/social/feed/${feedEventId}/react`)
+        .set('Authorization', `Bearer ${tokenD}`)
+        .send({ emoji: '💪' });
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ reacted: true, count: 2 });
+    });
+
+    it('GET /social/feed includes reactions array with correct reactedByMe', async () => {
+      // A has 💪 reaction on feedEventId (from previous test), D also has 💪
+      // Re-add A's 🔥 reaction (was toggled off)
+      await request(app)
+        .post(`/api/social/feed/${feedEventId}/react`)
+        .set('Authorization', `Bearer ${tokenReactA}`)
+        .send({ emoji: '🔥' });
+
+      const res = await request(app)
+        .get('/api/social/feed')
+        .set('Authorization', `Bearer ${tokenReactA}`);
+      expect(res.status).toBe(200);
+
+      const event = res.body.events.find((e: { id: number }) => e.id === feedEventId);
+      expect(event).toBeDefined();
+      expect(Array.isArray(event.reactions)).toBe(true);
+
+      // 🔥 reaction: A reacted, count=1, reactedByMe=true
+      const fireReaction = event.reactions.find((r: { emoji: string }) => r.emoji === '🔥');
+      expect(fireReaction).toBeDefined();
+      expect(fireReaction.count).toBe(1);
+      expect(fireReaction.reactedByMe).toBe(true);
+
+      // 💪 reaction: A and D reacted, count=2, reactedByMe=true for A
+      const muscleReaction = event.reactions.find((r: { emoji: string }) => r.emoji === '💪');
+      expect(muscleReaction).toBeDefined();
+      expect(muscleReaction.count).toBe(2);
+      expect(muscleReaction.reactedByMe).toBe(true);
+    });
+  });
+
   describe('Leaderboard', () => {
     let tokenLbA: string;
     let userIdLbA: number;

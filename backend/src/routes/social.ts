@@ -25,6 +25,10 @@ const requestSchema = z.object({
   email: z.string().email(),
 });
 
+const reactSchema = z.object({
+  emoji: z.enum(['🔥', '👏', '💀', '💪', '🤙']),
+});
+
 router.post('/request', validate(requestSchema), async (req: AuthRequest, res: Response) => {
   const callerId = getUserId(req);
   const { email } = req.body;
@@ -232,16 +236,91 @@ router.get('/feed', async (req: AuthRequest, res: Response) => {
     },
   });
 
-  const result = events.map((e) => ({
-    id: e.id,
-    userId: e.userId,
-    displayName: e.user.displayName,
-    eventType: e.eventType,
-    payload: e.payload,
-    createdAt: e.createdAt,
-  }));
+  const eventIds = events.map((e) => e.id);
+
+  const allReactions = await prisma.feedEventReaction.findMany({
+    where: { feedEventId: { in: eventIds } },
+  });
+
+  // Group reactions by feedEventId then emoji
+  type ReactionGroup = { count: number; reactedByMe: boolean };
+  const reactionMap = new Map<string, ReactionGroup>();
+  for (const r of allReactions) {
+    const key = `${r.feedEventId}:${r.emoji}`;
+    const existing = reactionMap.get(key);
+    if (existing) {
+      existing.count++;
+      if (r.userId === userId) existing.reactedByMe = true;
+    } else {
+      reactionMap.set(key, { count: 1, reactedByMe: r.userId === userId });
+    }
+  }
+
+  const result = events.map((e) => {
+    // Collect all unique emojis for this event
+    const emojiSet = new Set<string>();
+    for (const r of allReactions) {
+      if (r.feedEventId === e.id) emojiSet.add(r.emoji);
+    }
+    const reactions = Array.from(emojiSet).map((emoji) => {
+      const group = reactionMap.get(`${e.id}:${emoji}`)!;
+      return { emoji, count: group.count, reactedByMe: group.reactedByMe };
+    });
+
+    return {
+      id: e.id,
+      userId: e.userId,
+      displayName: e.user.displayName,
+      eventType: e.eventType,
+      payload: e.payload,
+      createdAt: e.createdAt,
+      reactions,
+    };
+  });
 
   res.json({ events: result });
+});
+
+router.post('/feed/:eventId/react', validate(reactSchema), async (req: AuthRequest, res: Response) => {
+  const userId = getUserId(req);
+  const eventId = parseInt(req.params.eventId as string, 10);
+  if (isNaN(eventId)) {
+    res.status(400).json({ error: { code: 'INVALID_ID', message: 'Invalid event ID' } });
+    return;
+  }
+
+  const { emoji } = req.body as { emoji: string };
+
+  const event = await prisma.feedEvent.findUnique({ where: { id: eventId } });
+  if (!event) {
+    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Feed event not found' } });
+    return;
+  }
+
+  const friendIds = await getAcceptedFriendIds(userId);
+  if (!friendIds.includes(event.userId)) {
+    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Feed event not found' } });
+    return;
+  }
+
+  const existing = await prisma.feedEventReaction.findUnique({
+    where: { feedEventId_userId_emoji: { feedEventId: eventId, userId, emoji } },
+  });
+
+  let reacted: boolean;
+  if (existing) {
+    await prisma.feedEventReaction.delete({ where: { id: existing.id } });
+    reacted = false;
+  } else {
+    await prisma.feedEventReaction.create({ data: { feedEventId: eventId, userId, emoji } });
+    reacted = true;
+  }
+
+  const count = await prisma.feedEventReaction.count({
+    where: { feedEventId: eventId, emoji },
+  });
+
+  res.json({ reacted, count });
 });
 
 router.get('/leaderboard', async (req: AuthRequest, res: Response) => {
