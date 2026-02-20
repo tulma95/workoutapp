@@ -60,10 +60,11 @@ export function CustomWorkoutModal({ open, initialDate, onClose, onSaved }: Cust
 
   useEffect(() => {
     if (open) {
+      setDate(initialDate);
       setExercises([defaultExercise()]);
       setError(null);
     }
-  }, [open]);
+  }, [open, initialDate]);
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDialogElement>) => {
     if (e.target === dialogRef.current) {
