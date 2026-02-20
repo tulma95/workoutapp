@@ -16,10 +16,12 @@ function renderEventText(event: FeedEvent): string | null {
   const payload = parsed.data;
 
   if (payload.eventType === 'workout_completed') {
-    return `${event.displayName} completed Day ${payload.dayNumber}`;
+    const base = `${event.displayName} completed Day ${payload.dayNumber}`;
+    return event.streak >= 2 ? `${base} — ${event.streak}-day streak` : base;
   }
   if (payload.eventType === 'tm_increased') {
-    return `${event.displayName} hit a new ${payload.exerciseName} TM: ${formatWeight(payload.newTM)} (+${formatWeight(payload.increase)})`;
+    const base = `${event.displayName} hit a new ${payload.exerciseName} TM: ${formatWeight(payload.newTM)} (+${formatWeight(payload.increase)})`;
+    return event.streak >= 2 ? `${base} — ${event.streak}-day streak` : base;
   }
   return null;
 }

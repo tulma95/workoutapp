@@ -518,6 +518,189 @@ describe('Social API', () => {
     });
   });
 
+  describe('Streak', () => {
+    let tokenStreakA: string;
+    let tokenStreakB: string;
+    let userIdStreakB: number;
+
+    beforeAll(async () => {
+      const uidStreak = randomUUID().slice(0, 8);
+
+      const resA = await request(app).post('/api/auth/register').send({
+        email: `streak-a-${uidStreak}@example.com`,
+        password: 'password123',
+        displayName: 'Streak User A',
+      });
+      tokenStreakA = resA.body.accessToken;
+
+      const resB = await request(app).post('/api/auth/register').send({
+        email: `streak-b-${uidStreak}@example.com`,
+        password: 'password123',
+        displayName: 'Streak User B',
+      });
+      tokenStreakB = resB.body.accessToken;
+      userIdStreakB = resB.body.user.id;
+
+      // Make A and B friends
+      const reqRes = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenStreakA}`)
+        .send({ email: `streak-b-${uidStreak}@example.com` });
+      await request(app)
+        .patch(`/api/social/requests/${reqRes.body.id}/accept`)
+        .set('Authorization', `Bearer ${tokenStreakB}`);
+    });
+
+    it('friend with no workouts has streak 0 in GET /api/social/friends', async () => {
+      const res = await request(app)
+        .get('/api/social/friends')
+        .set('Authorization', `Bearer ${tokenStreakA}`);
+      expect(res.status).toBe(200);
+      const friend = res.body.friends.find((f: { userId: number }) => f.userId === userIdStreakB);
+      expect(friend).toBeDefined();
+      expect(friend.streak).toBe(0);
+    });
+
+    it('friend with workout only today has streak >= 1', async () => {
+      const today = new Date();
+      await prisma.workout.create({
+        data: {
+          userId: userIdStreakB,
+          dayNumber: 1,
+          status: 'completed',
+          completedAt: today,
+        },
+      });
+
+      const res = await request(app)
+        .get('/api/social/friends')
+        .set('Authorization', `Bearer ${tokenStreakA}`);
+      expect(res.status).toBe(200);
+      const friend = res.body.friends.find((f: { userId: number }) => f.userId === userIdStreakB);
+      expect(friend).toBeDefined();
+      expect(friend.streak).toBeGreaterThanOrEqual(1);
+    });
+
+    it('friend with workouts today and yesterday has streak >= 2', async () => {
+      const yesterday = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000);
+      await prisma.workout.create({
+        data: {
+          userId: userIdStreakB,
+          dayNumber: 1,
+          status: 'completed',
+          completedAt: yesterday,
+        },
+      });
+
+      const res = await request(app)
+        .get('/api/social/friends')
+        .set('Authorization', `Bearer ${tokenStreakA}`);
+      expect(res.status).toBe(200);
+      const friend = res.body.friends.find((f: { userId: number }) => f.userId === userIdStreakB);
+      expect(friend).toBeDefined();
+      expect(friend.streak).toBeGreaterThanOrEqual(2);
+    });
+
+    it('friend with last workout 3 days ago has streak 0', async () => {
+      // Register a separate user so we have a clean slate (no today/yesterday workouts)
+      const uidOld = randomUUID().slice(0, 8);
+      const resOld = await request(app).post('/api/auth/register').send({
+        email: `streak-old-${uidOld}@example.com`,
+        password: 'password123',
+        displayName: 'Streak Old User',
+      });
+      const tokenOld = resOld.body.accessToken;
+      const userIdOld = resOld.body.user.id;
+
+      // Make A friends with old user
+      const reqRes = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenStreakA}`)
+        .send({ email: `streak-old-${uidOld}@example.com` });
+      await request(app)
+        .patch(`/api/social/requests/${reqRes.body.id}/accept`)
+        .set('Authorization', `Bearer ${tokenOld}`);
+
+      // Insert a workout 3 days ago
+      const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+      await prisma.workout.create({
+        data: {
+          userId: userIdOld,
+          dayNumber: 1,
+          status: 'completed',
+          completedAt: threeDaysAgo,
+        },
+      });
+
+      const res = await request(app)
+        .get('/api/social/friends')
+        .set('Authorization', `Bearer ${tokenStreakA}`);
+      expect(res.status).toBe(200);
+      const friend = res.body.friends.find((f: { userId: number }) => f.userId === userIdOld);
+      expect(friend).toBeDefined();
+      expect(friend.streak).toBe(0);
+    });
+
+    it('multiple workouts same day count as streak 1 for that single day', async () => {
+      const uidSingle = randomUUID().slice(0, 8);
+      const resSingle = await request(app).post('/api/auth/register').send({
+        email: `streak-single-${uidSingle}@example.com`,
+        password: 'password123',
+        displayName: 'Streak Single User',
+      });
+      const tokenSingle = resSingle.body.accessToken;
+      const userIdSingle = resSingle.body.user.id;
+
+      // Make A friends with single user
+      const reqRes = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenStreakA}`)
+        .send({ email: `streak-single-${uidSingle}@example.com` });
+      await request(app)
+        .patch(`/api/social/requests/${reqRes.body.id}/accept`)
+        .set('Authorization', `Bearer ${tokenSingle}`);
+
+      // Insert two workouts today
+      const today = new Date();
+      await prisma.workout.createMany({
+        data: [
+          { userId: userIdSingle, dayNumber: 1, status: 'completed', completedAt: today },
+          { userId: userIdSingle, dayNumber: 2, status: 'completed', completedAt: today },
+        ],
+      });
+
+      const res = await request(app)
+        .get('/api/social/friends')
+        .set('Authorization', `Bearer ${tokenStreakA}`);
+      expect(res.status).toBe(200);
+      const friend = res.body.friends.find((f: { userId: number }) => f.userId === userIdSingle);
+      expect(friend).toBeDefined();
+      // Two workouts same day = still only 1 day streak
+      expect(friend.streak).toBe(1);
+    });
+
+    it('GET /api/social/feed events include correct streak field', async () => {
+      // Create a feed event for streakB (who has today + yesterday workouts from earlier tests)
+      await prisma.feedEvent.create({
+        data: {
+          userId: userIdStreakB,
+          eventType: 'workout_completed',
+          payload: { workoutId: 12345, dayNumber: 1 },
+        },
+      });
+
+      const res = await request(app)
+        .get('/api/social/feed')
+        .set('Authorization', `Bearer ${tokenStreakA}`);
+      expect(res.status).toBe(200);
+      const event = res.body.events.find((e: { userId: number }) => e.userId === userIdStreakB);
+      expect(event).toBeDefined();
+      expect(typeof event.streak).toBe('number');
+      // streakB has workouts today and yesterday so streak should be >= 2
+      expect(event.streak).toBeGreaterThanOrEqual(2);
+    });
+  });
+
   describe('Leaderboard', () => {
     let tokenLbA: string;
     let userIdLbA: number;

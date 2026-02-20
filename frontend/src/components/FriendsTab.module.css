@@ -193,3 +193,10 @@
   color: var(--text-muted);
   font-size: 0.875rem;
 }
+
+.streakBadge {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  white-space: nowrap;
+}

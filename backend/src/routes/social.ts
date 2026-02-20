@@ -4,10 +4,43 @@ import { validate } from '../middleware/validate';
 import { authenticate } from '../middleware/auth';
 import { AuthRequest, getUserId } from '../types';
 import prisma from '../lib/db';
+import { calculateStreak } from '../lib/streak';
 
 const router = Router();
 
 router.use(authenticate);
+
+async function getStreaksForUsers(userIds: number[]): Promise<Map<number, number>> {
+  if (userIds.length === 0) return new Map();
+
+  const workouts = await prisma.workout.findMany({
+    where: {
+      userId: { in: userIds },
+      status: 'completed',
+      completedAt: { not: null },
+    },
+    select: { userId: true, completedAt: true },
+  });
+
+  const datesByUser = new Map<number, string[]>();
+  for (const w of workouts) {
+    const dateStr = (w.completedAt as Date).toISOString().slice(0, 10);
+    const existing = datesByUser.get(w.userId);
+    if (existing) {
+      existing.push(dateStr);
+    } else {
+      datesByUser.set(w.userId, [dateStr]);
+    }
+  }
+
+  const streakMap = new Map<number, number>();
+  for (const userId of userIds) {
+    const dates = datesByUser.get(userId) ?? [];
+    streakMap.set(userId, calculateStreak(dates));
+  }
+
+  return streakMap;
+}
 
 async function getAcceptedFriendIds(userId: number): Promise<number[]> {
   const friendships = await prisma.friendship.findMany({
@@ -93,7 +126,15 @@ router.get('/friends', async (req: AuthRequest, res: Response) => {
     return { id: f.id, userId: friend.id, displayName: friend.displayName };
   });
 
-  res.json({ friends });
+  const friendUserIds = friends.map((f) => f.userId);
+  const streakMap = await getStreaksForUsers(friendUserIds);
+
+  const friendsWithStreak = friends.map((f) => ({
+    ...f,
+    streak: streakMap.get(f.userId) ?? 0,
+  }));
+
+  res.json({ friends: friendsWithStreak });
 });
 
 // GET /requests must be registered BEFORE any dynamic /:id route
@@ -256,6 +297,9 @@ router.get('/feed', async (req: AuthRequest, res: Response) => {
     }
   }
 
+  const uniqueUserIds = [...new Set(events.map((e) => e.userId))];
+  const streakMap = await getStreaksForUsers(uniqueUserIds);
+
   const result = events.map((e) => {
     // Collect all unique emojis for this event from the already-built reactionMap
     const prefix = `${e.id}:`;
@@ -275,6 +319,7 @@ router.get('/feed', async (req: AuthRequest, res: Response) => {
       payload: e.payload,
       createdAt: e.createdAt,
       reactions,
+      streak: streakMap.get(e.userId) ?? 0,
     };
   });
 

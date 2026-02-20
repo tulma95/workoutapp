@@ -201,6 +201,9 @@ export function FriendsTab() {
             {friends.map((friend) => (
               <li key={friend.id} className={styles.listItem}>
                 <span className={styles.displayName}>{friend.displayName}</span>
+                {friend.streak >= 2 && (
+                  <span className={styles.streakBadge}>{friend.streak} day streak</span>
+                )}
                 <button
                   className={styles.removeBtn}
                   onClick={() => removeMutation.mutate(friend.id)}

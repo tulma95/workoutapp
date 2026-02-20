@@ -279,6 +279,7 @@ export const FriendSchema = z.object({
   id: z.number(),
   userId: z.number(),
   displayName: z.string(),
+  streak: z.number().default(0),
 });
 
 export const FriendRequestSchema = z.object({
@@ -329,6 +330,7 @@ export const FeedEventSchema = z.object({
   payload: z.record(z.string(), z.unknown()),
   createdAt: z.string(),
   reactions: z.array(FeedReactionSchema).default([]),
+  streak: z.number().default(0),
 });
 
 export const FeedResponseSchema = z.object({
