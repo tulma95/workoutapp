@@ -1,8 +1,14 @@
 [
   {
+    "id": "050",
+    "title": "Calendar improvements: selectable days with custom workout button",
+    "status": "backlog",
+    "description": "Users can click/select days in the calendar. After selecting a day, buttons appear below the calendar to add a custom workout for that date."
+  },
+  {
     "id": "048",
     "title": "Polish custom workout modal: pre-select clicked calendar day",
-    "status": "in-progress",
+    "status": "done",
     "description": "When opening the custom workout modal from a calendar day, the date should be pre-filled with the clicked day so users don't have to pick it again."
   },
   {
