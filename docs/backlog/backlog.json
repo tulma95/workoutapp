@@ -128,7 +128,7 @@
   {
     "id": "058",
     "title": "Feed Event Reactions",
-    "status": "in-progress",
+    "status": "done",
     "description": "React to friends' feed events with quick emoji reactions (fire, clap, skull, flexed bicep, etc.). Tap-to-react on any feed item. Reactions shown as small emoji row under the event. Low-friction social engagement without typing."
   },
   {
