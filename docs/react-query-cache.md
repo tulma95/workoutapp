@@ -41,6 +41,7 @@
 | **Decline friend request** | FriendsTab.tsx | `['social', 'friend-requests']`, `['social', 'friends']` |
 | **Remove friend** | FriendsTab.tsx | `['social', 'friends']`, `['social', 'leaderboard']` |
 | **Send friend request** | FriendsTab.tsx | none (inline success message only) |
+| **Toggle feed reaction** | ReactionBar.tsx | `['social', 'feed']` (via `invalidateQueries` in `onSettled`) |
 
 ## Page Data Dependencies
 

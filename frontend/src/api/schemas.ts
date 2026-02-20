@@ -310,6 +310,17 @@ export const FeedEventPayloadSchema = z.discriminatedUnion('eventType', [
   }),
 ]);
 
+export const FeedReactionSchema = z.object({
+  emoji: z.string(),
+  count: z.number(),
+  reactedByMe: z.boolean(),
+});
+
+export const ReactResponseSchema = z.object({
+  reacted: z.boolean(),
+  count: z.number(),
+});
+
 export const FeedEventSchema = z.object({
   id: z.number(),
   userId: z.number(),
@@ -317,6 +328,7 @@ export const FeedEventSchema = z.object({
   eventType: z.string(),
   payload: z.record(z.string(), z.unknown()),
   createdAt: z.string(),
+  reactions: z.array(FeedReactionSchema).default([]),
 });
 
 export const FeedResponseSchema = z.object({
@@ -343,6 +355,8 @@ export type Friend = z.infer<typeof FriendSchema>;
 export type FriendRequest = z.infer<typeof FriendRequestSchema>;
 export type FeedEventPayload = z.infer<typeof FeedEventPayloadSchema>;
 export type FeedEvent = z.infer<typeof FeedEventSchema>;
+export type FeedReaction = z.infer<typeof FeedReactionSchema>;
+export type ReactResponse = z.infer<typeof ReactResponseSchema>;
 export type LeaderboardRanking = z.infer<typeof LeaderboardRankingSchema>;
 export type LeaderboardExercise = z.infer<typeof LeaderboardExerciseSchema>;
 export type LeaderboardResponse = z.infer<typeof LeaderboardResponseSchema>;

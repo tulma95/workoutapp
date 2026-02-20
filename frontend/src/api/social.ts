@@ -4,12 +4,15 @@ import {
   FriendRequestsResponseSchema,
   FeedResponseSchema,
   LeaderboardResponseSchema,
+  ReactResponseSchema,
 } from './schemas';
 export type {
   Friend,
   FriendRequest,
   FeedEventPayload,
   FeedEvent,
+  FeedReaction,
+  ReactResponse,
   LeaderboardRanking,
   LeaderboardExercise,
   LeaderboardResponse,
@@ -52,4 +55,12 @@ export async function getFeed(): Promise<typeof FeedResponseSchema._output> {
 export async function getLeaderboard(): Promise<typeof LeaderboardResponseSchema._output> {
   const data = await apiFetch('/social/leaderboard');
   return LeaderboardResponseSchema.parse(data);
+}
+
+export async function toggleReaction(eventId: number, emoji: string): Promise<typeof ReactResponseSchema._output> {
+  const data = await apiFetch(`/social/feed/${eventId}/react`, {
+    method: 'POST',
+    body: JSON.stringify({ emoji }),
+  });
+  return ReactResponseSchema.parse(data);
 }
