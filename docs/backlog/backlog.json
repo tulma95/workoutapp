@@ -122,13 +122,13 @@
   {
     "id": "027",
     "title": "Achievement Badges",
-    "status": "in-progress",
+    "status": "done",
     "description": "Unlock badges for workout milestones. Examples: 'Century Club' (100kg lift), 'Iron Streak' (4 weeks no missed days), 'AMRAP King' (+5 reps on progression set), 'Sunrise Grinder' (workout before 7am). Shareable badge cards. Requires defining achievement criteria, detection logic, and a display page."
   },
   {
     "id": "058",
     "title": "Feed Event Reactions",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "React to friends' feed events with quick emoji reactions (fire, clap, skull, flexed bicep, etc.). Tap-to-react on any feed item. Reactions shown as small emoji row under the event. Low-friction social engagement without typing."
   },
   {
@@ -434,5 +434,19 @@
     "status": "backlog",
     "priority": "low",
     "description": "The complete endpoint now returns newAchievements field but api-endpoints.md was not updated to reflect this (fixed in 027)"
+  },
+  {
+    "id": "074",
+    "title": "ReactionBar: block only the clicked emoji during pending mutation, not all emoji buttons",
+    "status": "backlog",
+    "priority": "low",
+    "description": "When a mutation is pending, all 5 emoji buttons are disabled via mutation.isPending. Only the tapped emoji should be blocked. Prevents the user from reacting with a different emoji while one is in flight."
+  },
+  {
+    "id": "075",
+    "title": "Add backend test: user cannot react to their own feed event via direct API call",
+    "status": "backlog",
+    "priority": "low",
+    "description": "The GET /feed endpoint only shows friends' events, so a user cannot see their own events in the UI. However the POST /feed/:eventId/react endpoint only checks friendIds, not event.userId \\!== callerId. A user who knows their own feedEventId can call the react endpoint on it. While the feed won't show their own event, it's an untested edge case. Add a backend test that verifies self-reaction returns 404."
   }
 ]
