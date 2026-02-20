@@ -110,6 +110,27 @@
     "description": "The achievements test suite has a positive test for century-club (bench TM=200) but no negative test confirming it does NOT trigger when all set weights are below 100 kg. The default benchTM=100 users (TM=90) could serve as a negative baseline."
   },
   {
+    "id": "051",
+    "title": "Calendar: selected day indicator does not show date label near Add Custom Workout button",
+    "status": "done",
+    "priority": "low",
+    "description": "After selecting an empty calendar day, the Add Custom Workout button gives no indication of which date was selected. Add a small selected-date label or include the date in the button text for clarity."
+  },
+  {
+    "id": "052",
+    "title": "Calendar: selectedDateKey not cleared after workout deletion causes Add Custom Workout button to appear unsolicited",
+    "status": "backlog",
+    "priority": "medium",
+    "description": "When a workout is deleted from history, selectedDateKey in history.tsx is not cleared. After the calendar refetches, the deleted day now has no workouts, so showAddCustomWorkoutButton becomes true and the button appears without user interaction. Fix: call setSelectedDateKey(null) in handleConfirmDelete."
+  },
+  {
+    "id": "053",
+    "title": "Clear selectedDateKey after custom workout is saved",
+    "status": "backlog",
+    "priority": "low",
+    "description": "After saving a custom workout via the modal, selectedDateKey is not cleared in history.tsx. The Add Custom Workout button correctly disappears once calendarWorkouts refreshes, but the .selected highlight on the calendar day persists until the user clicks another day or changes month. Fix: call setSelectedDateKey(null) in handleCustomWorkoutSaved."
+  },
+  {
     "id": "050",
     "title": "Calendar improvements: selectable days with custom workout button",
     "status": "done",

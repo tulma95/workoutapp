@@ -13,6 +13,7 @@ export default defineConfig({
     screenshot: 'on-first-failure',
     navigationTimeout: 10000,
     actionTimeout: 10000,
+    ignoreHTTPSErrors: true,
   },
   projects: [
     {
