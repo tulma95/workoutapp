@@ -52,7 +52,6 @@ run_e2e_tests() {
 
   test_compose -f "$COMPOSE_FILE" --profile e2e build app
 
-  # DOCKER_BUILDKIT=0 docker compose -f "$COMPOSE_FILE" --profile e2e build
   docker compose -f "$COMPOSE_FILE" --profile e2e build
 
   echo "Docker images built."
