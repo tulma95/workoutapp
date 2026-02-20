@@ -28,7 +28,7 @@
 | **Plan subscription** | select-plan.tsx | remove `['plan', 'current']`, remove `['training-maxes']`, remove `['progress']`, remove `['schedule']`, invalidate `['workout', 'current']` |
 | **TM setup** | setup.tsx | `['training-maxes']`, `['progress']` |
 | **TM manual update** | settings.tsx | `['training-maxes']`, `['progress']` |
-| **Workout complete** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']`, `['training-maxes']`, `['progress']`, `['social', 'feed']`, `['achievements']` |
+| **Workout complete** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']`, `['training-maxes']`, `['progress']`, `['social', 'feed']`, `['social', 'friends']`, `['achievements']` |
 | **Workout cancel** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']` |
 | **Workout delete (history)** | history.tsx | `['workoutCalendar']` |
 | **Custom workout save** | CustomWorkoutModal.tsx | `['workoutCalendar']` |

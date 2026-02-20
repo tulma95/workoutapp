@@ -67,7 +67,7 @@ test.describe('Streak visibility', () => {
       const today = new Date();
       const todayStr = today.toISOString().slice(0, 10);
       const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
+      yesterday.setUTCDate(yesterday.getUTCDate() - 1);
       const yesterdayStr = yesterday.toISOString().slice(0, 10);
 
       for (const date of [todayStr, yesterdayStr]) {

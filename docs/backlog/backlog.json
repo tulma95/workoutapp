@@ -134,7 +134,7 @@
   {
     "id": "056",
     "title": "Workout Streak Visibility",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "Show friends' current workout streaks on the friends list and in the feed. 'Chris is on a 12-day streak 🔥'. Streaks calculated from consecutive scheduled workout completions. Motivates casual users through social proof."
   },
   {
@@ -448,5 +448,33 @@
     "status": "backlog",
     "priority": "low",
     "description": "The GET /feed endpoint only shows friends' events, so a user cannot see their own events in the UI. However the POST /feed/:eventId/react endpoint only checks friendIds, not event.userId \\!== callerId. A user who knows their own feedEventId can call the react endpoint on it. While the feed won't show their own event, it's an untested edge case. Add a backend test that verifies self-reaction returns 404."
+  },
+  {
+    "id": "076",
+    "title": "Add date range filter to streak query to avoid fetching all workout history",
+    "status": "backlog",
+    "priority": "medium",
+    "description": "getStreaksForUsers in social.ts fetches every completed workout for the given user IDs with no date bound. A user with years of history causes a large scan on every GET /api/social/friends and GET /api/social/feed call. The streak only needs the most recent contiguous block; a WHERE completedAt >= NOW() - INTERVAL '365 days' (or similar) would cap the scan with no correctness impact."
+  },
+  {
+    "id": "077",
+    "title": "E2E streak test uses setDate (local) instead of setUTCDate for yesterday calculation — may produce wrong date near midnight in UTC-offset environments",
+    "status": "backlog",
+    "priority": "low",
+    "description": "In e2e/social.spec.ts line 70, yesterday is computed with setDate(getDate() - 1) which uses local time. The streak calculation in the backend uses UTC. In UTC+N timezones, the local date could be one day ahead of UTC, causing the custom workout to be saved with the wrong UTC date and the streak test to fail near midnight. Should use setUTCDate / getUTCDate like the backend does."
+  },
+  {
+    "id": "078",
+    "title": "Add date range filter to streak query to avoid full history scan",
+    "status": "backlog",
+    "priority": "medium",
+    "description": "getStreaksForUsers fetches all completed workouts with no date bound. Add completedAt gte filter (e.g. 366 days) to cap the scan, since no streak can be longer than a year."
+  },
+  {
+    "id": "079",
+    "title": "Fix E2E streak test to use setUTCDate for yesterday calculation",
+    "status": "done",
+    "priority": "low",
+    "description": "E2E streak test uses setDate/getDate (local time) for yesterday but toISOString() returns UTC. Near midnight in UTC-offset timezones this produces the wrong date, causing the 2 day streak assertion to fail."
   }
 ]
