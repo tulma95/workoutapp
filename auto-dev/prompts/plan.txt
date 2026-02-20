@@ -11,7 +11,11 @@ Your job: pick the next ticket and create an implementation plan using two subag
    Read the full ticket details. If it has a doc path, read that file too.
 3. Read CLAUDE.md to understand project conventions.
 
-## Phase 2: Plan via Subagents
+## Phase 1.5: Size Check
+
+After gathering context, assess whether the feature is small enough to implement in a single context window (e.g., touches 2-3 files, no DB migration, straightforward logic). If so, skip the subagent debate and go directly to Phase 3 — write a single-task plan. Don't over-split small work.
+
+## Phase 2: Plan via Subagents (skip for small features)
 
 Use the Task tool to spawn two subagents sequentially:
 
@@ -53,7 +57,8 @@ Write the plan to {{PLAN_FILE}} with this format:
    ## Notes
    <any important context for the executor>
 
-   Keep tasks small and focused. Each should be completable in one context window.
+   For small features, a single TASK covering the whole implementation is fine.
+   For larger features, keep tasks small and focused. Each should be completable in one context window.
    Order tasks by dependency (earlier tasks first).
    Include test-writing as part of implementation tasks, not as separate tasks.
    Combine independent tasks into one [PARALLEL] line separated by ||| — the executor will split and run them concurrently via subagents.
