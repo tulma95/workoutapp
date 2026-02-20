@@ -39,12 +39,12 @@
 ## Social Endpoints (JWT required)
 
 - `POST /api/social/request` - `{ email }` — send friend request; 404 if email not found, 400 if self-friending, 409 if relationship already exists; inserts with canonical ordering (`requesterId = min(callerId, targetId)`)
-- `GET /api/social/friends` - list accepted friends: `{ friends: [{ id, userId, displayName }] }`
+- `GET /api/social/friends` - list accepted friends: `{ friends: [{ id, userId, displayName, streak: number }] }` — `streak` is the number of consecutive calendar days (UTC) the friend has completed at least one workout; 0 if no recent activity
 - `GET /api/social/requests` - list pending friend requests involving the caller: `{ requests: [{ id, requesterId, displayName }] }`
 - `PATCH /api/social/requests/:id/accept` - accept a pending request; returns `{ id, status }`
 - `PATCH /api/social/requests/:id/decline` - decline a pending request; returns `{ id, status }`
 - `DELETE /api/social/friends/:id` - remove a friend (sets status to `'removed'`); returns `{ id, status }`
-- `GET /api/social/feed` - last 20 feed events from confirmed friends ordered by `createdAt DESC`; returns `{ events: [{ id, userId, displayName, eventType, payload, createdAt, reactions: [{ emoji, count, reactedByMe }] }] }` — `reactions` is an empty array when no reactions exist
+- `GET /api/social/feed` - last 20 feed events from confirmed friends ordered by `createdAt DESC`; returns `{ events: [{ id, userId, displayName, eventType, payload, createdAt, streak: number, reactions: [{ emoji, count, reactedByMe }] }] }` — `streak` is the event owner's current workout streak (consecutive calendar days); `reactions` is an empty array when no reactions exist
 - `POST /api/social/feed/:eventId/react` - `{ emoji }` (one of `🔥 👏 💀 💪 🤙`) — toggles reaction on/off; 404 if event not found or event owner is not a friend; returns `{ reacted: boolean, count: number }`
 - `GET /api/social/leaderboard` - TM rankings across caller and accepted friends for each exercise in active plan; returns `{ exercises: [{ slug, name, rankings: [{ userId, displayName, weight }] }] }`; returns `{ exercises: [] }` if no active plan
 

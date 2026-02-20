@@ -16,8 +16,8 @@
 | `['admin-plans']` | All plans (admin) | PlanListPage |
 | `['progress']` | All exercises with current TMs and TM history | ProgressPage |
 | `['achievements']` | All achievement badges with locked/unlocked state for the current user | AchievementsPage |
-| `['social', 'feed']` | Last 20 feed events from confirmed friends | SocialPage (FeedTab) |
-| `['social', 'friends']` | Accepted friends list | SocialPage (FriendsTab) |
+| `['social', 'feed']` | Last 20 feed events from confirmed friends (includes `streak` per event owner) | SocialPage (FeedTab) |
+| `['social', 'friends']` | Accepted friends list (includes `streak` per friend) | SocialPage (FriendsTab) |
 | `['social', 'friend-requests']` | Pending incoming friend requests | SocialPage (FriendsTab) |
 | `['social', 'leaderboard']` | TM rankings per exercise across friends | SocialPage (LeaderboardTab) |
 
