@@ -17,14 +17,18 @@ const { parseArgs } = require("node:util") as typeof import("node:util");
 // ---------------------------------------------------------------------------
 
 type TicketStatus = "backlog" | "planned" | "in-progress" | "done";
+type TicketPriority = "low" | "medium" | "high";
 
 interface Ticket {
   id: string;
   title: string;
   status: TicketStatus;
+  priority?: TicketPriority;
   doc?: string;
   description?: string;
 }
+
+const VALID_PRIORITIES: TicketPriority[] = ["low", "medium", "high"];
 
 const VALID_STATUSES: TicketStatus[] = [
   "backlog",
@@ -142,17 +146,22 @@ function cmdAdd(commandArgs: string[]): void {
     options: {
       doc: { type: "string" },
       description: { type: "string" },
+      priority: { type: "string" },
     },
     allowPositionals: true,
   });
 
   const title = positionals.join(" ").trim();
   if (!title) {
-    die("Usage: add <title> [--doc <path>] [--description <text>]");
+    die("Usage: add <title> [--doc <path>] [--description <text>] [--priority <low|medium|high>]");
   }
 
   if (!values.doc && !values.description) {
     die("At least one of --doc or --description is required");
+  }
+
+  if (values.priority && !VALID_PRIORITIES.includes(values.priority as TicketPriority)) {
+    die(`Invalid priority "${values.priority}". Must be one of: ${VALID_PRIORITIES.join(", ")}`);
   }
 
   const tickets = readBacklog();
@@ -168,6 +177,7 @@ function cmdAdd(commandArgs: string[]): void {
     id: newId,
     title,
     status: "backlog",
+    ...(values.priority !== undefined && { priority: values.priority as TicketPriority }),
     ...(values.doc !== undefined && { doc: values.doc }),
     ...(values.description !== undefined && { description: values.description }),
   };
@@ -189,6 +199,9 @@ function cmdShow(ref: string): void {
   console.log(`ID:          ${ticket.id}`);
   console.log(`Title:       ${ticket.title}`);
   console.log(`Status:      ${ticket.status}`);
+  if (ticket.priority) {
+    console.log(`Priority:    ${ticket.priority}`);
+  }
 
   if (ticket.doc) {
     console.log(`Doc:         ${ticket.doc}`);
@@ -273,6 +286,9 @@ function cmdNext(): void {
   console.log(`  Position:    ${pos}`);
   console.log(`  ID:          ${ticket.id}`);
   console.log(`  Title:       ${ticket.title}`);
+  if (ticket.priority) {
+    console.log(`  Priority:    ${ticket.priority}`);
+  }
 
   if (ticket.doc) {
     console.log(`  Doc:         ${ticket.doc}`);

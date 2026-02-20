@@ -12,11 +12,10 @@ All implementation tasks are complete. Now finalize the work.
    If tests fail, use the `superpowers:systematic-debugging` skill to diagnose and fix the issues, then re-run until they pass.
    If you fix anything, commit the fix separately.
 
-3. Do a code review:
-   - Run git diff to see any uncommitted changes
-   - Check recent commits with git log to review what was done
-   - Verify changes match CLAUDE.md conventions
-   - Fix any issues found (and commit fixes)
+3. Do a code review using the `ticket-code-review` skill:
+   - Use the skill to review all commits for ticket {{TICKET_ID}}
+   - The skill reads .auto-dev/plan.md and .auto-dev/insights.md for context
+   - Fix any Critical or Important issues found (and commit fixes)
 
 4. Update any docs that need updating per CLAUDE.md:
    - New/changed endpoints -> docs/api-endpoints.md
