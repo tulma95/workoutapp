@@ -104,8 +104,9 @@ model User {
   plans            UserPlan[]
   sentRequests     Friendship[] @relation("SentRequests")
   receivedRequests Friendship[] @relation("ReceivedRequests")
-  feedEvents       FeedEvent[]
-  achievements     UserAchievement[]
+  feedEvents        FeedEvent[]
+  feedReactions     FeedEventReaction[]
+  achievements      UserAchievement[]
 
   @@map("users")
 }
@@ -238,10 +239,26 @@ model FeedEvent {
   payload   Json
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
-  user User @relation(fields: [userId], references: [id])
+  user      User                @relation(fields: [userId], references: [id])
+  reactions FeedEventReaction[]
 
   @@index([userId, createdAt])
   @@map("feed_events")
+}
+
+model FeedEventReaction {
+  id          Int      @id @default(autoincrement())
+  feedEventId Int      @map("feed_event_id")
+  userId      Int      @map("user_id")
+  emoji       String
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  feedEvent FeedEvent @relation(fields: [feedEventId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@unique([feedEventId, userId, emoji])
+  @@index([feedEventId])
+  @@map("feed_event_reactions")
 }
 
 model UserAchievement {
