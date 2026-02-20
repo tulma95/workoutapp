@@ -79,16 +79,11 @@ function loadPrompt(name, vars = {}) {
   return text;
 }
 
-// Sandbox settings file — OS-level filesystem + network isolation,
-// plus permission allow/deny rules for tool access.
-const SANDBOX_SETTINGS = join(__dirname, "sandbox-settings.json");
-
 function runClaude(prompt, extraFlags = "") {
   const cliArgs = [
     "-p",
     "--permission-mode", "bypassPermissions",
     "--model", model,
-    "--settings", SANDBOX_SETTINGS,
     ...extraFlags.split(/\s+/).filter(Boolean),
   ];
 
