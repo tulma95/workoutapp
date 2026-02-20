@@ -250,7 +250,7 @@ model FeedEventReaction {
   id          Int      @id @default(autoincrement())
   feedEventId Int      @map("feed_event_id")
   userId      Int      @map("user_id")
-  emoji       String
+  emoji       String   @db.Text
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   feedEvent FeedEvent @relation(fields: [feedEventId], references: [id], onDelete: Cascade)

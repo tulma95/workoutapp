@@ -257,15 +257,15 @@ router.get('/feed', async (req: AuthRequest, res: Response) => {
   }
 
   const result = events.map((e) => {
-    // Collect all unique emojis for this event
-    const emojiSet = new Set<string>();
-    for (const r of allReactions) {
-      if (r.feedEventId === e.id) emojiSet.add(r.emoji);
-    }
-    const reactions = Array.from(emojiSet).map((emoji) => {
-      const group = reactionMap.get(`${e.id}:${emoji}`)!;
-      return { emoji, count: group.count, reactedByMe: group.reactedByMe };
-    });
+    // Collect all unique emojis for this event from the already-built reactionMap
+    const prefix = `${e.id}:`;
+    const reactions = Array.from(reactionMap.entries())
+      .filter(([key]) => key.startsWith(prefix))
+      .map(([key, group]) => ({
+        emoji: key.slice(prefix.length),
+        count: group.count,
+        reactedByMe: group.reactedByMe,
+      }));
 
     return {
       id: e.id,

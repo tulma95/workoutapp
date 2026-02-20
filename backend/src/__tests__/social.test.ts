@@ -365,7 +365,6 @@ describe('Social API', () => {
         displayName: 'React User A',
       });
       tokenReactA = resA.body.accessToken;
-      const userIdReactA = resA.body.user.id;
 
       const resB = await request(app).post('/api/auth/register').send({
         email: `react-b-${uidReact}@example.com`,
@@ -400,9 +399,6 @@ describe('Social API', () => {
         },
       });
       feedEventId = feedEvent.id;
-
-      // Suppress unused variable warning
-      void userIdReactA;
     });
 
     it('POST /feed/:eventId/react requires auth', async () => {
