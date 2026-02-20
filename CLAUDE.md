@@ -112,7 +112,7 @@ Always write tests for new code.
 
 - **Backend integration tests**: Run against a real PostgreSQL test database (port 5433). No `vi.mock` for DB, config, or bcrypt — use real modules.
 - **Test infrastructure**: `./run_test.sh` handles the full lifecycle: starts test Postgres container, runs migrations, runs backend vitest tests, starts dev servers, runs Playwright E2E tests, cleans up.
-- **Test isolation**: Backend `vitest.config.ts` uses `fileParallelism: false` and `setup.ts` truncates all tables in `beforeAll` per test file.
+- **Test isolation**: Backend `vitest.config.ts` uses `fileParallelism: true`. Each test file uses `crypto.randomUUID()` in email addresses so parallel test files don't conflict. `setup.ts` only calls `prisma.$disconnect()` in `afterAll` — no table truncation per file.
 - **E2E tests**: Playwright for end-to-end user flows. Test files in `e2e/`, config in `playwright.config.ts`. Parallel execution with `crypto.randomUUID()` for unique test users.
 - **Do not write frontend unit tests.** All frontend testing is done via Playwright E2E tests.
 - **Playwright**: Use locator-based API, prefer `getByRole`/`getByLabel`/`getByText` over CSS selectors, wait with `expect` assertions (never `waitForTimeout`), use `.first()` when multiple elements match.
