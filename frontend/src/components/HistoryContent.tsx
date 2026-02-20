@@ -46,24 +46,26 @@ export function HistoryContent({
   const hasAnyWorkouts = calendarWorkouts.length > 0
   const showPicker = dayWorkouts && dayWorkouts.length > 1 && !selectedWorkout && !isLoadingWorkout
 
-  const showAddCustomWorkoutButton = (() => {
-    if (!selectedDateKey || !onAddCustomWorkout) return false
+  const selectedDate = selectedDateKey ? new Date(selectedDateKey + 'T00:00:00') : null
 
-    const selDate = new Date(selectedDateKey + 'T00:00:00')
-    const selYear = selDate.getFullYear()
-    const selMonth = selDate.getMonth() + 1 // 1-indexed
+  const showAddCustomWorkoutButton = (() => {
+    if (!selectedDate || !onAddCustomWorkout) return false
+
+    const selYear = selectedDate.getFullYear()
+    const selMonth = selectedDate.getMonth() + 1 // 1-indexed
 
     if (selYear !== currentYear || selMonth !== currentMonth) return false
 
     const today = new Date()
     const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
-    if (selectedDateKey > todayKey) return false
+    const selKey = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
+    if (selKey > todayKey) return false
 
     const hasWorkouts = calendarWorkouts.some(w => {
       const dateStr = w.completedAt || w.createdAt
       const date = new Date(dateStr)
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-      return key === selectedDateKey
+      return key === selKey
     })
 
     return !hasWorkouts
@@ -96,7 +98,7 @@ export function HistoryContent({
               className={styles.addCustomWorkoutButton}
               onClick={() => onAddCustomWorkout!(selectedDateKey!)}
             >
-              Add Custom Workout — {new Date(selectedDateKey! + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              Add Custom Workout — {selectedDate!.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </button>
           )}
 
