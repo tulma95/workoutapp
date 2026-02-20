@@ -4,6 +4,7 @@ import type { FeedEvent } from '../api/social';
 import { FeedEventPayloadSchema } from '../api/schemas';
 import { formatWeight } from '../utils/weight';
 import { SkeletonLine, SkeletonCard } from './Skeleton';
+import { ReactionBar } from './ReactionBar';
 import styles from './FeedTab.module.css';
 
 function renderEventText(event: FeedEvent): string | null {
@@ -94,6 +95,7 @@ export function FeedTab() {
             >
               {formatRelativeTime(event.createdAt)}
             </time>
+            <ReactionBar eventId={event.id} reactions={event.reactions} />
           </li>
         );
       })}
