@@ -11,19 +11,16 @@ All implementation tasks are complete. Now finalize the work.
    ./run_test.sh
    If tests fail, use the `superpowers:systematic-debugging` skill to diagnose and fix the issues, then re-run until they pass.
    If you fix anything, commit the fix separately.
+   If you discover any bugs unrelated to this ticket, add them to the backlog:
+   node --experimental-strip-types docs/backlog/ticket.ts add "<description>" --priority <low|medium|high>
 
-3. Do a code review using the `ticket-code-review` skill:
-   - Use the skill to review all commits for ticket {{TICKET_ID}}
-   - The skill reads .auto-dev/plan.md and .auto-dev/insights.md for context
-   - Fix any Critical or Important issues found (and commit fixes)
-
-4. Update any docs that need updating per CLAUDE.md:
+3. Update any docs that need updating per CLAUDE.md:
    - New/changed endpoints -> docs/api-endpoints.md
    - Schema migrations -> docs/db-schema.md
    - New queries or invalidation changes -> docs/react-query-cache.md
    - If docs were updated, commit them.
 
-5. Mark the ticket as done:
+4. Mark the ticket as done:
    node --experimental-strip-types docs/backlog/ticket.ts status <id> done
 
 IMPORTANT: Do NOT push to remote. Local commits only.
