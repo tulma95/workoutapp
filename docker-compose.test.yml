@@ -39,19 +39,3 @@ services:
     profiles:
       - e2e
 
-  playwright:
-    build:
-      context: .
-      dockerfile: Dockerfile.playwright
-      args:
-        PLAYWRIGHT_VERSION: ${PLAYWRIGHT_VERSION}
-    environment:
-      BASE_URL: http://setforge:3001
-    volumes:
-      - ./playwright-report:/app/playwright-report
-      - ./test-results:/app/test-results
-    depends_on:
-      setforge:
-        condition: service_healthy
-    profiles:
-      - e2e

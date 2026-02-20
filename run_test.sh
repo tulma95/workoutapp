@@ -47,14 +47,12 @@ run_backend_tests() {
 
 run_e2e_tests() {
   echo ""
-  echo "=== Building Docker images ==="
+  echo "=== Building Docker image ==="
   cd "$PROJECT_ROOT"
 
   test_compose -f "$COMPOSE_FILE" --profile e2e build app
 
-  docker compose -f "$COMPOSE_FILE" --profile e2e build
-
-  echo "Docker images built."
+  echo "Docker image built."
 
   echo ""
   echo "=== E2E tests against Docker image ==="
@@ -65,12 +63,10 @@ run_e2e_tests() {
     "TRUNCATE users, exercises, workout_plans, training_maxes, workouts, workout_sets, plan_days, plan_day_exercises, plan_sets, plan_progression_rules, user_plans RESTART IDENTITY CASCADE"
 
   cd "$PROJECT_ROOT/backend"
-
   npx tsc --project tsconfig.seed.json
   DATABASE_URL="$TEST_DB_URL" node dist-seed/prisma/seed.js
 
   # Start the app container alongside the DB, wait for both to be healthy
-  # (only start 'setforge', not 'playwright' — playwright runs via 'docker compose run' below)
   cd "$PROJECT_ROOT"
   test_compose -f "$COMPOSE_FILE" --profile e2e up -d --wait
   echo "App is healthy."
