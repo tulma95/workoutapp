@@ -58,6 +58,19 @@ export const CompleteWorkoutResponseSchema = z.object({
   // Support both old (fallback) and new (plan-driven) formats
   progression: ProgressionResultSchema.nullable().optional(),
   progressions: z.array(ProgressionResultSchema).optional(),
+  newAchievements: z.array(z.object({ slug: z.string(), name: z.string(), description: z.string() })).optional().default([]),
+});
+
+export const AchievementSchema = z.object({
+  slug: z.string(),
+  name: z.string(),
+  description: z.string(),
+  unlockedAt: z.string().nullable(),
+  workoutId: z.number().nullable(),
+});
+
+export const AchievementsResponseSchema = z.object({
+  achievements: z.array(AchievementSchema),
 });
 
 export const ScheduledDaySchema = z.object({
@@ -333,3 +346,6 @@ export type FeedEvent = z.infer<typeof FeedEventSchema>;
 export type LeaderboardRanking = z.infer<typeof LeaderboardRankingSchema>;
 export type LeaderboardExercise = z.infer<typeof LeaderboardExerciseSchema>;
 export type LeaderboardResponse = z.infer<typeof LeaderboardResponseSchema>;
+
+export type Achievement = z.infer<typeof AchievementSchema>;
+export type AchievementsResponse = z.infer<typeof AchievementsResponseSchema>;

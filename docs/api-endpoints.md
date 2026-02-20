@@ -47,6 +47,10 @@
 - `GET /api/social/feed` - last 20 feed events from confirmed friends ordered by `createdAt DESC`; returns `{ events: [{ id, userId, displayName, eventType, payload, createdAt }] }`
 - `GET /api/social/leaderboard` - TM rankings across caller and accepted friends for each exercise in active plan; returns `{ exercises: [{ slug, name, rankings: [{ userId, displayName, weight }] }] }`; returns `{ exercises: [] }` if no active plan
 
+## Achievement Endpoints (JWT required)
+
+- `GET /api/achievements` - returns full list of achievements joined with user's unlocked rows: `{ achievements: [{ slug, name, description, unlockedAt: string | null, workoutId: number | null }] }`. All 4 achievement definitions are always returned; `unlockedAt` and `workoutId` are `null` for locked badges.
+
 ## Admin Endpoints (JWT + isAdmin required)
 
 - `GET/POST /api/admin/exercises` - list/create exercises

@@ -4,6 +4,7 @@ import { roundWeight } from '../lib/weightRounding';
 import type { WorkoutStatus } from '../types';
 import { ExistingWorkoutError } from '../types';
 import { logger } from '../lib/logger';
+import { checkAndUnlockAchievements } from './achievement.service';
 
 export type ScheduledDay = {
   date: string;
@@ -427,8 +428,16 @@ export async function completeWorkout(workoutId: number, userId: number) {
       });
     }
 
-    // Wrap all writes (TM upserts + workout status update + feed events) in a single transaction
-    const { completed, progressions } = await prisma.$transaction(async (tx) => {
+    // Precompute sets data for achievement checking (outside tx for efficiency)
+    const setsForAchievements = workout.sets.map((s) => ({
+      prescribedWeight: s.prescribedWeight.toNumber(),
+      actualReps: s.actualReps,
+      prescribedReps: s.prescribedReps,
+      isProgression: s.isProgression ?? false,
+    }));
+
+    // Wrap all writes (TM upserts + workout status update + feed events + achievements) in a single transaction
+    const { completed, progressions, newAchievements } = await prisma.$transaction(async (tx) => {
       const progressions: Array<{
         exercise: string;
         previousTM: number;
@@ -507,7 +516,9 @@ export async function completeWorkout(workoutId: number, userId: number) {
         });
       }
 
-      return { completed, progressions };
+      const newAchievements = await checkAndUnlockAchievements(tx, userId, workoutId, setsForAchievements);
+
+      return { completed, progressions, newAchievements };
     });
 
     logger.info('Workout completed', {
@@ -515,15 +526,23 @@ export async function completeWorkout(workoutId: number, userId: number) {
       dayNumber: workout.dayNumber,
       userId,
       progressionCount: progressions.length,
+      achievementCount: newAchievements.length,
     });
 
-    return { workout: formatWorkout(completed), progressions };
+    return { workout: formatWorkout(completed), progressions, newAchievements };
   }
 
   // No plan day ID - this workout was created without a plan (legacy data)
   // Mark it as completed without progression
-  const completed = await prisma.$transaction(async (tx) => {
-    return tx.workout.update({
+  const noPlansetsForAchievements = workout.sets.map((s) => ({
+    prescribedWeight: s.prescribedWeight.toNumber(),
+    actualReps: s.actualReps,
+    prescribedReps: s.prescribedReps,
+    isProgression: s.isProgression ?? false,
+  }));
+
+  const { completed: noPlanCompleted, newAchievements: noPlanAchievements } = await prisma.$transaction(async (tx) => {
+    const completed = await tx.workout.update({
       where: { id: workoutId },
       data: { status: 'completed', completedAt: new Date() },
       include: {
@@ -533,11 +552,13 @@ export async function completeWorkout(workoutId: number, userId: number) {
         }
       },
     });
+    const newAchievements = await checkAndUnlockAchievements(tx, userId, workoutId, noPlansetsForAchievements);
+    return { completed, newAchievements };
   });
 
   logger.info('Workout completed (no plan)', { workoutId, dayNumber: workout.dayNumber, userId });
 
-  return { workout: formatWorkout(completed), progressions: [] };
+  return { workout: formatWorkout(noPlanCompleted), progressions: [], newAchievements: noPlanAchievements };
 }
 
 export async function getHistory(userId: number, page: number, limit: number) {
