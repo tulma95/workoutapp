@@ -1,0 +1,56 @@
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 1.5rem;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 11rem;
+}
+
+.cardLocked {
+  opacity: 0.5;
+  filter: grayscale(1);
+}
+
+.badge {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.cardDescription {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.unlockDate {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--success);
+  font-weight: 500;
+}
+
+.lockedLabel {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
