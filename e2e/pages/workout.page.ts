@@ -14,6 +14,8 @@ export class WorkoutPage {
   readonly increaseRestButton;
   readonly decreaseRestButton;
 
+  readonly achievementDialog;
+
   constructor(page: Page) {
     this.page = page;
     this.repsInputs = page.getByTestId('reps-value');
@@ -21,11 +23,20 @@ export class WorkoutPage {
     this.cancelButton = page.getByRole('button', { name: /cancel workout/i });
     this.backToDashboardButton = page.getByRole('link', { name: 'Back to Dashboard' });
     this.confirmDialog = page.locator('[data-testid="confirm-dialog"]');
+    this.achievementDialog = page.getByTestId('achievement-dialog');
     this.progressionBanner = page.getByText(/progression|increase|bench.*\+/i);
     this.restTimerBanner = page.getByTestId('rest-timer');
     this.skipRestButton = page.getByRole('button', { name: /skip/i });
     this.increaseRestButton = page.getByRole('button', { name: /increase rest/i });
     this.decreaseRestButton = page.getByRole('button', { name: /decrease rest/i });
+  }
+
+  /** Dismiss the achievement dialog if it is currently open. Call after completeWithDialog(). */
+  async dismissAchievementDialogIfPresent() {
+    if (await this.achievementDialog.isVisible()) {
+      await this.achievementDialog.getByRole('button', { name: /awesome/i }).click();
+      await expect(this.achievementDialog).not.toBeVisible();
+    }
   }
 
   dayHeading(dayNumber: number) {
@@ -89,12 +100,14 @@ export class WorkoutPage {
     await this.completeButton.click();
   }
 
-  /** Complete workout, handling the confirmation dialog if it appears. */
+  /** Complete workout, handling the confirmation dialog if it appears. Waits for the workout-complete state. */
   async completeWithDialog() {
     await this.completeButton.click();
     await expect(this.confirmDialog.or(this.backToDashboardButton)).toBeVisible();
     if (await this.confirmDialog.isVisible()) {
       await this.confirmDialog.getByRole('button', { name: /complete anyway/i }).click();
+      // Wait for the page to transition to the workout-complete state
+      await expect(this.backToDashboardButton).toBeVisible();
     }
   }
 
@@ -103,6 +116,7 @@ export class WorkoutPage {
   }
 
   async goBackToDashboard() {
+    await this.dismissAchievementDialogIfPresent();
     await expect(this.backToDashboardButton).toBeVisible();
     await this.backToDashboardButton.click();
   }

@@ -71,6 +71,7 @@ test.describe('Social features', () => {
       await expect(workout.completeButton).toBeVisible({ timeout: 15000 });
 
       await workout.completeWithDialog();
+      await workout.dismissAchievementDialogIfPresent();
       await expect(workout.backToDashboardButton).toBeVisible({ timeout: 10000 });
 
       // --- userB's feed shows userA's workout_completed event ---
