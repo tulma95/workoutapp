@@ -216,7 +216,7 @@ test.describe('Calendar day selection', () => {
     await expect(page.getByLabel('Date')).toHaveValue(expectedDate);
   });
 
-  test('clicking a different empty day changes selection', async ({ setupCompletePage }) => {
+  test('clicking another empty day changes selection (second-day check skipped on 1st of month)', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
     const dashboard = new DashboardPage(page);
     const history = new HistoryPage(page);

@@ -42,6 +42,9 @@ export default function WorkoutCalendar({
   const currentYear = year;
   const currentMonth = month - 1; // Convert to 0-indexed for Date constructor
 
+  const today = new Date();
+  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
   // Build a map from date string (YYYY-MM-DD) to workouts array
   const workoutMap = useMemo(() => {
     const map = new Map<string, CalendarWorkout[]>();
@@ -105,9 +108,6 @@ export default function WorkoutCalendar({
     }
 
     // Add current month's days
-    const today = new Date();
-    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-
     for (let day = 1; day <= daysInMonth; day++) {
       const dateKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const isToday = dateKey === todayKey;
@@ -155,11 +155,6 @@ export default function WorkoutCalendar({
   const handleDayClick = (day: typeof calendarDays[0]) => {
     onDayClick(day.dateKey, day.workouts);
   };
-
-  const todayKey = (() => {
-    const today = new Date();
-    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-  })();
 
   return (
     <div className={styles.calendar}>

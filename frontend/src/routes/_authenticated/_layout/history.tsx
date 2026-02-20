@@ -97,6 +97,7 @@ function HistoryPage() {
       queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
       setSelectedWorkout(null)
       setDayWorkouts(null)
+      setSelectedDateKey(null)
       dialogRef.current?.close()
     } catch (error) {
       console.error('Failed to delete workout:', error)

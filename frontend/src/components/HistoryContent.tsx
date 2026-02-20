@@ -49,9 +49,9 @@ export function HistoryContent({
   const showAddCustomWorkoutButton = (() => {
     if (!selectedDateKey || !onAddCustomWorkout) return false
 
-    const [yearStr, monthStr] = selectedDateKey.split('-')
-    const selYear = parseInt(yearStr!)
-    const selMonth = parseInt(monthStr!) // 1-indexed
+    const selDate = new Date(selectedDateKey + 'T00:00:00')
+    const selYear = selDate.getFullYear()
+    const selMonth = selDate.getMonth() + 1 // 1-indexed
 
     if (selYear !== currentYear || selMonth !== currentMonth) return false
 
