@@ -184,12 +184,15 @@ test.describe('Calendar day selection', () => {
     await history.navigate();
     await history.expectLoaded();
 
-    const today = new Date().getDate();
+    const today = new Date();
+    const todayDate = today.getDate();
     // Click today (no workouts yet) - should select it without opening modal
-    await history.calendarGrid.getByRole('button').filter({ hasText: today.toString() }).first().click();
+    await history.calendarGrid.getByRole('button').filter({ hasText: todayDate.toString() }).first().click();
 
-    // "Add Custom Workout" button should appear below the calendar
+    // "Add Custom Workout" button should appear below the calendar with formatted date
+    const formattedDate = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     await expect(page.getByRole('button', { name: /add custom workout/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /add custom workout/i })).toContainText(formattedDate);
 
     // Modal should NOT be open yet
     await expect(page.getByTestId('custom-workout-modal')).not.toBeVisible();

@@ -96,7 +96,7 @@ export function HistoryContent({
               className={styles.addCustomWorkoutButton}
               onClick={() => onAddCustomWorkout!(selectedDateKey!)}
             >
-              Add Custom Workout
+              Add Custom Workout — {new Date(selectedDateKey! + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </button>
           )}
 
