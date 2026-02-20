@@ -19,7 +19,7 @@
 - `GET /api/workouts/current` - in-progress workout (or null)
 - `GET /api/workouts/:id` - includes `progressions` array (TM changes linked to this workout)
 - `PATCH /api/workouts/:id/sets/:setId` - `{ actualReps, completed }`
-- `POST /api/workouts/:id/complete` - applies progression, returns `{ progressions: [...] }`
+- `POST /api/workouts/:id/complete` - applies progression, returns `{ progressions: [...], newAchievements: [{ slug, name, description }] }`
 - `DELETE /api/workouts/:id` - soft-delete (sets status to 'discarded'), works on both in_progress and completed workouts
 - `GET /api/workouts/history?page=1&limit=10`
 - `GET /api/workouts/calendar?year=2026&month=2` - calendar view (must be before /:id route); returns `{ workouts: [...], scheduledDays: [{ date: string, dayNumber: number, planDayName: string | null }] }` where `scheduledDays` contains projected dates for the active plan's schedule (dates already occupied by any workout record are excluded)

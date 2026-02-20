@@ -2,7 +2,7 @@
   {
     "id": "050",
     "title": "Calendar improvements: selectable days with custom workout button",
-    "status": "backlog",
+    "status": "done",
     "description": "Users can click/select days in the calendar. After selecting a day, buttons appear below the calendar to add a custom workout for that date."
   },
   {
@@ -44,25 +44,25 @@
   {
     "id": "041",
     "title": "Unsafe error handling in frontend catch blocks",
-    "status": "backlog",
+    "status": "done",
     "description": "Multiple frontend files use catch (err: any) and access err.message without type checking: ExerciseFormModal.tsx:76, usePlanEditorState.ts:118, login.tsx:26-28. Should use 'err instanceof Error ? err.message : String(err)' pattern consistently. Also api/client.ts line 53 throws raw response body without wrapping in a proper Error - callers have to guess the shape."
   },
   {
     "id": "042",
     "title": "Inconsistent getUserId() usage in backend routes",
-    "status": "backlog",
+    "status": "done",
     "description": "Some routes use the getUserId(req) helper (which throws if userId is missing) while others access req.userId directly (which is typed as optional). Inconsistent files: users.ts:13,28 and trainingMaxes.ts:28,58 use raw req.userId. All authenticated routes should use getUserId(req) for consistency and runtime safety."
   },
   {
     "id": "043",
     "title": "Missing DATABASE_URL validation in db.ts",
-    "status": "backlog",
+    "status": "done",
     "description": "backend/src/lib/db.ts passes process.env.DATABASE_URL to PrismaPg without checking if it's defined. If the env var is missing, the error will come from deep inside PrismaPg with a cryptic message. Add an explicit check: if (\\!process.env.DATABASE_URL) throw new Error('DATABASE_URL environment variable is required')."
   },
   {
     "id": "044",
     "title": "Update CLAUDE.md: vitest fileParallelism is true not false",
-    "status": "backlog",
+    "status": "done",
     "description": "CLAUDE.md states 'Backend vitest.config.ts uses fileParallelism: false' but the actual config has fileParallelism: true. Either update the docs to match reality, or change the config to false if test isolation requires it. Currently setup.ts only disconnects in afterAll (no table truncation per file), so parallel execution may be intentional."
   },
   {
@@ -122,8 +122,104 @@
   {
     "id": "027",
     "title": "Achievement Badges",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "Unlock badges for workout milestones. Examples: 'Century Club' (100kg lift), 'Iron Streak' (4 weeks no missed days), 'AMRAP King' (+5 reps on progression set), 'Sunrise Grinder' (workout before 7am). Shareable badge cards. Requires defining achievement criteria, detection logic, and a display page."
+  },
+  {
+    "id": "058",
+    "title": "Feed Event Reactions",
+    "status": "backlog",
+    "description": "React to friends' feed events with quick emoji reactions (fire, clap, skull, flexed bicep, etc.). Tap-to-react on any feed item. Reactions shown as small emoji row under the event. Low-friction social engagement without typing."
+  },
+  {
+    "id": "056",
+    "title": "Workout Streak Visibility",
+    "status": "backlog",
+    "description": "Show friends' current workout streaks on the friends list and in the feed. 'Chris is on a 12-day streak 🔥'. Streaks calculated from consecutive scheduled workout completions. Motivates casual users through social proof."
+  },
+  {
+    "id": "054",
+    "title": "Estimated 1RM Leaderboard",
+    "status": "backlog",
+    "description": "Leaderboard based on calculated e1RM from AMRAP sets using Epley formula (weight * (1 + reps/30)), not just static TMs. More dynamic and rewards actual performance. Could be a tab or toggle on the existing leaderboard."
+  },
+  {
+    "id": "065",
+    "title": "Richer Feed Event Types",
+    "status": "backlog",
+    "description": "Expand feed beyond workout_completed and tm_increased. New event types: streak_milestone (7/14/30/60/90 day streaks), badge_unlocked (from Achievement Badges #027), plan_switched, workout_note_shared. Makes the feed more varied and engaging."
+  },
+  {
+    "id": "068",
+    "title": "Find Friends by Username",
+    "status": "backlog",
+    "description": "Add optional username field to user profile (unique, alphanumeric + underscores). Allow sending friend requests by username instead of email. More natural for gym acquaintances where you wouldn't share email. Search with autocomplete."
+  },
+  {
+    "id": "061",
+    "title": "Shareable Workout Card",
+    "status": "backlog",
+    "description": "Generate a screenshot-ready card after completing a workout showing: exercises, top sets, total volume, PRs hit, workout duration. Styled with SetForge branding. Share via native share API or download as image. Great for Instagram stories."
+  },
+  {
+    "id": "057",
+    "title": "Nudge / Poke Friend",
+    "status": "backlog",
+    "description": "Send a 'get to the gym' nudge to a friend who hasn't trained in X days. One-tap from the friends list. Recipient sees it as a feed event or in-app notification. Rate-limited to 1 nudge per friend per day to prevent spam."
+  },
+  {
+    "id": "062",
+    "title": "User Profile Page",
+    "status": "backlog",
+    "description": "Public-ish profile page showing: display name, member since date, current plan, lift stats summary (current TMs or e1RMs), workout streak, badges earned, total workouts completed. Viewable by friends. Foundation for social identity in the app."
+  },
+  {
+    "id": "051",
+    "title": "Progression Race",
+    "status": "backlog",
+    "description": "Compare TM progression charts side-by-side with a friend over a selectable time range (30d/90d/all). Pick an exercise and see who's progressing faster. Visual overlay chart on the existing progress page or a dedicated comparison view."
+  },
+  {
+    "id": "063",
+    "title": "Invite Link for Friend Requests",
+    "status": "backlog",
+    "description": "Generate a unique invite link (e.g. setforge.app/invite/abc123) that auto-sends a friend request when the invitee registers. Easier than sharing email addresses. Link expires after 7 days or first use. Shareable via native share API."
+  },
+  {
+    "id": "066",
+    "title": "Feed Comments",
+    "status": "backlog",
+    "description": "Add short text comments on friends' feed events. Max 200 chars. Simple threaded view under the event. Enables actual conversation between gym buddies about specific workouts or PRs. Requires new DB model and API endpoints."
+  },
+  {
+    "id": "064",
+    "title": "PR Celebration Post",
+    "status": "backlog",
+    "description": "When a user hits a personal record (requires PR Detection #008), auto-generate a celebratory feed event with confetti animation. Shows the lift, weight, reps, and how it compares to previous best. Friends see it prominently in their feed."
+  },
+  {
+    "id": "060",
+    "title": "Gym Crew / Groups",
+    "status": "backlog",
+    "description": "Create a named group of friends (a 'crew') that shares its own leaderboard and activity feed. Good for real-life gym groups or online communities running the same plan. Crew has a name, members, shared leaderboard, and crew feed."
+  },
+  {
+    "id": "052",
+    "title": "Weekly Challenge",
+    "status": "backlog",
+    "description": "Auto-generated weekly goals between friends. Examples: 'who can hit more total reps this week', 'who completes all scheduled workouts first'. Challenges auto-start Monday, results shown Sunday. Opt-in per friend pair."
+  },
+  {
+    "id": "059",
+    "title": "Accountability Partner",
+    "status": "backlog",
+    "description": "Pair with one friend as an accountability partner. Both get notified when the other skips a scheduled workout day. Opt-in mutual agreement. Shows partner's schedule and completion status on your dashboard. Designed for casual users who need external motivation."
+  },
+  {
+    "id": "067",
+    "title": "Weekly Activity Digest",
+    "status": "backlog",
+    "description": "Weekly summary of friends' activity delivered as a feed event or dedicated view every Sunday. Shows: who trained most, biggest TM jumps, longest active streaks, total group volume. Gives casual users a reason to check in even if they don't open the app daily."
   },
   {
     "id": "034",
@@ -292,5 +388,51 @@
     "title": "Fix UTC/local timezone inconsistency in date input max and calendar day comparison",
     "status": "backlog",
     "description": "The date input max attribute uses .toISOString().slice(0,10) (UTC) while WorkoutCalendar.handleDayClick compares dates in local time. For users east of UTC, after midnight UTC but before midnight local time, the max date could be set to yesterday while the calendar allows clicking today, causing an inconsistency. Both should use the same local-time date string (e.g., toLocaleDateString('en-CA'))."
+  },
+  {
+    "id": "053",
+    "title": "Head-to-Head Live Workout",
+    "status": "backlog",
+    "description": "Real-time workout comparison when two friends train the same plan day simultaneously. See each other's set completion progress live. Requires WebSocket or polling. Shows 'friend is on set 5/17' alongside your own progress."
+  },
+  {
+    "id": "055",
+    "title": "Strength Standards Comparison",
+    "status": "backlog",
+    "description": "Compare your lifts against population-level strength standards (beginner/intermediate/advanced/elite) based on bodyweight and sex. Uses well-known strength standard tables. Requires bodyweight input. Shows where you stand for each lift."
+  },
+  {
+    "id": "069",
+    "title": "QR Code Add Friend",
+    "status": "backlog",
+    "description": "Generate a personal QR code in the app that encodes your friend request link. Show it at the gym for someone to scan and instantly send a friend request. Uses invite link system (#063). No typing needed - just scan and connect."
+  },
+  {
+    "id": "070",
+    "title": "Missing negative test for century-club achievement (low TM should not unlock)",
+    "status": "backlog",
+    "priority": "low",
+    "description": "The achievements test suite has a positive test for century-club (bench TM=200) but no negative test confirming it does NOT trigger when all set weights are below 100 kg. The default benchTM=100 users (TM=90) could serve as a negative baseline."
+  },
+  {
+    "id": "071",
+    "title": "Update POST /api/workouts/:id/complete docs to mention newAchievements in response",
+    "status": "done",
+    "priority": "low",
+    "description": "The docs/api-endpoints.md entry for POST /api/workouts/:id/complete still says 'returns { progressions: [...] }'. It should be updated to include newAchievements: [...] in the documented response shape after ticket 027 added achievements."
+  },
+  {
+    "id": "072",
+    "title": "Missing negative test for century-club achievement",
+    "status": "backlog",
+    "priority": "low",
+    "description": "Add explicit test asserting that century-club is NOT unlocked for sub-100kg TM users"
+  },
+  {
+    "id": "073",
+    "title": "Update POST /api/workouts/:id/complete docs to include newAchievements",
+    "status": "backlog",
+    "priority": "low",
+    "description": "The complete endpoint now returns newAchievements field but api-endpoints.md was not updated to reflect this (fixed in 027)"
   }
 ]

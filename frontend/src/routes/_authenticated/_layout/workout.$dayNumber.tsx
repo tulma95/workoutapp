@@ -14,6 +14,7 @@ import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import { SkeletonLine, SkeletonHeading } from '../../../components/Skeleton'
 import { ConflictDialog } from '../../../components/ConflictDialog'
+import { Button } from '../../../components/Button'
 import { ButtonLink } from '../../../components/ButtonLink'
 import { ActiveWorkoutView } from '../../../components/ActiveWorkoutView'
 import { useRestTimer } from '../../../hooks/useRestTimer'
@@ -500,12 +501,7 @@ function ActiveWorkout({
               </li>
             ))}
           </ul>
-          <button
-            onClick={() => setAchievementDialogOpen(false)}
-            style={{ minHeight: '3rem', width: '100%' }}
-          >
-            Awesome!
-          </button>
+          <Button onClick={() => setAchievementDialogOpen(false)}>Awesome!</Button>
         </div>
       </dialog>
     </>
