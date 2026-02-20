@@ -84,6 +84,7 @@ function HistoryPage() {
 
   const handleCustomWorkoutSaved = () => {
     queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
+    setSelectedDateKey(null)
   }
 
   const handleDeleteWorkout = () => {
