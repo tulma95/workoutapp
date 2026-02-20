@@ -173,6 +173,12 @@ export function SettingsContent({
         </div>
       </section>
 
+      <div className={styles.card}>
+        <ButtonLink to="/achievements" variant="secondary">
+          Achievements
+        </ButtonLink>
+      </div>
+
       <Button
         variant="secondary"
         className={styles.logoutBtn}

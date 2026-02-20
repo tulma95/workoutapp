@@ -15,6 +15,7 @@
 | `['admin-exercises']` | All exercises (admin) | ExerciseListPage |
 | `['admin-plans']` | All plans (admin) | PlanListPage |
 | `['progress']` | All exercises with current TMs and TM history | ProgressPage |
+| `['achievements']` | All achievement badges with locked/unlocked state for the current user | AchievementsPage |
 | `['social', 'feed']` | Last 20 feed events from confirmed friends | SocialPage (FeedTab) |
 | `['social', 'friends']` | Accepted friends list | SocialPage (FriendsTab) |
 | `['social', 'friend-requests']` | Pending incoming friend requests | SocialPage (FriendsTab) |
@@ -27,7 +28,7 @@
 | **Plan subscription** | select-plan.tsx | remove `['plan', 'current']`, remove `['training-maxes']`, remove `['progress']`, remove `['schedule']`, invalidate `['workout', 'current']` |
 | **TM setup** | setup.tsx | `['training-maxes']`, `['progress']` |
 | **TM manual update** | settings.tsx | `['training-maxes']`, `['progress']` |
-| **Workout complete** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']`, `['training-maxes']`, `['progress']`, `['social', 'feed']` |
+| **Workout complete** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']`, `['training-maxes']`, `['progress']`, `['social', 'feed']`, `['achievements']` |
 | **Workout cancel** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']` |
 | **Workout delete (history)** | history.tsx | `['workoutCalendar']` |
 | **Custom workout save** | CustomWorkoutModal.tsx | `['workoutCalendar']` |
@@ -46,7 +47,7 @@
 Which pages need fresh data after an action on another page:
 
 ```
-WorkoutPage --complete--> Dashboard (current workout), History (calendar), Settings (TMs), Progress (progress), Social (feed)
+WorkoutPage --complete--> Dashboard (current workout), History (calendar), Settings (TMs), Progress (progress), Social (feed), Achievements (achievements)
 WorkoutPage --cancel----> Dashboard (current workout), History (calendar)
 HistoryPage --delete---> History (calendar)
 HistoryPage --custom workout save--> History (calendar)

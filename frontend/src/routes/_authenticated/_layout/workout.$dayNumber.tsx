@@ -296,6 +296,9 @@ function ActiveWorkout({
   const [phase, setPhase] = useState<ActivePhase>({ phase: 'active' })
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [newAchievements, setNewAchievements] = useState<Array<{ slug: string; name: string; description: string }>>([])
+  const [achievementDialogOpen, setAchievementDialogOpen] = useState(false)
+  const achievementDialogRef = useRef<HTMLDialogElement>(null)
   const debounceMap = useRef<Map<number, ReturnType<typeof setTimeout>>>(
     new Map(),
   )
@@ -309,6 +312,24 @@ function ActiveWorkout({
       debounceMap.current.forEach((timer) => clearTimeout(timer))
       debounceMap.current.clear()
     }
+  }, [])
+
+  useEffect(() => {
+    const dialog = achievementDialogRef.current
+    if (!dialog) return
+    if (achievementDialogOpen) {
+      dialog.showModal()
+    } else {
+      if (dialog.open) dialog.close()
+    }
+  }, [achievementDialogOpen])
+
+  useEffect(() => {
+    const dialog = achievementDialogRef.current
+    if (!dialog) return
+    const handleClose = () => setAchievementDialogOpen(false)
+    dialog.addEventListener('close', handleClose)
+    return () => dialog.removeEventListener('close', handleClose)
   }, [])
 
   const debouncedLogSet = (
@@ -401,7 +422,12 @@ function ActiveWorkout({
       await queryClient.invalidateQueries({ queryKey: ['training-maxes'] })
       await queryClient.invalidateQueries({ queryKey: ['progress'] })
       await queryClient.invalidateQueries({ queryKey: ['social', 'feed'] })
+      await queryClient.invalidateQueries({ queryKey: ['achievements'] })
       setPhase({ phase: 'completed', progressions: progressionArray })
+      if (result.newAchievements && result.newAchievements.length > 0) {
+        setNewAchievements(result.newAchievements)
+        setAchievementDialogOpen(true)
+      }
     } catch (err) {
       setPhase({
         phase: 'error',
@@ -434,26 +460,54 @@ function ActiveWorkout({
   }
 
   return (
-    <ActiveWorkoutView
-      workout={workout}
-      dayNumber={dayNumber}
-      phase={phase}
-      showCompleteConfirm={showCompleteConfirm}
-      showCancelConfirm={showCancelConfirm}
-      onConfirmSet={handleConfirmSet}
-      onRepsChange={handleRepsChange}
-      onCompleteWorkout={handleCompleteWorkout}
-      onDoCompleteWorkout={doCompleteWorkout}
-      onCancelWorkout={handleCancelWorkout}
-      onDoCancelWorkout={doCancelWorkout}
-      onDismissCompleteConfirm={() => setShowCompleteConfirm(false)}
-      onDismissCancelConfirm={() => setShowCancelConfirm(false)}
-      restTimer={restTimer.state.isRunning ? {
-        secondsRemaining: restTimer.state.secondsRemaining,
-        totalSeconds: restTimer.state.totalSeconds,
-        onAdjust: restTimer.adjust,
-        onSkip: restTimer.skip,
-      } : null}
-    />
+    <>
+      <ActiveWorkoutView
+        workout={workout}
+        dayNumber={dayNumber}
+        phase={phase}
+        showCompleteConfirm={showCompleteConfirm}
+        showCancelConfirm={showCancelConfirm}
+        onConfirmSet={handleConfirmSet}
+        onRepsChange={handleRepsChange}
+        onCompleteWorkout={handleCompleteWorkout}
+        onDoCompleteWorkout={doCompleteWorkout}
+        onCancelWorkout={handleCancelWorkout}
+        onDoCancelWorkout={doCancelWorkout}
+        onDismissCompleteConfirm={() => setShowCompleteConfirm(false)}
+        onDismissCancelConfirm={() => setShowCancelConfirm(false)}
+        restTimer={restTimer.state.isRunning ? {
+          secondsRemaining: restTimer.state.secondsRemaining,
+          totalSeconds: restTimer.state.totalSeconds,
+          onAdjust: restTimer.adjust,
+          onSkip: restTimer.skip,
+        } : null}
+      />
+      <dialog
+        ref={achievementDialogRef}
+        className={styles.achievementDialog}
+        onClick={(e) => {
+          if (e.target === achievementDialogRef.current) setAchievementDialogOpen(false)
+        }}
+        data-testid="achievement-dialog"
+      >
+        <div className={styles.achievementContent}>
+          <h2>Achievement Unlocked!</h2>
+          <ul className={styles.achievementList}>
+            {newAchievements.map((a) => (
+              <li key={a.slug} className={styles.achievementItem}>
+                <strong>{a.name}</strong>
+                <p>{a.description}</p>
+              </li>
+            ))}
+          </ul>
+          <button
+            onClick={() => setAchievementDialogOpen(false)}
+            style={{ minHeight: '3rem', width: '100%' }}
+          >
+            Awesome!
+          </button>
+        </div>
+      </dialog>
+    </>
   )
 }
