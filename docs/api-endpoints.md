@@ -50,6 +50,46 @@
 - `GET /api/social/leaderboard` - TM rankings across caller and accepted friends for each exercise in active plan; returns `{ exercises: [{ slug, name, rankings: [{ userId, username, weight }] }] }`; returns `{ exercises: [] }` if no active plan
   - `?mode=e1rm` — returns estimated 1RM rankings instead of TM rankings; e1RMs are computed from completed AMRAP sets using the Epley formula (`weight * (1 + reps / 30)`); same response shape: `{ exercises: [{ slug, name, rankings: [{ userId, value, rank }] }] }`; only sets with `actual_reps >= 1` and `is_amrap = true` are considered
 
+## Notification Endpoints
+
+### `GET /api/notifications/stream`
+
+Opens a Server-Sent Events (SSE) stream delivering real-time toast notifications to the authenticated user.
+
+**Auth**: JWT required. Because the browser `EventSource` API cannot set custom headers, the token is passed as a query parameter instead of the `Authorization` header.
+
+**Query params**:
+- `token` (required) — the JWT access token
+
+**Response headers**:
+```
+Content-Type: text/event-stream
+Cache-Control: no-cache
+Connection: keep-alive
+X-Accel-Buffering: no
+```
+
+**Event format**: Each event is a standard SSE `data:` line containing a JSON payload:
+```
+data: {"type":"workout_completed","message":"Alice just finished Day 1"}
+```
+
+**Event types**:
+
+| `type` | Trigger |
+|---|---|
+| `workout_completed` | A friend completes a workout |
+| `achievement_earned` | A friend earns a new achievement badge |
+| `friend_request_accepted` | Someone accepts your outgoing friend request |
+
+**Heartbeat**: The server writes `: heartbeat\n\n` (an SSE comment) every 30 seconds to all open connections. Browsers ignore SSE comments automatically; this prevents proxy timeouts.
+
+**Reconnection**: `EventSource` reconnects automatically on disconnect. Exponential backoff is not implemented — the browser default retry interval applies.
+
+**Multiple tabs**: Each open connection (tab) is registered independently. All connections for the same user receive the same events simultaneously. Connections are cleaned up automatically when the socket closes.
+
+**Errors**: Returns `401 { error: { code: 'TOKEN_INVALID' } }` if the token is missing or invalid.
+
 ## Achievement Endpoints (JWT required)
 
 - `GET /api/achievements` - returns full list of achievements joined with user's unlocked rows: `{ achievements: [{ slug, name, description, unlockedAt: string | null, workoutId: number | null }] }`. All 4 achievement definitions are always returned; `unlockedAt` and `workoutId` are `null` for locked badges.
