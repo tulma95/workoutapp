@@ -55,7 +55,8 @@ async function getAcceptedFriendIds(userId: number): Promise<number[]> {
 }
 
 const requestSchema = z.object({
-  email: z.string().email(),
+  email: z.string().email().optional(),
+  username: z.string().regex(/^[a-zA-Z0-9_]+$/).min(3).max(30).optional(),
 });
 
 const reactSchema = z.object({
@@ -64,9 +65,20 @@ const reactSchema = z.object({
 
 router.post('/request', validate(requestSchema), async (req: AuthRequest, res: Response) => {
   const callerId = getUserId(req);
-  const { email } = req.body;
+  const { email, username } = req.body as { email?: string; username?: string };
 
-  const target = await prisma.user.findUnique({ where: { email } });
+  if (!email && !username) {
+    res.status(400).json({ error: { code: 'MISSING_FIELD', message: 'Either email or username is required' } });
+    return;
+  }
+  if (email && username) {
+    res.status(400).json({ error: { code: 'AMBIGUOUS_FIELD', message: 'Provide either email or username, not both' } });
+    return;
+  }
+
+  const target = username
+    ? await prisma.user.findUnique({ where: { username } })
+    : await prisma.user.findUnique({ where: { email } });
   if (!target) {
     res.status(404).json({ error: { code: 'NOT_FOUND', message: 'User not found' } });
     return;
@@ -116,14 +128,14 @@ router.get('/friends', async (req: AuthRequest, res: Response) => {
       ],
     },
     include: {
-      requester: { select: { id: true, displayName: true } },
-      addressee: { select: { id: true, displayName: true } },
+      requester: { select: { id: true, displayName: true, username: true } },
+      addressee: { select: { id: true, displayName: true, username: true } },
     },
   });
 
   const friends = friendships.map((f) => {
     const friend = f.requesterId === userId ? f.addressee : f.requester;
-    return { id: f.id, userId: friend.id, displayName: friend.displayName };
+    return { id: f.id, userId: friend.id, displayName: friend.displayName, username: friend.username };
   });
 
   const friendUserIds = friends.map((f) => f.userId);
@@ -192,14 +204,14 @@ router.get('/requests', async (req: AuthRequest, res: Response) => {
       NOT: { initiatorId: userId },
     },
     include: {
-      requester: { select: { id: true, displayName: true } },
-      addressee: { select: { id: true, displayName: true } },
+      requester: { select: { id: true, displayName: true, username: true } },
+      addressee: { select: { id: true, displayName: true, username: true } },
     },
   });
 
   const result = requests.map((f) => {
     const other = f.requesterId === userId ? f.addressee : f.requester;
-    return { id: f.id, requesterId: f.requesterId, displayName: other.displayName };
+    return { id: f.id, requesterId: f.requesterId, displayName: other.displayName, username: other.username };
   });
 
   res.json({ requests: result });

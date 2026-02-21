@@ -1324,6 +1324,87 @@ describe('Social API', () => {
     });
   });
 
+  describe('Request by username', () => {
+    let tokenU1: string;
+    let tokenU2: string;
+    let usernameU2: string;
+
+    beforeAll(async () => {
+      const uidU = randomUUID().slice(0, 8);
+      usernameU2 = `user_${uidU}`;
+
+      const resU1 = await request(app).post('/api/auth/register').send({
+        email: `username-u1-${uidU}@example.com`,
+        password: 'password123',
+        displayName: 'Username User 1',
+      });
+      tokenU1 = resU1.body.accessToken;
+
+      const resU2 = await request(app).post('/api/auth/register').send({
+        email: `username-u2-${uidU}@example.com`,
+        password: 'password123',
+        displayName: 'Username User 2',
+        username: usernameU2,
+      });
+      tokenU2 = resU2.body.accessToken;
+    });
+
+    it('returns 400 when neither email nor username is provided', async () => {
+      const res = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenU1}`)
+        .send({});
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('MISSING_FIELD');
+    });
+
+    it('returns 400 when both email and username are provided', async () => {
+      const res = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenU1}`)
+        .send({ email: 'someone@example.com', username: usernameU2 });
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('AMBIGUOUS_FIELD');
+    });
+
+    it('returns 404 when username does not exist', async () => {
+      const res = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenU1}`)
+        .send({ username: 'nonexistent_xyz_999' });
+      expect(res.status).toBe(404);
+      expect(res.body.error.code).toBe('NOT_FOUND');
+    });
+
+    it('sends a friend request by username', async () => {
+      const res = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenU1}`)
+        .send({ username: usernameU2 });
+      expect(res.status).toBe(201);
+      expect(res.body).toHaveProperty('id');
+    });
+
+    it('returns 409 when already friends (by username)', async () => {
+      // Accept the pending request from the previous test, then try again by username
+      const reqsRes = await request(app)
+        .get('/api/social/requests')
+        .set('Authorization', `Bearer ${tokenU2}`);
+      const pending = reqsRes.body.requests[0];
+      await request(app)
+        .patch(`/api/social/requests/${pending.id}/accept`)
+        .set('Authorization', `Bearer ${tokenU2}`);
+
+      // Now U1 tries to send another request by username
+      const res = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenU1}`)
+        .send({ username: usernameU2 });
+      expect(res.status).toBe(409);
+      expect(res.body.error.code).toBe('ALREADY_EXISTS');
+    });
+  });
+
   describe('Leaderboard', () => {
     let tokenLbA: string;
     let userIdLbA: number;
