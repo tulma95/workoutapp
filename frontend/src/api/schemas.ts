@@ -393,3 +393,11 @@ export type LeaderboardResponse = z.infer<typeof LeaderboardResponseSchema>;
 
 export type Achievement = z.infer<typeof AchievementSchema>;
 export type AchievementsResponse = z.infer<typeof AchievementsResponseSchema>;
+
+// Notification SSE schemas
+export const notificationEventSchema = z.object({
+  type: z.enum(['workout_completed', 'achievement_earned', 'friend_request_accepted']),
+  message: z.string(),
+});
+
+export type NotificationEvent = z.infer<typeof notificationEventSchema>;
