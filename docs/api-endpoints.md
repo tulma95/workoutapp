@@ -47,6 +47,7 @@
 - `GET /api/social/feed` - last 20 feed events from confirmed friends ordered by `createdAt DESC`; returns `{ events: [{ id, userId, displayName, eventType, payload, createdAt, streak: number, reactions: [{ emoji, count, reactedByMe }] }] }` — `streak` is the event owner's current workout streak (consecutive calendar days); `reactions` is an empty array when no reactions exist
 - `POST /api/social/feed/:eventId/react` - `{ emoji }` (one of `🔥 👏 💀 💪 🤙`) — toggles reaction on/off; 404 if event not found or event owner is not a friend; returns `{ reacted: boolean, count: number }`
 - `GET /api/social/leaderboard` - TM rankings across caller and accepted friends for each exercise in active plan; returns `{ exercises: [{ slug, name, rankings: [{ userId, displayName, weight }] }] }`; returns `{ exercises: [] }` if no active plan
+  - `?mode=e1rm` — returns estimated 1RM rankings instead of TM rankings; e1RMs are computed from completed AMRAP sets using the Epley formula (`weight * (1 + reps / 30)`); same response shape: `{ exercises: [{ slug, name, rankings: [{ userId, value, rank }] }] }`; only sets with `actual_reps >= 1` and `is_amrap = true` are considered
 
 ## Achievement Endpoints (JWT required)
 

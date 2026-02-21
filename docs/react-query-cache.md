@@ -20,6 +20,7 @@
 | `['social', 'friends']` | Accepted friends list (includes `streak` per friend) | SocialPage (FriendsTab) |
 | `['social', 'friend-requests']` | Pending incoming friend requests | SocialPage (FriendsTab) |
 | `['social', 'leaderboard']` | TM rankings per exercise across friends | SocialPage (LeaderboardTab) |
+| `['social', 'leaderboard', 'e1rm']` | e1RM rankings per exercise across user+friends (staleTime: 60s) | SocialPage (LeaderboardTab, e1RM mode) |
 
 ## Invalidation Rules
 
@@ -63,6 +64,7 @@ Admin: PlanList --archive--> PlanList only
 ```
 
 ## Notes
+- `['social', 'leaderboard', 'e1rm']` is never explicitly invalidated — it is read-only data computed from completed workout history; staleTime of 60s is sufficient to avoid redundant fetches within a session
 - `defaultPreloadStaleTime: 0` — all caching delegated to React Query (no stale preloads)
 - Pages use `useSuspenseQuery` for data guaranteed by route loaders
 - `removeQueries` = delete from cache (data no longer valid, e.g. plan switch); `invalidateQueries` = mark stale, refetch on next access

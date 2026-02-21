@@ -94,6 +94,52 @@ test.describe('Streak visibility', () => {
   });
 });
 
+test.describe('Leaderboard toggle', () => {
+  test.setTimeout(60000);
+
+  test('TM/e1RM toggle switches mode and shows correct empty state', async ({ page }) => {
+    const unique = crypto.randomUUID().slice(0, 8);
+    const email = `leaderboard-toggle-${unique}@example.com`;
+    const displayName = `LBToggle ${unique}`;
+
+    const register = new RegisterPage(page);
+    await register.register(email, 'ValidPassword123', displayName);
+
+    const planSelection = new PlanSelectionPage(page);
+    await planSelection.selectFirstPlan();
+
+    const setup = new SetupPage(page);
+    await setup.expectHeading();
+    await setup.fillOneRepMaxes('100', '140', '60', '180');
+    await setup.submitAndWaitForDashboard();
+
+    await page.getByRole('link', { name: /social/i }).click();
+    await expect(page.getByRole('heading', { name: /social/i })).toBeVisible();
+    await page.getByRole('tab', { name: /leaderboard/i }).click();
+
+    // Training Max button is visible and active by default
+    const tmButton = page.getByRole('button', { name: 'Training Max' });
+    const e1rmButton = page.getByRole('button', { name: 'Est. 1RM' });
+    await expect(tmButton).toBeVisible();
+    await expect(tmButton).toHaveAttribute('aria-pressed', 'true');
+
+    // Switch to Est. 1RM mode
+    await e1rmButton.click();
+    await expect(e1rmButton).toHaveAttribute('aria-pressed', 'true');
+    await expect(tmButton).toHaveAttribute('aria-pressed', 'false');
+
+    // e1RM empty state text appears
+    await expect(
+      page.getByText('Complete AMRAP sets to appear on the e1RM leaderboard'),
+    ).toBeVisible();
+
+    // Switch back to Training Max
+    await tmButton.click();
+    await expect(tmButton).toHaveAttribute('aria-pressed', 'true');
+    await expect(e1rmButton).toHaveAttribute('aria-pressed', 'false');
+  });
+});
+
 test.describe('Social features', () => {
   test.setTimeout(60000);
 
