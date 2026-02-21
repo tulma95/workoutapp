@@ -40,8 +40,10 @@ router.patch('/me', validate(updateSchema), async (req: AuthRequest, res: Respon
     res.json(safeUser);
   } catch (err: unknown) {
     if (err && typeof err === 'object' && 'code' in err && (err as { code: string }).code === 'P2002') {
-      const target = (err as { meta?: { target?: string[] } }).meta?.target;
-      const isUsernameDuplicate = Array.isArray(target) && target.includes('username');
+      const target = (err as { meta?: { target?: string[] | string } }).meta?.target;
+      const isUsernameDuplicate =
+        (Array.isArray(target) && target.includes('username')) ||
+        (typeof target === 'string' && target.includes('username'));
       if (isUsernameDuplicate) {
         res.status(409).json({
           error: { code: 'USERNAME_EXISTS', message: 'This username is already taken' },

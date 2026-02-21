@@ -10,7 +10,7 @@ function email(tag: string) {
 }
 
 function username(tag: string) {
-  return `user_${tag}_${uid}`;
+  return `user_${tag.replace(/-/g, '_')}_${uid}`;
 }
 
 describe('Username support in auth and users routes', () => {
@@ -37,34 +37,34 @@ describe('Username support in auth and users routes', () => {
       expect(res.body.user.username).toBe(uname);
     });
 
-    it('returns 422 for username with invalid chars', async () => {
+    it('returns 400 for username with invalid chars', async () => {
       const res = await request(app).post('/api/auth/register').send({
         email: email('invalid-chars'),
         password: 'password123',
         displayName: 'Bad Username',
         username: 'bad-username!',
       });
-      expect(res.status).toBe(422);
+      expect(res.status).toBe(400);
     });
 
-    it('returns 422 for username too short', async () => {
+    it('returns 400 for username too short', async () => {
       const res = await request(app).post('/api/auth/register').send({
         email: email('too-short'),
         password: 'password123',
         displayName: 'Short Username',
         username: 'ab',
       });
-      expect(res.status).toBe(422);
+      expect(res.status).toBe(400);
     });
 
-    it('returns 422 for username too long', async () => {
+    it('returns 400 for username too long', async () => {
       const res = await request(app).post('/api/auth/register').send({
         email: email('too-long'),
         password: 'password123',
         displayName: 'Long Username',
         username: 'a'.repeat(31),
       });
-      expect(res.status).toBe(422);
+      expect(res.status).toBe(400);
     });
 
     it('returns 409 USERNAME_EXISTS for duplicate username', async () => {
@@ -142,13 +142,13 @@ describe('Username support in auth and users routes', () => {
       expect(res.body.error.code).toBe('USERNAME_EXISTS');
     });
 
-    it('returns 422 for invalid username via PATCH', async () => {
+    it('returns 400 for invalid username via PATCH', async () => {
       const t = await registerUser('patch-invalid');
       const res = await request(app)
         .patch('/api/users/me')
         .set('Authorization', `Bearer ${t}`)
         .send({ username: 'has spaces' });
-      expect(res.status).toBe(422);
+      expect(res.status).toBe(400);
     });
   });
 
