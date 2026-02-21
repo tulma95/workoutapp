@@ -33,10 +33,16 @@ router.post('/register', validate(registerSchema), async (req: Request, res: Res
     res.status(201).json(result);
   } catch (err: unknown) {
     if (err && typeof err === 'object' && 'code' in err && err.code === 'P2002') {
-      const target = (err as { meta?: { target?: string[] | string } }).meta?.target;
+      const meta = (err as { meta?: Record<string, unknown> }).meta ?? {};
+      // Prisma v7 with PG adapter puts constraint info in driverAdapterError.cause.constraint.fields
+      const adapterFields: string[] =
+        (meta.driverAdapterError as { cause?: { constraint?: { fields?: string[] } } } | undefined)
+          ?.cause?.constraint?.fields ?? [];
+      const legacyTarget = meta.target as string[] | string | undefined;
       const isUsernameDuplicate =
-        (Array.isArray(target) && target.some((t) => String(t).includes('username'))) ||
-        (typeof target === 'string' && target.includes('username'));
+        adapterFields.includes('username') ||
+        (Array.isArray(legacyTarget) && legacyTarget.some((t) => String(t).includes('username'))) ||
+        (typeof legacyTarget === 'string' && legacyTarget.includes('username'));
       if (isUsernameDuplicate) {
         res.status(409).json({
           error: { code: 'USERNAME_EXISTS', message: 'This username is already taken' },
