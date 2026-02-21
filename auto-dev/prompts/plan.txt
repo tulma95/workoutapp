@@ -19,7 +19,7 @@ After gathering context, assess whether the feature is small enough to implement
 
 Use the Task tool to spawn two subagents sequentially:
 
-**Subagent 1 — Planner** (subagent_type: "general-purpose"):
+**Subagent 1 — Planner** (subagent_type: "general-purpose", model: "haiku"):
 Prompt it with the ticket details and ask it to:
 - Read CLAUDE.md and explore the codebase
 - Create a concrete implementation plan with discrete tasks
@@ -28,7 +28,7 @@ Prompt it with the ticket details and ask it to:
 - Include test-writing as part of implementation tasks, not separate
 - Identify tasks that are independent and can be executed in parallel. Combine them into a single TASK line prefixed with [PARALLEL], separated by `|||` (e.g., `[PARALLEL] Add backend route for X ||| Add frontend component for Y`). Only parallelize truly independent work with no shared file or data dependencies.
 
-**Subagent 2 — Challenger** (subagent_type: "general-purpose"):
+**Subagent 2 — Challenger** (subagent_type: "general-purpose", model: "haiku"):
 Pass the planner's output and prompt it to:
 - Read CLAUDE.md and explore the codebase independently
 - Challenge the plan: missing edge cases, simpler alternatives, unnecessary complexity, missed conventions, wrong assumptions, missing tests, bad task ordering/sizing
