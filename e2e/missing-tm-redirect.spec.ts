@@ -8,8 +8,9 @@ async function registerAndPartialSetup(page: Page) {
 
   const uniqueId = crypto.randomUUID();
   const email = `test-${uniqueId}@example.com`;
+  const username = `testuser${uniqueId.replace(/-/g, '').slice(0, 16)}`;
 
-  await register.register(email, 'ValidPassword123', 'Test User');
+  await register.register(email, 'ValidPassword123', username);
   await planSelection.selectFirstPlan();
 
   // Get auth token

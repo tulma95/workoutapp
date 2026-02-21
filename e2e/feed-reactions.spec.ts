@@ -42,6 +42,7 @@ test.describe('Feed reactions', () => {
       await pageA.getByRole('link', { name: /social/i }).click();
       await expect(pageA.getByRole('heading', { name: /social/i })).toBeVisible();
       await pageA.getByRole('tab', { name: /friends/i }).click();
+      await pageA.getByRole('button', { name: /send by email/i }).click();
 
       await expect(pageA.getByLabel(/friend's email address/i)).toBeVisible();
       await pageA.getByLabel(/friend's email address/i).fill(emailB);

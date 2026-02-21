@@ -41,6 +41,7 @@ test.describe('Streak visibility', () => {
       // userA sends friend request to userB
       await pageA.getByRole('link', { name: /social/i }).click();
       await pageA.getByRole('tab', { name: /friends/i }).click();
+      await pageA.getByRole('button', { name: /send by email/i }).click();
       await pageA.getByLabel(/friend's email address/i).fill(emailB);
       await pageA.getByRole('button', { name: /^send$/i }).click();
       await expect(pageA.getByRole('status')).toContainText(/friend request sent/i);
@@ -165,6 +166,7 @@ test.describe('Social features', () => {
       await pageA.getByRole('link', { name: /social/i }).click();
       await expect(pageA.getByRole('heading', { name: /social/i })).toBeVisible();
       await pageA.getByRole('tab', { name: /friends/i }).click();
+      await pageA.getByRole('button', { name: /send by email/i }).click();
 
       await expect(pageA.getByLabel(/friend's email address/i)).toBeVisible();
       await pageA.getByLabel(/friend's email address/i).fill(emailB);

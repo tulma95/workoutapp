@@ -8,7 +8,7 @@ test.describe('Settings Page', () => {
 
     await settings.navigate();
 
-    await expect(page.getByText(user.username)).toBeVisible();
+    await expect(page.getByRole('textbox', { name: /username/i })).toHaveValue(user.username);
     await expect(page.getByText(new RegExp(user.email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))).toBeVisible();
   });
 

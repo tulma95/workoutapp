@@ -27,6 +27,7 @@ async function sendAndAcceptFriendRequest(
   await pageA.getByRole('link', { name: /social/i }).click();
   await expect(pageA.getByRole('heading', { name: /social/i })).toBeVisible();
   await pageA.getByRole('tab', { name: /friends/i }).click();
+  await pageA.getByRole('button', { name: /send by email/i }).click();
   await pageA.getByLabel(/friend's email address/i).fill(emailB);
   await pageA.getByRole('button', { name: /^send$/i }).click();
   await expect(pageA.getByRole('status')).toContainText(/friend request sent/i);
