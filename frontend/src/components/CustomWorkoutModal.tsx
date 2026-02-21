@@ -158,7 +158,7 @@ export function CustomWorkoutModal({ open, initialDate, onClose, onSaved }: Cust
             type="date"
             value={date}
             onChange={e => setDate(e.target.value)}
-            max={new Date().toISOString().slice(0, 10)}
+            max={new Date().toLocaleDateString('en-CA')}
           />
         </div>
 
