@@ -6,10 +6,17 @@ import { logger } from '../lib/logger';
 
 const router = Router();
 
+const usernameSchema = z
+  .string()
+  .min(3)
+  .max(30)
+  .regex(/^[a-zA-Z0-9_]+$/, 'Username may only contain letters, numbers, and underscores');
+
 const registerSchema = z.object({
   email: z.email(),
   password: z.string().min(8),
   displayName: z.string().min(1),
+  username: usernameSchema.optional(),
 });
 
 const loginSchema = z.object({
@@ -21,14 +28,22 @@ router.post('/register', validate(registerSchema), async (req: Request, res: Res
   try {
     const { password: _pw, ...safeBody } = req.body;
     logger.debug('Register request', { body: safeBody });
-    const { email, password, displayName } = req.body;
-    const result = await authService.register(email, password, displayName);
+    const { email, password, displayName, username } = req.body;
+    const result = await authService.register(email, password, displayName, username);
     res.status(201).json(result);
   } catch (err: unknown) {
     if (err && typeof err === 'object' && 'code' in err && err.code === 'P2002') {
-      res.status(409).json({
-        error: { code: 'EMAIL_EXISTS', message: 'An account with this email already exists' },
-      });
+      const target = (err as { meta?: { target?: string[] } }).meta?.target;
+      const isUsernameDuplicate = Array.isArray(target) && target.includes('username');
+      if (isUsernameDuplicate) {
+        res.status(409).json({
+          error: { code: 'USERNAME_EXISTS', message: 'This username is already taken' },
+        });
+      } else {
+        res.status(409).json({
+          error: { code: 'EMAIL_EXISTS', message: 'An account with this email already exists' },
+        });
+      }
       return;
     }
     throw err;
