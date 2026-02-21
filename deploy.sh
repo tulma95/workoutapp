@@ -79,6 +79,9 @@ run_e2e_tests() {
   APP_IMAGE="$FULL_TAG" docker compose -f "$COMPOSE_FILE" --profile e2e up -d --wait
   echo "App is healthy."
 
+  # Ensure Playwright browsers are installed
+  npx playwright install --with-deps webkit 2>/dev/null || npx playwright install webkit
+
   # Run Playwright E2E tests pointing at port 3002 (app container maps 3002:3001)
   BASE_URL="http://localhost:3002" npx playwright test
 

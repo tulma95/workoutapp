@@ -71,7 +71,7 @@ run_e2e_tests() {
   echo "App is healthy."
 
   # Ensure Playwright browsers are installed
-  npx playwright install --with-deps chromium 2>/dev/null || npx playwright install chromium
+  npx playwright install --with-deps webkit 2>/dev/null || npx playwright install webkit
 
   # Run Playwright E2E tests pointing at port 3002 (avoids conflict with dev backend on 3001)
   BASE_URL="http://localhost:3002" npx playwright test ${E2E_ARGS[@]+"${E2E_ARGS[@]}"}
