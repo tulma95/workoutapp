@@ -25,6 +25,18 @@
     "description": "When a mutation is pending, all 5 emoji buttons are disabled via mutation.isPending. Only the tapped emoji should be blocked. Prevents the user from reacting with a different emoji while one is in flight."
   },
   {
+    "id": "080",
+    "title": "Real-Time Notifications (SSE + Toast)",
+    "status": "done",
+    "doc": "docs/backlog/features/real-time-notifications.md"
+  },
+  {
+    "id": "091",
+    "title": "PWA bottom navbar touch targets too small — hard to tap",
+    "status": "backlog",
+    "description": "The bottom navigation bar in the PWA is too small, making it difficult to tap on mobile devices. Increase the height and touch target size of the bottom navbar to meet the 44px minimum touch target guideline."
+  },
+  {
     "id": "077",
     "title": "E2E streak test uses setDate (local) instead of setUTCDate for yesterday calculation — may produce wrong date near midnight in UTC-offset environments",
     "status": "backlog",
@@ -524,12 +536,6 @@
     "status": "done",
     "priority": "low",
     "description": "E2E streak test uses setDate/getDate (local time) for yesterday but toISOString() returns UTC. Near midnight in UTC-offset timezones this produces the wrong date, causing the 2 day streak assertion to fail."
-  },
-  {
-    "id": "080",
-    "title": "Real-Time Notifications (SSE + Toast)",
-    "status": "backlog",
-    "doc": "docs/backlog/features/real-time-notifications.md"
   },
   {
     "id": "081",
