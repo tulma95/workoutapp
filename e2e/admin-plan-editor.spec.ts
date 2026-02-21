@@ -182,7 +182,7 @@ const test = base.extend<AdminFixture>({
     await page.goto('/register');
     await page.getByLabel(/email/i).fill(email);
     await page.getByLabel(/password/i).fill('ValidPassword123');
-    await page.getByLabel(/display name/i).fill('Admin User');
+    await page.getByLabel('Username').fill(`adminuser${uid}`);
     await page.getByRole('button', { name: /create account/i }).click();
 
     await page.getByRole('button', { name: /select plan/i }).first().click();

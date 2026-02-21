@@ -6,7 +6,7 @@ export async function getMe() {
   return UserSchema.parse(data)
 }
 
-export async function updateMe(updates: { displayName?: string; username?: string | null }) {
+export async function updateMe(updates: { username?: string | null }) {
   const data = await apiFetch('/users/me', {
     method: 'PATCH',
     body: JSON.stringify(updates),

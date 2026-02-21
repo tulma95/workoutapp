@@ -18,7 +18,7 @@ function ExerciseRankings({ exercise }: { exercise: LeaderboardExercise }) {
             <span className={styles.rank} aria-label={`Rank ${index + 1}`}>
               {index + 1}
             </span>
-            <span className={styles.displayName}>{ranking.displayName}</span>
+            <span className={styles.displayName}>{ranking.username}</span>
             <span className={styles.weight}>{formatWeight(ranking.weight)}</span>
           </li>
         ))}

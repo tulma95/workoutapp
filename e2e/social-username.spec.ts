@@ -6,29 +6,24 @@ function uniqueUsername() {
   return `u${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
 }
 
-async function registerWithOptionalUsername(
+async function registerWithUsername(
   page: Page,
   email: string,
-  displayName: string,
-  username?: string,
+  username: string,
 ) {
   await page.goto('/register');
   await page.getByLabel(/email/i).fill(email);
   await page.getByLabel(/password/i).fill('ValidPassword123');
-  await page.getByLabel(/display name/i).fill(displayName);
-  if (username) {
-    await page.getByLabel(/username \(optional\)/i).fill(username);
-  }
+  await page.getByLabel('Username').fill(username);
   await page.getByRole('button', { name: /create account/i }).click();
 }
 
 async function registerAndSetup(
   page: Page,
   email: string,
-  displayName: string,
-  username?: string,
+  username: string,
 ) {
-  await registerWithOptionalUsername(page, email, displayName, username);
+  await registerWithUsername(page, email, username);
 
   const planSelection = new PlanSelectionPage(page);
   await planSelection.selectFirstPlan();
@@ -64,9 +59,8 @@ test.describe('Username: full friend request flow via autocomplete', () => {
     const idB = crypto.randomUUID().slice(0, 8);
     const emailA = `un-a-${idA}@example.com`;
     const emailB = `un-b-${idB}@example.com`;
-    const displayNameA = `AlphaUser ${idA}`;
-    const displayNameB = `BetaUser ${idB}`;
     const usernameA = uniqueUsername();
+    const usernameB = uniqueUsername();
 
     const ctxA = await browser.newContext({ baseURL });
     const ctxB = await browser.newContext({ baseURL });
@@ -74,8 +68,8 @@ test.describe('Username: full friend request flow via autocomplete', () => {
     const pageB = await ctxB.newPage();
 
     try {
-      await registerAndSetup(pageA, emailA, displayNameA, usernameA);
-      await registerAndSetup(pageB, emailB, displayNameB);
+      await registerAndSetup(pageA, emailA, usernameA);
+      await registerAndSetup(pageB, emailB, usernameB);
 
       // userB navigates to Friends tab (default search mode)
       await navigateToFriendsTab(pageB);
@@ -85,9 +79,9 @@ test.describe('Username: full friend request flow via autocomplete', () => {
       const partial = usernameA.slice(0, 6);
       await typeInSearchAndWaitForResults(pageB, partial);
 
-      // userA's display name should appear in the dropdown
+      // userA's username should appear in the dropdown
       const resultButton = pageB.getByRole('button', {
-        name: new RegExp(displayNameA),
+        name: new RegExp(usernameA),
       });
       await expect(resultButton).toBeVisible();
 
@@ -100,18 +94,18 @@ test.describe('Username: full friend request flow via autocomplete', () => {
       // userA navigates to Friends tab and accepts
       await navigateToFriendsTab(pageA);
       const acceptButton = pageA.getByRole('button', {
-        name: `Accept friend request from ${displayNameB}`,
+        name: `Accept friend request from ${usernameB}`,
       });
       await expect(acceptButton).toBeVisible();
       await acceptButton.click();
 
       // userA now sees userB in friends list
-      await expect(pageA.getByText(new RegExp(displayNameB))).toBeVisible();
+      await expect(pageA.getByText(new RegExp(usernameB))).toBeVisible();
 
       // userB reloads to get fresh friends list (no real-time updates)
       await pageB.reload();
       await navigateToFriendsTab(pageB);
-      await expect(pageB.getByText(new RegExp(displayNameA))).toBeVisible();
+      await expect(pageB.getByText(new RegExp(usernameA))).toBeVisible();
     } finally {
       await ctxA.close();
       await ctxB.close();
@@ -130,9 +124,9 @@ test.describe('Username: set username in settings after registration', () => {
     const idB = crypto.randomUUID().slice(0, 8);
     const emailA = `un-settings-a-${idA}@example.com`;
     const emailB = `un-settings-b-${idB}@example.com`;
-    const displayNameA = `SettingsAlpha ${idA}`;
-    const displayNameB = `SettingsBeta ${idB}`;
     const usernameA = uniqueUsername();
+    const usernameANew = uniqueUsername();
+    const usernameB = uniqueUsername();
 
     const ctxA = await browser.newContext({ baseURL });
     const ctxB = await browser.newContext({ baseURL });
@@ -140,17 +134,17 @@ test.describe('Username: set username in settings after registration', () => {
     const pageB = await ctxB.newPage();
 
     try {
-      // userA registers WITHOUT username
-      await registerAndSetup(pageA, emailA, displayNameA);
+      // userA registers with a username but then changes it via settings
+      await registerAndSetup(pageA, emailA, usernameA);
 
-      // userB registers (for the search)
-      await registerAndSetup(pageB, emailB, displayNameB);
+      // userB registers
+      await registerAndSetup(pageB, emailB, usernameB);
 
-      // userA goes to Settings and sets their username
+      // userA goes to Settings and changes their username
       await pageA.getByRole('link', { name: /settings/i }).click();
       const usernameInput = pageA.getByLabel('Username');
       await expect(usernameInput).toBeVisible();
-      await usernameInput.fill(usernameA);
+      await usernameInput.fill(usernameANew);
 
       // Wait for the PATCH to confirm the username was saved
       const [saveResponse] = await Promise.all([
@@ -161,14 +155,14 @@ test.describe('Username: set username in settings after registration', () => {
       ]);
       expect(saveResponse.status()).toBe(200);
 
-      // userB searches for userA's username
+      // userB searches for userA's new username
       await navigateToFriendsTab(pageB);
-      const partial = usernameA.slice(0, 6);
+      const partial = usernameANew.slice(0, 6);
       await typeInSearchAndWaitForResults(pageB, partial);
 
       // userA appears in results
       const resultButton = pageB.getByRole('button', {
-        name: new RegExp(displayNameA),
+        name: new RegExp(usernameANew),
       });
       await expect(resultButton).toBeVisible();
     } finally {
@@ -184,10 +178,9 @@ test.describe('Username: search excludes self', () => {
   test('user does not see themselves in search results', async ({ page }) => {
     const id = crypto.randomUUID().slice(0, 8);
     const email = `un-self-${id}@example.com`;
-    const displayName = `SelfSearch ${id}`;
     const username = uniqueUsername();
 
-    await registerAndSetup(page, email, displayName, username);
+    await registerAndSetup(page, email, username);
 
     await navigateToFriendsTab(page);
 
@@ -215,8 +208,6 @@ test.describe('Username: search excludes accepted friends', () => {
     const idB = crypto.randomUUID().slice(0, 8);
     const emailA = `un-excl-a-${idA}@example.com`;
     const emailB = `un-excl-b-${idB}@example.com`;
-    const displayNameA = `ExclAlpha ${idA}`;
-    const displayNameB = `ExclBeta ${idB}`;
     const usernameA = uniqueUsername();
     const usernameB = uniqueUsername();
 
@@ -226,8 +217,8 @@ test.describe('Username: search excludes accepted friends', () => {
     const pageB = await ctxB.newPage();
 
     try {
-      await registerAndSetup(pageA, emailA, displayNameA, usernameA);
-      await registerAndSetup(pageB, emailB, displayNameB, usernameB);
+      await registerAndSetup(pageA, emailA, usernameA);
+      await registerAndSetup(pageB, emailB, usernameB);
 
       // userA sends friend request to userB via email (simpler for setup)
       await navigateToFriendsTab(pageA);
@@ -240,11 +231,11 @@ test.describe('Username: search excludes accepted friends', () => {
       // userB accepts
       await navigateToFriendsTab(pageB);
       const acceptButton = pageB.getByRole('button', {
-        name: `Accept friend request from ${displayNameA}`,
+        name: `Accept friend request from ${usernameA}`,
       });
       await expect(acceptButton).toBeVisible();
       await acceptButton.click();
-      await expect(pageB.getByText(new RegExp(displayNameA))).toBeVisible();
+      await expect(pageB.getByText(new RegExp(usernameA))).toBeVisible();
 
       // Now userB searches for userA — should NOT appear (they're friends)
       const searchInput = pageB.getByLabel('Search by username');
@@ -273,8 +264,6 @@ test.describe('Username: search excludes pending requests', () => {
     const idB = crypto.randomUUID().slice(0, 8);
     const emailA = `un-pend-a-${idA}@example.com`;
     const emailB = `un-pend-b-${idB}@example.com`;
-    const displayNameA = `PendAlpha ${idA}`;
-    const displayNameB = `PendBeta ${idB}`;
     const usernameA = uniqueUsername();
     const usernameB = uniqueUsername();
 
@@ -284,14 +273,14 @@ test.describe('Username: search excludes pending requests', () => {
     const pageB = await ctxB.newPage();
 
     try {
-      await registerAndSetup(pageA, emailA, displayNameA, usernameA);
-      await registerAndSetup(pageB, emailB, displayNameB, usernameB);
+      await registerAndSetup(pageA, emailA, usernameA);
+      await registerAndSetup(pageB, emailB, usernameB);
 
       // userA sends friend request to userB (request is now pending)
       await navigateToFriendsTab(pageA);
       await typeInSearchAndWaitForResults(pageA, usernameB.slice(0, 6));
       const resultButton = pageA.getByRole('button', {
-        name: new RegExp(displayNameB),
+        name: new RegExp(usernameB),
       });
       await expect(resultButton).toBeVisible();
       await resultButton.click();
@@ -331,10 +320,9 @@ test.describe('Username: case-insensitive search', () => {
     const idB = crypto.randomUUID().slice(0, 8);
     const emailA = `un-case-a-${idA}@example.com`;
     const emailB = `un-case-b-${idB}@example.com`;
-    const displayNameA = `CaseAlpha ${idA}`;
-    const displayNameB = `CaseBeta ${idB}`;
     // lowercase username for userA
     const usernameA = `lower${idA}`;
+    const usernameB = uniqueUsername();
 
     const ctxA = await browser.newContext({ baseURL });
     const ctxB = await browser.newContext({ baseURL });
@@ -342,8 +330,8 @@ test.describe('Username: case-insensitive search', () => {
     const pageB = await ctxB.newPage();
 
     try {
-      await registerAndSetup(pageA, emailA, displayNameA, usernameA);
-      await registerAndSetup(pageB, emailB, displayNameB);
+      await registerAndSetup(pageA, emailA, usernameA);
+      await registerAndSetup(pageB, emailB, usernameB);
 
       // userB searches using uppercase
       await navigateToFriendsTab(pageB);
@@ -352,7 +340,7 @@ test.describe('Username: case-insensitive search', () => {
 
       // userA should still appear in results
       const resultButton = pageB.getByRole('button', {
-        name: new RegExp(displayNameA),
+        name: new RegExp(usernameA),
       });
       await expect(resultButton).toBeVisible();
     } finally {
@@ -372,10 +360,9 @@ test.describe('Username: registration validation', () => {
     await page.goto('/register');
     await page.getByLabel(/email/i).fill(email);
     await page.getByLabel(/password/i).fill('ValidPassword123');
-    await page.getByLabel(/display name/i).fill('Test User');
 
     // Enter a username with invalid characters (valid length, bad chars)
-    const usernameInput = page.getByLabel(/username \(optional\)/i);
+    const usernameInput = page.getByLabel('Username');
     await usernameInput.fill('abc!def');
     // Blur to trigger validation
     await usernameInput.blur();
@@ -391,9 +378,8 @@ test.describe('Username: registration validation', () => {
     await page.goto('/register');
     await page.getByLabel(/email/i).fill(email);
     await page.getByLabel(/password/i).fill('ValidPassword123');
-    await page.getByLabel(/display name/i).fill('Test User');
 
-    const usernameInput = page.getByLabel(/username \(optional\)/i);
+    const usernameInput = page.getByLabel('Username');
     await usernameInput.fill('ab');
     await usernameInput.blur();
 
@@ -409,7 +395,7 @@ test.describe('Username: registration validation', () => {
     // Register first user with that username in context A
     const ctxA = await browser.newContext({ baseURL });
     const pageA = await ctxA.newPage();
-    await registerWithOptionalUsername(pageA, emailA, `DupAlpha ${id}`, username);
+    await registerWithUsername(pageA, emailA, username);
     await pageA.waitForURL(/\/(select-plan|setup)/);
     await ctxA.close();
 
@@ -420,8 +406,7 @@ test.describe('Username: registration validation', () => {
       await pageB.goto('/register');
       await pageB.getByLabel(/email/i).fill(emailB);
       await pageB.getByLabel(/password/i).fill('ValidPassword123');
-      await pageB.getByLabel(/display name/i).fill(`DupBeta ${id}`);
-      await pageB.getByLabel(/username \(optional\)/i).fill(username);
+      await pageB.getByLabel('Username').fill(username);
       await pageB.getByRole('button', { name: /create account/i }).click();
 
       // Should show error about username already taken

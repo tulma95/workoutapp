@@ -4,9 +4,9 @@ import { PlanSelectionPage } from './pages/plan-selection.page';
 import { SetupPage } from './pages/setup.page';
 import { WorkoutPage } from './pages/workout.page';
 
-async function registerAndSetup(page: Page, email: string, displayName: string) {
+async function registerAndSetup(page: Page, email: string, username: string) {
   const register = new RegisterPage(page);
-  await register.register(email, 'ValidPassword123', displayName);
+  await register.register(email, 'ValidPassword123', username);
 
   const planSelection = new PlanSelectionPage(page);
   await planSelection.selectFirstPlan();
@@ -25,8 +25,8 @@ test.describe('Streak visibility', () => {
     const uniqueB = crypto.randomUUID().slice(0, 8);
     const emailA = `streak-a-${uniqueA}@example.com`;
     const emailB = `streak-b-${uniqueB}@example.com`;
-    const displayNameA = `StreakAlpha ${uniqueA}`;
-    const displayNameB = `StreakBeta ${uniqueB}`;
+    const usernameA = `streaka${uniqueA}`;
+    const usernameB = `streakb${uniqueB}`;
 
     const contextA = await browser.newContext({ baseURL });
     const contextB = await browser.newContext({ baseURL });
@@ -35,8 +35,8 @@ test.describe('Streak visibility', () => {
 
     try {
       // Register both users
-      await registerAndSetup(pageA, emailA, displayNameA);
-      await registerAndSetup(pageB, emailB, displayNameB);
+      await registerAndSetup(pageA, emailA, usernameA);
+      await registerAndSetup(pageB, emailB, usernameB);
 
       // userA sends friend request to userB
       await pageA.getByRole('link', { name: /social/i }).click();
@@ -49,11 +49,11 @@ test.describe('Streak visibility', () => {
       await pageB.getByRole('link', { name: /social/i }).click();
       await pageB.getByRole('tab', { name: /friends/i }).click();
       const acceptButton = pageB.getByRole('button', {
-        name: `Accept friend request from ${displayNameA}`,
+        name: `Accept friend request from ${usernameA}`,
       });
       await expect(acceptButton).toBeVisible();
       await acceptButton.click();
-      await expect(pageB.getByText(new RegExp(displayNameA))).toBeVisible();
+      await expect(pageB.getByText(new RegExp(usernameA))).toBeVisible();
 
       // Get userB's auth token and an exercise ID
       const tokenB = await pageB.evaluate(() => localStorage.getItem('accessToken'));
@@ -100,10 +100,10 @@ test.describe('Leaderboard toggle', () => {
   test('TM/e1RM toggle switches mode and shows correct empty state', async ({ page }) => {
     const unique = crypto.randomUUID().slice(0, 8);
     const email = `leaderboard-toggle-${unique}@example.com`;
-    const displayName = `LBToggle ${unique}`;
+    const username = `lbtoggle${unique}`;
 
     const register = new RegisterPage(page);
-    await register.register(email, 'ValidPassword123', displayName);
+    await register.register(email, 'ValidPassword123', username);
 
     const planSelection = new PlanSelectionPage(page);
     await planSelection.selectFirstPlan();
@@ -148,8 +148,8 @@ test.describe('Social features', () => {
     const uniqueB = crypto.randomUUID().slice(0, 8);
     const emailA = `social-a-${uniqueA}@example.com`;
     const emailB = `social-b-${uniqueB}@example.com`;
-    const displayNameA = `Alpha ${uniqueA}`;
-    const displayNameB = `Beta ${uniqueB}`;
+    const usernameA = `alpha${uniqueA}`;
+    const usernameB = `beta${uniqueB}`;
 
     const contextA = await browser.newContext({ baseURL });
     const contextB = await browser.newContext({ baseURL });
@@ -158,8 +158,8 @@ test.describe('Social features', () => {
 
     try {
       // --- Register both users ---
-      await registerAndSetup(pageA, emailA, displayNameA);
-      await registerAndSetup(pageB, emailB, displayNameB);
+      await registerAndSetup(pageA, emailA, usernameA);
+      await registerAndSetup(pageB, emailB, usernameB);
 
       // --- userA navigates to Social > Friends and sends a request ---
       await pageA.getByRole('link', { name: /social/i }).click();
@@ -178,13 +178,13 @@ test.describe('Social features', () => {
       await pageB.getByRole('tab', { name: /friends/i }).click();
 
       const acceptButton = pageB.getByRole('button', {
-        name: `Accept friend request from ${displayNameA}`,
+        name: `Accept friend request from ${usernameA}`,
       });
       await expect(acceptButton).toBeVisible();
       await acceptButton.click();
 
       // userA should now appear in userB's confirmed friends list
-      await expect(pageB.getByText(new RegExp(displayNameA))).toBeVisible();
+      await expect(pageB.getByText(new RegExp(usernameA))).toBeVisible();
 
       // --- userA completes a workout ---
       await pageA.getByRole('link', { name: /home/i }).click();
@@ -201,7 +201,7 @@ test.describe('Social features', () => {
       // The feed endpoint shows friends' events; userB is a friend of userA
       await pageB.getByRole('tab', { name: /feed/i }).click();
       await expect(
-        pageB.getByText(new RegExp(`${displayNameA}.*completed Day`, 'i')),
+        pageB.getByText(new RegExp(`${usernameA}.*completed Day`, 'i')),
       ).toBeVisible({ timeout: 10000 });
 
       // --- Both users check the leaderboard and see each other ---
@@ -212,11 +212,11 @@ test.describe('Social features', () => {
       await pageA.getByRole('tab', { name: /leaderboard/i }).click();
 
       // userA sees userB in the leaderboard
-      await expect(pageA.getByText(new RegExp(displayNameB)).first()).toBeVisible();
+      await expect(pageA.getByText(new RegExp(usernameB)).first()).toBeVisible();
 
       // userB switches to the leaderboard tab and sees userA
       await pageB.getByRole('tab', { name: /leaderboard/i }).click();
-      await expect(pageB.getByText(new RegExp(displayNameA)).first()).toBeVisible();
+      await expect(pageB.getByText(new RegExp(usernameA)).first()).toBeVisible();
     } finally {
       await contextA.close();
       await contextB.close();

@@ -4,9 +4,9 @@ import { PlanSelectionPage } from './pages/plan-selection.page';
 import { SetupPage } from './pages/setup.page';
 import { WorkoutPage } from './pages/workout.page';
 
-async function registerAndSetup(page: Page, email: string, displayName: string) {
+async function registerAndSetup(page: Page, email: string, username: string) {
   const register = new RegisterPage(page);
-  await register.register(email, 'ValidPassword123', displayName);
+  await register.register(email, 'ValidPassword123', username);
 
   const planSelection = new PlanSelectionPage(page);
   await planSelection.selectFirstPlan();
@@ -21,7 +21,7 @@ async function sendAndAcceptFriendRequest(
   pageA: Page,
   emailB: string,
   pageB: Page,
-  displayNameA: string,
+  usernameA: string,
 ) {
   // userA sends a friend request to userB
   await pageA.getByRole('link', { name: /social/i }).click();
@@ -36,11 +36,11 @@ async function sendAndAcceptFriendRequest(
   await expect(pageB.getByRole('heading', { name: /social/i })).toBeVisible();
   await pageB.getByRole('tab', { name: /friends/i }).click();
   const acceptButton = pageB.getByRole('button', {
-    name: `Accept friend request from ${displayNameA}`,
+    name: `Accept friend request from ${usernameA}`,
   });
   await expect(acceptButton).toBeVisible();
   await acceptButton.click();
-  await expect(pageB.getByText(new RegExp(displayNameA))).toBeVisible();
+  await expect(pageB.getByText(new RegExp(usernameA))).toBeVisible();
 }
 
 test.describe('Feed new event types', () => {
@@ -54,7 +54,8 @@ test.describe('Feed new event types', () => {
     const uniqueB = crypto.randomUUID().slice(0, 8);
     const emailA = `badge-a-${uniqueA}@example.com`;
     const emailB = `badge-b-${uniqueB}@example.com`;
-    const displayNameA = `BadgeAlpha ${uniqueA}`;
+    const usernameA = `badgea${uniqueA}`;
+    const usernameB = `badgeb${uniqueB}`;
 
     const contextA = await browser.newContext({ baseURL });
     const contextB = await browser.newContext({ baseURL });
@@ -62,10 +63,10 @@ test.describe('Feed new event types', () => {
     const pageB = await contextB.newPage();
 
     try {
-      await registerAndSetup(pageA, emailA, displayNameA);
-      await registerAndSetup(pageB, emailB, `BadgeBeta ${uniqueB}`);
+      await registerAndSetup(pageA, emailA, usernameA);
+      await registerAndSetup(pageB, emailB, usernameB);
 
-      await sendAndAcceptFriendRequest(pageA, emailB, pageB, displayNameA);
+      await sendAndAcceptFriendRequest(pageA, emailB, pageB, usernameA);
 
       // userA completes their first workout (unlocks first-blood badge -> badge_unlocked feed event)
       await pageA.getByRole('link', { name: /home/i }).click();
@@ -97,7 +98,8 @@ test.describe('Feed new event types', () => {
     const uniqueB = crypto.randomUUID().slice(0, 8);
     const emailA = `planswitch-a-${uniqueA}@example.com`;
     const emailB = `planswitch-b-${uniqueB}@example.com`;
-    const displayNameA = `PlanSwitchAlpha ${uniqueA}`;
+    const usernameA = `planswitcha${uniqueA}`;
+    const usernameB = `planswitchb${uniqueB}`;
 
     const contextA = await browser.newContext({ baseURL });
     const contextB = await browser.newContext({ baseURL });
@@ -106,12 +108,12 @@ test.describe('Feed new event types', () => {
 
     try {
       // Register A fully — plan subscription fires plan_switched feed event during setup
-      await registerAndSetup(pageA, emailA, displayNameA);
-      await registerAndSetup(pageB, emailB, `PlanSwitchBeta ${uniqueB}`);
+      await registerAndSetup(pageA, emailA, usernameA);
+      await registerAndSetup(pageB, emailB, usernameB);
 
       // Friend them — A sends request, B accepts
       // After friendship, B can see A's historical feed events (feed shows all friend events)
-      await sendAndAcceptFriendRequest(pageA, emailB, pageB, displayNameA);
+      await sendAndAcceptFriendRequest(pageA, emailB, pageB, usernameA);
 
       // userB navigates to Feed tab and sees A's plan_switched event
       await pageB.getByRole('tab', { name: /feed/i }).click();

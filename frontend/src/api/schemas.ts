@@ -97,8 +97,7 @@ export const WorkoutCalendarResponseSchema = z.object({
 export const UserSchema = z.object({
   id: z.number(),
   email: z.string(),
-  displayName: z.string(),
-  username: z.string().nullable().optional(),
+  username: z.string(),
   isAdmin: z.boolean(),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -279,16 +278,14 @@ export type AdminPlanListItem = z.infer<typeof AdminPlanListItemSchema>;
 export const FriendSchema = z.object({
   id: z.number(),
   userId: z.number(),
-  displayName: z.string(),
-  username: z.string().nullable().optional(),
+  username: z.string(),
   streak: z.number().default(0),
 });
 
 export const FriendRequestSchema = z.object({
   id: z.number(),
   requesterId: z.number(),
-  displayName: z.string(),
-  username: z.string().nullable().optional(),
+  username: z.string(),
 });
 
 export const FriendsResponseSchema = z.object({
@@ -344,7 +341,7 @@ export const ReactResponseSchema = z.object({
 export const FeedEventSchema = z.object({
   id: z.number(),
   userId: z.number(),
-  displayName: z.string(),
+  username: z.string(),
   eventType: z.string(),
   payload: z.record(z.string(), z.unknown()),
   createdAt: z.string(),
@@ -358,7 +355,7 @@ export const FeedResponseSchema = z.object({
 
 export const LeaderboardRankingSchema = z.object({
   userId: z.number(),
-  displayName: z.string(),
+  username: z.string(),
   weight: z.number(),
 });
 
@@ -374,8 +371,7 @@ export const LeaderboardResponseSchema = z.object({
 
 export const UserSearchResultSchema = z.object({
   id: z.number(),
-  displayName: z.string(),
-  username: z.string().nullable(),
+  username: z.string(),
 });
 
 export const UserSearchResponseSchema = z.object({

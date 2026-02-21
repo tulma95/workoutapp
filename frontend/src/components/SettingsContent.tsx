@@ -99,11 +99,6 @@ export function SettingsContent({
       </div>
 
       <div className={styles.card}>
-        <p className={styles.cardSubLabel}>Display Name</p>
-        <p className={styles.cardValue}>{user?.displayName}</p>
-      </div>
-
-      <div className={styles.card}>
         <p className={styles.cardSubLabel}>Email</p>
         <p className={styles.cardValue}>{user?.email}</p>
       </div>

@@ -2,13 +2,13 @@ import { test, expect } from './fixtures';
 import { SettingsPage } from './pages/settings.page';
 
 test.describe('Settings Page', () => {
-  test('navigate to settings -> see current user info (display name, email)', async ({ setupCompletePage }) => {
+  test('navigate to settings -> see current user info (username, email)', async ({ setupCompletePage }) => {
     const { page, user } = setupCompletePage;
     const settings = new SettingsPage(page);
 
     await settings.navigate();
 
-    await expect(page.getByText(user.displayName)).toBeVisible();
+    await expect(page.getByText(user.username)).toBeVisible();
     await expect(page.getByText(new RegExp(user.email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))).toBeVisible();
   });
 

@@ -6,7 +6,7 @@ import { SetupPage } from './pages/setup.page';
 interface User {
   email: string;
   password: string;
-  displayName: string;
+  username: string;
 }
 
 interface AuthenticatedPageFixture {
@@ -25,11 +25,11 @@ export const test = base.extend<{
     const user: User = {
       email: `test-${uniqueId}@example.com`,
       password: 'ValidPassword123',
-      displayName: 'Test User',
+      username: `testuser${uniqueId.replace(/-/g, '').slice(0, 16)}`,
     };
 
     const registerPage = new RegisterPage(page);
-    await registerPage.register(user.email, user.password, user.displayName);
+    await registerPage.register(user.email, user.password, user.username);
 
     const planSelection = new PlanSelectionPage(page);
     await planSelection.selectFirstPlan();

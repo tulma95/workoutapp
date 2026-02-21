@@ -12,7 +12,6 @@ function RegisterPage() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [displayName, setDisplayName] = useState('')
   const [username, setUsername] = useState('')
   const [error, setError] = useState('')
   const [passwordError, setPasswordError] = useState('')
@@ -20,7 +19,7 @@ function RegisterPage() {
   const [loading, setLoading] = useState(false)
 
   function validateUsername(value: string): string {
-    if (value.length === 0) return ''
+    if (value.length === 0) return 'Username is required'
     if (value.length < 3) return 'Username must be at least 3 characters'
     if (value.length > 30) return 'Username must be at most 30 characters'
     if (!/^[a-zA-Z0-9_]+$/.test(value)) return 'Username can only contain letters, numbers, and underscores'
@@ -44,7 +43,7 @@ function RegisterPage() {
     setUsernameError('')
     setLoading(true)
     try {
-      await register(email, password, displayName, trimmedUsername || undefined)
+      await register(email, password, trimmedUsername)
       navigate({ to: '/' })
     } catch (err: unknown) {
       const msg = err && typeof err === 'object' && 'error' in err
@@ -72,7 +71,6 @@ function RegisterPage() {
     <RegisterForm
       email={email}
       password={password}
-      displayName={displayName}
       username={username}
       error={error}
       passwordError={passwordError}
@@ -81,7 +79,6 @@ function RegisterPage() {
       onEmailChange={setEmail}
       onPasswordChange={setPassword}
       onPasswordBlur={handlePasswordBlur}
-      onDisplayNameChange={setDisplayName}
       onUsernameChange={setUsername}
       onUsernameBlur={handleUsernameBlur}
       onSubmit={handleSubmit}

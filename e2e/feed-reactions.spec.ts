@@ -4,9 +4,9 @@ import { PlanSelectionPage } from './pages/plan-selection.page';
 import { SetupPage } from './pages/setup.page';
 import { WorkoutPage } from './pages/workout.page';
 
-async function registerAndSetup(page: Page, email: string, displayName: string) {
+async function registerAndSetup(page: Page, email: string, username: string) {
   const register = new RegisterPage(page);
-  await register.register(email, 'ValidPassword123', displayName);
+  await register.register(email, 'ValidPassword123', username);
 
   const planSelection = new PlanSelectionPage(page);
   await planSelection.selectFirstPlan();
@@ -25,7 +25,8 @@ test.describe('Feed reactions', () => {
     const uniqueB = crypto.randomUUID().slice(0, 8);
     const emailA = `react-a-${uniqueA}@example.com`;
     const emailB = `react-b-${uniqueB}@example.com`;
-    const displayNameA = `Alpha ${uniqueA}`;
+    const usernameA = `alpha${uniqueA}`;
+    const usernameB = `beta${uniqueB}`;
 
     const contextA = await browser.newContext({ baseURL });
     const contextB = await browser.newContext({ baseURL });
@@ -34,8 +35,8 @@ test.describe('Feed reactions', () => {
 
     try {
       // --- Register both users ---
-      await registerAndSetup(pageA, emailA, displayNameA);
-      await registerAndSetup(pageB, emailB, `Beta ${uniqueB}`);
+      await registerAndSetup(pageA, emailA, usernameA);
+      await registerAndSetup(pageB, emailB, usernameB);
 
       // --- userA sends a friend request to userB ---
       await pageA.getByRole('link', { name: /social/i }).click();
@@ -54,11 +55,11 @@ test.describe('Feed reactions', () => {
       await pageB.getByRole('tab', { name: /friends/i }).click();
 
       const acceptButton = pageB.getByRole('button', {
-        name: `Accept friend request from ${displayNameA}`,
+        name: `Accept friend request from ${usernameA}`,
       });
       await expect(acceptButton).toBeVisible();
       await acceptButton.click();
-      await expect(pageB.getByText(new RegExp(displayNameA))).toBeVisible();
+      await expect(pageB.getByText(new RegExp(usernameA))).toBeVisible();
 
       // --- userA completes a workout (creates a feed event) ---
       await pageA.getByRole('link', { name: /home/i }).click();
@@ -74,7 +75,7 @@ test.describe('Feed reactions', () => {
       // --- userB navigates to Feed tab and sees A's workout_completed event ---
       await pageB.getByRole('tab', { name: /feed/i }).click();
       await expect(
-        pageB.getByText(new RegExp(`${displayNameA}.*completed Day`, 'i')),
+        pageB.getByText(new RegExp(`${usernameA}.*completed Day`, 'i')),
       ).toBeVisible({ timeout: 10000 });
 
       // --- userB taps the 🔥 button ---

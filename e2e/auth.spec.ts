@@ -11,7 +11,8 @@ async function registerAndSetupToLogin(page: Page, email: string) {
   const setup = new SetupPage(page);
   const settings = new SettingsPage(page);
 
-  await register.register(email, 'ValidPassword123', 'Test User');
+  const username = `u${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
+  await register.register(email, 'ValidPassword123', username);
   await planSelection.selectFirstPlan();
   await setup.expectHeading();
 
@@ -21,12 +22,13 @@ async function registerAndSetupToLogin(page: Page, email: string) {
 test.describe('Authentication', () => {
   test('register a new user with valid credentials -> redirected to setup page', async ({ page }) => {
     const email = `test-${Date.now()}@example.com`;
+    const username = `u${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
 
     const register = new RegisterPage(page);
     const planSelection = new PlanSelectionPage(page);
     const setup = new SetupPage(page);
 
-    await register.register(email, 'ValidPassword123', 'Test User');
+    await register.register(email, 'ValidPassword123', username);
     await planSelection.selectFirstPlan();
     await setup.expectHeading();
     expect(page.url()).toContain('/setup');
@@ -39,7 +41,8 @@ test.describe('Authentication', () => {
     const setup = new SetupPage(page);
     const settings = new SettingsPage(page);
 
-    await register.register(email, 'ValidPassword123', 'Test User');
+    const username1 = `u${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
+    await register.register(email, 'ValidPassword123', username1);
     await planSelection.selectFirstPlan();
     await setup.expectHeading();
 
@@ -47,7 +50,8 @@ test.describe('Authentication', () => {
     await settings.logout();
 
     // Try to register again with same email
-    await register.register(email, 'ValidPassword123', 'Test User');
+    const username2 = `u${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
+    await register.register(email, 'ValidPassword123', username2);
 
     await expect(register.errorMessage).toBeVisible();
     await expect(register.errorMessage).toContainText(/email.*already.*exist/i);

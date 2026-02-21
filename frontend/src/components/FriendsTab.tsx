@@ -271,10 +271,7 @@ export function FriendsTab() {
                           onClick={() => handleSelectUser(user)}
                           disabled={sendByUsernameMutation.isPending}
                         >
-                          <span className={styles.searchResultName}>{user.displayName}</span>
-                          {user.username && (
-                            <span className={styles.searchResultUsername}>@{user.username}</span>
-                          )}
+                          <span className={styles.searchResultName}>{user.username}</span>
                         </button>
                       </li>
                     ))
@@ -343,7 +340,7 @@ export function FriendsTab() {
           <ul className={styles.list} aria-label="Pending friend requests">
             {requests.map((req) => (
               <li key={req.id} className={styles.listItem}>
-                <span className={styles.displayName}>{req.displayName}</span>
+                <span className={styles.displayName}>{req.username}</span>
                 <div className={styles.actions}>
                   <button
                     className={styles.acceptBtn}
@@ -352,7 +349,7 @@ export function FriendsTab() {
                       acceptMutation.isPending &&
                       acceptMutation.variables === req.id
                     }
-                    aria-label={`Accept friend request from ${req.displayName}`}
+                    aria-label={`Accept friend request from ${req.username}`}
                   >
                     Accept
                   </button>
@@ -363,7 +360,7 @@ export function FriendsTab() {
                       declineMutation.isPending &&
                       declineMutation.variables === req.id
                     }
-                    aria-label={`Decline friend request from ${req.displayName}`}
+                    aria-label={`Decline friend request from ${req.username}`}
                   >
                     Decline
                   </button>
@@ -384,7 +381,7 @@ export function FriendsTab() {
           <ul className={styles.list} aria-label="Friends list">
             {friends.map((friend) => (
               <li key={friend.id} className={styles.listItem}>
-                <span className={styles.displayName}>{friend.displayName}</span>
+                <span className={styles.displayName}>{friend.username}</span>
                 {friend.streak >= 2 && (
                   <span className={styles.streakBadge}>{friend.streak} day streak</span>
                 )}
@@ -395,7 +392,7 @@ export function FriendsTab() {
                     removeMutation.isPending &&
                     removeMutation.variables === friend.id
                   }
-                  aria-label={`Remove ${friend.displayName} from friends`}
+                  aria-label={`Remove ${friend.username} from friends`}
                 >
                   Remove
                 </button>

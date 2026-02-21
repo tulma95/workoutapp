@@ -14,8 +14,7 @@ interface AuthContextValue {
   register: (
     email: string,
     password: string,
-    displayName: string,
-    username?: string,
+    username: string,
   ) => Promise<void>
 }
 
@@ -37,13 +36,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (
       email: string,
       password: string,
-      displayName: string,
-      username?: string,
+      username: string,
     ) => {
       const result = await authApi.register(
         email,
         password,
-        displayName,
         username,
       )
       localStorage.setItem('accessToken', result.accessToken)

@@ -8,7 +8,6 @@ import shared from '../styles/shared.module.css'
 type Props = {
   email: string
   password: string
-  displayName: string
   username: string
   error: string
   passwordError: string
@@ -17,7 +16,6 @@ type Props = {
   onEmailChange: (value: string) => void
   onPasswordChange: (value: string) => void
   onPasswordBlur: () => void
-  onDisplayNameChange: (value: string) => void
   onUsernameChange: (value: string) => void
   onUsernameBlur: () => void
   onSubmit: (e: FormEvent) => void
@@ -26,7 +24,6 @@ type Props = {
 export function RegisterForm({
   email,
   password,
-  displayName,
   username,
   error,
   passwordError,
@@ -35,7 +32,6 @@ export function RegisterForm({
   onEmailChange,
   onPasswordChange,
   onPasswordBlur,
-  onDisplayNameChange,
   onUsernameChange,
   onUsernameBlur,
   onSubmit,
@@ -72,24 +68,14 @@ export function RegisterForm({
         </div>
 
         <div>
-          <label htmlFor="displayName">Display Name</label>
-          <input
-            id="displayName"
-            type="text"
-            value={displayName}
-            onChange={(e) => onDisplayNameChange(e.target.value)}
-            required
-          />
-        </div>
-
-        <div>
-          <label htmlFor="username">Username (optional)</label>
+          <label htmlFor="username">Username</label>
           <input
             id="username"
             type="text"
             value={username}
             onChange={(e) => onUsernameChange(e.target.value)}
             onBlur={onUsernameBlur}
+            required
             aria-describedby={usernameError ? 'username-error' : undefined}
             aria-invalid={usernameError ? true : undefined}
           />

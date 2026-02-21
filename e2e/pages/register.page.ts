@@ -5,7 +5,7 @@ export class RegisterPage {
 
   readonly emailInput;
   readonly passwordInput;
-  readonly displayNameInput;
+  readonly usernameInput;
   readonly submitButton;
   readonly errorMessage;
 
@@ -13,7 +13,7 @@ export class RegisterPage {
     this.page = page;
     this.emailInput = page.getByLabel(/email/i);
     this.passwordInput = page.getByLabel(/password/i);
-    this.displayNameInput = page.getByLabel(/display name/i);
+    this.usernameInput = page.getByLabel('Username');
     this.submitButton = page.getByRole('button', { name: /create account/i });
     this.errorMessage = page.getByRole('alert');
   }
@@ -22,12 +22,12 @@ export class RegisterPage {
     await expect(this.page.getByRole('heading', { name: /create account/i })).toBeVisible();
   }
 
-  async register(email: string, password: string, displayName: string) {
+  async register(email: string, password: string, username: string) {
     await this.page.goto('/register');
     await this.expectHeading();
     await this.emailInput.fill(email);
     await this.passwordInput.fill(password);
-    await this.displayNameInput.fill(displayName);
+    await this.usernameInput.fill(username);
     await this.submitButton.click();
   }
 }

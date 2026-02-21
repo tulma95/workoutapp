@@ -16,21 +16,21 @@ function renderEventText(event: FeedEvent): string | null {
   const payload = parsed.data;
 
   if (payload.eventType === 'workout_completed') {
-    const base = `${event.displayName} completed Day ${payload.dayNumber}`;
+    const base = `${event.username} completed Day ${payload.dayNumber}`;
     return event.streak >= 2 ? `${base} — ${event.streak}-day streak` : base;
   }
   if (payload.eventType === 'tm_increased') {
-    const base = `${event.displayName} hit a new ${payload.exerciseName} TM: ${formatWeight(payload.newTM)} (+${formatWeight(payload.increase)})`;
+    const base = `${event.username} hit a new ${payload.exerciseName} TM: ${formatWeight(payload.newTM)} (+${formatWeight(payload.increase)})`;
     return event.streak >= 2 ? `${base} — ${event.streak}-day streak` : base;
   }
   if (payload.eventType === 'streak_milestone') {
-    return `${event.displayName} hit a ${payload.days}-day streak!`;
+    return `${event.username} hit a ${payload.days}-day streak!`;
   }
   if (payload.eventType === 'badge_unlocked') {
-    return `${event.displayName} unlocked '${payload.name}'!`;
+    return `${event.username} unlocked '${payload.name}'!`;
   }
   if (payload.eventType === 'plan_switched') {
-    return `${event.displayName} switched to ${payload.planName}`;
+    return `${event.username} switched to ${payload.planName}`;
   }
   return null;
 }
