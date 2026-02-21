@@ -137,6 +137,46 @@ router.get('/friends', async (req: AuthRequest, res: Response) => {
   res.json({ friends: friendsWithStreak });
 });
 
+// GET /search must be registered BEFORE any dynamic /:id route
+router.get('/search', async (req: AuthRequest, res: Response) => {
+  const callerId = getUserId(req);
+  const q = req.query.q as string | undefined;
+
+  if (!q || q.length < 1) {
+    res.status(400).json({ error: { code: 'MISSING_QUERY', message: 'Query parameter q is required' } });
+    return;
+  }
+
+  // Find all users with pending or accepted friendship with caller (both directions)
+  const activeFriendships = await prisma.friendship.findMany({
+    where: {
+      OR: [
+        { requesterId: callerId, status: { in: ['pending', 'accepted'] } },
+        { addresseeId: callerId, status: { in: ['pending', 'accepted'] } },
+      ],
+    },
+    select: { requesterId: true, addresseeId: true },
+  });
+
+  const excludedIds = new Set<number>([callerId]);
+  for (const f of activeFriendships) {
+    excludedIds.add(f.requesterId);
+    excludedIds.add(f.addresseeId);
+  }
+
+  const users = await prisma.user.findMany({
+    where: {
+      username: { contains: q, mode: 'insensitive' },
+      id: { notIn: Array.from(excludedIds) },
+    },
+    select: { id: true, displayName: true, username: true },
+    orderBy: { username: 'asc' },
+    take: 10,
+  });
+
+  res.json({ users });
+});
+
 // GET /requests must be registered BEFORE any dynamic /:id route
 router.get('/requests', async (req: AuthRequest, res: Response) => {
   const userId = getUserId(req);
