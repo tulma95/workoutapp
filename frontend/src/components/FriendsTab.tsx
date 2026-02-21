@@ -123,6 +123,7 @@ export function FriendsTab() {
   const sendByUsernameMutation = useMutation({
     mutationFn: (username: string) => sendFriendRequestByUsername(username),
     onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ['social', 'search'] })
       setSearchQuery('')
       setDebouncedQuery('')
       setSendError('')

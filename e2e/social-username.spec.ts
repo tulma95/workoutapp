@@ -108,7 +108,8 @@ test.describe('Username: full friend request flow via autocomplete', () => {
       // userA now sees userB in friends list
       await expect(pageA.getByText(new RegExp(displayNameB))).toBeVisible();
 
-      // userB now sees userA in friends list
+      // userB now sees userA in friends list (navigate to refresh)
+      await navigateToFriendsTab(pageB);
       await expect(pageB.getByText(new RegExp(displayNameA))).toBeVisible();
     } finally {
       await ctxA.close();
@@ -302,7 +303,8 @@ test.describe('Username: search excludes pending requests', () => {
 
       const dropdown = pageA.getByRole('listbox', { name: /search results/i });
       await expect(dropdown).toBeVisible({ timeout: 5000 });
-      await expect(dropdown).toContainText(/no users found/i);
+      // Wait for fresh results (cache cleared after send)
+      await expect(dropdown).toContainText(/no users found/i, { timeout: 8000 });
 
       // Also: userB searches for userA — should NOT appear (pending received)
       await navigateToFriendsTab(pageB);
@@ -397,26 +399,34 @@ test.describe('Username: registration validation', () => {
     await expect(page.getByText(/username must be at least 3 characters/i)).toBeVisible();
   });
 
-  test('duplicate username at registration shows already taken error', async ({ page }) => {
+  test('duplicate username at registration shows already taken error', async ({ browser, baseURL }) => {
     const id = crypto.randomUUID().slice(0, 8);
     const emailA = `un-dup-a-${id}@example.com`;
     const emailB = `un-dup-b-${id}@example.com`;
     const username = uniqueUsername();
 
-    // Register first user with that username
-    await registerWithOptionalUsername(page, emailA, `DupAlpha ${id}`, username);
-    // Wait for redirect away from register page (to plan selection or setup)
-    await page.waitForURL(/\/(select-plan|setup)/);
+    // Register first user with that username in context A
+    const ctxA = await browser.newContext({ baseURL });
+    const pageA = await ctxA.newPage();
+    await registerWithOptionalUsername(pageA, emailA, `DupAlpha ${id}`, username);
+    await pageA.waitForURL(/\/(select-plan|setup)/);
+    await ctxA.close();
 
-    // Navigate back to register and try to use the same username
-    await page.goto('/register');
-    await page.getByLabel(/email/i).fill(emailB);
-    await page.getByLabel(/password/i).fill('ValidPassword123');
-    await page.getByLabel(/display name/i).fill(`DupBeta ${id}`);
-    await page.getByLabel(/username \(optional\)/i).fill(username);
-    await page.getByRole('button', { name: /create account/i }).click();
+    // Register second user with the same username in a fresh context
+    const ctxB = await browser.newContext({ baseURL });
+    const pageB = await ctxB.newPage();
+    try {
+      await pageB.goto('/register');
+      await pageB.getByLabel(/email/i).fill(emailB);
+      await pageB.getByLabel(/password/i).fill('ValidPassword123');
+      await pageB.getByLabel(/display name/i).fill(`DupBeta ${id}`);
+      await pageB.getByLabel(/username \(optional\)/i).fill(username);
+      await pageB.getByRole('button', { name: /create account/i }).click();
 
-    // Should show error about username already taken
-    await expect(page.getByRole('alert')).toContainText(/already taken/i);
+      // Should show error about username already taken
+      await expect(pageB.getByRole('alert')).toContainText(/already taken/i);
+    } finally {
+      await ctxB.close();
+    }
   });
 });
