@@ -219,7 +219,7 @@ router.post('/:id/subscribe', async (req: AuthRequest, res: Response) => {
     });
 
     // Create new subscription
-    return await tx.userPlan.create({
+    const newUserPlan = await tx.userPlan.create({
       data: {
         userId: getUserId(req),
         planId: id,
@@ -229,6 +229,17 @@ router.post('/:id/subscribe', async (req: AuthRequest, res: Response) => {
         plan: true,
       },
     });
+
+    // Emit plan_switched feed event
+    await tx.feedEvent.create({
+      data: {
+        userId: getUserId(req),
+        eventType: 'plan_switched',
+        payload: { planId: plan.id, planName: plan.name, planSlug: plan.slug },
+      },
+    });
+
+    return newUserPlan;
   });
 
   res.json({

@@ -5,6 +5,7 @@ import type { WorkoutStatus } from '../types';
 import { ExistingWorkoutError } from '../types';
 import { logger } from '../lib/logger';
 import { checkAndUnlockAchievements } from './achievement.service';
+import { calculateStreak } from '../lib/streak';
 
 export type ScheduledDay = {
   date: string;
@@ -516,7 +517,49 @@ export async function completeWorkout(workoutId: number, userId: number) {
         });
       }
 
+      // Calculate streak and emit streak_milestone if threshold crossed
+      const completedWorkouts = await tx.workout.findMany({
+        where: { userId, status: 'completed' },
+        select: { completedAt: true },
+      });
+      const dates = completedWorkouts
+        .filter((w) => w.completedAt !== null)
+        .map((w) => w.completedAt!.toISOString().slice(0, 10));
+      const streak = calculateStreak(dates);
+      const STREAK_MILESTONES = [7, 14, 30, 60, 90];
+      for (const threshold of STREAK_MILESTONES) {
+        if (streak >= threshold) {
+          const existing = await tx.feedEvent.findFirst({
+            where: {
+              userId,
+              eventType: 'streak_milestone',
+              payload: { path: ['days'], equals: threshold },
+            },
+          });
+          if (!existing) {
+            await tx.feedEvent.create({
+              data: {
+                userId,
+                eventType: 'streak_milestone',
+                payload: { days: threshold },
+              },
+            });
+          }
+        }
+      }
+
       const newAchievements = await checkAndUnlockAchievements(tx, userId, workoutId, setsForAchievements);
+
+      // Create badge_unlocked feed events
+      if (newAchievements.length > 0) {
+        await tx.feedEvent.createMany({
+          data: newAchievements.map((a) => ({
+            userId,
+            eventType: 'badge_unlocked',
+            payload: { slug: a.slug, name: a.name, description: a.description },
+          })),
+        });
+      }
 
       return { completed, progressions, newAchievements };
     });
@@ -552,7 +595,51 @@ export async function completeWorkout(workoutId: number, userId: number) {
         }
       },
     });
+
+    // Calculate streak and emit streak_milestone if threshold crossed
+    const completedWorkouts = await tx.workout.findMany({
+      where: { userId, status: 'completed' },
+      select: { completedAt: true },
+    });
+    const dates = completedWorkouts
+      .filter((w) => w.completedAt !== null)
+      .map((w) => w.completedAt!.toISOString().slice(0, 10));
+    const streak = calculateStreak(dates);
+    const STREAK_MILESTONES = [7, 14, 30, 60, 90];
+    for (const threshold of STREAK_MILESTONES) {
+      if (streak >= threshold) {
+        const existing = await tx.feedEvent.findFirst({
+          where: {
+            userId,
+            eventType: 'streak_milestone',
+            payload: { path: ['days'], equals: threshold },
+          },
+        });
+        if (!existing) {
+          await tx.feedEvent.create({
+            data: {
+              userId,
+              eventType: 'streak_milestone',
+              payload: { days: threshold },
+            },
+          });
+        }
+      }
+    }
+
     const newAchievements = await checkAndUnlockAchievements(tx, userId, workoutId, noPlansetsForAchievements);
+
+    // Create badge_unlocked feed events
+    if (newAchievements.length > 0) {
+      await tx.feedEvent.createMany({
+        data: newAchievements.map((a) => ({
+          userId,
+          eventType: 'badge_unlocked',
+          payload: { slug: a.slug, name: a.name, description: a.description },
+        })),
+      });
+    }
+
     return { completed, newAchievements };
   });
 
