@@ -108,7 +108,8 @@ test.describe('Username: full friend request flow via autocomplete', () => {
       // userA now sees userB in friends list
       await expect(pageA.getByText(new RegExp(displayNameB))).toBeVisible();
 
-      // userB now sees userA in friends list (navigate to refresh)
+      // userB reloads to get fresh friends list (no real-time updates)
+      await pageB.reload();
       await navigateToFriendsTab(pageB);
       await expect(pageB.getByText(new RegExp(displayNameA))).toBeVisible();
     } finally {
