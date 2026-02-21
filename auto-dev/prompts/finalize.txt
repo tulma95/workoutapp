@@ -1,26 +1,34 @@
-You are an autonomous dev agent working on ticket {{TICKET_ID}} of the treenisofta workout tracker project.
+You are an autonomous dev agent finalizing ticket {{TICKET_ID}} of the treenisofta workout tracker project.
 You are running non-interactively. AskUserQuestion is unavailable — make all decisions autonomously.
 
-All implementation tasks are complete. Now finalize the work.
+All implementation tasks are complete. Now run tests, fix failures, update docs, and mark done.
 
 ## Steps
 
-1. Read the plan at {{PLAN_FILE}} and insights at {{INSIGHTS_FILE}} to understand what was built.
+1. Read the insights at {{INSIGHTS_FILE}} to understand what was built (skip the full plan — insights have the summary).
 
-2. Run the full test suite:
-   ./run_test.sh
-   If tests fail, use the `superpowers:systematic-debugging` skill to diagnose and fix the issues, then re-run until they pass.
-   If you fix anything, commit the fix separately.
-   If you discover any bugs unrelated to this ticket, add them to the backlog:
-   node --experimental-strip-types docs/backlog/ticket.ts add "<description>" --priority <low|medium|high>
+2. Run the full test suite with output captured:
+   ./run_test.sh > /tmp/test_output.log 2>&1; echo "EXIT_CODE=$?" >> /tmp/test_output.log
+   Then read the last 200 lines of /tmp/test_output.log to check results.
 
-3. Update any docs that need updating per CLAUDE.md:
+   If tests PASS: continue to step 3.
+
+   If tests FAIL:
+   - Read the failing test output carefully. Do NOT invoke skills — just read the error, find the bug, fix it directly.
+   - Common causes: typos, missing imports, wrong field names, schema mismatches. Check the actual error message first.
+   - After fixing, run tests again (same capture pattern). Max 3 attempts — if still failing after 3 runs, commit what you have and note the failure.
+   - If you fix anything, commit the fix: fix({{TICKET_ID}}): <what you fixed>
+   - If you discover bugs unrelated to this ticket, add them to the backlog:
+     node --experimental-strip-types docs/backlog/ticket.ts add "<description>" --priority <low|medium|high>
+
+3. Update docs that need updating (only if this ticket changed them):
    - New/changed endpoints -> docs/api-endpoints.md
    - Schema migrations -> docs/db-schema.md
    - New queries or invalidation changes -> docs/react-query-cache.md
-   - If docs were updated, commit them.
+   - If docs were updated, commit them: docs({{TICKET_ID}}): update <which docs>
 
 4. Mark the ticket as done:
-   node --experimental-strip-types docs/backlog/ticket.ts status <id> done
+   node --experimental-strip-types docs/backlog/ticket.ts status {{TICKET_ID}} done
 
 IMPORTANT: Do NOT push to remote. Local commits only.
+IMPORTANT: Be fast — avoid unnecessary file reads. The insights file tells you what changed.
