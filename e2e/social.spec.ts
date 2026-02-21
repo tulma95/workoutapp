@@ -78,14 +78,15 @@ test.describe('Streak visibility', () => {
         expect(resp.status()).toBe(201);
       }
 
-      // userA navigates to Friends tab and sees "2 day streak" for userB
+      // Reload to clear React Query cache (staleTime=60s, data won't auto-refetch within the test)
+      await pageA.reload();
       await pageA.getByRole('link', { name: /social/i }).click();
       await pageA.getByRole('tab', { name: /friends/i }).click();
       await expect(pageA.getByText(/2 day streak/i)).toBeVisible({ timeout: 10000 });
 
       // userA navigates to Feed tab and sees "2-day streak" suffix on userB's event
       await pageA.getByRole('tab', { name: /feed/i }).click();
-      await expect(pageA.getByText(/2-day streak/i)).toBeVisible({ timeout: 10000 });
+      await expect(pageA.getByText(/2-day streak/i).first()).toBeVisible({ timeout: 10000 });
     } finally {
       await contextA.close();
       await contextB.close();

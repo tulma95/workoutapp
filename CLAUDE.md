@@ -211,3 +211,17 @@ dont use co-author in commits
 After committing code, always invoke the `ticket-code-review` skill to review commits for the current ticket.
 
 !IMPORTANT! ALWAYS USE run_test.sh to run tests !IMPORTANT!
+
+### Capturing test output
+
+`run_test.sh` output often exceeds the truncation limit. Always run it with output captured to a file so you can read the tail on failure:
+
+```bash
+./run_test.sh > /tmp/test_output.log 2>&1; echo "EXIT_CODE=$?" >> /tmp/test_output.log
+```
+
+Then read the last ~200 lines to find the actual error:
+
+```bash
+tail -200 /tmp/test_output.log
+```
