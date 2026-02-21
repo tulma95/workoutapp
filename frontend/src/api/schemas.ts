@@ -372,6 +372,19 @@ export const LeaderboardResponseSchema = z.object({
   exercises: z.array(LeaderboardExerciseSchema),
 });
 
+export const UserSearchResultSchema = z.object({
+  id: z.number(),
+  displayName: z.string(),
+  username: z.string().nullable(),
+});
+
+export const UserSearchResponseSchema = z.object({
+  users: z.array(UserSearchResultSchema),
+});
+
+export type UserSearchResult = z.infer<typeof UserSearchResultSchema>;
+export type UserSearchResponse = z.infer<typeof UserSearchResponseSchema>;
+
 export type Friend = z.infer<typeof FriendSchema>;
 export type FriendRequest = z.infer<typeof FriendRequestSchema>;
 export type FeedEventPayload = z.infer<typeof FeedEventPayloadSchema>;

@@ -5,6 +5,7 @@ import {
   FeedResponseSchema,
   LeaderboardResponseSchema,
   ReactResponseSchema,
+  UserSearchResponseSchema,
 } from './schemas';
 export type {
   Friend,
@@ -16,6 +17,8 @@ export type {
   LeaderboardRanking,
   LeaderboardExercise,
   LeaderboardResponse,
+  UserSearchResult,
+  UserSearchResponse,
 } from './schemas';
 
 export async function sendFriendRequest(email: string): Promise<void> {
@@ -23,6 +26,18 @@ export async function sendFriendRequest(email: string): Promise<void> {
     method: 'POST',
     body: JSON.stringify({ email }),
   });
+}
+
+export async function sendFriendRequestByUsername(username: string): Promise<void> {
+  await apiFetch('/social/request', {
+    method: 'POST',
+    body: JSON.stringify({ username }),
+  });
+}
+
+export async function searchUsers(q: string): Promise<typeof UserSearchResponseSchema._output> {
+  const data = await apiFetch(`/social/search?q=${encodeURIComponent(q)}`);
+  return UserSearchResponseSchema.parse(data);
 }
 
 export async function getFriends(): Promise<typeof FriendsResponseSchema._output> {
