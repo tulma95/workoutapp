@@ -134,19 +134,19 @@
   {
     "id": "056",
     "title": "Workout Streak Visibility",
-    "status": "in-progress",
+    "status": "done",
     "description": "Show friends' current workout streaks on the friends list and in the feed. 'Chris is on a 12-day streak 🔥'. Streaks calculated from consecutive scheduled workout completions. Motivates casual users through social proof."
   },
   {
     "id": "054",
     "title": "Estimated 1RM Leaderboard",
-    "status": "backlog",
+    "status": "done",
     "description": "Leaderboard based on calculated e1RM from AMRAP sets using Epley formula (weight * (1 + reps/30)), not just static TMs. More dynamic and rewards actual performance. Could be a tab or toggle on the existing leaderboard."
   },
   {
     "id": "065",
     "title": "Richer Feed Event Types",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "Expand feed beyond workout_completed and tm_increased. New event types: streak_milestone (7/14/30/60/90 day streaks), badge_unlocked (from Achievement Badges #027), plan_switched, workout_note_shared. Makes the feed more varied and engaging."
   },
   {
@@ -488,5 +488,26 @@
     "title": "Push Notifications (Service Worker)",
     "status": "backlog",
     "description": "Add push notifications via Web Push API so users get notified even when the app is in the background. Requires VAPID key generation, subscription management (store push subscriptions in DB), and service worker push event handler. Builds on top of ticket 080 (SSE + Toast) — reuse the same notification events but deliver via push when user is offline/backgrounded. Scope: VAPID setup, PushSubscription CRUD endpoint, sw.js push handler, opt-in UI."
+  },
+  {
+    "id": "082",
+    "title": "streak_milestone and badge_unlocked not emitted for custom workouts",
+    "status": "backlog",
+    "priority": "medium",
+    "description": "The createCustomWorkout() path in workout.service.ts only creates a workout_completed feed event. It does not run the streak/badge logic that the two completeWorkout() paths run. Custom workouts can advance a streak and should trigger the same milestone checks."
+  },
+  {
+    "id": "083",
+    "title": "docs/db-schema.md feed_events event_type list is missing streak_milestone, badge_unlocked, and plan_switched",
+    "status": "done",
+    "priority": "low",
+    "description": "The db-schema.md feed_events documentation only lists workout_completed and tm_increased as event_type values. Three new event types added in ticket 065 (streak_milestone, badge_unlocked, plan_switched) are not reflected in the doc. Should be updated per CLAUDE.md documentation requirements."
+  },
+  {
+    "id": "084",
+    "title": "emit streak_milestone and badge_unlocked for custom workouts",
+    "status": "backlog",
+    "priority": "medium",
+    "description": "createCustomWorkout() in workout.service.ts skips streak calculation and badge checking entirely. Users completing a custom workout that hits a streak milestone will not see a streak_milestone feed event. Requires extracting the shared emitStreakAndBadgeEvents() helper and calling it from createCustomWorkout path."
   }
 ]
