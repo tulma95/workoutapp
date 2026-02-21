@@ -370,6 +370,7 @@ router.post('/feed/:eventId/react', validate(reactSchema), async (req: AuthReque
 
 router.get('/leaderboard', async (req: AuthRequest, res: Response) => {
   const userId = getUserId(req);
+  const mode = req.query.mode as string | undefined;
 
   const activePlan = await prisma.userPlan.findFirst({
     where: { userId, isActive: true },
@@ -422,6 +423,71 @@ router.get('/leaderboard', async (req: AuthRequest, res: Response) => {
   });
   const participantMap = new Map(participants.map((p) => [p.id, p.displayName]));
 
+  if (mode === 'e1rm') {
+    // Query completed AMRAP sets for all participants
+    const amrapSets = await prisma.workoutSet.findMany({
+      where: {
+        workout: {
+          userId: { in: participantIds },
+          status: 'completed',
+        },
+        isAmrap: true,
+        completed: true,
+        actualReps: { gt: 0 },
+        exerciseId: { in: Array.from(tmExerciseMap.keys()) },
+      },
+      select: {
+        exerciseId: true,
+        prescribedWeight: true,
+        actualReps: true,
+        workout: { select: { userId: true } },
+      },
+    });
+
+    // Group by exerciseId -> userId, keep max e1RM per user
+    const e1rmByExercise = new Map<number, Map<number, number>>();
+    for (const set of amrapSets) {
+      const reps = set.actualReps as number;
+      const weight = set.prescribedWeight.toNumber();
+      const e1rm = reps === 1 ? weight : weight * (1 + reps / 30);
+      const setUserId = set.workout.userId;
+
+      if (!e1rmByExercise.has(set.exerciseId)) {
+        e1rmByExercise.set(set.exerciseId, new Map());
+      }
+      const byUser = e1rmByExercise.get(set.exerciseId)!;
+      const existing = byUser.get(setUserId);
+      if (existing === undefined || e1rm > existing) {
+        byUser.set(setUserId, e1rm);
+      }
+    }
+
+    const exercises = [];
+    for (const [exerciseId, exerciseInfo] of tmExerciseMap) {
+      const bestByUser = e1rmByExercise.get(exerciseId) ?? new Map<number, number>();
+
+      const rankings = Array.from(bestByUser.entries())
+        .map(([uid, weight]) => ({
+          userId: uid,
+          displayName: participantMap.get(uid) ?? 'Unknown',
+          weight,
+        }))
+        .sort((a, b) => b.weight - a.weight);
+
+      if (rankings.length > 0) {
+        exercises.push({
+          slug: exerciseInfo.slug,
+          name: exerciseInfo.name,
+          rankings,
+        });
+      }
+    }
+
+    res.json({ exercises });
+    return;
+  }
+
+  // Default TM leaderboard
   // Fetch all TMs in one query, then group in memory
   const allTMs = await prisma.trainingMax.findMany({
     where: {
