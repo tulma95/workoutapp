@@ -4,6 +4,53 @@
   gap: var(--space-xl);
 }
 
+/* Mode toggle */
+
+.modeToggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: var(--space-sm);
+  overflow: hidden;
+}
+
+.modeBtn {
+  flex: 1;
+  min-height: 3rem;
+  padding: var(--space-sm) var(--space-md);
+  background: none;
+  border: none;
+  border-right: 1px solid var(--border);
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.modeBtn:last-child {
+  border-right: none;
+}
+
+.modeBtn:hover {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.modeBtn:focus-visible {
+  outline: 0.125rem solid var(--primary);
+  outline-offset: -2px;
+}
+
+.modeBtnActive {
+  background-color: var(--primary);
+  color: var(--bg-card);
+  font-weight: 600;
+}
+
+.modeBtnActive:hover {
+  background-color: var(--primary);
+  color: var(--bg-card);
+}
+
 .exerciseSection {
   display: flex;
   flex-direction: column;

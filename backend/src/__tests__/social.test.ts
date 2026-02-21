@@ -701,6 +701,629 @@ describe('Social API', () => {
     });
   });
 
+  describe('Leaderboard e1RM', () => {
+    let tokenE1rmA: string;
+    let userIdE1rmA: number;
+    let tokenE1rmB: string;
+    let userIdE1rmB: number;
+    let e1rmBenchExerciseId: number;
+    let e1rmSquatExerciseId: number;
+    let e1rmPlanId: number;
+
+    beforeAll(async () => {
+      const uidE1rm = randomUUID().slice(0, 8);
+
+      const resA = await request(app).post('/api/auth/register').send({
+        email: `e1rm-a-${uidE1rm}@example.com`,
+        password: 'password123',
+        displayName: 'E1RM User A',
+      });
+      tokenE1rmA = resA.body.accessToken;
+      userIdE1rmA = resA.body.user.id;
+
+      const resB = await request(app).post('/api/auth/register').send({
+        email: `e1rm-b-${uidE1rm}@example.com`,
+        password: 'password123',
+        displayName: 'E1RM User B',
+      });
+      tokenE1rmB = resB.body.accessToken;
+      userIdE1rmB = resB.body.user.id;
+
+      // Get exercises
+      const bench = await prisma.exercise.findUnique({ where: { slug: 'bench-press' } });
+      e1rmBenchExerciseId = bench!.id;
+      const squat = await prisma.exercise.findUnique({ where: { slug: 'squat' } });
+      e1rmSquatExerciseId = squat!.id;
+
+      // Create a plan with bench and squat
+      const plan = await prisma.workoutPlan.create({
+        data: {
+          slug: `e1rm-plan-${uidE1rm}`,
+          name: `E1RM Test Plan ${uidE1rm}`,
+          description: 'E1RM leaderboard test',
+          daysPerWeek: 1,
+          isPublic: true,
+          isSystem: false,
+        },
+      });
+      e1rmPlanId = plan.id;
+
+      const day = await prisma.planDay.create({
+        data: { planId: plan.id, dayNumber: 1, name: 'Day 1' },
+      });
+
+      await prisma.planDayExercise.createMany({
+        data: [
+          {
+            planDayId: day.id,
+            exerciseId: e1rmBenchExerciseId,
+            tmExerciseId: e1rmBenchExerciseId,
+            sortOrder: 1,
+          },
+          {
+            planDayId: day.id,
+            exerciseId: e1rmSquatExerciseId,
+            tmExerciseId: e1rmSquatExerciseId,
+            sortOrder: 2,
+          },
+        ],
+      });
+
+      // Subscribe A and B to the plan
+      await prisma.userPlan.createMany({
+        data: [
+          { userId: userIdE1rmA, planId: plan.id, isActive: true },
+          { userId: userIdE1rmB, planId: plan.id, isActive: true },
+        ],
+      });
+
+      // Make A and B friends
+      const reqRes = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenE1rmA}`)
+        .send({ email: `e1rm-b-${uidE1rm}@example.com` });
+      await request(app)
+        .patch(`/api/social/requests/${reqRes.body.id}/accept`)
+        .set('Authorization', `Bearer ${tokenE1rmB}`);
+    });
+
+    it('returns 401 without auth token', async () => {
+      const res = await request(app).get('/api/social/leaderboard?mode=e1rm');
+      expect(res.status).toBe(401);
+    });
+
+    it('returns { exercises: [] } when user has no active plan', async () => {
+      const noPlanUid = randomUUID().slice(0, 8);
+      const resNoPlan = await request(app).post('/api/auth/register').send({
+        email: `e1rm-noplan-${noPlanUid}@example.com`,
+        password: 'password123',
+        displayName: 'E1RM No Plan User',
+      });
+      const noPlanToken = resNoPlan.body.accessToken;
+
+      const res = await request(app)
+        .get('/api/social/leaderboard?mode=e1rm')
+        .set('Authorization', `Bearer ${noPlanToken}`);
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ exercises: [] });
+    });
+
+    it('computes correct Epley e1RM and rank order for friends', async () => {
+      // A: 100kg x 10 reps => 100 * (1 + 10/30) = 100 * 1.3333... = 133.333...
+      // B: 80kg x 5 reps  => 80 * (1 + 5/30)  = 80 * 1.1666...  = 93.333...
+      // Expected rank: A (133.33) before B (93.33)
+      const workoutA = await prisma.workout.create({
+        data: {
+          userId: userIdE1rmA,
+          dayNumber: 1,
+          status: 'completed',
+          completedAt: new Date(),
+        },
+      });
+      await prisma.workoutSet.create({
+        data: {
+          workoutId: workoutA.id,
+          exerciseId: e1rmBenchExerciseId,
+          exerciseOrder: 1,
+          setOrder: 1,
+          prescribedReps: 10,
+          prescribedWeight: 100,
+          isAmrap: true,
+          actualReps: 10,
+          completed: true,
+        },
+      });
+
+      const workoutB = await prisma.workout.create({
+        data: {
+          userId: userIdE1rmB,
+          dayNumber: 1,
+          status: 'completed',
+          completedAt: new Date(),
+        },
+      });
+      await prisma.workoutSet.create({
+        data: {
+          workoutId: workoutB.id,
+          exerciseId: e1rmBenchExerciseId,
+          exerciseOrder: 1,
+          setOrder: 1,
+          prescribedReps: 5,
+          prescribedWeight: 80,
+          isAmrap: true,
+          actualReps: 5,
+          completed: true,
+        },
+      });
+
+      const res = await request(app)
+        .get('/api/social/leaderboard?mode=e1rm')
+        .set('Authorization', `Bearer ${tokenE1rmA}`);
+      expect(res.status).toBe(200);
+
+      const benchExercise = res.body.exercises.find(
+        (e: { slug: string }) => e.slug === 'bench-press'
+      );
+      expect(benchExercise).toBeDefined();
+      expect(benchExercise.rankings.length).toBeGreaterThanOrEqual(2);
+
+      const rankA = benchExercise.rankings.find((r: { userId: number }) => r.userId === userIdE1rmA);
+      const rankB = benchExercise.rankings.find((r: { userId: number }) => r.userId === userIdE1rmB);
+      expect(rankA).toBeDefined();
+      expect(rankB).toBeDefined();
+
+      // 100 * (1 + 10/30) = 133.333...
+      expect(rankA.weight).toBeCloseTo(133.333, 2);
+      // 80 * (1 + 5/30) = 93.333...
+      expect(rankB.weight).toBeCloseTo(93.333, 2);
+
+      // A should rank above B
+      const indexA = benchExercise.rankings.findIndex((r: { userId: number }) => r.userId === userIdE1rmA);
+      const indexB = benchExercise.rankings.findIndex((r: { userId: number }) => r.userId === userIdE1rmB);
+      expect(indexA).toBeLessThan(indexB);
+    });
+
+    it('excludes non-friends (users who have not mutually friended)', async () => {
+      const uidStranger = randomUUID().slice(0, 8);
+      const resStranger = await request(app).post('/api/auth/register').send({
+        email: `e1rm-stranger-${uidStranger}@example.com`,
+        password: 'password123',
+        displayName: 'E1RM Stranger',
+      });
+      const strangerUserId = resStranger.body.user.id;
+
+      // Give stranger a plan subscription so they have context
+      await prisma.userPlan.create({
+        data: { userId: strangerUserId, planId: e1rmPlanId, isActive: true },
+      });
+
+      // Create a workout with a high e1RM for stranger (not friend of A)
+      const strangerWorkout = await prisma.workout.create({
+        data: {
+          userId: strangerUserId,
+          dayNumber: 1,
+          status: 'completed',
+          completedAt: new Date(),
+        },
+      });
+      await prisma.workoutSet.create({
+        data: {
+          workoutId: strangerWorkout.id,
+          exerciseId: e1rmBenchExerciseId,
+          exerciseOrder: 1,
+          setOrder: 1,
+          prescribedReps: 5,
+          prescribedWeight: 300,
+          isAmrap: true,
+          actualReps: 20,
+          completed: true,
+        },
+      });
+
+      const res = await request(app)
+        .get('/api/social/leaderboard?mode=e1rm')
+        .set('Authorization', `Bearer ${tokenE1rmA}`);
+      expect(res.status).toBe(200);
+
+      const benchExercise = res.body.exercises.find(
+        (e: { slug: string }) => e.slug === 'bench-press'
+      );
+      const userIds = (benchExercise?.rankings ?? []).map((r: { userId: number }) => r.userId);
+      expect(userIds).not.toContain(strangerUserId);
+    });
+
+    it('deduplicates multiple AMRAP sets per user, taking max e1RM', async () => {
+      // Create a fresh isolated user to avoid interference from earlier tests
+      const uidDedup = randomUUID().slice(0, 8);
+      const resDedupUser = await request(app).post('/api/auth/register').send({
+        email: `e1rm-dedup-${uidDedup}@example.com`,
+        password: 'password123',
+        displayName: 'E1RM Dedup User',
+      });
+      const tokenDedupUser = resDedupUser.body.accessToken;
+      const userIdDedupUser = resDedupUser.body.user.id;
+
+      // Create a new plan for dedup test isolation
+      const dedupPlan = await prisma.workoutPlan.create({
+        data: {
+          slug: `dedup-plan-${uidDedup}`,
+          name: `Dedup Plan ${uidDedup}`,
+          description: 'Dedup test',
+          daysPerWeek: 1,
+          isPublic: true,
+          isSystem: false,
+        },
+      });
+      const dedupDay = await prisma.planDay.create({
+        data: { planId: dedupPlan.id, dayNumber: 1, name: 'Day 1' },
+      });
+      await prisma.planDayExercise.create({
+        data: {
+          planDayId: dedupDay.id,
+          exerciseId: e1rmBenchExerciseId,
+          tmExerciseId: e1rmBenchExerciseId,
+          sortOrder: 1,
+        },
+      });
+      await prisma.userPlan.createMany({
+        data: [
+          { userId: userIdE1rmA, planId: dedupPlan.id, isActive: false },
+          { userId: userIdDedupUser, planId: dedupPlan.id, isActive: true },
+        ],
+      });
+
+      // Make A friends with dedupUser
+      const reqRes = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenE1rmA}`)
+        .send({ email: `e1rm-dedup-${uidDedup}@example.com` });
+      await request(app)
+        .patch(`/api/social/requests/${reqRes.body.id}/accept`)
+        .set('Authorization', `Bearer ${tokenDedupUser}`);
+
+      // dedupUser has two completed AMRAP sets for bench:
+      // Set 1: 100kg x 5 reps => 100 * (1 + 5/30) = 116.666...
+      // Set 2: 100kg x 10 reps => 100 * (1 + 10/30) = 133.333... (should be taken)
+      const dedupWorkout = await prisma.workout.create({
+        data: {
+          userId: userIdDedupUser,
+          dayNumber: 1,
+          status: 'completed',
+          completedAt: new Date(),
+        },
+      });
+      await prisma.workoutSet.createMany({
+        data: [
+          {
+            workoutId: dedupWorkout.id,
+            exerciseId: e1rmBenchExerciseId,
+            exerciseOrder: 1,
+            setOrder: 1,
+            prescribedReps: 5,
+            prescribedWeight: 100,
+            isAmrap: true,
+            actualReps: 5,
+            completed: true,
+          },
+          {
+            workoutId: dedupWorkout.id,
+            exerciseId: e1rmBenchExerciseId,
+            exerciseOrder: 1,
+            setOrder: 2,
+            prescribedReps: 10,
+            prescribedWeight: 100,
+            isAmrap: true,
+            actualReps: 10,
+            completed: true,
+          },
+        ],
+      });
+
+      const res = await request(app)
+        .get('/api/social/leaderboard?mode=e1rm')
+        .set('Authorization', `Bearer ${tokenDedupUser}`);
+      expect(res.status).toBe(200);
+
+      const benchExercise = res.body.exercises.find(
+        (e: { slug: string }) => e.slug === 'bench-press'
+      );
+      expect(benchExercise).toBeDefined();
+
+      const rankDedup = benchExercise.rankings.find(
+        (r: { userId: number }) => r.userId === userIdDedupUser
+      );
+      expect(rankDedup).toBeDefined();
+      // Must take the max: 133.333, not the lower 116.666
+      expect(rankDedup.weight).toBeCloseTo(133.333, 2);
+    });
+
+    it('excludes sets from discarded workouts', async () => {
+      const uidDiscard = randomUUID().slice(0, 8);
+      const resDiscardUser = await request(app).post('/api/auth/register').send({
+        email: `e1rm-discard-${uidDiscard}@example.com`,
+        password: 'password123',
+        displayName: 'E1RM Discard User',
+      });
+      const tokenDiscardUser = resDiscardUser.body.accessToken;
+      const userIdDiscardUser = resDiscardUser.body.user.id;
+
+      // Create isolated plan
+      const discardPlan = await prisma.workoutPlan.create({
+        data: {
+          slug: `discard-plan-${uidDiscard}`,
+          name: `Discard Plan ${uidDiscard}`,
+          description: 'Discard test',
+          daysPerWeek: 1,
+          isPublic: true,
+          isSystem: false,
+        },
+      });
+      const discardDay = await prisma.planDay.create({
+        data: { planId: discardPlan.id, dayNumber: 1, name: 'Day 1' },
+      });
+      await prisma.planDayExercise.create({
+        data: {
+          planDayId: discardDay.id,
+          exerciseId: e1rmBenchExerciseId,
+          tmExerciseId: e1rmBenchExerciseId,
+          sortOrder: 1,
+        },
+      });
+      await prisma.userPlan.create({
+        data: { userId: userIdDiscardUser, planId: discardPlan.id, isActive: true },
+      });
+
+      // Discarded workout with high e1RM — should NOT appear
+      const discardedWorkout = await prisma.workout.create({
+        data: {
+          userId: userIdDiscardUser,
+          dayNumber: 1,
+          status: 'discarded',
+        },
+      });
+      await prisma.workoutSet.create({
+        data: {
+          workoutId: discardedWorkout.id,
+          exerciseId: e1rmBenchExerciseId,
+          exerciseOrder: 1,
+          setOrder: 1,
+          prescribedReps: 10,
+          prescribedWeight: 200,
+          isAmrap: true,
+          actualReps: 10,
+          completed: true,
+        },
+      });
+
+      const res = await request(app)
+        .get('/api/social/leaderboard?mode=e1rm')
+        .set('Authorization', `Bearer ${tokenDiscardUser}`);
+      expect(res.status).toBe(200);
+
+      const benchExercise = res.body.exercises.find(
+        (e: { slug: string }) => e.slug === 'bench-press'
+      );
+      // discardUser has no completed workouts, so they should not appear in rankings
+      const userIds = (benchExercise?.rankings ?? []).map((r: { userId: number }) => r.userId);
+      expect(userIds).not.toContain(userIdDiscardUser);
+    });
+
+    it('excludes sets with actualReps=null', async () => {
+      const uidNull = randomUUID().slice(0, 8);
+      const resNullUser = await request(app).post('/api/auth/register').send({
+        email: `e1rm-null-${uidNull}@example.com`,
+        password: 'password123',
+        displayName: 'E1RM Null Reps User',
+      });
+      const tokenNullUser = resNullUser.body.accessToken;
+      const userIdNullUser = resNullUser.body.user.id;
+
+      const nullPlan = await prisma.workoutPlan.create({
+        data: {
+          slug: `null-plan-${uidNull}`,
+          name: `Null Plan ${uidNull}`,
+          description: 'Null reps test',
+          daysPerWeek: 1,
+          isPublic: true,
+          isSystem: false,
+        },
+      });
+      const nullDay = await prisma.planDay.create({
+        data: { planId: nullPlan.id, dayNumber: 1, name: 'Day 1' },
+      });
+      await prisma.planDayExercise.create({
+        data: {
+          planDayId: nullDay.id,
+          exerciseId: e1rmBenchExerciseId,
+          tmExerciseId: e1rmBenchExerciseId,
+          sortOrder: 1,
+        },
+      });
+      await prisma.userPlan.create({
+        data: { userId: userIdNullUser, planId: nullPlan.id, isActive: true },
+      });
+
+      const nullWorkout = await prisma.workout.create({
+        data: {
+          userId: userIdNullUser,
+          dayNumber: 1,
+          status: 'completed',
+          completedAt: new Date(),
+        },
+      });
+      // Set with actualReps=null (not filled in)
+      await prisma.workoutSet.create({
+        data: {
+          workoutId: nullWorkout.id,
+          exerciseId: e1rmBenchExerciseId,
+          exerciseOrder: 1,
+          setOrder: 1,
+          prescribedReps: 10,
+          prescribedWeight: 150,
+          isAmrap: true,
+          actualReps: null,
+          completed: true,
+        },
+      });
+
+      const res = await request(app)
+        .get('/api/social/leaderboard?mode=e1rm')
+        .set('Authorization', `Bearer ${tokenNullUser}`);
+      expect(res.status).toBe(200);
+
+      const benchExercise = res.body.exercises.find(
+        (e: { slug: string }) => e.slug === 'bench-press'
+      );
+      const userIds = (benchExercise?.rankings ?? []).map((r: { userId: number }) => r.userId);
+      expect(userIds).not.toContain(userIdNullUser);
+    });
+
+    it('excludes sets with actualReps=0', async () => {
+      const uidZero = randomUUID().slice(0, 8);
+      const resZeroUser = await request(app).post('/api/auth/register').send({
+        email: `e1rm-zero-${uidZero}@example.com`,
+        password: 'password123',
+        displayName: 'E1RM Zero Reps User',
+      });
+      const tokenZeroUser = resZeroUser.body.accessToken;
+      const userIdZeroUser = resZeroUser.body.user.id;
+
+      const zeroPlan = await prisma.workoutPlan.create({
+        data: {
+          slug: `zero-plan-${uidZero}`,
+          name: `Zero Plan ${uidZero}`,
+          description: 'Zero reps test',
+          daysPerWeek: 1,
+          isPublic: true,
+          isSystem: false,
+        },
+      });
+      const zeroDay = await prisma.planDay.create({
+        data: { planId: zeroPlan.id, dayNumber: 1, name: 'Day 1' },
+      });
+      await prisma.planDayExercise.create({
+        data: {
+          planDayId: zeroDay.id,
+          exerciseId: e1rmBenchExerciseId,
+          tmExerciseId: e1rmBenchExerciseId,
+          sortOrder: 1,
+        },
+      });
+      await prisma.userPlan.create({
+        data: { userId: userIdZeroUser, planId: zeroPlan.id, isActive: true },
+      });
+
+      const zeroWorkout = await prisma.workout.create({
+        data: {
+          userId: userIdZeroUser,
+          dayNumber: 1,
+          status: 'completed',
+          completedAt: new Date(),
+        },
+      });
+      await prisma.workoutSet.create({
+        data: {
+          workoutId: zeroWorkout.id,
+          exerciseId: e1rmBenchExerciseId,
+          exerciseOrder: 1,
+          setOrder: 1,
+          prescribedReps: 10,
+          prescribedWeight: 150,
+          isAmrap: true,
+          actualReps: 0,
+          completed: true,
+        },
+      });
+
+      const res = await request(app)
+        .get('/api/social/leaderboard?mode=e1rm')
+        .set('Authorization', `Bearer ${tokenZeroUser}`);
+      expect(res.status).toBe(200);
+
+      const benchExercise = res.body.exercises.find(
+        (e: { slug: string }) => e.slug === 'bench-press'
+      );
+      const userIds = (benchExercise?.rankings ?? []).map((r: { userId: number }) => r.userId);
+      expect(userIds).not.toContain(userIdZeroUser);
+    });
+
+    it('actualReps=1 returns base weight without Epley inflation', async () => {
+      const uidOne = randomUUID().slice(0, 8);
+      const resOneUser = await request(app).post('/api/auth/register').send({
+        email: `e1rm-one-${uidOne}@example.com`,
+        password: 'password123',
+        displayName: 'E1RM One Rep User',
+      });
+      const tokenOneUser = resOneUser.body.accessToken;
+      const userIdOneUser = resOneUser.body.user.id;
+
+      const onePlan = await prisma.workoutPlan.create({
+        data: {
+          slug: `one-plan-${uidOne}`,
+          name: `One Rep Plan ${uidOne}`,
+          description: 'One rep test',
+          daysPerWeek: 1,
+          isPublic: true,
+          isSystem: false,
+        },
+      });
+      const oneDay = await prisma.planDay.create({
+        data: { planId: onePlan.id, dayNumber: 1, name: 'Day 1' },
+      });
+      await prisma.planDayExercise.create({
+        data: {
+          planDayId: oneDay.id,
+          exerciseId: e1rmBenchExerciseId,
+          tmExerciseId: e1rmBenchExerciseId,
+          sortOrder: 1,
+        },
+      });
+      await prisma.userPlan.create({
+        data: { userId: userIdOneUser, planId: onePlan.id, isActive: true },
+      });
+
+      const oneWorkout = await prisma.workout.create({
+        data: {
+          userId: userIdOneUser,
+          dayNumber: 1,
+          status: 'completed',
+          completedAt: new Date(),
+        },
+      });
+      // 120kg x 1 rep => should return 120, not 120 * (1 + 1/30) = 124
+      await prisma.workoutSet.create({
+        data: {
+          workoutId: oneWorkout.id,
+          exerciseId: e1rmBenchExerciseId,
+          exerciseOrder: 1,
+          setOrder: 1,
+          prescribedReps: 1,
+          prescribedWeight: 120,
+          isAmrap: true,
+          actualReps: 1,
+          completed: true,
+        },
+      });
+
+      const res = await request(app)
+        .get('/api/social/leaderboard?mode=e1rm')
+        .set('Authorization', `Bearer ${tokenOneUser}`);
+      expect(res.status).toBe(200);
+
+      const benchExercise = res.body.exercises.find(
+        (e: { slug: string }) => e.slug === 'bench-press'
+      );
+      expect(benchExercise).toBeDefined();
+
+      const rankOne = benchExercise.rankings.find(
+        (r: { userId: number }) => r.userId === userIdOneUser
+      );
+      expect(rankOne).toBeDefined();
+      // Special case: actualReps === 1 => returns base weight exactly
+      expect(rankOne.weight).toBe(120);
+    });
+  });
+
   describe('Leaderboard', () => {
     let tokenLbA: string;
     let userIdLbA: number;

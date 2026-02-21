@@ -57,6 +57,11 @@ export async function getLeaderboard(): Promise<typeof LeaderboardResponseSchema
   return LeaderboardResponseSchema.parse(data);
 }
 
+export async function getE1rmLeaderboard(): Promise<typeof LeaderboardResponseSchema._output> {
+  const data = await apiFetch('/social/leaderboard?mode=e1rm');
+  return LeaderboardResponseSchema.parse(data);
+}
+
 export async function toggleReaction(eventId: number, emoji: string): Promise<typeof ReactResponseSchema._output> {
   const data = await apiFetch(`/social/feed/${eventId}/react`, {
     method: 'POST',

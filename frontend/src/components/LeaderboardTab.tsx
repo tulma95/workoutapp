@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getLeaderboard } from '../api/social';
+import { getLeaderboard, getE1rmLeaderboard } from '../api/social';
 import type { LeaderboardExercise } from '../api/social';
 import { formatWeight } from '../utils/weight';
 import { SkeletonLine, SkeletonCard } from './Skeleton';
@@ -27,14 +28,46 @@ function ExerciseRankings({ exercise }: { exercise: LeaderboardExercise }) {
 }
 
 export function LeaderboardTab() {
-  const { data, isLoading, isError, error, refetch } = useQuery({
+  const [mode, setMode] = useState<'tm' | 'e1rm'>('tm');
+
+  const tmQuery = useQuery({
     queryKey: ['social', 'leaderboard'],
     queryFn: getLeaderboard,
   });
 
+  const e1rmQuery = useQuery({
+    queryKey: ['social', 'leaderboard', 'e1rm'],
+    queryFn: getE1rmLeaderboard,
+    staleTime: 60_000,
+    enabled: mode === 'e1rm',
+  });
+
+  const activeQuery = mode === 'tm' ? tmQuery : e1rmQuery;
+  const { data, isLoading, isError, error, refetch } = activeQuery;
+
+  const modeToggle = (
+    <div className={styles.modeToggle} role="group" aria-label="Leaderboard mode">
+      <button
+        className={mode === 'tm' ? `${styles.modeBtn} ${styles.modeBtnActive}` : styles.modeBtn}
+        aria-pressed={mode === 'tm'}
+        onClick={() => setMode('tm')}
+      >
+        Training Max
+      </button>
+      <button
+        className={mode === 'e1rm' ? `${styles.modeBtn} ${styles.modeBtnActive}` : styles.modeBtn}
+        aria-pressed={mode === 'e1rm'}
+        onClick={() => setMode('e1rm')}
+      >
+        Est. 1RM
+      </button>
+    </div>
+  );
+
   if (isLoading) {
     return (
       <div className={styles.container} aria-busy="true" aria-label="Leaderboard loading">
+        {modeToggle}
         {Array.from({ length: 3 }, (_, i) => (
           <div key={i} className={styles.skeletonSection}>
             <SkeletonLine width="40%" height="1.25rem" />
@@ -51,13 +84,16 @@ export function LeaderboardTab() {
 
   if (isError) {
     return (
-      <div className={styles.errorState} role="alert">
-        <p className={styles.errorText}>
-          {error instanceof Error ? error.message : 'Failed to load leaderboard'}
-        </p>
-        <button className={styles.retryButton} onClick={() => refetch()}>
-          Retry
-        </button>
+      <div className={styles.container}>
+        {modeToggle}
+        <div className={styles.errorState} role="alert">
+          <p className={styles.errorText}>
+            {error instanceof Error ? error.message : 'Failed to load leaderboard'}
+          </p>
+          <button className={styles.retryButton} onClick={() => refetch()}>
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
@@ -66,14 +102,22 @@ export function LeaderboardTab() {
 
   if (exercises.length === 0) {
     return (
-      <div className={styles.emptyState}>
-        <p className={styles.emptyText}>Subscribe to a plan to see leaderboard</p>
+      <div className={styles.container}>
+        {modeToggle}
+        <div className={styles.emptyState}>
+          <p className={styles.emptyText}>
+            {mode === 'e1rm'
+              ? 'Complete AMRAP sets to appear on the e1RM leaderboard'
+              : 'Subscribe to a plan to see leaderboard'}
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className={styles.container} aria-label="Leaderboard" aria-live="polite">
+      {modeToggle}
       {exercises.map((exercise) => (
         <ExerciseRankings key={exercise.slug} exercise={exercise} />
       ))}
