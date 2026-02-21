@@ -14,6 +14,7 @@ import exercisesRoutes from './routes/exercises';
 import adminExerciseRoutes from './routes/admin/exercises';
 import adminPlanRoutes from './routes/admin/plans';
 import achievementsRoutes from './routes/achievements';
+import notificationsRoutes from './routes/notifications';
 import { errorHandler } from './middleware/errorHandler';
 import { requestContext } from './middleware/requestContext';
 import { requestLogger } from './middleware/requestLogger';
@@ -52,6 +53,7 @@ app.use('/api/exercises', exercisesRoutes);
 app.use('/api/admin/exercises', adminExerciseRoutes);
 app.use('/api/admin/plans', adminPlanRoutes);
 app.use('/api/achievements', achievementsRoutes);
+app.use('/api/notifications', notificationsRoutes);
 
 // Test/dev-only endpoint to promote current user to admin
 if (config.nodeEnv === 'test' || config.nodeEnv === 'development') {
