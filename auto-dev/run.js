@@ -94,7 +94,7 @@ function runClaude(prompt, extraFlags = "") {
     cwd: ROOT,
     input: prompt,
     stdio: ["pipe", "inherit", "inherit"],
-    timeout: 15 * 60 * 1000, // 15 min per phase
+    timeout: 30 * 60 * 1000, // 30 min per phase
     env: { ...process.env },
     maxBuffer: 50 * 1024 * 1024,
   });
