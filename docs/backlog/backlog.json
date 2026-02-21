@@ -6,6 +6,88 @@
     "description": "Currently User has both username (optional, unique) and displayName (required, not unique). For a workout tracker, a single required unique username field that serves as both the identifier and display name is simpler. Combine them: make username required and unique, remove displayName, use username everywhere displayName was used (UI display, friend lists, etc.). Update registration, settings, friend search, and all API responses."
   },
   {
+    "id": "046",
+    "title": "Flaky E2E: isVisible() snapshot check in rest-timer confirmSet loop",
+    "status": "done",
+    "description": "e2e/rest-timer.spec.ts line 79 uses isVisible() (point-in-time snapshot) inside a loop guard before skipRestButton.click(). If the timer banner appears a few ms after the check, the click is never reached. Pre-existing issue found during ticket 040 review."
+  },
+  {
+    "id": "049",
+    "title": "Fix UTC/local timezone inconsistency in date input max and calendar day comparison",
+    "status": "backlog",
+    "description": "The date input max attribute uses .toISOString().slice(0,10) (UTC) while WorkoutCalendar.handleDayClick compares dates in local time. For users east of UTC, after midnight UTC but before midnight local time, the max date could be set to yesterday while the calendar allows clicking today, causing an inconsistency. Both should use the same local-time date string (e.g., toLocaleDateString('en-CA'))."
+  },
+  {
+    "id": "074",
+    "title": "ReactionBar: block only the clicked emoji during pending mutation, not all emoji buttons",
+    "status": "backlog",
+    "priority": "low",
+    "description": "When a mutation is pending, all 5 emoji buttons are disabled via mutation.isPending. Only the tapped emoji should be blocked. Prevents the user from reacting with a different emoji while one is in flight."
+  },
+  {
+    "id": "077",
+    "title": "E2E streak test uses setDate (local) instead of setUTCDate for yesterday calculation — may produce wrong date near midnight in UTC-offset environments",
+    "status": "backlog",
+    "priority": "low",
+    "description": "In e2e/social.spec.ts line 70, yesterday is computed with setDate(getDate() - 1) which uses local time. The streak calculation in the backend uses UTC. In UTC+N timezones, the local date could be one day ahead of UTC, causing the custom workout to be saved with the wrong UTC date and the streak test to fail near midnight. Should use setUTCDate / getUTCDate like the backend does."
+  },
+  {
+    "id": "082",
+    "title": "streak_milestone and badge_unlocked not emitted for custom workouts",
+    "status": "backlog",
+    "priority": "medium",
+    "description": "The createCustomWorkout() path in workout.service.ts only creates a workout_completed feed event. It does not run the streak/badge logic that the two completeWorkout() paths run. Custom workouts can advance a streak and should trigger the same milestone checks."
+  },
+  {
+    "id": "084",
+    "title": "emit streak_milestone and badge_unlocked for custom workouts",
+    "status": "backlog",
+    "priority": "medium",
+    "description": "createCustomWorkout() in workout.service.ts skips streak calculation and badge checking entirely. Users completing a custom workout that hits a streak milestone will not see a streak_milestone feed event. Requires extracting the shared emitStreakAndBadgeEvents() helper and calling it from createCustomWorkout path."
+  },
+  {
+    "id": "085",
+    "title": "streak_milestone deduplication has no DB-level uniqueness guarantee — concurrent completions can create duplicate events",
+    "status": "backlog",
+    "priority": "medium",
+    "description": "The findFirst + create pattern inside the transaction prevents duplicate streak_milestone events under normal sequential execution, but does not protect against two concurrent completeWorkout calls racing in separate transactions for the same user. A unique partial index on (user_id, event_type, payload->>'days') would provide a hard guarantee at the database level."
+  },
+  {
+    "id": "086",
+    "title": "Extract emitStreakAndBadgeEvents helper to deduplicate completeWorkout transaction paths",
+    "status": "backlog",
+    "priority": "low",
+    "description": "The streak + badge feed event emission block (~40 lines) is duplicated in both plan and no-plan completeWorkout transaction paths. Extract to a shared helper function."
+  },
+  {
+    "id": "087",
+    "title": "Backend PATCH /users/me rejects null username — cannot clear username once set",
+    "status": "backlog",
+    "priority": "high",
+    "description": "The frontend settings page sends username: null when clearing, but updateSchema only accepts string | undefined. Zod rejects null with VALIDATION_ERROR (422). The fix is to add .nullable() to the username field in updateSchema."
+  },
+  {
+    "id": "088",
+    "title": "Docs: update api-endpoints.md and db-schema.md for username field and GET /api/social/search endpoint",
+    "status": "backlog",
+    "priority": "medium",
+    "description": "Task 9 from ticket 068 was acknowledged as not done. Three docs need updating: api-endpoints.md needs GET /api/social/search and the updated POST /api/social/request; db-schema.md needs the username column in users; react-query-cache.md needs the social/search query key."
+  },
+  {
+    "id": "070",
+    "title": "Missing negative test for century-club achievement (low TM should not unlock)",
+    "status": "backlog",
+    "priority": "low",
+    "description": "The achievements test suite has a positive test for century-club (bench TM=200) but no negative test confirming it does NOT trigger when all set weights are below 100 kg. The default benchTM=100 users (TM=90) could serve as a negative baseline."
+  },
+  {
+    "id": "072",
+    "title": "Missing negative test for century-club achievement",
+    "status": "backlog",
+    "priority": "low",
+    "description": "Add explicit test asserting that century-club is NOT unlocked for sub-100kg TM users"
+  },
+  {
     "id": "050",
     "title": "Calendar improvements: selectable days with custom workout button",
     "status": "done",
@@ -384,18 +466,6 @@
     "description": "Body validation is solid but params/query have gaps: (1) PATCH/DELETE /api/admin/exercises/:id have no isNaN check causing 500s, (2) All :id params allow 0 or negative values, (3) GET /api/workouts/history limit has no upper bound, (4) GET /api/workouts/calendar year has no range bounds, (5) PATCH /api/workouts/:id/sets/:setId never validates :id param. Fix: extend validate middleware or add Zod schemas for params/query on all routes."
   },
   {
-    "id": "046",
-    "title": "Flaky E2E: isVisible() snapshot check in rest-timer confirmSet loop",
-    "status": "backlog",
-    "description": "e2e/rest-timer.spec.ts line 79 uses isVisible() (point-in-time snapshot) inside a loop guard before skipRestButton.click(). If the timer banner appears a few ms after the check, the click is never reached. Pre-existing issue found during ticket 040 review."
-  },
-  {
-    "id": "049",
-    "title": "Fix UTC/local timezone inconsistency in date input max and calendar day comparison",
-    "status": "backlog",
-    "description": "The date input max attribute uses .toISOString().slice(0,10) (UTC) while WorkoutCalendar.handleDayClick compares dates in local time. For users east of UTC, after midnight UTC but before midnight local time, the max date could be set to yesterday while the calendar allows clicking today, causing an inconsistency. Both should use the same local-time date string (e.g., toLocaleDateString('en-CA'))."
-  },
-  {
     "id": "053",
     "title": "Head-to-Head Live Workout",
     "status": "backlog",
@@ -414,13 +484,6 @@
     "description": "Generate a personal QR code in the app that encodes your friend request link. Show it at the gym for someone to scan and instantly send a friend request. Uses invite link system (#063). No typing needed - just scan and connect."
   },
   {
-    "id": "070",
-    "title": "Missing negative test for century-club achievement (low TM should not unlock)",
-    "status": "backlog",
-    "priority": "low",
-    "description": "The achievements test suite has a positive test for century-club (bench TM=200) but no negative test confirming it does NOT trigger when all set weights are below 100 kg. The default benchTM=100 users (TM=90) could serve as a negative baseline."
-  },
-  {
     "id": "071",
     "title": "Update POST /api/workouts/:id/complete docs to mention newAchievements in response",
     "status": "done",
@@ -428,25 +491,11 @@
     "description": "The docs/api-endpoints.md entry for POST /api/workouts/:id/complete still says 'returns { progressions: [...] }'. It should be updated to include newAchievements: [...] in the documented response shape after ticket 027 added achievements."
   },
   {
-    "id": "072",
-    "title": "Missing negative test for century-club achievement",
-    "status": "backlog",
-    "priority": "low",
-    "description": "Add explicit test asserting that century-club is NOT unlocked for sub-100kg TM users"
-  },
-  {
     "id": "073",
     "title": "Update POST /api/workouts/:id/complete docs to include newAchievements",
     "status": "backlog",
     "priority": "low",
     "description": "The complete endpoint now returns newAchievements field but api-endpoints.md was not updated to reflect this (fixed in 027)"
-  },
-  {
-    "id": "074",
-    "title": "ReactionBar: block only the clicked emoji during pending mutation, not all emoji buttons",
-    "status": "backlog",
-    "priority": "low",
-    "description": "When a mutation is pending, all 5 emoji buttons are disabled via mutation.isPending. Only the tapped emoji should be blocked. Prevents the user from reacting with a different emoji while one is in flight."
   },
   {
     "id": "075",
@@ -461,13 +510,6 @@
     "status": "backlog",
     "priority": "medium",
     "description": "getStreaksForUsers in social.ts fetches every completed workout for the given user IDs with no date bound. A user with years of history causes a large scan on every GET /api/social/friends and GET /api/social/feed call. The streak only needs the most recent contiguous block; a WHERE completedAt >= NOW() - INTERVAL '365 days' (or similar) would cap the scan with no correctness impact."
-  },
-  {
-    "id": "077",
-    "title": "E2E streak test uses setDate (local) instead of setUTCDate for yesterday calculation — may produce wrong date near midnight in UTC-offset environments",
-    "status": "backlog",
-    "priority": "low",
-    "description": "In e2e/social.spec.ts line 70, yesterday is computed with setDate(getDate() - 1) which uses local time. The streak calculation in the backend uses UTC. In UTC+N timezones, the local date could be one day ahead of UTC, causing the custom workout to be saved with the wrong UTC date and the streak test to fail near midnight. Should use setUTCDate / getUTCDate like the backend does."
   },
   {
     "id": "078",
@@ -496,52 +538,10 @@
     "description": "Add push notifications via Web Push API so users get notified even when the app is in the background. Requires VAPID key generation, subscription management (store push subscriptions in DB), and service worker push event handler. Builds on top of ticket 080 (SSE + Toast) — reuse the same notification events but deliver via push when user is offline/backgrounded. Scope: VAPID setup, PushSubscription CRUD endpoint, sw.js push handler, opt-in UI."
   },
   {
-    "id": "082",
-    "title": "streak_milestone and badge_unlocked not emitted for custom workouts",
-    "status": "backlog",
-    "priority": "medium",
-    "description": "The createCustomWorkout() path in workout.service.ts only creates a workout_completed feed event. It does not run the streak/badge logic that the two completeWorkout() paths run. Custom workouts can advance a streak and should trigger the same milestone checks."
-  },
-  {
     "id": "083",
     "title": "docs/db-schema.md feed_events event_type list is missing streak_milestone, badge_unlocked, and plan_switched",
     "status": "done",
     "priority": "low",
     "description": "The db-schema.md feed_events documentation only lists workout_completed and tm_increased as event_type values. Three new event types added in ticket 065 (streak_milestone, badge_unlocked, plan_switched) are not reflected in the doc. Should be updated per CLAUDE.md documentation requirements."
-  },
-  {
-    "id": "084",
-    "title": "emit streak_milestone and badge_unlocked for custom workouts",
-    "status": "backlog",
-    "priority": "medium",
-    "description": "createCustomWorkout() in workout.service.ts skips streak calculation and badge checking entirely. Users completing a custom workout that hits a streak milestone will not see a streak_milestone feed event. Requires extracting the shared emitStreakAndBadgeEvents() helper and calling it from createCustomWorkout path."
-  },
-  {
-    "id": "085",
-    "title": "streak_milestone deduplication has no DB-level uniqueness guarantee — concurrent completions can create duplicate events",
-    "status": "backlog",
-    "priority": "medium",
-    "description": "The findFirst + create pattern inside the transaction prevents duplicate streak_milestone events under normal sequential execution, but does not protect against two concurrent completeWorkout calls racing in separate transactions for the same user. A unique partial index on (user_id, event_type, payload->>'days') would provide a hard guarantee at the database level."
-  },
-  {
-    "id": "086",
-    "title": "Extract emitStreakAndBadgeEvents helper to deduplicate completeWorkout transaction paths",
-    "status": "backlog",
-    "priority": "low",
-    "description": "The streak + badge feed event emission block (~40 lines) is duplicated in both plan and no-plan completeWorkout transaction paths. Extract to a shared helper function."
-  },
-  {
-    "id": "087",
-    "title": "Backend PATCH /users/me rejects null username — cannot clear username once set",
-    "status": "backlog",
-    "priority": "high",
-    "description": "The frontend settings page sends username: null when clearing, but updateSchema only accepts string | undefined. Zod rejects null with VALIDATION_ERROR (422). The fix is to add .nullable() to the username field in updateSchema."
-  },
-  {
-    "id": "088",
-    "title": "Docs: update api-endpoints.md and db-schema.md for username field and GET /api/social/search endpoint",
-    "status": "backlog",
-    "priority": "medium",
-    "description": "Task 9 from ticket 068 was acknowledged as not done. Three docs need updating: api-endpoints.md needs GET /api/social/search and the updated POST /api/social/request; db-schema.md needs the username column in users; react-query-cache.md needs the social/search query key."
   }
 ]
