@@ -98,6 +98,7 @@ export const UserSchema = z.object({
   id: z.number(),
   email: z.string(),
   displayName: z.string(),
+  username: z.string().nullable().optional(),
   isAdmin: z.boolean(),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -279,6 +280,7 @@ export const FriendSchema = z.object({
   id: z.number(),
   userId: z.number(),
   displayName: z.string(),
+  username: z.string().nullable().optional(),
   streak: z.number().default(0),
 });
 
@@ -286,6 +288,7 @@ export const FriendRequestSchema = z.object({
   id: z.number(),
   requesterId: z.number(),
   displayName: z.string(),
+  username: z.string().nullable().optional(),
 });
 
 export const FriendsResponseSchema = z.object({
