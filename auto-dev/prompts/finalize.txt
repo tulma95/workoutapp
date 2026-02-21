@@ -18,7 +18,7 @@ All implementation tasks are complete. Now run tests, fix failures, update docs,
    - Common causes: typos, missing imports, wrong field names, schema mismatches. Check the actual error message first.
    - After fixing, run tests again (same capture pattern). Max 3 attempts — if still failing after 3 runs, commit what you have and note the failure.
    - If you fix anything, commit the fix: fix({{TICKET_ID}}): <what you fixed>
-   - If you discover bugs unrelated to this ticket, add them to the backlog:
+   - If you discover bugs unrelated to this ticket: if the bug is critical (breaks core functionality, data loss, security), fix it immediately and commit as fix: <what you fixed>. Otherwise, add it to the backlog:
      node --experimental-strip-types docs/backlog/ticket.ts add "<description>" --priority <low|medium|high>
 
 3. Update docs that need updating (only if this ticket changed them):
@@ -29,6 +29,8 @@ All implementation tasks are complete. Now run tests, fix failures, update docs,
 
 4. Mark the ticket as done:
    node --experimental-strip-types docs/backlog/ticket.ts status {{TICKET_ID}} done
+
+5. Commit the backlog
 
 IMPORTANT: Do NOT push to remote. Local commits only.
 IMPORTANT: Be fast — avoid unnecessary file reads. The insights file tells you what changed.

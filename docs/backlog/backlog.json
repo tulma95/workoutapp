@@ -2,7 +2,7 @@
   {
     "id": "089",
     "title": "Merge username and displayName into a single field",
-    "status": "backlog",
+    "status": "done",
     "description": "Currently User has both username (optional, unique) and displayName (required, not unique). For a workout tracker, a single required unique username field that serves as both the identifier and display name is simpler. Combine them: make username required and unique, remove displayName, use username everywhere displayName was used (UI display, friend lists, etc.). Update registration, settings, friend search, and all API responses."
   },
   {
