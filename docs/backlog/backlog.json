@@ -476,5 +476,17 @@
     "status": "done",
     "priority": "low",
     "description": "E2E streak test uses setDate/getDate (local time) for yesterday but toISOString() returns UTC. Near midnight in UTC-offset timezones this produces the wrong date, causing the 2 day streak assertion to fail."
+  },
+  {
+    "id": "080",
+    "title": "Real-Time Notifications (SSE + Toast)",
+    "status": "backlog",
+    "doc": "docs/backlog/features/real-time-notifications.md"
+  },
+  {
+    "id": "081",
+    "title": "Push Notifications (Service Worker)",
+    "status": "backlog",
+    "description": "Add push notifications via Web Push API so users get notified even when the app is in the background. Requires VAPID key generation, subscription management (store push subscriptions in DB), and service worker push event handler. Builds on top of ticket 080 (SSE + Toast) — reuse the same notification events but deliver via push when user is offline/backgrounded. Scope: VAPID setup, PushSubscription CRUD endpoint, sw.js push handler, opt-in UI."
   }
 ]
