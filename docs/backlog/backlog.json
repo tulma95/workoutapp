@@ -20,7 +20,7 @@
   {
     "id": "074",
     "title": "ReactionBar: block only the clicked emoji during pending mutation, not all emoji buttons",
-    "status": "backlog",
+    "status": "done",
     "priority": "low",
     "description": "When a mutation is pending, all 5 emoji buttons are disabled via mutation.isPending. Only the tapped emoji should be blocked. Prevents the user from reacting with a different emoji while one is in flight."
   },
@@ -543,5 +543,12 @@
     "status": "done",
     "priority": "low",
     "description": "The db-schema.md feed_events documentation only lists workout_completed and tm_increased as event_type values. Three new event types added in ticket 065 (streak_milestone, badge_unlocked, plan_switched) are not reflected in the doc. Should be updated per CLAUDE.md documentation requirements."
+  },
+  {
+    "id": "090",
+    "title": "Flaky test: workout-feed-events.test.ts occasionally fails with 404 on POST /api/workouts",
+    "status": "backlog",
+    "priority": "medium",
+    "description": "workout-feed-events.test.ts is flaky - sometimes returns 404 on POST /api/workouts during parallel test execution (likely a race condition in test setup). Second run passes. Investigate and fix test isolation."
   }
 ]
