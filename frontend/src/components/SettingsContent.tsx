@@ -32,6 +32,12 @@ type Props = {
   onScheduleSave?: (schedule: ScheduleEntry[]) => Promise<void>
   isScheduleSaving?: boolean
   scheduleError?: string
+  usernameInput: string
+  usernameError: string
+  usernameSaving: boolean
+  onUsernameInputChange: (value: string) => void
+  onUsernameBlur: () => void
+  onUsernameSave: () => void
 }
 
 export function SettingsContent({
@@ -57,6 +63,12 @@ export function SettingsContent({
   onScheduleSave,
   isScheduleSaving,
   scheduleError,
+  usernameInput,
+  usernameError,
+  usernameSaving,
+  onUsernameInputChange,
+  onUsernameBlur,
+  onUsernameSave,
 }: Props) {
   return (
     <div>
@@ -94,6 +106,32 @@ export function SettingsContent({
       <div className={styles.card}>
         <p className={styles.cardSubLabel}>Email</p>
         <p className={styles.cardValue}>{user?.email}</p>
+      </div>
+
+      <div className={styles.card}>
+        <label htmlFor="username" className={styles.cardSubLabel}>Username</label>
+        <div className={styles.usernameRow}>
+          <input
+            id="username"
+            type="text"
+            value={usernameInput}
+            onChange={(e) => onUsernameInputChange(e.target.value)}
+            onBlur={onUsernameBlur}
+            placeholder="Not set"
+            maxLength={30}
+            aria-invalid={usernameError ? 'true' : undefined}
+            aria-describedby={usernameError ? 'username-error' : undefined}
+            className={styles.usernameInput}
+          />
+          <Button onClick={onUsernameSave} disabled={usernameSaving}>
+            {usernameSaving ? 'Saving...' : 'Save'}
+          </Button>
+        </div>
+        {usernameError && (
+          <p id="username-error" className={styles.usernameError} role="alert">
+            {usernameError}
+          </p>
+        )}
       </div>
 
       {trainingMaxes.length > 0 && (

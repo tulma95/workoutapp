@@ -247,3 +247,38 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+
+.usernameRow {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.25rem;
+}
+
+.usernameInput {
+  flex: 1;
+  min-height: 3rem;
+  padding: 0 1rem;
+  font-size: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+}
+
+.usernameInput:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-color: var(--primary);
+}
+
+.usernameInput[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.usernameError {
+  margin-top: 0.5rem;
+  color: var(--danger);
+  font-size: 0.875rem;
+}

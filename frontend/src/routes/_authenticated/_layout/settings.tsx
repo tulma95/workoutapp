@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useSuspenseQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getMe } from '../../../api/user'
+import { getMe, updateMe } from '../../../api/user'
 import { useAuth } from '../../../context/useAuth'
 import { getCurrentPlan } from '../../../api/plans'
 import { getTrainingMaxes, updateTrainingMax } from '../../../api/trainingMaxes'
@@ -90,6 +90,72 @@ function SettingsPage() {
     queryKey: ['schedule'],
     queryFn: getSchedule,
   })
+
+  const [usernameInput, setUsernameInput] = useState(user.username ?? '')
+  const [usernameError, setUsernameError] = useState('')
+  const [usernameSaving, setUsernameSaving] = useState(false)
+
+  useEffect(() => {
+    setUsernameInput(user.username ?? '')
+  }, [user.username])
+
+  const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/
+
+  function validateUsername(value: string): string {
+    if (value === '') return ''
+    if (value.length < 3) return 'Username must be at least 3 characters'
+    if (value.length > 30) return 'Username must be at most 30 characters'
+    if (!USERNAME_REGEX.test(value)) return 'Username may only contain letters, numbers, and underscores'
+    return ''
+  }
+
+  function handleUsernameBlur() {
+    setUsernameError(validateUsername(usernameInput))
+  }
+
+  async function handleUsernameSave() {
+    const trimmed = usernameInput.trim()
+    const validationError = validateUsername(trimmed)
+    if (validationError) {
+      setUsernameError(validationError)
+      return
+    }
+
+    setUsernameSaving(true)
+    setUsernameError('')
+
+    try {
+      await updateMe({ username: trimmed || null })
+      await queryClient.invalidateQueries({ queryKey: ['user', 'me'] })
+      setUsernameInput(trimmed)
+    } catch (err) {
+      if (
+        err !== null &&
+        typeof err === 'object' &&
+        'error' in err &&
+        err.error !== null &&
+        typeof err.error === 'object' &&
+        'code' in err.error &&
+        err.error.code === 'USERNAME_EXISTS'
+      ) {
+        setUsernameError('Username already taken')
+      } else if (
+        err !== null &&
+        typeof err === 'object' &&
+        'error' in err &&
+        err.error !== null &&
+        typeof err.error === 'object' &&
+        'message' in err.error &&
+        typeof err.error.message === 'string'
+      ) {
+        setUsernameError(err.error.message)
+      } else {
+        setUsernameError('Failed to save username')
+      }
+    } finally {
+      setUsernameSaving(false)
+    }
+  }
 
   const [scheduleError, setScheduleError] = useState('')
 
@@ -212,6 +278,12 @@ function SettingsPage() {
       onScheduleSave={async (s: ScheduleEntry[]) => { await scheduleMutation.mutateAsync(s) }}
       isScheduleSaving={scheduleMutation.isPending}
       scheduleError={scheduleError || undefined}
+      usernameInput={usernameInput}
+      usernameError={usernameError}
+      usernameSaving={usernameSaving}
+      onUsernameInputChange={setUsernameInput}
+      onUsernameBlur={handleUsernameBlur}
+      onUsernameSave={handleUsernameSave}
     />
   )
 }

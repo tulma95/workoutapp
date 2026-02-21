@@ -15,6 +15,7 @@ interface AuthContextValue {
     email: string,
     password: string,
     displayName: string,
+    username?: string,
   ) => Promise<void>
 }
 
@@ -37,11 +38,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email: string,
       password: string,
       displayName: string,
+      username?: string,
     ) => {
       const result = await authApi.register(
         email,
         password,
         displayName,
+        username,
       )
       localStorage.setItem('accessToken', result.accessToken)
       localStorage.setItem('refreshToken', result.refreshToken)

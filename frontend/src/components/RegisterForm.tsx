@@ -9,13 +9,17 @@ type Props = {
   email: string
   password: string
   displayName: string
+  username: string
   error: string
   passwordError: string
+  usernameError: string
   loading: boolean
   onEmailChange: (value: string) => void
   onPasswordChange: (value: string) => void
   onPasswordBlur: () => void
   onDisplayNameChange: (value: string) => void
+  onUsernameChange: (value: string) => void
+  onUsernameBlur: () => void
   onSubmit: (e: FormEvent) => void
 }
 
@@ -23,13 +27,17 @@ export function RegisterForm({
   email,
   password,
   displayName,
+  username,
   error,
   passwordError,
+  usernameError,
   loading,
   onEmailChange,
   onPasswordChange,
   onPasswordBlur,
   onDisplayNameChange,
+  onUsernameChange,
+  onUsernameBlur,
   onSubmit,
 }: Props) {
   return (
@@ -72,6 +80,22 @@ export function RegisterForm({
             onChange={(e) => onDisplayNameChange(e.target.value)}
             required
           />
+        </div>
+
+        <div>
+          <label htmlFor="username">Username (optional)</label>
+          <input
+            id="username"
+            type="text"
+            value={username}
+            onChange={(e) => onUsernameChange(e.target.value)}
+            onBlur={onUsernameBlur}
+            aria-describedby={usernameError ? 'username-error' : undefined}
+            aria-invalid={usernameError ? true : undefined}
+          />
+          {usernameError && (
+            <p id="username-error" className={styles.error}>{usernameError}</p>
+          )}
         </div>
 
         {error && <ErrorMessage message={error} />}
