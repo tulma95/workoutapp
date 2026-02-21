@@ -75,11 +75,13 @@ test.describe('Rest Timer', () => {
     const count = await setRows.count();
 
     for (let i = 0; i < count; i++) {
-      // Skip rest timer if it appears (from previous set completion)
-      if (await workout.restTimerBanner.isVisible()) {
-        await workout.skipRestButton.click();
-      }
       await workout.confirmSet(i);
+      if (i < count - 1) {
+        // After non-last set, wait for timer to appear then skip it
+        await expect(workout.restTimerBanner).toBeVisible();
+        await workout.skipRestButton.click();
+        await expect(workout.restTimerBanner).not.toBeVisible();
+      }
     }
 
     // After last set, timer should NOT appear
