@@ -5,6 +5,7 @@ import { authenticate } from '../middleware/auth';
 import { AuthRequest, getUserId } from '../types';
 import prisma from '../lib/db';
 import { calculateStreak } from '../lib/streak';
+import { notificationManager } from '../services/notifications.service';
 
 const router = Router();
 
@@ -246,6 +247,18 @@ router.patch('/requests/:id/accept', async (req: AuthRequest, res: Response) => 
     where: { id },
     data: { status: 'accepted' },
   });
+
+  if (friendship.initiatorId != null) {
+    const acceptor = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { username: true },
+    });
+    const acceptorUsername = acceptor?.username ?? 'Someone';
+    notificationManager.notifyUser(friendship.initiatorId, {
+      type: 'friend_request_accepted',
+      message: `${acceptorUsername} accepted your friend request`,
+    });
+  }
 
   res.json({ id: updated.id, status: updated.status });
 });

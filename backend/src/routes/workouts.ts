@@ -4,6 +4,8 @@ import { validate } from '../middleware/validate';
 import { authenticate } from '../middleware/auth';
 import { AuthRequest, ExistingWorkoutError, getUserId } from '../types';
 import * as workoutService from '../services/workout.service';
+import prisma from '../lib/db';
+import { notificationManager } from '../services/notifications.service';
 
 const router = Router();
 
@@ -132,11 +134,30 @@ router.post('/:id/complete', async (req: AuthRequest, res: Response) => {
     res.status(400).json({ error: { code: 'INVALID_ID', message: 'Invalid workout ID' } });
     return;
   }
-  const result = await workoutService.completeWorkout(id, getUserId(req));
+  const userId = getUserId(req);
+  const result = await workoutService.completeWorkout(id, userId);
   if (!result) {
     res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Workout not found' } });
     return;
   }
+
+  // Notify friends asynchronously — do not await to avoid delaying the response
+  const { workout, newAchievements } = result;
+  void (async () => {
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { username: true } });
+    const username = user?.username ?? 'Someone';
+    await notificationManager.notifyFriends(userId, {
+      type: 'workout_completed',
+      message: `${username} just finished Day ${workout.dayNumber}`,
+    });
+    for (const achievement of newAchievements) {
+      await notificationManager.notifyFriends(userId, {
+        type: 'achievement_earned',
+        message: `${username} earned ${achievement.name}`,
+      });
+    }
+  })();
+
   res.json(result);
 });
 
