@@ -26,6 +26,7 @@ const updateSchema = z.object({
     .min(3)
     .max(30)
     .regex(/^[a-zA-Z0-9_]+$/, 'Username may only contain letters, numbers, and underscores')
+    .nullable()
     .optional(),
 });
 
