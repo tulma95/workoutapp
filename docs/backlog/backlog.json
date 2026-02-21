@@ -1,5 +1,11 @@
 [
   {
+    "id": "089",
+    "title": "Merge username and displayName into a single field",
+    "status": "backlog",
+    "description": "Currently User has both username (optional, unique) and displayName (required, not unique). For a workout tracker, a single required unique username field that serves as both the identifier and display name is simpler. Combine them: make username required and unique, remove displayName, use username everywhere displayName was used (UI display, friend lists, etc.). Update registration, settings, friend search, and all API responses."
+  },
+  {
     "id": "050",
     "title": "Calendar improvements: selectable days with custom workout button",
     "status": "done",
@@ -152,7 +158,7 @@
   {
     "id": "068",
     "title": "Find Friends by Username",
-    "status": "backlog",
+    "status": "done",
     "description": "Add optional username field to user profile (unique, alphanumeric + underscores). Allow sending friend requests by username instead of email. More natural for gym acquaintances where you wouldn't share email. Search with autocomplete."
   },
   {
@@ -523,5 +529,19 @@
     "status": "backlog",
     "priority": "low",
     "description": "The streak + badge feed event emission block (~40 lines) is duplicated in both plan and no-plan completeWorkout transaction paths. Extract to a shared helper function."
+  },
+  {
+    "id": "087",
+    "title": "Backend PATCH /users/me rejects null username — cannot clear username once set",
+    "status": "backlog",
+    "priority": "high",
+    "description": "The frontend settings page sends username: null when clearing, but updateSchema only accepts string | undefined. Zod rejects null with VALIDATION_ERROR (422). The fix is to add .nullable() to the username field in updateSchema."
+  },
+  {
+    "id": "088",
+    "title": "Docs: update api-endpoints.md and db-schema.md for username field and GET /api/social/search endpoint",
+    "status": "backlog",
+    "priority": "medium",
+    "description": "Task 9 from ticket 068 was acknowledged as not done. Three docs need updating: api-endpoints.md needs GET /api/social/search and the updated POST /api/social/request; db-schema.md needs the username column in users; react-query-cache.md needs the social/search query key."
   }
 ]
