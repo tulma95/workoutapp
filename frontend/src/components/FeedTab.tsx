@@ -23,6 +23,15 @@ function renderEventText(event: FeedEvent): string | null {
     const base = `${event.displayName} hit a new ${payload.exerciseName} TM: ${formatWeight(payload.newTM)} (+${formatWeight(payload.increase)})`;
     return event.streak >= 2 ? `${base} — ${event.streak}-day streak` : base;
   }
+  if (payload.eventType === 'streak_milestone') {
+    return `${event.displayName} hit a ${payload.days}-day streak!`;
+  }
+  if (payload.eventType === 'badge_unlocked') {
+    return `${event.displayName} unlocked '${payload.name}'!`;
+  }
+  if (payload.eventType === 'plan_switched') {
+    return `${event.displayName} switched to ${payload.planName}`;
+  }
   return null;
 }
 
