@@ -255,6 +255,11 @@
   margin-top: 0.25rem;
 }
 
+.usernameRow button {
+  width: auto;
+  flex-shrink: 0;
+}
+
 .usernameInput {
   flex: 1;
   min-height: 3rem;

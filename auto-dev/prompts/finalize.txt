@@ -20,6 +20,7 @@ All implementation tasks are complete. Now run tests, fix failures, update docs,
    - If you fix anything, commit the fix: fix({{TICKET_ID}}): <what you fixed>
    - If you discover bugs unrelated to this ticket: if the bug is critical (breaks core functionality, data loss, security), fix it immediately and commit as fix: <what you fixed>. Otherwise, add it to the backlog:
      node --experimental-strip-types docs/backlog/ticket.ts add "<description>" --priority <low|medium|high>
+   - If the new ticket is about tests failing. Put the new ticket 1st
 
 3. Update docs that need updating (only if this ticket changed them):
    - New/changed endpoints -> docs/api-endpoints.md

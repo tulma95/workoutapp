@@ -74,10 +74,22 @@ run_e2e_tests() {
   npx playwright install --with-deps chromium 2>/dev/null || npx playwright install chromium
 
   # Run Playwright E2E tests pointing at port 3002 (avoids conflict with dev backend on 3001)
-  BASE_URL="http://localhost:3002" npx playwright test
+  BASE_URL="http://localhost:3002" npx playwright test ${E2E_ARGS[@]+"${E2E_ARGS[@]}"}
 }
 
 main() {
+  # Separate backend vitest args from E2E playwright args
+  # Use E2E_ARGS env var to pass args to Playwright, e.g.:
+  #   E2E_ARGS="social-username" ./run_test.sh
+  # Or pass args directly (forwarded to both backend vitest and Playwright):
+  #   ./run_test.sh
+  if [ -n "${E2E_ARGS:-}" ]; then
+    # shellcheck disable=SC2206
+    E2E_ARGS=($E2E_ARGS)
+  else
+    E2E_ARGS=()
+  fi
+
   setup_db
 
   if [ "${SKIP_BACKEND:-}" != "1" ]; then

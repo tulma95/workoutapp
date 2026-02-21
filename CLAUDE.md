@@ -12,6 +12,7 @@ A workout tracking application supporting configurable training plans. Ships wit
 - **Database**: PostgreSQL latest (Dockerized via docker-compose)
 - **Package manager**: npm workspaces (monorepo: `backend/`, `frontend/`)
 - **Node**: v22 (`.nvmrc`)
+- Prefer simple solutions
 
 ## Architecture
 
@@ -22,6 +23,7 @@ A workout tracking application supporting configurable training plans. Ships wit
 - Training maxes are **append-only** rows (latest `effective_date` = current TM, older rows = history)
 - **Plan-driven**: All workout generation and progression requires an active plan subscription (no hardcoded fallback)
 - **Environment variables**: Exported by shell scripts (`start_local_env.sh`, `run_test.sh`), never loaded from .env files. Backend reads `process.env` directly without dotenv.
+- Prefer simple solutions
 
 ## Reference Docs (read on demand, not loaded by default)
 
