@@ -78,7 +78,7 @@ export class SettingsPage {
       await reasonTextarea.fill(reason);
     }
 
-    await this.page.getByRole('button', { name: /^save$/i }).click();
+    await this.page.getByRole('dialog').getByRole('button', { name: /^save$/i }).click();
 
     await expect(this.page.getByRole('dialog')).not.toBeVisible();
   }
