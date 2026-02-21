@@ -2,12 +2,12 @@
 
 ## Public
 
-- `POST /api/auth/register` - `{ email, password, displayName, username? }` — `username` is optional; 3–20 chars, alphanumeric + underscores only; 409 `USERNAME_EXISTS` if taken
+- `POST /api/auth/register` - `{ email, password, username }` — `username` is required; 3–20 chars, alphanumeric + underscores only; 409 `USERNAME_EXISTS` if taken
 - `POST /api/auth/login` - `{ email, password }` -> `{ accessToken, refreshToken, user }`
 
 ## Protected (JWT required)
 
-- `GET /api/users/me` | `PATCH /api/users/me` — PATCH accepts `{ displayName?, username? }` where `username: null` clears the username; 409 `USERNAME_EXISTS` if taken
+- `GET /api/users/me` | `PATCH /api/users/me` — PATCH accepts `{ username? }` to update username; 409 `USERNAME_EXISTS` if taken
 - `GET /api/exercises` - all exercises sorted by name: `[{ id, slug, name, category, isUpperBody }]`
 - `GET /api/training-maxes` - current TMs (plan-aware: returns TMs for active plan exercises)
 - `POST /api/training-maxes/setup` - accepts both `{ oneRepMaxes }` and `{ exerciseTMs: [{ exerciseId, oneRepMax }] }`
@@ -39,15 +39,15 @@
 ## Social Endpoints (JWT required)
 
 - `POST /api/social/request` - `{ email?, username? }` — exactly one of `email` or `username` required; send friend request; 404 if not found, 400 if self-friending or missing/ambiguous field, 409 if relationship already exists; inserts with canonical ordering (`requesterId = min(callerId, targetId)`)
-- `GET /api/social/search?q=<query>` — search users by username substring (case-insensitive); excludes caller and users with existing pending/accepted friendships; returns up to 10 results: `{ users: [{ id, displayName, username }] }`
-- `GET /api/social/friends` - list accepted friends: `{ friends: [{ id, userId, displayName, streak: number }] }` — `streak` is the number of consecutive calendar days (UTC) the friend has completed at least one workout; 0 if no recent activity
-- `GET /api/social/requests` - list pending friend requests involving the caller: `{ requests: [{ id, requesterId, displayName }] }`
+- `GET /api/social/search?q=<query>` — search users by username substring (case-insensitive); excludes caller and users with existing pending/accepted friendships; returns up to 10 results: `{ users: [{ id, username }] }`
+- `GET /api/social/friends` - list accepted friends: `{ friends: [{ id, userId, username, streak: number }] }` — `streak` is the number of consecutive calendar days (UTC) the friend has completed at least one workout; 0 if no recent activity
+- `GET /api/social/requests` - list pending friend requests involving the caller: `{ requests: [{ id, requesterId, username }] }`
 - `PATCH /api/social/requests/:id/accept` - accept a pending request; returns `{ id, status }`
 - `PATCH /api/social/requests/:id/decline` - decline a pending request; returns `{ id, status }`
 - `DELETE /api/social/friends/:id` - remove a friend (sets status to `'removed'`); returns `{ id, status }`
-- `GET /api/social/feed` - last 20 feed events from confirmed friends ordered by `createdAt DESC`; returns `{ events: [{ id, userId, displayName, eventType, payload, createdAt, streak: number, reactions: [{ emoji, count, reactedByMe }] }] }` — `streak` is the event owner's current workout streak (consecutive calendar days); `reactions` is an empty array when no reactions exist
+- `GET /api/social/feed` - last 20 feed events from confirmed friends ordered by `createdAt DESC`; returns `{ events: [{ id, userId, username, eventType, payload, createdAt, streak: number, reactions: [{ emoji, count, reactedByMe }] }] }` — `streak` is the event owner's current workout streak (consecutive calendar days); `reactions` is an empty array when no reactions exist
 - `POST /api/social/feed/:eventId/react` - `{ emoji }` (one of `🔥 👏 💀 💪 🤙`) — toggles reaction on/off; 404 if event not found or event owner is not a friend; returns `{ reacted: boolean, count: number }`
-- `GET /api/social/leaderboard` - TM rankings across caller and accepted friends for each exercise in active plan; returns `{ exercises: [{ slug, name, rankings: [{ userId, displayName, weight }] }] }`; returns `{ exercises: [] }` if no active plan
+- `GET /api/social/leaderboard` - TM rankings across caller and accepted friends for each exercise in active plan; returns `{ exercises: [{ slug, name, rankings: [{ userId, username, weight }] }] }`; returns `{ exercises: [] }` if no active plan
   - `?mode=e1rm` — returns estimated 1RM rankings instead of TM rankings; e1RMs are computed from completed AMRAP sets using the Epley formula (`weight * (1 + reps / 30)`); same response shape: `{ exercises: [{ slug, name, rankings: [{ userId, value, rank }] }] }`; only sets with `actual_reps >= 1` and `is_amrap = true` are considered
 
 ## Achievement Endpoints (JWT required)

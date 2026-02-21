@@ -2,7 +2,7 @@
 
 ## Core Tables
 
-- **users**: `id, email (unique), password_hash, display_name, username (nullable, unique), is_admin (default false), created_at, updated_at`
+- **users**: `id, email (unique), password_hash, username (unique, not null), is_admin (default false), created_at, updated_at`
 - **exercises**: `id, name, slug (unique), category, is_compound, is_upper_body, created_at, updated_at`
 - **training_maxes** (append-only): `id, user_id (FK), exercise_id (FK exercises), workout_id (FK workouts, nullable), weight (kg), previous_weight (kg, nullable), effective_date, reason (TEXT, nullable), created_at` - Unique constraint: (user_id, exercise_id, effective_date). `workout_id` links progression TM changes to the workout that caused them. `previous_weight` stores the TM before the increase. `reason` is set only on manual overrides (auto-progression rows leave it null).
 - **workouts**: `id, user_id (FK), day_number, plan_day_id (FK plan_days), status ('in_progress'/'completed'/'discarded'), completed_at, created_at` — Index: (user_id, status) optimizes `getCurrentWorkout` (`WHERE user_id AND status = 'in_progress'`) and `getHistory` (`WHERE user_id AND status = 'completed'`). Calendar queries (`WHERE user_id AND status != 'discarded'`) benefit only from the user_id prefix since PostgreSQL cannot use a `!=` predicate as an index range scan on the status column. **Custom workouts** (logged via `POST /api/workouts/custom`) have `plan_day_id = NULL` and `day_number = 0` (sentinel value). The `isCustom` field in API responses is derived: `isCustom = planDayId === null`.
