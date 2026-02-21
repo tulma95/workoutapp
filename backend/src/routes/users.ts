@@ -42,7 +42,7 @@ router.patch('/me', validate(updateSchema), async (req: AuthRequest, res: Respon
     if (err && typeof err === 'object' && 'code' in err && (err as { code: string }).code === 'P2002') {
       const target = (err as { meta?: { target?: string[] | string } }).meta?.target;
       const isUsernameDuplicate =
-        (Array.isArray(target) && target.includes('username')) ||
+        (Array.isArray(target) && target.some((t) => String(t).includes('username'))) ||
         (typeof target === 'string' && target.includes('username'));
       if (isUsernameDuplicate) {
         res.status(409).json({
