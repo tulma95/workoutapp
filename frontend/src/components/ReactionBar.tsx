@@ -99,7 +99,7 @@ export function ReactionBar({ eventId, reactions }: ReactionBarProps) {
             aria-pressed={isActive}
             aria-label={ariaLabel}
             onClick={() => mutation.mutate(emoji)}
-            disabled={mutation.isPending}
+            disabled={mutation.isPending && mutation.variables === emoji}
           >
             <span aria-hidden="true">{emoji}</span>
             {count > 0 && (
