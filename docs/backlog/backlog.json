@@ -14,7 +14,7 @@
   {
     "id": "049",
     "title": "Fix UTC/local timezone inconsistency in date input max and calendar day comparison",
-    "status": "backlog",
+    "status": "done",
     "description": "The date input max attribute uses .toISOString().slice(0,10) (UTC) while WorkoutCalendar.handleDayClick compares dates in local time. For users east of UTC, after midnight UTC but before midnight local time, the max date could be set to yesterday while the calendar allows clicking today, causing an inconsistency. Both should use the same local-time date string (e.g., toLocaleDateString('en-CA'))."
   },
   {
