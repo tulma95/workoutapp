@@ -34,7 +34,7 @@
 - `GET /api/plans` - list public, non-archived plans
 - `GET /api/plans/current` - user's active plan (or null)
 - `GET /api/plans/:id` - plan detail with full nested structure
-- `POST /api/plans/:id/subscribe` - subscribe to plan, returns `{ userPlan, requiredExercises, missingTMs }`
+- `POST /api/plans/:id/subscribe` - subscribe to plan, returns `{ userPlan, requiredExercises, missingTMs }`; emits a `plan_switched` feed event (side effect)
 
 ## Social Endpoints (JWT required)
 

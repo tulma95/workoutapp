@@ -146,7 +146,7 @@
   {
     "id": "065",
     "title": "Richer Feed Event Types",
-    "status": "in-progress",
+    "status": "done",
     "description": "Expand feed beyond workout_completed and tm_increased. New event types: streak_milestone (7/14/30/60/90 day streaks), badge_unlocked (from Achievement Badges #027), plan_switched, workout_note_shared. Makes the feed more varied and engaging."
   },
   {
@@ -509,5 +509,19 @@
     "status": "backlog",
     "priority": "medium",
     "description": "createCustomWorkout() in workout.service.ts skips streak calculation and badge checking entirely. Users completing a custom workout that hits a streak milestone will not see a streak_milestone feed event. Requires extracting the shared emitStreakAndBadgeEvents() helper and calling it from createCustomWorkout path."
+  },
+  {
+    "id": "085",
+    "title": "streak_milestone deduplication has no DB-level uniqueness guarantee — concurrent completions can create duplicate events",
+    "status": "backlog",
+    "priority": "medium",
+    "description": "The findFirst + create pattern inside the transaction prevents duplicate streak_milestone events under normal sequential execution, but does not protect against two concurrent completeWorkout calls racing in separate transactions for the same user. A unique partial index on (user_id, event_type, payload->>'days') would provide a hard guarantee at the database level."
+  },
+  {
+    "id": "086",
+    "title": "Extract emitStreakAndBadgeEvents helper to deduplicate completeWorkout transaction paths",
+    "status": "backlog",
+    "priority": "low",
+    "description": "The streak + badge feed event emission block (~40 lines) is duplicated in both plan and no-plan completeWorkout transaction paths. Extract to a shared helper function."
   }
 ]
