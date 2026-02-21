@@ -2,12 +2,12 @@
 
 ## Public
 
-- `POST /api/auth/register` - `{ email, password, displayName }`
+- `POST /api/auth/register` - `{ email, password, displayName, username? }` — `username` is optional; 3–20 chars, alphanumeric + underscores only; 409 `USERNAME_EXISTS` if taken
 - `POST /api/auth/login` - `{ email, password }` -> `{ accessToken, refreshToken, user }`
 
 ## Protected (JWT required)
 
-- `GET /api/users/me` | `PATCH /api/users/me`
+- `GET /api/users/me` | `PATCH /api/users/me` — PATCH accepts `{ displayName?, username? }` where `username: null` clears the username; 409 `USERNAME_EXISTS` if taken
 - `GET /api/exercises` - all exercises sorted by name: `[{ id, slug, name, category, isUpperBody }]`
 - `GET /api/training-maxes` - current TMs (plan-aware: returns TMs for active plan exercises)
 - `POST /api/training-maxes/setup` - accepts both `{ oneRepMaxes }` and `{ exerciseTMs: [{ exerciseId, oneRepMax }] }`
@@ -38,7 +38,8 @@
 
 ## Social Endpoints (JWT required)
 
-- `POST /api/social/request` - `{ email }` — send friend request; 404 if email not found, 400 if self-friending, 409 if relationship already exists; inserts with canonical ordering (`requesterId = min(callerId, targetId)`)
+- `POST /api/social/request` - `{ email?, username? }` — exactly one of `email` or `username` required; send friend request; 404 if not found, 400 if self-friending or missing/ambiguous field, 409 if relationship already exists; inserts with canonical ordering (`requesterId = min(callerId, targetId)`)
+- `GET /api/social/search?q=<query>` — search users by username substring (case-insensitive); excludes caller and users with existing pending/accepted friendships; returns up to 10 results: `{ users: [{ id, displayName, username }] }`
 - `GET /api/social/friends` - list accepted friends: `{ friends: [{ id, userId, displayName, streak: number }] }` — `streak` is the number of consecutive calendar days (UTC) the friend has completed at least one workout; 0 if no recent activity
 - `GET /api/social/requests` - list pending friend requests involving the caller: `{ requests: [{ id, requesterId, displayName }] }`
 - `PATCH /api/social/requests/:id/accept` - accept a pending request; returns `{ id, status }`
