@@ -17,10 +17,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: {
-        ...devices['iPhone 15 Pro'],
-        browserName: 'chromium',
-      },
+      use: { ...devices['Desktop Chrome'] },
     },
   ],
 })
