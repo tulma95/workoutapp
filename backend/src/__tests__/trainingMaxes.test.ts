@@ -15,7 +15,7 @@ describe('Training Maxes API', () => {
     const res = await request(app).post('/api/auth/register').send({
       email: `tm-test-${uid}@example.com`,
       password: 'password123',
-      displayName: 'TM Test',
+      username: `tmtest_${uid}`,
     });
     token = res.body.accessToken;
 
@@ -238,7 +238,7 @@ describe('Training Maxes API', () => {
       const res = await request(app).post('/api/auth/register').send({
         email: `tm-exids-${uid}@example.com`,
         password: 'password123',
-        displayName: 'Exercise IDs Test',
+        username: `tmexids_${uid}`,
       });
       newUserToken = res.body.accessToken;
     });
@@ -318,7 +318,7 @@ describe('Training Maxes API', () => {
       const res = await request(app).post('/api/auth/register').send({
         email: `tm-plan-${uid}@example.com`,
         password: 'password123',
-        displayName: 'Plan Test User',
+        username: `tmplan_${uid}`,
       });
       planUserToken = res.body.accessToken;
       planUserId = res.body.user.id;
@@ -401,7 +401,7 @@ describe('Training Maxes API', () => {
       const res = await request(app).post('/api/auth/register').send({
         email: `tm-noplan-${uid}@example.com`,
         password: 'password123',
-        displayName: 'No Plan User',
+        username: `tmnoplan_${uid}`,
       });
       const noPlanToken = res.body.accessToken;
 

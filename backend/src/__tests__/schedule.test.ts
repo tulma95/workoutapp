@@ -16,7 +16,7 @@ describe('Schedule API', () => {
     const res = await request(app).post('/api/auth/register').send({
       email: `schedule-${uid}@example.com`,
       password: 'password123',
-      displayName: 'Schedule Test',
+      username: `schedule_${uid}`,
     });
     token = res.body.accessToken;
     const userId: number = res.body.user.id;
@@ -25,7 +25,7 @@ describe('Schedule API', () => {
     const noPlanRes = await request(app).post('/api/auth/register').send({
       email: `schedule-noplan-${uid}@example.com`,
       password: 'password123',
-      displayName: 'No Plan User',
+      username: `schedule_noplan_${uid}`,
     });
     noPlanToken = noPlanRes.body.accessToken;
 

@@ -40,7 +40,7 @@ describe('GET /api/workouts/calendar - scheduledDays', () => {
       .send({
         email: `cal-test-${uid}@example.com`,
         password: 'password123',
-        displayName: 'Calendar Test',
+        username: `caltest_${uid}`,
       });
     token = res.body.accessToken;
     userId = res.body.user.id;
@@ -51,7 +51,7 @@ describe('GET /api/workouts/calendar - scheduledDays', () => {
       .send({
         email: `cal-noplan-${uid}@example.com`,
         password: 'password123',
-        displayName: 'Calendar No Plan',
+        username: `calnoplan_${uid}`,
       });
     noPlanToken = noPlanRes.body.accessToken;
 
@@ -301,7 +301,7 @@ describe('GET /api/workouts/calendar - scheduledDays', () => {
       .send({
         email: `cal-unnamed-${uid}@example.com`,
         password: 'password123',
-        displayName: 'Unnamed Days User',
+        username: `calunnamed_${uid}`,
       });
     const unnamedToken: string = unnamedRes.body.accessToken;
     const unnamedUserId: number = unnamedRes.body.user.id;

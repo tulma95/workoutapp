@@ -15,8 +15,7 @@ const usernameSchema = z
 const registerSchema = z.object({
   email: z.email(),
   password: z.string().min(8),
-  displayName: z.string().min(1),
-  username: usernameSchema.optional(),
+  username: usernameSchema,
 });
 
 const loginSchema = z.object({
@@ -28,8 +27,8 @@ router.post('/register', validate(registerSchema), async (req: Request, res: Res
   try {
     const { password: _pw, ...safeBody } = req.body;
     logger.debug('Register request', { body: safeBody });
-    const { email, password, displayName, username } = req.body;
-    const result = await authService.register(email, password, displayName, username);
+    const { email, password, username } = req.body;
+    const result = await authService.register(email, password, username);
     res.status(201).json(result);
   } catch (err: unknown) {
     if (err && typeof err === 'object' && 'code' in err && err.code === 'P2002') {

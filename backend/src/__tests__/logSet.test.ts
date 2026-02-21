@@ -17,7 +17,7 @@ describe('Log Set - actualReps nullable', () => {
     const res = await request(app).post('/api/auth/register').send({
       email: `logset-${uid}@example.com`,
       password: 'password123',
-      displayName: 'LogSet Test User',
+      username: `logset_${uid}`,
     });
     token = res.body.accessToken;
 

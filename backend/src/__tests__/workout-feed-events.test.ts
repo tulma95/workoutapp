@@ -93,7 +93,7 @@ async function registerUser(emailPrefix: string): Promise<{ token: string; userI
     .send({
       email: `${emailPrefix}-${uid}@example.com`,
       password: 'password123',
-      displayName: `Feed Test User ${emailPrefix}`,
+      username: `feed_${emailPrefix.replace(/-/g, '_')}_${uid}`,
     });
   expect(res.status).toBe(201);
   return { token: res.body.accessToken, userId: res.body.user.id };
@@ -433,7 +433,7 @@ describe('Workout Feed Events', () => {
       expect((streakEvent!.payload as { days: number }).days).toBe(7);
     });
 
-    it('feed events include displayName and payload', async () => {
+    it('feed events include username and payload', async () => {
       const res = await request(app)
         .get('/api/social/feed')
         .set('Authorization', `Bearer ${tokenB}`);
@@ -445,7 +445,7 @@ describe('Workout Feed Events', () => {
       );
 
       expect(badgeEvent).toBeDefined();
-      expect(typeof badgeEvent.displayName).toBe('string');
+      expect(typeof badgeEvent.username).toBe('string');
       expect(badgeEvent.payload).toHaveProperty('slug', 'first-blood');
     });
   });

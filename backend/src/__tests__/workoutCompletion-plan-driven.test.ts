@@ -20,7 +20,7 @@ describe('Workout Completion - Plan-Driven', () => {
     const res = await request(app).post('/api/auth/register').send({
       email: `completion-${uid}@example.com`,
       password: 'password123',
-      displayName: 'Plan Completion Test',
+      username: `completion_${uid}`,
     });
     token = res.body.accessToken;
     userId = res.body.user.id;

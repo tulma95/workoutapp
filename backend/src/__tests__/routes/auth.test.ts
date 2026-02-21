@@ -11,7 +11,7 @@ describe('Auth routes', () => {
     it('returns 201 with tokens and user on success', async () => {
       const res = await request(app)
         .post('/api/auth/register')
-        .send({ email: `register-${uid}@example.com`, password: 'password123', displayName: 'Test User' });
+        .send({ email: `register-${uid}@example.com`, password: 'password123', username: `register_${uid}` });
 
       expect(res.status).toBe(201);
       expect(res.body).toHaveProperty('accessToken');
@@ -28,11 +28,11 @@ describe('Auth routes', () => {
     it('returns 409 for duplicate email', async () => {
       await request(app)
         .post('/api/auth/register')
-        .send({ email: `dup-${uid}@example.com`, password: 'password123', displayName: 'First' });
+        .send({ email: `dup-${uid}@example.com`, password: 'password123', username: `dup_first_${uid}` });
 
       const res = await request(app)
         .post('/api/auth/register')
-        .send({ email: `dup-${uid}@example.com`, password: 'password123', displayName: 'Second' });
+        .send({ email: `dup-${uid}@example.com`, password: 'password123', username: `dup_second_${uid}` });
 
       expect(res.status).toBe(409);
       expect(res.body.error.code).toBe('EMAIL_EXISTS');
@@ -52,7 +52,7 @@ describe('Auth routes', () => {
     it('returns 200 with tokens on success', async () => {
       await request(app)
         .post('/api/auth/register')
-        .send({ email: `login-${uid}@example.com`, password: 'password123', displayName: 'Login User' });
+        .send({ email: `login-${uid}@example.com`, password: 'password123', username: `login_${uid}` });
 
       const res = await request(app)
         .post('/api/auth/login')
@@ -68,7 +68,7 @@ describe('Auth routes', () => {
     it('returns 401 for wrong password', async () => {
       await request(app)
         .post('/api/auth/register')
-        .send({ email: `wrongpw-${uid}@example.com`, password: 'password123', displayName: 'User' });
+        .send({ email: `wrongpw-${uid}@example.com`, password: 'password123', username: `wrongpw_${uid}` });
 
       const res = await request(app)
         .post('/api/auth/login')
@@ -92,7 +92,7 @@ describe('Auth routes', () => {
     it('returns new tokens with valid refresh token', async () => {
       const registerRes = await request(app)
         .post('/api/auth/register')
-        .send({ email: `refresh-${uid}@example.com`, password: 'password123', displayName: 'Refresh User' });
+        .send({ email: `refresh-${uid}@example.com`, password: 'password123', username: `refresh_${uid}` });
 
       const res = await request(app)
         .post('/api/auth/refresh')
@@ -117,7 +117,7 @@ describe('Auth routes', () => {
     it('returns 401 when using access token as refresh token', async () => {
       const registerRes = await request(app)
         .post('/api/auth/register')
-        .send({ email: `wrongtype-${uid}@example.com`, password: 'password123', displayName: 'User' });
+        .send({ email: `wrongtype-${uid}@example.com`, password: 'password123', username: `wrongtype_${uid}` });
 
       const res = await request(app)
         .post('/api/auth/refresh')
@@ -132,7 +132,7 @@ describe('Auth routes', () => {
     it('register returns isAdmin false for normal users', async () => {
       const res = await request(app)
         .post('/api/auth/register')
-        .send({ email: `normaluser-${uid}@example.com`, password: 'password123', displayName: 'Normal User' });
+        .send({ email: `normaluser-${uid}@example.com`, password: 'password123', username: `normaluser_${uid}` });
 
       expect(res.status).toBe(201);
       expect(res.body.user.isAdmin).toBe(false);
@@ -144,7 +144,7 @@ describe('Auth routes', () => {
     it('login returns isAdmin in user object and token', async () => {
       await request(app)
         .post('/api/auth/register')
-        .send({ email: `checkadmin-${uid}@example.com`, password: 'password123', displayName: 'Check Admin' });
+        .send({ email: `checkadmin-${uid}@example.com`, password: 'password123', username: `checkadmin_${uid}` });
 
       const res = await request(app)
         .post('/api/auth/login')

@@ -6,7 +6,7 @@ import prisma from '../lib/db';
 
 const uid = randomUUID().replace(/-/g, '').slice(0, 10);
 
-async function registerUser(opts: { email: string; password: string; displayName: string; username?: string }) {
+async function registerUser(opts: { email: string; password: string; username: string }) {
   const res = await request(app).post('/api/auth/register').send(opts);
   return { token: res.body.accessToken as string, userId: res.body.user.id as number };
 }
@@ -48,7 +48,6 @@ describe('GET /api/social/search', () => {
     const caller = await registerUser({
       email: callerEmail,
       password: 'password123',
-      displayName: 'Caller',
       username: `caller_${uid}`,
     });
     callerToken = caller.token;
@@ -58,7 +57,6 @@ describe('GET /api/social/search', () => {
     const alpha = await registerUser({
       email: emailAlpha,
       password: 'password123',
-      displayName: 'Alpha User',
       username: `alpha_${uid}`,
     });
     userAlpha = { ...alpha, email: emailAlpha };
@@ -66,7 +64,6 @@ describe('GET /api/social/search', () => {
     await registerUser({
       email: `search-beta-${uid}@example.com`,
       password: 'password123',
-      displayName: 'Beta User',
       username: `beta_${uid}`,
     });
 
@@ -74,7 +71,6 @@ describe('GET /api/social/search', () => {
     await registerUser({
       email: `search-gamma-${uid}@example.com`,
       password: 'password123',
-      displayName: 'Gamma User',
       username: `gamma_${uid}`,
     });
   });
@@ -106,18 +102,16 @@ describe('GET /api/social/search', () => {
     expect(res.status).toBe(200);
     expect(res.body.users).toHaveLength(1);
     expect(res.body.users[0].username).toBe(`alpha_${uid}`);
-    expect(res.body.users[0].displayName).toBe('Alpha User');
     expect(res.body.users[0]).toHaveProperty('id');
   });
 
-  it('returns id, displayName, username fields', async () => {
+  it('returns id, username fields', async () => {
     const res = await request(app)
       .get(`/api/social/search?q=alpha_${uid}`)
       .set('Authorization', `Bearer ${callerToken}`);
     expect(res.status).toBe(200);
     const user = res.body.users[0];
     expect(user).toHaveProperty('id');
-    expect(user).toHaveProperty('displayName');
     expect(user).toHaveProperty('username');
     // Should not include email or password hash
     expect(user).not.toHaveProperty('email');
@@ -141,7 +135,6 @@ describe('GET /api/social/search', () => {
     const pendingUser = await registerUser({
       email: pendingEmail,
       password: 'password123',
-      displayName: 'Pending Friend',
       username: `pending_${uid}`,
     });
     // Caller sends request to pending user (not accepted)
@@ -164,7 +157,6 @@ describe('GET /api/social/search', () => {
     const inboundUser = await registerUser({
       email: inboundEmail,
       password: 'password123',
-      displayName: 'Inbound Friend',
       username: `inbound_${uid}`,
     });
     // Inbound user sends request to caller
@@ -200,7 +192,6 @@ describe('GET /api/social/search', () => {
     const declinedUser = await registerUser({
       email: declinedEmail,
       password: 'password123',
-      displayName: 'Declined Friend',
       username: `declined_${uid}`,
     });
     // Caller sends request, declined user declines
@@ -245,7 +236,6 @@ describe('GET /api/social/search', () => {
         registerUser({
           email: `search-lim-${i}-${uid}@example.com`,
           password: 'password123',
-          displayName: `Limit User ${i}`,
           username: `${limitPrefix}_${i.toString().padStart(2, '0')}`,
         })
       )

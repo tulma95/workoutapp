@@ -175,7 +175,7 @@ async function registerAndSetup(
     .send({
       email: `${emailPrefix}-${uid}@example.com`,
       password: 'password123',
-      displayName: 'Achievement Tester',
+      username: `ach_${emailPrefix.replace(/-/g, '_')}_${uid}`,
     });
   const token: string = res.body.accessToken;
   const userId: number = res.body.user.id;

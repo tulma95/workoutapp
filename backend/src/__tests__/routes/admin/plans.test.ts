@@ -32,7 +32,7 @@ describe('Admin Plans routes', () => {
       data: {
         email: adminEmail,
         passwordHash: await bcrypt.hash('password123', 10),
-        displayName: 'Plan Admin',
+        username: `plan_admin_${uid}`,
         isAdmin: true,
       },
     });
@@ -42,7 +42,7 @@ describe('Admin Plans routes', () => {
       data: {
         email: nonAdminEmail,
         passwordHash: await bcrypt.hash('password123', 10),
-        displayName: 'Non-Admin User',
+        username: `nonadmin_plans_${uid}`,
         isAdmin: false,
       },
     });

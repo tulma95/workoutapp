@@ -12,7 +12,7 @@ describe('Exercises API', () => {
     const res = await request(app).post('/api/auth/register').send({
       email: `exercises-test-${uid}@example.com`,
       password: 'password123',
-      displayName: 'Exercises Test',
+      username: `exercises_${uid}`,
     });
     token = res.body.accessToken;
   });

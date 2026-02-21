@@ -128,14 +128,14 @@ router.get('/friends', async (req: AuthRequest, res: Response) => {
       ],
     },
     include: {
-      requester: { select: { id: true, displayName: true, username: true } },
-      addressee: { select: { id: true, displayName: true, username: true } },
+      requester: { select: { id: true, username: true } },
+      addressee: { select: { id: true, username: true } },
     },
   });
 
   const friends = friendships.map((f) => {
     const friend = f.requesterId === userId ? f.addressee : f.requester;
-    return { id: f.id, userId: friend.id, displayName: friend.displayName, username: friend.username };
+    return { id: f.id, userId: friend.id, username: friend.username };
   });
 
   const friendUserIds = friends.map((f) => f.userId);
@@ -181,7 +181,7 @@ router.get('/search', async (req: AuthRequest, res: Response) => {
       username: { contains: q, mode: 'insensitive' },
       id: { notIn: Array.from(excludedIds) },
     },
-    select: { id: true, displayName: true, username: true },
+    select: { id: true, username: true },
     orderBy: { username: 'asc' },
     take: 10,
   });
@@ -204,14 +204,14 @@ router.get('/requests', async (req: AuthRequest, res: Response) => {
       NOT: { initiatorId: userId },
     },
     include: {
-      requester: { select: { id: true, displayName: true, username: true } },
-      addressee: { select: { id: true, displayName: true, username: true } },
+      requester: { select: { id: true, username: true } },
+      addressee: { select: { id: true, username: true } },
     },
   });
 
   const result = requests.map((f) => {
     const other = f.requesterId === userId ? f.addressee : f.requester;
-    return { id: f.id, requesterId: f.requesterId, displayName: other.displayName, username: other.username };
+    return { id: f.id, requesterId: f.requesterId, username: other.username };
   });
 
   res.json({ requests: result });
@@ -325,7 +325,7 @@ router.get('/feed', async (req: AuthRequest, res: Response) => {
     orderBy: { createdAt: 'desc' },
     take: 20,
     include: {
-      user: { select: { id: true, displayName: true } },
+      user: { select: { id: true, username: true } },
     },
   });
 
@@ -366,7 +366,7 @@ router.get('/feed', async (req: AuthRequest, res: Response) => {
     return {
       id: e.id,
       userId: e.userId,
-      displayName: e.user.displayName,
+      username: e.user.username,
       eventType: e.eventType,
       payload: e.payload,
       createdAt: e.createdAt,
@@ -471,9 +471,9 @@ router.get('/leaderboard', async (req: AuthRequest, res: Response) => {
 
   const participants = await prisma.user.findMany({
     where: { id: { in: participantIds } },
-    select: { id: true, displayName: true },
+    select: { id: true, username: true },
   });
-  const participantMap = new Map(participants.map((p) => [p.id, p.displayName]));
+  const participantMap = new Map(participants.map((p) => [p.id, p.username]));
 
   if (mode === 'e1rm') {
     // Query completed AMRAP sets for all participants
@@ -521,7 +521,7 @@ router.get('/leaderboard', async (req: AuthRequest, res: Response) => {
       const rankings = Array.from(bestByUser.entries())
         .map(([uid, weight]) => ({
           userId: uid,
-          displayName: participantMap.get(uid) ?? 'Unknown',
+          username: participantMap.get(uid) ?? 'Unknown',
           weight,
         }))
         .sort((a, b) => b.weight - a.weight);
@@ -568,7 +568,7 @@ router.get('/leaderboard', async (req: AuthRequest, res: Response) => {
     const rankings = Array.from(latestByUser.entries())
       .map(([uid, weight]) => ({
         userId: uid,
-        displayName: participantMap.get(uid) ?? 'Unknown',
+        username: participantMap.get(uid) ?? 'Unknown',
         weight,
       }))
       .sort((a, b) => b.weight - a.weight);

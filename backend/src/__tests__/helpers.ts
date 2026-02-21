@@ -11,7 +11,7 @@ export function uniqueId(): string {
 export async function createTestUser(opts: {
   email?: string;
   password?: string;
-  displayName?: string;
+  username?: string;
   isAdmin?: boolean;
 } = {}) {
   const password = opts.password ?? 'password123';
@@ -19,7 +19,7 @@ export async function createTestUser(opts: {
     data: {
       email: opts.email ?? `user-${uniqueId()}@example.com`,
       passwordHash: await bcrypt.hash(password, 10),
-      displayName: opts.displayName ?? 'Test User',
+      username: opts.username ?? `user${uniqueId()}`,
       isAdmin: opts.isAdmin ?? false,
     },
   });

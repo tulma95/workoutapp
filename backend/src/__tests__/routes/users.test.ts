@@ -10,7 +10,7 @@ describe('User routes', () => {
   beforeAll(async () => {
     const res = await request(app)
       .post('/api/auth/register')
-      .send({ email: `userroute-${uid}@example.com`, password: 'password123', displayName: 'Test User' });
+      .send({ email: `userroute-${uid}@example.com`, password: 'password123', username: `userroute${uid}` });
 
     accessToken = res.body.accessToken;
   });
@@ -23,7 +23,7 @@ describe('User routes', () => {
 
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('email', `userroute-${uid}@example.com`);
-      expect(res.body).toHaveProperty('displayName', 'Test User');
+      expect(res.body).toHaveProperty('username', `userroute${uid}`);
       expect(res.body).not.toHaveProperty('passwordHash');
     });
 
@@ -36,14 +36,15 @@ describe('User routes', () => {
   });
 
   describe('PATCH /api/users/me', () => {
-    it('updates displayName', async () => {
+    it('updates username', async () => {
+      const newUsername = `updated${uid}`;
       const res = await request(app)
         .patch('/api/users/me')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ displayName: 'New Name' });
+        .send({ username: newUsername });
 
       expect(res.status).toBe(200);
-      expect(res.body.displayName).toBe('New Name');
+      expect(res.body.username).toBe(newUsername);
       expect(res.body).not.toHaveProperty('passwordHash');
     });
   });

@@ -14,7 +14,7 @@ describe('POST /api/workouts/custom', () => {
     const res = await request(app).post('/api/auth/register').send({
       email: `custom-workout-${uid}@example.com`,
       password: 'password123',
-      displayName: 'Custom Workout Test',
+      username: `custom_workout_${uid}`,
     });
     token = res.body.accessToken;
 

@@ -37,7 +37,7 @@ describe('Plans routes', () => {
       data: {
         email: userEmail,
         passwordHash: await bcrypt.hash('password123', 10),
-        displayName: 'Test User',
+        username: `user_plans_${uid}`,
         isAdmin: false,
       },
     });

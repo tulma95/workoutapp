@@ -15,7 +15,7 @@ describe('Workouts API - Plan-Driven Generation', () => {
     const res = await request(app).post('/api/auth/register').send({
       email: `wk-test-${uid}@example.com`,
       password: 'password123',
-      displayName: 'Plan Workout Test',
+      username: `wktest_${uid}`,
     });
     token = res.body.accessToken;
     userId = res.body.user.id;
@@ -237,7 +237,7 @@ describe('Workouts API - Plan-Driven Generation', () => {
       const res = await request(app).post('/api/auth/register').send({
         email: `wk-notm-${uid}@example.com`,
         password: 'password123',
-        displayName: 'No TM',
+        username: `wknotm_${uid}`,
       });
       const noTmUserId = res.body.user.id;
 
@@ -302,7 +302,7 @@ describe('Workouts API - Plan-Driven Generation', () => {
       const res = await request(app).post('/api/auth/register').send({
         email: `wk-fallback-${uid}@example.com`,
         password: 'password123',
-        displayName: 'Fallback User',
+        username: `wkfallback_${uid}`,
       });
       fallbackToken = res.body.accessToken;
     });

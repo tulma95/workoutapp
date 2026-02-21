@@ -18,7 +18,7 @@ describe('Social API', () => {
     const resA = await request(app).post('/api/auth/register').send({
       email: `social-a-${uid}@example.com`,
       password: 'password123',
-      displayName: 'Social User A',
+      username: `social_a_${uid}`,
     });
     tokenA = resA.body.accessToken;
     userIdA = resA.body.user.id;
@@ -28,7 +28,7 @@ describe('Social API', () => {
     const resB = await request(app).post('/api/auth/register').send({
       email: emailB,
       password: 'password123',
-      displayName: 'Social User B',
+      username: `social_b_${uid}`,
     });
     tokenB = resB.body.accessToken;
     userIdB = resB.body.user.id;
@@ -118,7 +118,7 @@ describe('Social API', () => {
       expect(res.status).toBe(200);
       expect(res.body.requests).toHaveLength(1);
       expect(res.body.requests[0].id).toBe(friendshipId);
-      expect(res.body.requests[0].displayName).toBe('Social User A');
+      expect(res.body.requests[0].username).toBe(`social_a_${uid}`);
     });
 
     it('friends list is empty before acceptance', async () => {
@@ -151,14 +151,14 @@ describe('Social API', () => {
         .set('Authorization', `Bearer ${tokenA}`);
       expect(resA.status).toBe(200);
       expect(resA.body.friends).toHaveLength(1);
-      expect(resA.body.friends[0].displayName).toBe('Social User B');
+      expect(resA.body.friends[0].username).toBe(`social_b_${uid}`);
       expect(resA.body.friends[0].userId).toBe(userIdB);
 
       const resB = await request(app)
         .get('/api/social/friends')
         .set('Authorization', `Bearer ${tokenB}`);
       expect(resB.body.friends).toHaveLength(1);
-      expect(resB.body.friends[0].displayName).toBe('Social User A');
+      expect(resB.body.friends[0].username).toBe(`social_a_${uid}`);
       expect(resB.body.friends[0].userId).toBe(userIdA);
     });
 
@@ -193,7 +193,7 @@ describe('Social API', () => {
       const resD = await request(app).post('/api/auth/register').send({
         email: emailD,
         password: 'password123',
-        displayName: 'Social User D',
+        username: `social_d_${uid}`,
       });
       const tokenD = resD.body.accessToken;
 
@@ -217,7 +217,7 @@ describe('Social API', () => {
       const dReqs = await request(app).get('/api/social/requests').set('Authorization', `Bearer ${tokenD}`);
       expect(dReqs.body.requests).toHaveLength(1);
       const aReqs = await request(app).get('/api/social/requests').set('Authorization', `Bearer ${tokenA}`);
-      expect(aReqs.body.requests.some((r: { displayName: string }) => r.displayName === 'Social User D')).toBe(false);
+      expect(aReqs.body.requests.some((r: { username: string }) => r.username === `social_d_${uid}`)).toBe(false);
     });
 
     it('user can decline a pending request', async () => {
@@ -226,7 +226,7 @@ describe('Social API', () => {
       const resC = await request(app).post('/api/auth/register').send({
         email: emailC,
         password: 'password123',
-        displayName: 'Social User C',
+        username: `social_c_${uid}`,
       });
       const tokenC = resC.body.accessToken;
 
@@ -266,7 +266,7 @@ describe('Social API', () => {
       const resA = await request(app).post('/api/auth/register').send({
         email: `feed-a-${uidFeed}@example.com`,
         password: 'password123',
-        displayName: 'Feed User A',
+        username: `feed_a_${uidFeed}`,
       });
       tokenFeedA = resA.body.accessToken;
       userIdFeedA = resA.body.user.id;
@@ -274,7 +274,7 @@ describe('Social API', () => {
       const resB = await request(app).post('/api/auth/register').send({
         email: `feed-b-${uidFeed}@example.com`,
         password: 'password123',
-        displayName: 'Feed User B',
+        username: `feed_b_${uidFeed}`,
       });
       tokenFeedB = resB.body.accessToken;
       userIdFeedB = resB.body.user.id;
@@ -283,7 +283,7 @@ describe('Social API', () => {
       const resC = await request(app).post('/api/auth/register').send({
         email: `feed-c-${uidFeed}@example.com`,
         password: 'password123',
-        displayName: 'Feed User C',
+        username: `feed_c_${uidFeed}`,
       });
       tokenFeedC = resC.body.accessToken;
       const userIdFeedC = resC.body.user.id;
@@ -337,14 +337,14 @@ describe('Social API', () => {
       });
     });
 
-    it('feed events include displayName and payload', async () => {
+    it('feed events include username and payload', async () => {
       const res = await request(app)
         .get('/api/social/feed')
         .set('Authorization', `Bearer ${tokenFeedA}`);
       expect(res.status).toBe(200);
       const event = res.body.events.find((e: { userId: number }) => e.userId === userIdFeedB);
       expect(event).toBeDefined();
-      expect(event.displayName).toBe('Feed User B');
+      expect(typeof event.username).toBe('string');
       expect(event.eventType).toBe('workout_completed');
       expect(event.payload).toHaveProperty('workoutId');
     });
@@ -362,14 +362,14 @@ describe('Social API', () => {
       const resA = await request(app).post('/api/auth/register').send({
         email: `react-a-${uidReact}@example.com`,
         password: 'password123',
-        displayName: 'React User A',
+        username: `react_a_${uidReact}`,
       });
       tokenReactA = resA.body.accessToken;
 
       const resB = await request(app).post('/api/auth/register').send({
         email: `react-b-${uidReact}@example.com`,
         password: 'password123',
-        displayName: 'React User B',
+        username: `react_b_${uidReact}`,
       });
       tokenReactB = resB.body.accessToken;
       const userIdReactB = resB.body.user.id;
@@ -377,7 +377,7 @@ describe('Social API', () => {
       const resC = await request(app).post('/api/auth/register').send({
         email: `react-c-${uidReact}@example.com`,
         password: 'password123',
-        displayName: 'React User C',
+        username: `react_c_${uidReact}`,
       });
       tokenReactC = resC.body.accessToken;
 
@@ -465,7 +465,7 @@ describe('Social API', () => {
       const resD = await request(app).post('/api/auth/register').send({
         email: `react-d-${uidD}@example.com`,
         password: 'password123',
-        displayName: 'React User D',
+        username: `react_d_${uidD}`,
       });
       const tokenD = resD.body.accessToken;
 
@@ -529,14 +529,14 @@ describe('Social API', () => {
       const resA = await request(app).post('/api/auth/register').send({
         email: `streak-a-${uidStreak}@example.com`,
         password: 'password123',
-        displayName: 'Streak User A',
+        username: `streak_a_${uidStreak}`,
       });
       tokenStreakA = resA.body.accessToken;
 
       const resB = await request(app).post('/api/auth/register').send({
         email: `streak-b-${uidStreak}@example.com`,
         password: 'password123',
-        displayName: 'Streak User B',
+        username: `streak_b_${uidStreak}`,
       });
       tokenStreakB = resB.body.accessToken;
       userIdStreakB = resB.body.user.id;
@@ -607,7 +607,7 @@ describe('Social API', () => {
       const resOld = await request(app).post('/api/auth/register').send({
         email: `streak-old-${uidOld}@example.com`,
         password: 'password123',
-        displayName: 'Streak Old User',
+        username: `streak_old_${uidOld}`,
       });
       const tokenOld = resOld.body.accessToken;
       const userIdOld = resOld.body.user.id;
@@ -646,7 +646,7 @@ describe('Social API', () => {
       const resSingle = await request(app).post('/api/auth/register').send({
         email: `streak-single-${uidSingle}@example.com`,
         password: 'password123',
-        displayName: 'Streak Single User',
+        username: `streak_single_${uidSingle}`,
       });
       const tokenSingle = resSingle.body.accessToken;
       const userIdSingle = resSingle.body.user.id;
@@ -716,7 +716,7 @@ describe('Social API', () => {
       const resA = await request(app).post('/api/auth/register').send({
         email: `e1rm-a-${uidE1rm}@example.com`,
         password: 'password123',
-        displayName: 'E1RM User A',
+        username: `e1rm_a_${uidE1rm}`,
       });
       tokenE1rmA = resA.body.accessToken;
       userIdE1rmA = resA.body.user.id;
@@ -724,7 +724,7 @@ describe('Social API', () => {
       const resB = await request(app).post('/api/auth/register').send({
         email: `e1rm-b-${uidE1rm}@example.com`,
         password: 'password123',
-        displayName: 'E1RM User B',
+        username: `e1rm_b_${uidE1rm}`,
       });
       tokenE1rmB = resB.body.accessToken;
       userIdE1rmB = resB.body.user.id;
@@ -797,7 +797,7 @@ describe('Social API', () => {
       const resNoPlan = await request(app).post('/api/auth/register').send({
         email: `e1rm-noplan-${noPlanUid}@example.com`,
         password: 'password123',
-        displayName: 'E1RM No Plan User',
+        username: `e1rm_noplan_${noPlanUid}`,
       });
       const noPlanToken = resNoPlan.body.accessToken;
 
@@ -888,7 +888,7 @@ describe('Social API', () => {
       const resStranger = await request(app).post('/api/auth/register').send({
         email: `e1rm-stranger-${uidStranger}@example.com`,
         password: 'password123',
-        displayName: 'E1RM Stranger',
+        username: `e1rm_stranger_${uidStranger}`,
       });
       const strangerUserId = resStranger.body.user.id;
 
@@ -938,7 +938,7 @@ describe('Social API', () => {
       const resDedupUser = await request(app).post('/api/auth/register').send({
         email: `e1rm-dedup-${uidDedup}@example.com`,
         password: 'password123',
-        displayName: 'E1RM Dedup User',
+        username: `e1rm_dedup_${uidDedup}`,
       });
       const tokenDedupUser = resDedupUser.body.accessToken;
       const userIdDedupUser = resDedupUser.body.user.id;
@@ -1042,7 +1042,7 @@ describe('Social API', () => {
       const resDiscardUser = await request(app).post('/api/auth/register').send({
         email: `e1rm-discard-${uidDiscard}@example.com`,
         password: 'password123',
-        displayName: 'E1RM Discard User',
+        username: `e1rm_discard_${uidDiscard}`,
       });
       const tokenDiscardUser = resDiscardUser.body.accessToken;
       const userIdDiscardUser = resDiscardUser.body.user.id;
@@ -1113,7 +1113,7 @@ describe('Social API', () => {
       const resNullUser = await request(app).post('/api/auth/register').send({
         email: `e1rm-null-${uidNull}@example.com`,
         password: 'password123',
-        displayName: 'E1RM Null Reps User',
+        username: `e1rm_null_${uidNull}`,
       });
       const tokenNullUser = resNullUser.body.accessToken;
       const userIdNullUser = resNullUser.body.user.id;
@@ -1183,7 +1183,7 @@ describe('Social API', () => {
       const resZeroUser = await request(app).post('/api/auth/register').send({
         email: `e1rm-zero-${uidZero}@example.com`,
         password: 'password123',
-        displayName: 'E1RM Zero Reps User',
+        username: `e1rm_zero_${uidZero}`,
       });
       const tokenZeroUser = resZeroUser.body.accessToken;
       const userIdZeroUser = resZeroUser.body.user.id;
@@ -1252,7 +1252,7 @@ describe('Social API', () => {
       const resOneUser = await request(app).post('/api/auth/register').send({
         email: `e1rm-one-${uidOne}@example.com`,
         password: 'password123',
-        displayName: 'E1RM One Rep User',
+        username: `e1rm_one_${uidOne}`,
       });
       const tokenOneUser = resOneUser.body.accessToken;
       const userIdOneUser = resOneUser.body.user.id;
@@ -1336,14 +1336,13 @@ describe('Social API', () => {
       const resU1 = await request(app).post('/api/auth/register').send({
         email: `username-u1-${uidU}@example.com`,
         password: 'password123',
-        displayName: 'Username User 1',
+        username: `username_u1_${uidU}`,
       });
       tokenU1 = resU1.body.accessToken;
 
       const resU2 = await request(app).post('/api/auth/register').send({
         email: `username-u2-${uidU}@example.com`,
         password: 'password123',
-        displayName: 'Username User 2',
         username: usernameU2,
       });
       tokenU2 = resU2.body.accessToken;
@@ -1418,7 +1417,7 @@ describe('Social API', () => {
       const resA = await request(app).post('/api/auth/register').send({
         email: `lb-a-${uidLb}@example.com`,
         password: 'password123',
-        displayName: 'LB User A',
+        username: `lb_a_${uidLb}`,
       });
       tokenLbA = resA.body.accessToken;
       userIdLbA = resA.body.user.id;
@@ -1426,7 +1425,7 @@ describe('Social API', () => {
       const resB = await request(app).post('/api/auth/register').send({
         email: `lb-b-${uidLb}@example.com`,
         password: 'password123',
-        displayName: 'LB User B',
+        username: `lb_b_${uidLb}`,
       });
       tokenLbB = resB.body.accessToken;
       userIdLbB = resB.body.user.id;
@@ -1489,7 +1488,7 @@ describe('Social API', () => {
       const resNoPlan = await request(app).post('/api/auth/register').send({
         email: `lb-noplan-${noPlanUid}@example.com`,
         password: 'password123',
-        displayName: 'No Plan User',
+        username: `lb_noplan_${noPlanUid}`,
       });
       const noPlanToken = resNoPlan.body.accessToken;
 
@@ -1515,11 +1514,11 @@ describe('Social API', () => {
       // Rankings are sorted by weight desc: B (120) before A (100)
       expect(exercise.rankings[0].userId).toBe(userIdLbB);
       expect(exercise.rankings[0].weight).toBe(120);
-      expect(exercise.rankings[0].displayName).toBe('LB User B');
+      expect(typeof exercise.rankings[0].username).toBe('string');
 
       expect(exercise.rankings[1].userId).toBe(userIdLbA);
       expect(exercise.rankings[1].weight).toBe(100);
-      expect(exercise.rankings[1].displayName).toBe('LB User A');
+      expect(typeof exercise.rankings[1].username).toBe('string');
     });
 
     it('leaderboard only shows friends TMs (excludes non-friends)', async () => {
@@ -1528,7 +1527,7 @@ describe('Social API', () => {
       const resStranger = await request(app).post('/api/auth/register').send({
         email: `lb-stranger-${uidStranger}@example.com`,
         password: 'password123',
-        displayName: 'Stranger',
+        username: `lb_stranger_${uidStranger}`,
       });
       const strangerUserId = resStranger.body.user.id;
 
