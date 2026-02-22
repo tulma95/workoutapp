@@ -203,7 +203,7 @@ const test = base.extend<AdminFixture>({
     await page.getByLabel(/password/i).fill('ValidPassword123');
     await page.getByRole('button', { name: /log in/i }).click();
     await page.waitForURL(/\/(setup|$)/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForFunction(() => !!localStorage.getItem('accessToken'));
 
     // Navigate to admin
     await page.goto('/admin/plans');
