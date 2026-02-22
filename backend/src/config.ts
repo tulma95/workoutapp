@@ -15,4 +15,6 @@ export const config = {
   port: parseInt(process.env.PORT || '3001', 10),
   nodeEnv,
   logLevel: process.env.LOG_LEVEL || (nodeEnv === 'development' ? 'debug' : 'info'),
+  vapidPublicKey: requireEnv('VAPID_PUBLIC_KEY'),
+  vapidPrivateKey: requireEnv('VAPID_PRIVATE_KEY'),
 };
