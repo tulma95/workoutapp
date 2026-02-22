@@ -51,7 +51,7 @@
   {
     "id": "077",
     "title": "E2E streak test uses setDate (local) instead of setUTCDate for yesterday calculation — may produce wrong date near midnight in UTC-offset environments",
-    "status": "backlog",
+    "status": "done",
     "priority": "low",
     "description": "In e2e/social.spec.ts line 70, yesterday is computed with setDate(getDate() - 1) which uses local time. The streak calculation in the backend uses UTC. In UTC+N timezones, the local date could be one day ahead of UTC, causing the custom workout to be saved with the wrong UTC date and the streak test to fail near midnight. Should use setUTCDate / getUTCDate like the backend does."
   },
