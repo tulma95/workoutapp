@@ -1,0 +1,65 @@
+.section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-card);
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+}
+
+.heading {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.statusText {
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.actionBtn {
+  min-height: 2.75rem;
+  padding: 0 1.25rem;
+  background-color: var(--primary);
+  color: var(--primary-fg, #fff);
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.actionBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.actionBtnSecondary {
+  min-height: 2.75rem;
+  padding: 0 1.25rem;
+  background-color: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.actionBtnSecondary:hover {
+  background-color: var(--border);
+}
+
+.actionBtnSecondary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.errorText {
+  margin-top: 0.5rem;
+  color: var(--danger);
+  font-size: 0.875rem;
+}

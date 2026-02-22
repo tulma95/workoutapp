@@ -401,3 +401,18 @@ export const notificationEventSchema = z.object({
 });
 
 export type NotificationEvent = z.infer<typeof notificationEventSchema>;
+
+// Push notification schemas
+export const pushPublicKeySchema = z.object({
+  publicKey: z.string(),
+});
+
+export const pushSubscribeResponseSchema = z.object({
+  id: z.number(),
+  userId: z.number(),
+  endpoint: z.string(),
+  createdAt: z.string(),
+});
+
+export type PushPublicKey = z.infer<typeof pushPublicKeySchema>;
+export type PushSubscribeResponse = z.infer<typeof pushSubscribeResponseSchema>;
