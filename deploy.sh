@@ -13,7 +13,7 @@ COMPOSE_FILE="$PROJECT_ROOT/docker-compose.test.yml"
 
 cleanup() {
   echo "Cleaning up..."
-  docker compose -f "$COMPOSE_FILE" --profile e2e down || true
+  test_compose -f "$COMPOSE_FILE" --profile e2e down || true
 }
 trap cleanup EXIT INT TERM
 
@@ -23,7 +23,7 @@ run_backend_tests() {
   ensure_dependencies
 
   echo "Starting test database..."
-  docker compose -f "$COMPOSE_FILE" up -d --wait
+  test_compose -f "$COMPOSE_FILE" up -d --wait
   echo "Database is ready."
 
   echo "Generating Prisma client..."
@@ -58,7 +58,7 @@ build_image() {
     fs.writeFileSync(f, s.replace(/const CACHE_NAME = 'setforge-v[^']*'/, \"const CACHE_NAME = 'setforge-v$IMAGE_TAG'\"));
   "
 
-  APP_IMAGE="$FULL_TAG" docker compose -f "$COMPOSE_FILE" --profile e2e build app
+  APP_IMAGE="$FULL_TAG" test_compose -f "$COMPOSE_FILE" --profile e2e build app
 
   echo "Docker image built: $FULL_TAG"
 }
@@ -76,7 +76,7 @@ run_e2e_tests() {
 
   # Start the app container alongside the DB, wait for both to be healthy
   cd "$PROJECT_ROOT"
-  APP_IMAGE="$FULL_TAG" docker compose -f "$COMPOSE_FILE" --profile e2e up -d --wait
+  APP_IMAGE="$FULL_TAG" test_compose -f "$COMPOSE_FILE" --profile e2e up -d --wait
   echo "App is healthy."
 
   # Ensure Playwright browsers are installed

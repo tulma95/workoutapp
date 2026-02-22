@@ -11,13 +11,13 @@ ensure_dependencies
 
 cleanup() {
   echo "Cleaning up..."
-  docker compose -f "$COMPOSE_FILE" --profile e2e down || true
+  test_compose -f "$COMPOSE_FILE" --profile e2e down || true
 }
 trap cleanup EXIT INT TERM
 
 setup_db() {
   echo "Starting test database..."
-  docker compose -f "$COMPOSE_FILE" up -d --wait
+  test_compose -f "$COMPOSE_FILE" up -d --wait
   echo "Database is ready."
 
   echo "Generating Prisma client..."
@@ -50,7 +50,7 @@ run_e2e_tests() {
   echo "=== Building Docker image ==="
   cd "$PROJECT_ROOT"
 
-  docker compose -f "$COMPOSE_FILE" --profile e2e build app
+  test_compose -f "$COMPOSE_FILE" --profile e2e build app
 
   echo "Docker image built."
 
@@ -59,7 +59,7 @@ run_e2e_tests() {
 
   # Clean and re-seed test database for E2E
   cd "$PROJECT_ROOT"
-  docker compose -f "$COMPOSE_FILE" exec -T postgres-test psql -U treenisofta -d treenisofta_test -c \
+  test_compose -f "$COMPOSE_FILE" exec -T postgres-test psql -U treenisofta -d treenisofta_test -c \
     "TRUNCATE users, exercises, workout_plans, training_maxes, workouts, workout_sets, plan_days, plan_day_exercises, plan_sets, plan_progression_rules, user_plans RESTART IDENTITY CASCADE"
 
   cd "$PROJECT_ROOT/backend"
@@ -67,7 +67,7 @@ run_e2e_tests() {
 
   # Start the app container alongside the DB, wait for both to be healthy
   cd "$PROJECT_ROOT"
-  docker compose -f "$COMPOSE_FILE" --profile e2e up -d --wait
+  test_compose -f "$COMPOSE_FILE" --profile e2e up -d --wait
   echo "App is healthy."
 
   # Ensure Playwright browsers are installed
