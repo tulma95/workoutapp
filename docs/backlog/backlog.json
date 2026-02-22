@@ -589,5 +589,11 @@
     "status": "backlog",
     "priority": "medium",
     "description": "Three new endpoints (POST/GET/DELETE /api/social/feed/:eventId/comments) and the new commentCount field in GET /api/social/feed response are not documented in docs/api-endpoints.md. The notification type comment_received is also undocumented."
+  },
+  {
+    "id": "103",
+    "title": "Improve logging coverage across backend services",
+    "status": "backlog",
+    "description": "Fill gaps identified in logging analysis where entire subsystems are silent and client-facing errors go unrecorded. Specific improvements: 1) Add warn-level logging for validation failures (Zod errors) and route-level caught errors (400s, 409s). 2) Add debug-level logging in achievement, notification, and feed services. 3) Add Prisma query event logging for slow queries. 4) Log weight calculation steps at debug level."
   }
 ]
