@@ -71,7 +71,7 @@
   {
     "id": "099",
     "title": "Comment on friend activity feed events",
-    "status": "backlog",
+    "status": "done",
     "description": "Allow users to comment on their friends' activity feed events (workouts, achievements, streaks, etc). Users should be able to add text comments and view a comment thread on any feed event. Remember notifications"
   },
   {
@@ -575,5 +575,19 @@
     "status": "backlog",
     "priority": "low",
     "description": "The array [7, 14, 30, 60, 90] is defined inline at three separate locations in workout.service.ts (lines 530, 614, 809). It should be a single module-level constant to avoid divergence if milestone thresholds ever change."
+  },
+  {
+    "id": "101",
+    "title": "Feed event owner cannot read or post comments on their own events",
+    "status": "backlog",
+    "priority": "high",
+    "description": "POST and GET /api/social/feed/:eventId/comments use getAcceptedFriendIds() which does not include self. The event owner is blocked from commenting on or reading comments on their own events (403). DELETE correctly allows owner to delete. Access control should allow: friends of owner + owner themselves."
+  },
+  {
+    "id": "102",
+    "title": "docs/api-endpoints.md missing comment endpoints and commentCount field in feed",
+    "status": "backlog",
+    "priority": "medium",
+    "description": "Three new endpoints (POST/GET/DELETE /api/social/feed/:eventId/comments) and the new commentCount field in GET /api/social/feed response are not documented in docs/api-endpoints.md. The notification type comment_received is also undocumented."
   }
 ]
