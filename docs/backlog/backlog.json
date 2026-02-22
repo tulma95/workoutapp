@@ -1,5 +1,11 @@
 [
   {
+    "id": "092",
+    "title": "Fix WebKit E2E flakiness on CI",
+    "status": "done",
+    "description": "E2E tests fail on CI in WebKit: (1) achievements.spec.ts - completion dialog not found after clicking complete button, times out waiting for confirm dialog or Back to Dashboard link. (2) admin-plan-editor.spec.ts - page.goto encounters WebKit internal error. Likely WebKit-specific timing/stability issues in CI environment."
+  },
+  {
     "id": "089",
     "title": "Merge username and displayName into a single field",
     "status": "done",
