@@ -2,7 +2,7 @@ import { Response } from 'express';
 import prisma from '../lib/db';
 
 export interface NotificationPayload {
-  type: 'workout_completed' | 'achievement_earned' | 'friend_request_accepted';
+  type: 'workout_completed' | 'achievement_earned' | 'friend_request_accepted' | 'friend_request_received';
   message: string;
 }
 

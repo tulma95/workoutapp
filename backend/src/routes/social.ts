@@ -108,13 +108,33 @@ router.post('/request', validate(requestSchema), async (req: AuthRequest, res: R
       where: { id: existing.id },
       data: { status: 'pending', initiatorId: callerId },
     });
+    const sender = await prisma.user.findUnique({ where: { id: callerId }, select: { username: true } });
+    const senderUsername = sender?.username ?? 'Someone';
+    notificationManager.notifyUser(target.id, {
+      type: 'friend_request_received',
+      message: `${senderUsername} sent you a friend request`,
+    });
+    void pushService.sendToUser(target.id, JSON.stringify({
+      type: 'friend_request_received',
+      message: `${senderUsername} sent you a friend request`,
+    }));
     res.status(201).json({ id: friendship.id });
     return;
   }
 
+  const sender = await prisma.user.findUnique({ where: { id: callerId }, select: { username: true } });
+  const senderUsername = sender?.username ?? 'Someone';
   const friendship = await prisma.friendship.create({
     data: { requesterId, addresseeId, initiatorId: callerId, status: 'pending' },
   });
+  notificationManager.notifyUser(target.id, {
+    type: 'friend_request_received',
+    message: `${senderUsername} sent you a friend request`,
+  });
+  void pushService.sendToUser(target.id, JSON.stringify({
+    type: 'friend_request_received',
+    message: `${senderUsername} sent you a friend request`,
+  }));
 
   res.status(201).json({ id: friendship.id });
 });

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, vi } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import request from 'supertest';
 import { randomUUID } from 'crypto';
 
@@ -116,6 +116,41 @@ describe('Friend request accept — notification', () => {
     expect(allCalledUserIds).not.toContain(receiverUserId);
   });
 
+  it('does NOT call notifyUser when sending the request (sender is not notified)', async () => {
+    const notifyUserSpy = vi.mocked(notificationManager.notifyUser);
+    notifyUserSpy.mockClear();
+
+    // The request was already sent in beforeAll; check that no call was made to sender's id
+    // (notifyUser was not called for sender/userIdA at that point)
+    // We verify by sending a new request and checking which ids are notified
+    const uidCheck = randomUUID().slice(0, 8);
+    const resSender2 = await request(app).post('/api/auth/register').send({
+      email: `notif-check-sender-${uidCheck}@example.com`,
+      password: 'password123',
+      username: `notif_check_sender_${uidCheck}`,
+    });
+    const sender2Token = resSender2.body.accessToken;
+    const sender2Id = resSender2.body.user.id;
+
+    const resRecipient2 = await request(app).post('/api/auth/register').send({
+      email: `notif-check-recipient-${uidCheck}@example.com`,
+      password: 'password123',
+      username: `notif_check_recipient_${uidCheck}`,
+    });
+    const recipient2Id = resRecipient2.body.user.id;
+
+    notifyUserSpy.mockClear();
+
+    await request(app)
+      .post('/api/social/request')
+      .set('Authorization', `Bearer ${sender2Token}`)
+      .send({ email: `notif-check-recipient-${uidCheck}@example.com` });
+
+    const calledIds = notifyUserSpy.mock.calls.map((args) => args[0]);
+    expect(calledIds).toContain(recipient2Id);
+    expect(calledIds).not.toContain(sender2Id);
+  });
+
   it('does NOT call notifyUser when decline is issued instead', async () => {
     const notifyUserSpy = vi.mocked(notificationManager.notifyUser);
     notifyUserSpy.mockClear();
@@ -151,5 +186,120 @@ describe('Friend request accept — notification', () => {
     expect(declineRes.body.status).toBe('declined');
 
     expect(notifyUserSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('Friend request sent — notification', () => {
+  afterEach(() => {
+    vi.mocked(notificationManager.notifyUser).mockClear();
+  });
+
+  it('notifies the recipient when a new friend request is sent', async () => {
+    const uidSent = randomUUID().slice(0, 8);
+    const resSender = await request(app).post('/api/auth/register').send({
+      email: `notif-sent-sender-${uidSent}@example.com`,
+      password: 'password123',
+      username: `notif_sent_sender_${uidSent}`,
+    });
+    const senderToken = resSender.body.accessToken;
+    const senderUsername = `notif_sent_sender_${uidSent}`;
+
+    const resRecipient = await request(app).post('/api/auth/register').send({
+      email: `notif-sent-recipient-${uidSent}@example.com`,
+      password: 'password123',
+      username: `notif_sent_recipient_${uidSent}`,
+    });
+    const recipientId = resRecipient.body.user.id;
+
+    vi.mocked(notificationManager.notifyUser).mockClear();
+
+    const res = await request(app)
+      .post('/api/social/request')
+      .set('Authorization', `Bearer ${senderToken}`)
+      .send({ email: `notif-sent-recipient-${uidSent}@example.com` });
+
+    expect(res.status).toBe(201);
+
+    const notifyUserSpy = vi.mocked(notificationManager.notifyUser);
+    expect(notifyUserSpy).toHaveBeenCalledOnce();
+    expect(notifyUserSpy).toHaveBeenCalledWith(recipientId, {
+      type: 'friend_request_received',
+      message: `${senderUsername} sent you a friend request`,
+    });
+  });
+
+  it('notifies recipient again when re-requesting after a declined friendship', async () => {
+    const uidRe = randomUUID().slice(0, 8);
+    const resSender = await request(app).post('/api/auth/register').send({
+      email: `notif-re-sender-${uidRe}@example.com`,
+      password: 'password123',
+      username: `notif_re_sender_${uidRe}`,
+    });
+    const senderToken = resSender.body.accessToken;
+    const senderUsername = `notif_re_sender_${uidRe}`;
+
+    const resRecipient = await request(app).post('/api/auth/register').send({
+      email: `notif-re-recipient-${uidRe}@example.com`,
+      password: 'password123',
+      username: `notif_re_recipient_${uidRe}`,
+    });
+    const recipientToken = resRecipient.body.accessToken;
+    const recipientId = resRecipient.body.user.id;
+
+    // First request
+    const reqRes = await request(app)
+      .post('/api/social/request')
+      .set('Authorization', `Bearer ${senderToken}`)
+      .send({ email: `notif-re-recipient-${uidRe}@example.com` });
+    const friendshipId = reqRes.body.id;
+
+    // Recipient declines
+    await request(app)
+      .patch(`/api/social/requests/${friendshipId}/decline`)
+      .set('Authorization', `Bearer ${recipientToken}`);
+
+    vi.mocked(notificationManager.notifyUser).mockClear();
+
+    // Sender re-requests
+    const reRes = await request(app)
+      .post('/api/social/request')
+      .set('Authorization', `Bearer ${senderToken}`)
+      .send({ email: `notif-re-recipient-${uidRe}@example.com` });
+
+    expect(reRes.status).toBe(201);
+
+    const notifyUserSpy = vi.mocked(notificationManager.notifyUser);
+    expect(notifyUserSpy).toHaveBeenCalledOnce();
+    expect(notifyUserSpy).toHaveBeenCalledWith(recipientId, {
+      type: 'friend_request_received',
+      message: `${senderUsername} sent you a friend request`,
+    });
+  });
+
+  it('does not notify the sender when sending a request', async () => {
+    const uidNoSender = randomUUID().slice(0, 8);
+    const resSender = await request(app).post('/api/auth/register').send({
+      email: `notif-nosender-s-${uidNoSender}@example.com`,
+      password: 'password123',
+      username: `notif_nosender_s_${uidNoSender}`,
+    });
+    const senderToken = resSender.body.accessToken;
+    const senderId = resSender.body.user.id;
+
+    await request(app).post('/api/auth/register').send({
+      email: `notif-nosender-r-${uidNoSender}@example.com`,
+      password: 'password123',
+      username: `notif_nosender_r_${uidNoSender}`,
+    });
+
+    vi.mocked(notificationManager.notifyUser).mockClear();
+
+    await request(app)
+      .post('/api/social/request')
+      .set('Authorization', `Bearer ${senderToken}`)
+      .send({ email: `notif-nosender-r-${uidNoSender}@example.com` });
+
+    const calledIds = vi.mocked(notificationManager.notifyUser).mock.calls.map((args) => args[0]);
+    expect(calledIds).not.toContain(senderId);
   });
 });
