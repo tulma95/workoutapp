@@ -1,4 +1,4 @@
-const CACHE_NAME = 'setforge-v1';
+const CACHE_NAME = 'setforge-v2';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -42,6 +42,18 @@ self.addEventListener('fetch', (event) => {
         caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
         return response;
       });
+    })
+  );
+});
+
+self.addEventListener('push', event => {
+  const data = event.data?.json() ?? {};
+  event.waitUntil(
+    self.registration.showNotification('SetForge', {
+      body: data.message ?? 'New notification',
+      icon: '/icon.svg',
+      badge: '/icon.svg',
+      tag: data.type ?? 'generic'
     })
   );
 });

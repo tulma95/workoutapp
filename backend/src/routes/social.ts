@@ -6,6 +6,7 @@ import { AuthRequest, getUserId } from '../types';
 import prisma from '../lib/db';
 import { calculateStreak } from '../lib/streak';
 import { notificationManager } from '../services/notifications.service';
+import { pushService } from '../services/push.service';
 
 const router = Router();
 
@@ -258,6 +259,10 @@ router.patch('/requests/:id/accept', async (req: AuthRequest, res: Response) => 
       type: 'friend_request_accepted',
       message: `${acceptorUsername} accepted your friend request`,
     });
+    void pushService.sendToUser(friendship.initiatorId, JSON.stringify({
+      type: 'friend_request_accepted',
+      message: `${acceptorUsername} accepted your friend request`,
+    }));
   }
 
   res.json({ id: updated.id, status: updated.status });

@@ -6,6 +6,7 @@ import { ExistingWorkoutError } from '../types';
 import { logger } from '../lib/logger';
 import { checkAndUnlockAchievements } from './achievement.service';
 import { calculateStreak } from '../lib/streak';
+import { pushService } from './push.service';
 
 export type ScheduledDay = {
   date: string;
@@ -572,6 +573,23 @@ export async function completeWorkout(workoutId: number, userId: number) {
       achievementCount: newAchievements.length,
     });
 
+    void pushService.sendToUser(userId, JSON.stringify({
+      type: 'workout_completed',
+      message: 'Workout completed!',
+      workoutId,
+      dayNumber: workout.dayNumber,
+    }));
+
+    for (const achievement of newAchievements) {
+      void pushService.sendToUser(userId, JSON.stringify({
+        type: 'badge_unlocked',
+        message: `Badge unlocked: ${achievement.name}`,
+        slug: achievement.slug,
+        name: achievement.name,
+        description: achievement.description,
+      }));
+    }
+
     return { workout: formatWorkout(completed), progressions, newAchievements };
   }
 
@@ -644,6 +662,23 @@ export async function completeWorkout(workoutId: number, userId: number) {
   });
 
   logger.info('Workout completed (no plan)', { workoutId, dayNumber: workout.dayNumber, userId });
+
+  void pushService.sendToUser(userId, JSON.stringify({
+    type: 'workout_completed',
+    message: 'Workout completed!',
+    workoutId,
+    dayNumber: workout.dayNumber,
+  }));
+
+  for (const achievement of noPlanAchievements) {
+    void pushService.sendToUser(userId, JSON.stringify({
+      type: 'badge_unlocked',
+      message: `Badge unlocked: ${achievement.name}`,
+      slug: achievement.slug,
+      name: achievement.name,
+      description: achievement.description,
+    }));
+  }
 
   return { workout: formatWorkout(noPlanCompleted), progressions: [], newAchievements: noPlanAchievements };
 }
