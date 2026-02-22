@@ -103,11 +103,12 @@ export class WorkoutPage {
   /** Complete workout, handling the confirmation dialog if it appears. Waits for the workout-complete state. */
   async completeWithDialog() {
     await this.completeButton.click();
-    await expect(this.confirmDialog.or(this.backToDashboardButton)).toBeVisible();
+    await expect(this.confirmDialog.or(this.backToDashboardButton).or(this.achievementDialog)).toBeVisible();
     if (await this.confirmDialog.isVisible()) {
       await this.confirmDialog.getByRole('button', { name: /complete anyway/i }).click();
-      // Wait for the page to transition to the workout-complete state
-      await expect(this.backToDashboardButton).toBeVisible();
+      // Wait for the page to transition to the workout-complete state.
+      // Also accept achievementDialog: WebKit's showModal() marks backToDashboardButton inert.
+      await expect(this.backToDashboardButton.or(this.achievementDialog)).toBeVisible();
     }
   }
 
