@@ -368,6 +368,7 @@ export const FeedEventSchema = z.object({
   createdAt: z.string(),
   reactions: z.array(FeedReactionSchema).default([]),
   streak: z.number().default(0),
+  commentCount: z.number().default(0),
 });
 
 export const FeedResponseSchema = z.object({

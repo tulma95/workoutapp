@@ -399,6 +399,16 @@ router.get('/feed', async (req: AuthRequest, res: Response) => {
   const uniqueUserIds = [...new Set(events.map((e) => e.userId))];
   const streakMap = await getStreaksForUsers(uniqueUserIds);
 
+  const commentCounts = await prisma.feedEventComment.groupBy({
+    by: ['feedEventId'],
+    where: { feedEventId: { in: eventIds } },
+    _count: { _all: true },
+  });
+  const commentCountMap = new Map<number, number>();
+  for (const c of commentCounts) {
+    commentCountMap.set(c.feedEventId, c._count._all);
+  }
+
   const result = events.map((e) => {
     // Collect all unique emojis for this event from the already-built reactionMap
     const prefix = `${e.id}:`;
@@ -419,6 +429,7 @@ router.get('/feed', async (req: AuthRequest, res: Response) => {
       createdAt: e.createdAt,
       reactions,
       streak: streakMap.get(e.userId) ?? 0,
+      commentCount: commentCountMap.get(e.id) ?? 0,
     };
   });
 
