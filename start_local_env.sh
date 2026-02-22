@@ -15,6 +15,10 @@ export DATABASE_URL="postgresql://treenisofta:treenisofta_dev@localhost:5432/tre
 export JWT_SECRET="change-me-in-production"
 export PORT=3001
 export NODE_ENV=development
+# VAPID keys for Web Push notifications (test values — generate real ones for production)
+# To generate: cd backend && npx tsx src/scripts/generate-vapid-keys.ts
+export VAPID_PUBLIC_KEY="MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEPUj21WptYZO85SRcSI1zDiwhatAMxOp786i8jcFbYHW4zrE5ufqRTls3RXWWynpKf8Antn8yCB9HE8DSxeyVrw"
+export VAPID_PRIVATE_KEY="MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgLCOEV2Iyfm1d18dea_QPg3plCbyxIbGZMqqOfRbN246hRANCAAQ9SPbVam1hk7zlJFxIjXMOLCFq0AzE6nvzqLyNwVtgdbjOsTm5-pFOWzdFdZbKekp_wCe2fzIIH0cTwNLF7JWv"
 
 function stop() {
   docker compose down --remove-orphans || true

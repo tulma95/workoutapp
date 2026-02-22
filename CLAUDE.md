@@ -146,6 +146,9 @@ npx prisma db seed
 
 # Regenerate PWA PNG icons after editing frontend/public/icon.svg
 cd frontend && npm run generate-icons
+
+# Generate a fresh VAPID key pair (for production deployments)
+cd backend && npx tsx src/scripts/generate-vapid-keys.ts
 ```
 
 ## Prisma v7 Notes
@@ -187,9 +190,17 @@ DATABASE_URL=postgresql://treenisofta:treenisofta_dev@localhost:5432/treenisofta
 JWT_SECRET=change-me-in-production
 PORT=3001
 NODE_ENV=development
+VAPID_PUBLIC_KEY=<base64url-encoded EC public key>
+VAPID_PRIVATE_KEY=<base64url-encoded EC private key>
 ```
 
 These are exported by `start_local_env.sh` and `run_test.sh`. No .env files.
+
+`start_local_env.sh` and `run_test.sh` contain hard-coded test VAPID keys (safe for local dev and CI). For production, generate a fresh key pair with:
+
+```bash
+cd backend && npx tsx src/scripts/generate-vapid-keys.ts
+```
 
 ## Backlog Tickets
 

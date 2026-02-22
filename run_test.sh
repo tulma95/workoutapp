@@ -40,6 +40,8 @@ run_backend_tests() {
   JWT_SECRET="$TEST_JWT_SECRET" \
   PORT=3001 \
   NODE_ENV=test \
+  VAPID_PUBLIC_KEY="MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEPUj21WptYZO85SRcSI1zDiwhatAMxOp786i8jcFbYHW4zrE5ufqRTls3RXWWynpKf8Antn8yCB9HE8DSxeyVrw" \
+  VAPID_PRIVATE_KEY="MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgLCOEV2Iyfm1d18dea_QPg3plCbyxIbGZMqqOfRbN246hRANCAAQ9SPbVam1hk7zlJFxIjXMOLCFq0AzE6nvzqLyNwVtgdbjOsTm5-pFOWzdFdZbKekp_wCe2fzIIH0cTwNLF7JWv" \
   npx vitest run "$@"
 
   echo "Backend tests passed."
