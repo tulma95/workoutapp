@@ -69,16 +69,15 @@
     "description": "The createCustomWorkout() path in workout.service.ts only creates a workout_completed feed event. It does not run the streak/badge logic that the two completeWorkout() paths run. Custom workouts can advance a streak and should trigger the same milestone checks."
   },
   {
-    "id": "084",
-    "title": "emit streak_milestone and badge_unlocked for custom workouts",
+    "id": "099",
+    "title": "Comment on friend activity feed events",
     "status": "backlog",
-    "priority": "medium",
-    "description": "createCustomWorkout() in workout.service.ts skips streak calculation and badge checking entirely. Users completing a custom workout that hits a streak milestone will not see a streak_milestone feed event. Requires extracting the shared emitStreakAndBadgeEvents() helper and calling it from createCustomWorkout path."
+    "description": "Allow users to comment on their friends' activity feed events (workouts, achievements, streaks, etc). Users should be able to add text comments and view a comment thread on any feed event. Remember notifications"
   },
   {
     "id": "085",
     "title": "streak_milestone deduplication has no DB-level uniqueness guarantee — concurrent completions can create duplicate events",
-    "status": "backlog",
+    "status": "done",
     "priority": "medium",
     "description": "The findFirst + create pattern inside the transaction prevents duplicate streak_milestone events under normal sequential execution, but does not protect against two concurrent completeWorkout calls racing in separate transactions for the same user. A unique partial index on (user_id, event_type, payload->>'days') would provide a hard guarantee at the database level."
   },
@@ -109,13 +108,6 @@
     "status": "backlog",
     "priority": "low",
     "description": "The achievements test suite has a positive test for century-club (bench TM=200) but no negative test confirming it does NOT trigger when all set weights are below 100 kg. The default benchTM=100 users (TM=90) could serve as a negative baseline."
-  },
-  {
-    "id": "072",
-    "title": "Missing negative test for century-club achievement",
-    "status": "backlog",
-    "priority": "low",
-    "description": "Add explicit test asserting that century-club is NOT unlocked for sub-100kg TM users"
   },
   {
     "id": "050",
@@ -302,12 +294,6 @@
     "title": "Invite Link for Friend Requests",
     "status": "backlog",
     "description": "Generate a unique invite link (e.g. setforge.app/invite/abc123) that auto-sends a friend request when the invitee registers. Easier than sharing email addresses. Link expires after 7 days or first use. Shareable via native share API."
-  },
-  {
-    "id": "066",
-    "title": "Feed Comments",
-    "status": "backlog",
-    "description": "Add short text comments on friends' feed events. Max 200 chars. Simple threaded view under the event. Enables actual conversation between gym buddies about specific workouts or PRs. Requires new DB model and API endpoints."
   },
   {
     "id": "064",
@@ -521,13 +507,6 @@
     "description": "The docs/api-endpoints.md entry for POST /api/workouts/:id/complete still says 'returns { progressions: [...] }'. It should be updated to include newAchievements: [...] in the documented response shape after ticket 027 added achievements."
   },
   {
-    "id": "073",
-    "title": "Update POST /api/workouts/:id/complete docs to include newAchievements",
-    "status": "backlog",
-    "priority": "low",
-    "description": "The complete endpoint now returns newAchievements field but api-endpoints.md was not updated to reflect this (fixed in 027)"
-  },
-  {
     "id": "075",
     "title": "Add backend test: user cannot react to their own feed event via direct API call",
     "status": "backlog",
@@ -540,13 +519,6 @@
     "status": "backlog",
     "priority": "medium",
     "description": "getStreaksForUsers in social.ts fetches every completed workout for the given user IDs with no date bound. A user with years of history causes a large scan on every GET /api/social/friends and GET /api/social/feed call. The streak only needs the most recent contiguous block; a WHERE completedAt >= NOW() - INTERVAL '365 days' (or similar) would cap the scan with no correctness impact."
-  },
-  {
-    "id": "078",
-    "title": "Add date range filter to streak query to avoid full history scan",
-    "status": "backlog",
-    "priority": "medium",
-    "description": "getStreaksForUsers fetches all completed workouts with no date bound. Add completedAt gte filter (e.g. 366 days) to cap the scan, since no streak can be longer than a year."
   },
   {
     "id": "079",
@@ -598,10 +570,10 @@
     "description": "PushNotificationSettings.module.css .actionBtn and .actionBtnSecondary use min-height: 2.75rem (44px at 16px base), but all other interactive elements in the project use min-height: 3rem per CLAUDE.md convention ('All interactive elements min 44px (3rem)'). Additionally 2.75rem is not on the 8-point grid (should be 2.5rem or 3rem). Update both button classes to use 3rem."
   },
   {
-    "id": "097",
-    "title": "createCustomWorkout missing workout_completed push notification after transaction",
+    "id": "100",
+    "title": "Extract STREAK_MILESTONES constant to module scope in workout.service.ts",
     "status": "backlog",
-    "priority": "medium",
-    "description": "Both completeWorkout branches send a workout_completed push via pushService.sendToUser after the transaction. createCustomWorkout only sends badge_unlocked pushes and silently skips the workout_completed push, so push subscribers receive no notification when a custom workout is created."
+    "priority": "low",
+    "description": "The array [7, 14, 30, 60, 90] is defined inline at three separate locations in workout.service.ts (lines 530, 614, 809). It should be a single module-level constant to avoid divergence if milestone thresholds ever change."
   }
 ]
