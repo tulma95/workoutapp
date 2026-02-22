@@ -45,8 +45,11 @@
 - `PATCH /api/social/requests/:id/accept` - accept a pending request; returns `{ id, status }`
 - `PATCH /api/social/requests/:id/decline` - decline a pending request; returns `{ id, status }`
 - `DELETE /api/social/friends/:id` - remove a friend (sets status to `'removed'`); returns `{ id, status }`
-- `GET /api/social/feed` - last 20 feed events from confirmed friends ordered by `createdAt DESC`; returns `{ events: [{ id, userId, username, eventType, payload, createdAt, streak: number, reactions: [{ emoji, count, reactedByMe }] }] }` — `streak` is the event owner's current workout streak (consecutive calendar days); `reactions` is an empty array when no reactions exist
+- `GET /api/social/feed` - last 20 feed events from confirmed friends ordered by `createdAt DESC`; returns `{ events: [{ id, userId, username, eventType, payload, createdAt, streak: number, commentCount: number, reactions: [{ emoji, count, reactedByMe }] }] }` — `streak` is the event owner's current workout streak (consecutive calendar days); `reactions` is an empty array when no reactions exist; `commentCount` is the total number of comments on the event
 - `POST /api/social/feed/:eventId/react` - `{ emoji }` (one of `🔥 👏 💀 💪 🤙`) — toggles reaction on/off; 404 if event not found or event owner is not a friend; returns `{ reacted: boolean, count: number }`
+- `GET /api/social/feed/:eventId/comments` - list all comments on a feed event ordered by `createdAt ASC`; friend-only access (event owner also permitted); returns `{ comments: [{ id, feedEventId, userId, username, text, createdAt }] }`; 403 if not a friend of the event owner, 404 if event not found
+- `POST /api/social/feed/:eventId/comments` - `{ text }` (1–500 chars, whitespace trimmed) — add a comment; friend-only access (event owner also permitted); returns `201 { id, feedEventId, userId, text, createdAt }`; notifies event owner via SSE + push unless commenter is the event owner; 403 if not a friend, 404 if event not found, 400 if text is invalid
+- `DELETE /api/social/feed/:eventId/comments/:commentId` - delete a comment; permitted for the comment author OR the event owner; returns `204`; 403 if neither, 404 if comment or event not found
 - `GET /api/social/leaderboard` - TM rankings across caller and accepted friends for each exercise in active plan; returns `{ exercises: [{ slug, name, rankings: [{ userId, username, weight }] }] }`; returns `{ exercises: [] }` if no active plan
   - `?mode=e1rm` — returns estimated 1RM rankings instead of TM rankings; e1RMs are computed from completed AMRAP sets using the Epley formula (`weight * (1 + reps / 30)`); same response shape: `{ exercises: [{ slug, name, rankings: [{ userId, value, rank }] }] }`; only sets with `actual_reps >= 1` and `is_amrap = true` are considered
 
@@ -115,6 +118,7 @@ data: {"type":"workout_completed","message":"Alice just finished Day 1"}
 | `workout_completed` | A friend completes a workout |
 | `achievement_earned` | A friend earns a new achievement badge |
 | `friend_request_accepted` | Someone accepts your outgoing friend request |
+| `comment_received` | Someone comments on your feed event (not triggered for self-comments) |
 
 **Heartbeat**: The server writes `: heartbeat\n\n` (an SSE comment) every 30 seconds to all open connections. Browsers ignore SSE comments automatically; this prevents proxy timeouts.
 

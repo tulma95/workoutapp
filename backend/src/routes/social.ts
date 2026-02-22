@@ -660,7 +660,7 @@ router.post('/feed/:eventId/comments', validate(commentSchema), async (req: Auth
   }
 
   const friendIds = await getAcceptedFriendIds(userId);
-  if (!friendIds.includes(event.userId)) {
+  if (userId !== event.userId && !friendIds.includes(event.userId)) {
     res.status(403).json({ error: { code: 'FORBIDDEN', message: 'Not a friend of the event owner' } });
     return;
   }
@@ -706,7 +706,7 @@ router.get('/feed/:eventId/comments', async (req: AuthRequest, res: Response) =>
   }
 
   const friendIds = await getAcceptedFriendIds(userId);
-  if (!friendIds.includes(event.userId)) {
+  if (userId !== event.userId && !friendIds.includes(event.userId)) {
     res.status(403).json({ error: { code: 'FORBIDDEN', message: 'Not a friend of the event owner' } });
     return;
   }

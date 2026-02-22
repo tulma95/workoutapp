@@ -275,13 +275,14 @@ describe('Feed event comments', () => {
       },
     });
 
-    // userA comments on their own event
-    await request(app)
+    // userA comments on their own event — must succeed (owner can comment on own event)
+    const res = await request(app)
       .post(`/api/social/feed/${ownEvent.id}/comments`)
       .set('Authorization', `Bearer ${tokenA}`)
       .send({ text: 'Self comment' });
+    expect(res.status).toBe(201);
+    expect(res.body).toMatchObject({ text: 'Self comment', userId: userIdA });
 
-    // userA is a friend of userB but the endpoint checks userId !== event.userId
     // Since userA owns the event and is the commenter, no notification should fire for userA
     const calledIds = notifyUserSpy.mock.calls.map((args) => args[0]);
     expect(calledIds).not.toContain(userIdA);
