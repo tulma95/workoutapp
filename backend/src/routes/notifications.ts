@@ -1,8 +1,11 @@
 import { Router, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { z } from 'zod';
 import { authenticate } from '../middleware/auth';
+import { validate } from '../middleware/validate';
 import { AuthRequest, getUserId, JwtPayload } from '../types/index';
 import { notificationManager } from '../services/notifications.service';
+import { pushService } from '../services/push.service';
 import { config } from '../config';
 import { logger } from '../lib/logger';
 
@@ -37,6 +40,49 @@ router.get('/stream', authenticateSse, (req: AuthRequest, res) => {
   res.flushHeaders();
 
   notificationManager.connect(userId, res);
+});
+
+// Public: return VAPID public key for client-side push subscription
+router.get('/public-key', (_req, res) => {
+  res.json({ publicKey: config.vapidPublicKey });
+});
+
+const subscribeSchema = z.object({
+  endpoint: z.string().url(),
+  keys: z.object({
+    p256dh: z.string().min(1),
+    auth: z.string().min(1),
+  }),
+});
+
+const unsubscribeSchema = z.object({
+  endpoint: z.string().url(),
+});
+
+// Store push subscription for authenticated user
+router.post('/subscribe', authenticate, validate(subscribeSchema), async (req: AuthRequest, res) => {
+  const userId = getUserId(req);
+  const { endpoint, keys } = req.body as z.infer<typeof subscribeSchema>;
+  await pushService.subscribe(userId, { endpoint, p256dh: keys.p256dh, auth: keys.auth });
+  res.status(201).json({ ok: true });
+});
+
+// Remove push subscription for authenticated user
+router.delete('/subscribe', authenticate, validate(unsubscribeSchema), async (req: AuthRequest, res) => {
+  const userId = getUserId(req);
+  const { endpoint } = req.body as z.infer<typeof unsubscribeSchema>;
+
+  const existing = await import('../lib/db').then((m) =>
+    m.default.pushSubscription.findFirst({ where: { userId, endpoint } }),
+  );
+
+  if (!existing) {
+    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Subscription not found' } });
+    return;
+  }
+
+  await pushService.unsubscribe(userId, endpoint);
+  res.json({ ok: true });
 });
 
 export default router;

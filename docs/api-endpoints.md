@@ -52,6 +52,40 @@
 
 ## Notification Endpoints
 
+### `GET /api/notifications/public-key`
+
+Returns the VAPID public key needed for client-side push subscription.
+
+**Auth**: None required.
+
+**Response**: `{ publicKey: string }` — base64url-encoded VAPID public key.
+
+---
+
+### `POST /api/notifications/subscribe`
+
+Stores a Web Push subscription for the authenticated user (upserts on duplicate endpoint).
+
+**Auth**: JWT required.
+
+**Body**: `{ endpoint: string, keys: { p256dh: string, auth: string } }`
+
+**Response**: `201 { ok: true }`
+
+---
+
+### `DELETE /api/notifications/subscribe`
+
+Removes a Web Push subscription for the authenticated user.
+
+**Auth**: JWT required.
+
+**Body**: `{ endpoint: string }`
+
+**Response**: `200 { ok: true }` | `404 NOT_FOUND` if subscription does not exist.
+
+---
+
 ### `GET /api/notifications/stream`
 
 Opens a Server-Sent Events (SSE) stream delivering real-time toast notifications to the authenticated user.
