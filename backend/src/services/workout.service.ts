@@ -879,6 +879,13 @@ export async function createCustomWorkout(userId: number, payload: CustomWorkout
 
   logger.info('Custom workout created', { userId, workoutId: workout.id, date: payload.date });
 
+  void pushService.sendToUser(userId, JSON.stringify({
+    type: 'workout_completed',
+    message: 'Workout completed!',
+    workoutId: workout.id,
+    dayNumber: 0,
+  }));
+
   for (const achievement of newAchievements) {
     void pushService.sendToUser(userId, JSON.stringify({
       type: 'badge_unlocked',
