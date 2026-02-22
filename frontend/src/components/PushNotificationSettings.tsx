@@ -28,7 +28,7 @@ export function PushNotificationSettings() {
       return;
     }
 
-    if (Notification.permission === 'denied') {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'denied') {
       setPushState('denied');
       return;
     }
@@ -83,7 +83,7 @@ export function PushNotificationSettings() {
       currentSubscriptionRef.current = subscription;
       setPushState('enabled');
     } catch (err) {
-      if (Notification.permission === 'denied') {
+      if (typeof Notification !== 'undefined' && Notification.permission === 'denied') {
         setPushState('denied');
       } else {
         setError('Failed to enable notifications. Please try again.');
