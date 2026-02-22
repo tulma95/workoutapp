@@ -1,5 +1,11 @@
 [
   {
+    "id": "098",
+    "title": "Friend request received push notification",
+    "status": "done",
+    "description": "Send a notification to the user when someone sends them a friend request. Currently only friend request acceptance triggers a notification; the recipient of a new request gets no notification at all."
+  },
+  {
     "id": "092",
     "title": "Fix WebKit E2E flakiness on CI",
     "status": "done",
