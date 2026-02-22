@@ -58,7 +58,7 @@
   {
     "id": "082",
     "title": "streak_milestone and badge_unlocked not emitted for custom workouts",
-    "status": "backlog",
+    "status": "done",
     "priority": "medium",
     "description": "The createCustomWorkout() path in workout.service.ts only creates a workout_completed feed event. It does not run the streak/badge logic that the two completeWorkout() paths run. Custom workouts can advance a streak and should trigger the same milestone checks."
   },
@@ -590,5 +590,12 @@
     "status": "backlog",
     "priority": "low",
     "description": "PushNotificationSettings.module.css .actionBtn and .actionBtnSecondary use min-height: 2.75rem (44px at 16px base), but all other interactive elements in the project use min-height: 3rem per CLAUDE.md convention ('All interactive elements min 44px (3rem)'). Additionally 2.75rem is not on the 8-point grid (should be 2.5rem or 3rem). Update both button classes to use 3rem."
+  },
+  {
+    "id": "097",
+    "title": "createCustomWorkout missing workout_completed push notification after transaction",
+    "status": "backlog",
+    "priority": "medium",
+    "description": "Both completeWorkout branches send a workout_completed push via pushService.sendToUser after the transaction. createCustomWorkout only sends badge_unlocked pushes and silently skips the workout_completed push, so push subscribers receive no notification when a custom workout is created."
   }
 ]
