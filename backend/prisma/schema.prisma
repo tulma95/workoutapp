@@ -99,14 +99,15 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  trainingMaxes    TrainingMax[]
-  workouts         Workout[]
-  plans            UserPlan[]
-  sentRequests     Friendship[] @relation("SentRequests")
-  receivedRequests Friendship[] @relation("ReceivedRequests")
+  trainingMaxes     TrainingMax[]
+  workouts          Workout[]
+  plans             UserPlan[]
+  sentRequests      Friendship[] @relation("SentRequests")
+  receivedRequests  Friendship[] @relation("ReceivedRequests")
   feedEvents        FeedEvent[]
   feedReactions     FeedEventReaction[]
   achievements      UserAchievement[]
+  pushSubscriptions PushSubscription[]
 
   @@map("users")
 }
@@ -274,4 +275,18 @@ model UserAchievement {
   @@unique([userId, slug])
   @@index([userId])
   @@map("user_achievements")
+}
+
+model PushSubscription {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  endpoint  String   @db.Text
+  p256dh    String   @db.Text
+  auth      String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, endpoint])
+  @@map("push_subscriptions")
 }
