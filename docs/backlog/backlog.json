@@ -45,7 +45,7 @@
   {
     "id": "081",
     "title": "Push Notifications (Service Worker)",
-    "status": "in-progress",
+    "status": "done",
     "description": "Add push notifications via Web Push API so users get notified even when the app is in the background. Requires VAPID key generation, subscription management (store push subscriptions in DB), and service worker push event handler. Builds on top of ticket 080 (SSE + Toast) — reuse the same notification events but deliver via push when user is offline/backgrounded. Scope: VAPID setup, PushSubscription CRUD endpoint, sw.js push handler, opt-in UI. CONSTRAINT: Do not add any npm dependencies — implement everything using built-in Node.js crypto and native Web Push APIs."
   },
   {
