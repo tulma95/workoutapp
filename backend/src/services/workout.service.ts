@@ -769,7 +769,16 @@ export async function createCustomWorkout(userId: number, payload: CustomWorkout
     throw new Error('BAD_REQUEST: One or more exercise IDs are invalid');
   }
 
-  const workout = await prisma.$transaction(async (tx) => {
+  const setsForAchievements = payload.exercises.flatMap((exercise) =>
+    exercise.sets.map((set) => ({
+      prescribedWeight: set.weight,
+      actualReps: set.reps,
+      prescribedReps: set.reps,
+      isProgression: false as const,
+    })),
+  );
+
+  const { workout, newAchievements } = await prisma.$transaction(async (tx) => {
     const w = await tx.workout.create({
       data: {
         userId,
@@ -812,7 +821,50 @@ export async function createCustomWorkout(userId: number, payload: CustomWorkout
       },
     });
 
-    return tx.workout.findUniqueOrThrow({
+    // Calculate streak and emit streak_milestone if threshold crossed
+    const completedWorkouts = await tx.workout.findMany({
+      where: { userId, status: 'completed' },
+      select: { completedAt: true },
+    });
+    const dates = completedWorkouts
+      .filter((cw) => cw.completedAt !== null)
+      .map((cw) => cw.completedAt!.toISOString().slice(0, 10));
+    const streak = calculateStreak(dates);
+    const STREAK_MILESTONES = [7, 14, 30, 60, 90];
+    for (const threshold of STREAK_MILESTONES) {
+      if (streak >= threshold) {
+        const existing = await tx.feedEvent.findFirst({
+          where: {
+            userId,
+            eventType: 'streak_milestone',
+            payload: { path: ['days'], equals: threshold },
+          },
+        });
+        if (!existing) {
+          await tx.feedEvent.create({
+            data: {
+              userId,
+              eventType: 'streak_milestone',
+              payload: { days: threshold },
+            },
+          });
+        }
+      }
+    }
+
+    const newAchievements = await checkAndUnlockAchievements(tx, userId, w.id, setsForAchievements);
+
+    if (newAchievements.length > 0) {
+      await tx.feedEvent.createMany({
+        data: newAchievements.map((a) => ({
+          userId,
+          eventType: 'badge_unlocked',
+          payload: { slug: a.slug, name: a.name, description: a.description },
+        })),
+      });
+    }
+
+    const completedWorkout = await tx.workout.findUniqueOrThrow({
       where: { id: w.id },
       include: {
         sets: {
@@ -821,9 +873,22 @@ export async function createCustomWorkout(userId: number, payload: CustomWorkout
         },
       },
     });
+
+    return { workout: completedWorkout, newAchievements };
   });
 
   logger.info('Custom workout created', { userId, workoutId: workout.id, date: payload.date });
+
+  for (const achievement of newAchievements) {
+    void pushService.sendToUser(userId, JSON.stringify({
+      type: 'badge_unlocked',
+      message: `Badge unlocked: ${achievement.name}`,
+      slug: achievement.slug,
+      name: achievement.name,
+      description: achievement.description,
+    }));
+  }
+
   return formatWorkout(workout);
 }
 
