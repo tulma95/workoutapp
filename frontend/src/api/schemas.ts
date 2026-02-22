@@ -408,10 +408,7 @@ export const pushPublicKeySchema = z.object({
 });
 
 export const pushSubscribeResponseSchema = z.object({
-  id: z.number(),
-  userId: z.number(),
-  endpoint: z.string(),
-  createdAt: z.string(),
+  ok: z.boolean(),
 });
 
 export type PushPublicKey = z.infer<typeof pushPublicKeySchema>;

@@ -1,3 +1,4 @@
+import { createPublicKey } from 'crypto';
 import { Router, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
@@ -6,8 +7,28 @@ import { validate } from '../middleware/validate';
 import { AuthRequest, getUserId, JwtPayload } from '../types/index';
 import { notificationManager } from '../services/notifications.service';
 import { pushService } from '../services/push.service';
+import prisma from '../lib/db';
 import { config } from '../config';
 import { logger } from '../lib/logger';
+
+/**
+ * Convert the stored SPKI DER base64url VAPID public key to the raw uncompressed
+ * EC point (04 || x || y, 65 bytes base64url) required by PushManager.subscribe().
+ */
+function getVapidPublicKeyRaw(): string {
+  const publicKeyObj = createPublicKey({
+    key: Buffer.from(config.vapidPublicKey, 'base64url'),
+    format: 'der',
+    type: 'spki',
+  });
+  const jwk = publicKeyObj.export({ format: 'jwk' }) as { x: string; y: string };
+  const raw = Buffer.concat([
+    Buffer.from([0x04]),
+    Buffer.from(jwk.x, 'base64url'),
+    Buffer.from(jwk.y, 'base64url'),
+  ]);
+  return raw.toString('base64url');
+}
 
 const router = Router();
 
@@ -42,9 +63,11 @@ router.get('/stream', authenticateSse, (req: AuthRequest, res) => {
   notificationManager.connect(userId, res);
 });
 
-// Public: return VAPID public key for client-side push subscription
+// Public: return VAPID public key for client-side push subscription.
+// Returns the raw uncompressed EC point (04 || x || y, 65 bytes base64url) as required
+// by PushManager.subscribe({ applicationServerKey }).
 router.get('/public-key', (_req, res) => {
-  res.json({ publicKey: config.vapidPublicKey });
+  res.json({ publicKey: getVapidPublicKeyRaw() });
 });
 
 const subscribeSchema = z.object({
@@ -72,9 +95,7 @@ router.delete('/subscribe', authenticate, validate(unsubscribeSchema), async (re
   const userId = getUserId(req);
   const { endpoint } = req.body as z.infer<typeof unsubscribeSchema>;
 
-  const existing = await import('../lib/db').then((m) =>
-    m.default.pushSubscription.findFirst({ where: { userId, endpoint } }),
-  );
+  const existing = await prisma.pushSubscription.findFirst({ where: { userId, endpoint } });
 
   if (!existing) {
     res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Subscription not found' } });

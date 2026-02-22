@@ -19,7 +19,7 @@
 }
 
 .actionBtn {
-  min-height: 2.75rem;
+  min-height: 3rem;
   padding: 0 1.25rem;
   background-color: var(--primary);
   color: var(--primary-fg, #fff);
@@ -37,7 +37,7 @@
 }
 
 .actionBtnSecondary {
-  min-height: 2.75rem;
+  min-height: 3rem;
   padding: 0 1.25rem;
   background-color: var(--bg);
   color: var(--text);

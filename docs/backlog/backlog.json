@@ -45,8 +45,8 @@
   {
     "id": "081",
     "title": "Push Notifications (Service Worker)",
-    "status": "backlog",
-    "description": "Add push notifications via Web Push API so users get notified even when the app is in the background. Requires VAPID key generation, subscription management (store push subscriptions in DB), and service worker push event handler. Builds on top of ticket 080 (SSE + Toast) — reuse the same notification events but deliver via push when user is offline/backgrounded. Scope: VAPID setup, PushSubscription CRUD endpoint, sw.js push handler, opt-in UI."
+    "status": "in-progress",
+    "description": "Add push notifications via Web Push API so users get notified even when the app is in the background. Requires VAPID key generation, subscription management (store push subscriptions in DB), and service worker push event handler. Builds on top of ticket 080 (SSE + Toast) — reuse the same notification events but deliver via push when user is offline/backgrounded. Scope: VAPID setup, PushSubscription CRUD endpoint, sw.js push handler, opt-in UI. CONSTRAINT: Do not add any npm dependencies — implement everything using built-in Node.js crypto and native Web Push APIs."
   },
   {
     "id": "077",
@@ -562,5 +562,33 @@
     "status": "backlog",
     "priority": "medium",
     "description": "workout-feed-events.test.ts is flaky - sometimes returns 404 on POST /api/workouts during parallel test execution (likely a race condition in test setup). Second run passes. Investigate and fix test isolation."
+  },
+  {
+    "id": "093",
+    "title": "Fix VAPID public key format: /public-key endpoint should return raw EC point (65 bytes base64url) not SPKI DER (91 bytes) — browser PushManager.subscribe() rejects SPKI",
+    "status": "backlog",
+    "priority": "high",
+    "description": "The GET /api/notifications/public-key endpoint returns the SPKI DER base64url (91 bytes) of the VAPID public key, but the Web Push API specification requires the applicationServerKey passed to PushManager.subscribe() to be the raw uncompressed EC point (65 bytes, 04||x||y). Real browsers will throw InvalidAccessError. The fix is to return the raw EC point from the endpoint, or convert it in the frontend. The E2E tests do not catch this because the mock subscribe() ignores the opts parameter entirely."
+  },
+  {
+    "id": "094",
+    "title": "Fix pushSubscribeResponseSchema mismatch: backend POST /subscribe returns { ok: true } but frontend schema expects { id, userId, endpoint, createdAt } causing ZodError on enable",
+    "status": "backlog",
+    "priority": "high",
+    "description": "The pushSubscribeResponseSchema in frontend/src/api/schemas.ts defines { id, userId, endpoint, createdAt } but the actual backend response is { ok: true }. When subscribePush() calls pushSubscribeResponseSchema.parse(data), it throws a ZodError even on a successful 201 response. This propagates to handleEnable catch block and shows 'Failed to enable notifications' to the user. Fix: change the schema to z.object({ ok: z.boolean() }) to match the actual API, or change the backend to return the created subscription record."
+  },
+  {
+    "id": "095",
+    "title": "Add push_subscriptions table to docs/db-schema.md",
+    "status": "backlog",
+    "priority": "low",
+    "description": "The push_subscriptions table added in migration 20260222155927_add_push_subscriptions is not documented in docs/db-schema.md. Add an entry: push_subscriptions: id, user_id (FK users CASCADE), endpoint (TEXT), p256dh (TEXT), auth (TEXT), created_at. Unique: (user_id, endpoint)."
+  },
+  {
+    "id": "096",
+    "title": "Push notification button touch targets use 2.75rem instead of project-standard 3rem",
+    "status": "backlog",
+    "priority": "low",
+    "description": "PushNotificationSettings.module.css .actionBtn and .actionBtnSecondary use min-height: 2.75rem (44px at 16px base), but all other interactive elements in the project use min-height: 3rem per CLAUDE.md convention ('All interactive elements min 44px (3rem)'). Additionally 2.75rem is not on the 8-point grid (should be 2.5rem or 3rem). Update both button classes to use 3rem."
   }
 ]
