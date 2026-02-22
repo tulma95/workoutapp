@@ -528,25 +528,13 @@ export async function completeWorkout(workoutId: number, userId: number) {
         .map((w) => w.completedAt!.toISOString().slice(0, 10));
       const streak = calculateStreak(dates);
       const STREAK_MILESTONES = [7, 14, 30, 60, 90];
-      for (const threshold of STREAK_MILESTONES) {
-        if (streak >= threshold) {
-          const existing = await tx.feedEvent.findFirst({
-            where: {
-              userId,
-              eventType: 'streak_milestone',
-              payload: { path: ['days'], equals: threshold },
-            },
-          });
-          if (!existing) {
-            await tx.feedEvent.create({
-              data: {
-                userId,
-                eventType: 'streak_milestone',
-                payload: { days: threshold },
-              },
-            });
-          }
-        }
+      const milestoneData = STREAK_MILESTONES.filter((t) => streak >= t).map((threshold) => ({
+        userId,
+        eventType: 'streak_milestone' as const,
+        payload: { days: threshold },
+      }));
+      if (milestoneData.length > 0) {
+        await tx.feedEvent.createMany({ data: milestoneData, skipDuplicates: true });
       }
 
       const newAchievements = await checkAndUnlockAchievements(tx, userId, workoutId, setsForAchievements);
@@ -624,25 +612,13 @@ export async function completeWorkout(workoutId: number, userId: number) {
       .map((w) => w.completedAt!.toISOString().slice(0, 10));
     const streak = calculateStreak(dates);
     const STREAK_MILESTONES = [7, 14, 30, 60, 90];
-    for (const threshold of STREAK_MILESTONES) {
-      if (streak >= threshold) {
-        const existing = await tx.feedEvent.findFirst({
-          where: {
-            userId,
-            eventType: 'streak_milestone',
-            payload: { path: ['days'], equals: threshold },
-          },
-        });
-        if (!existing) {
-          await tx.feedEvent.create({
-            data: {
-              userId,
-              eventType: 'streak_milestone',
-              payload: { days: threshold },
-            },
-          });
-        }
-      }
+    const milestoneData = STREAK_MILESTONES.filter((t) => streak >= t).map((threshold) => ({
+      userId,
+      eventType: 'streak_milestone' as const,
+      payload: { days: threshold },
+    }));
+    if (milestoneData.length > 0) {
+      await tx.feedEvent.createMany({ data: milestoneData, skipDuplicates: true });
     }
 
     const newAchievements = await checkAndUnlockAchievements(tx, userId, workoutId, noPlansetsForAchievements);
@@ -831,25 +807,13 @@ export async function createCustomWorkout(userId: number, payload: CustomWorkout
       .map((cw) => cw.completedAt!.toISOString().slice(0, 10));
     const streak = calculateStreak(dates);
     const STREAK_MILESTONES = [7, 14, 30, 60, 90];
-    for (const threshold of STREAK_MILESTONES) {
-      if (streak >= threshold) {
-        const existing = await tx.feedEvent.findFirst({
-          where: {
-            userId,
-            eventType: 'streak_milestone',
-            payload: { path: ['days'], equals: threshold },
-          },
-        });
-        if (!existing) {
-          await tx.feedEvent.create({
-            data: {
-              userId,
-              eventType: 'streak_milestone',
-              payload: { days: threshold },
-            },
-          });
-        }
-      }
+    const milestoneData = STREAK_MILESTONES.filter((t) => streak >= t).map((threshold) => ({
+      userId,
+      eventType: 'streak_milestone' as const,
+      payload: { days: threshold },
+    }));
+    if (milestoneData.length > 0) {
+      await tx.feedEvent.createMany({ data: milestoneData, skipDuplicates: true });
     }
 
     const newAchievements = await checkAndUnlockAchievements(tx, userId, w.id, setsForAchievements);

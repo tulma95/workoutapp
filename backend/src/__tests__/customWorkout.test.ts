@@ -265,3 +265,34 @@ describe('Custom workout streak_milestone', () => {
     expect(events.length).toBe(1);
   });
 });
+
+describe('streak_milestone DB-level uniqueness (partial index)', () => {
+  it('createMany with skipDuplicates does not create duplicate streak_milestone for same user+days', async () => {
+    const uid3 = randomUUID().slice(0, 8);
+    const regRes = await request(app).post('/api/auth/register').send({
+      email: `streak-dedup-db-${uid3}@example.com`,
+      password: 'password123',
+      username: `streak_dedup_db_${uid3}`,
+    });
+    const userId = regRes.body.user.id as number;
+
+    // Insert the same streak_milestone twice via createMany + skipDuplicates
+    await prisma.feedEvent.createMany({
+      data: [
+        { userId, eventType: 'streak_milestone', payload: { days: 7 } },
+        { userId, eventType: 'streak_milestone', payload: { days: 7 } },
+      ],
+      skipDuplicates: true,
+    });
+
+    const events = await prisma.feedEvent.findMany({
+      where: {
+        userId,
+        eventType: 'streak_milestone',
+        payload: { path: ['days'], equals: 7 },
+      },
+    });
+
+    expect(events.length).toBe(1);
+  });
+});
