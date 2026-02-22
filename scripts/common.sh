@@ -2,6 +2,12 @@
 
 # Common shell helpers for treenisofta project
 
+# Shared test environment config
+TEST_DB_URL="postgresql://treenisofta:treenisofta_dev@localhost:5433/treenisofta_test"
+TEST_JWT_SECRET="test-jwt-secret-do-not-use-in-production"
+TEST_VAPID_PUBLIC_KEY="MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEPUj21WptYZO85SRcSI1zDiwhatAMxOp786i8jcFbYHW4zrE5ufqRTls3RXWWynpKf8Antn8yCB9HE8DSxeyVrw"
+TEST_VAPID_PRIVATE_KEY="MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgLCOEV2Iyfm1d18dea_QPg3plCbyxIbGZMqqOfRbN246hRANCAAQ9SPbVam1hk7zlJFxIjXMOLCFq0AzE6nvzqLyNwVtgdbjOsTm5-pFOWzdFdZbKekp_wCe2fzIIH0cTwNLF7JWv"
+
 # Ensures npm dependencies are up-to-date based on package-lock.json checksum
 # If package-lock.json changed or node_modules is missing, runs npm install
 ensure_dependencies() {

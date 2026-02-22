@@ -10,8 +10,6 @@ IMAGE_NAME="ghcr.io/$GHCR_USER/treenisofta"
 IMAGE_TAG="$(git rev-parse --short HEAD)"
 FULL_TAG="$IMAGE_NAME:$IMAGE_TAG"
 COMPOSE_FILE="$PROJECT_ROOT/docker-compose.test.yml"
-TEST_DB_URL="postgresql://treenisofta:treenisofta_dev@localhost:5433/treenisofta_test"
-TEST_JWT_SECRET="test-jwt-secret-do-not-use-in-production"
 
 cleanup() {
   echo "Cleaning up..."
@@ -40,8 +38,8 @@ run_backend_tests() {
   JWT_SECRET="$TEST_JWT_SECRET" \
   PORT=3001 \
   NODE_ENV=test \
-  VAPID_PUBLIC_KEY="MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEPUj21WptYZO85SRcSI1zDiwhatAMxOp786i8jcFbYHW4zrE5ufqRTls3RXWWynpKf8Antn8yCB9HE8DSxeyVrw" \
-  VAPID_PRIVATE_KEY="MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgLCOEV2Iyfm1d18dea_QPg3plCbyxIbGZMqqOfRbN246hRANCAAQ9SPbVam1hk7zlJFxIjXMOLCFq0AzE6nvzqLyNwVtgdbjOsTm5-pFOWzdFdZbKekp_wCe2fzIIH0cTwNLF7JWv" \
+  VAPID_PUBLIC_KEY="$TEST_VAPID_PUBLIC_KEY" \
+  VAPID_PRIVATE_KEY="$TEST_VAPID_PRIVATE_KEY" \
   npx vitest run
 
   echo "Backend tests passed."
