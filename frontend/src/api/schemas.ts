@@ -338,6 +338,27 @@ export const ReactResponseSchema = z.object({
   count: z.number(),
 });
 
+export const FeedEventCommentSchema = z.object({
+  id: z.number(),
+  feedEventId: z.number(),
+  userId: z.number(),
+  username: z.string(),
+  text: z.string(),
+  createdAt: z.string(),
+});
+
+export const CommentsResponseSchema = z.object({
+  comments: z.array(FeedEventCommentSchema),
+});
+
+export const CreateCommentResponseSchema = z.object({
+  id: z.number(),
+  feedEventId: z.number(),
+  userId: z.number(),
+  text: z.string(),
+  createdAt: z.string(),
+});
+
 export const FeedEventSchema = z.object({
   id: z.number(),
   userId: z.number(),
@@ -387,6 +408,9 @@ export type FeedEventPayload = z.infer<typeof FeedEventPayloadSchema>;
 export type FeedEvent = z.infer<typeof FeedEventSchema>;
 export type FeedReaction = z.infer<typeof FeedReactionSchema>;
 export type ReactResponse = z.infer<typeof ReactResponseSchema>;
+export type FeedEventComment = z.infer<typeof FeedEventCommentSchema>;
+export type CommentsResponse = z.infer<typeof CommentsResponseSchema>;
+export type CreateCommentResponse = z.infer<typeof CreateCommentResponseSchema>;
 export type LeaderboardRanking = z.infer<typeof LeaderboardRankingSchema>;
 export type LeaderboardExercise = z.infer<typeof LeaderboardExerciseSchema>;
 export type LeaderboardResponse = z.infer<typeof LeaderboardResponseSchema>;
@@ -396,7 +420,7 @@ export type AchievementsResponse = z.infer<typeof AchievementsResponseSchema>;
 
 // Notification SSE schemas
 export const notificationEventSchema = z.object({
-  type: z.enum(['workout_completed', 'achievement_earned', 'friend_request_accepted']),
+  type: z.enum(['workout_completed', 'achievement_earned', 'friend_request_accepted', 'comment_received']),
   message: z.string(),
 });
 

@@ -65,6 +65,15 @@ const reactSchema = z.object({
   emoji: z.enum(['🔥', '👏', '💀', '💪', '🤙']),
 });
 
+const commentSchema = z.object({
+  text: z
+    .string()
+    .min(1)
+    .max(500)
+    .transform((s) => s.trim())
+    .refine((s) => s.length >= 1, { message: 'Comment cannot be empty after trimming' }),
+});
+
 router.post('/request', validate(requestSchema), async (req: AuthRequest, res: Response) => {
   const callerId = getUserId(req);
   const { email, username } = req.body as { email?: string; username?: string };
@@ -621,6 +630,128 @@ router.get('/leaderboard', async (req: AuthRequest, res: Response) => {
   }
 
   res.json({ exercises });
+});
+
+router.post('/feed/:eventId/comments', validate(commentSchema), async (req: AuthRequest, res: Response) => {
+  const userId = getUserId(req);
+  const eventId = parseInt(req.params.eventId as string, 10);
+  if (isNaN(eventId)) {
+    res.status(400).json({ error: { code: 'INVALID_ID', message: 'Invalid event ID' } });
+    return;
+  }
+
+  const { text } = req.body as { text: string };
+
+  const event = await prisma.feedEvent.findUnique({ where: { id: eventId } });
+  if (!event) {
+    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Feed event not found' } });
+    return;
+  }
+
+  const friendIds = await getAcceptedFriendIds(userId);
+  if (!friendIds.includes(event.userId)) {
+    res.status(403).json({ error: { code: 'FORBIDDEN', message: 'Not a friend of the event owner' } });
+    return;
+  }
+
+  const comment = await prisma.feedEventComment.create({
+    data: { feedEventId: eventId, userId, text },
+  });
+
+  if (userId !== event.userId) {
+    const commenter = await prisma.user.findUnique({ where: { id: userId }, select: { username: true } });
+    const commenterUsername = commenter?.username ?? 'Someone';
+    notificationManager.notifyUser(event.userId, {
+      type: 'comment_received',
+      message: `${commenterUsername} commented on your activity`,
+    });
+    void pushService.sendToUser(
+      event.userId,
+      JSON.stringify({ type: 'comment_received', message: `${commenterUsername} commented on your activity` }),
+    );
+  }
+
+  res.status(201).json({
+    id: comment.id,
+    feedEventId: comment.feedEventId,
+    userId: comment.userId,
+    text: comment.text,
+    createdAt: comment.createdAt,
+  });
+});
+
+router.get('/feed/:eventId/comments', async (req: AuthRequest, res: Response) => {
+  const userId = getUserId(req);
+  const eventId = parseInt(req.params.eventId as string, 10);
+  if (isNaN(eventId)) {
+    res.status(400).json({ error: { code: 'INVALID_ID', message: 'Invalid event ID' } });
+    return;
+  }
+
+  const event = await prisma.feedEvent.findUnique({ where: { id: eventId } });
+  if (!event) {
+    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Feed event not found' } });
+    return;
+  }
+
+  const friendIds = await getAcceptedFriendIds(userId);
+  if (!friendIds.includes(event.userId)) {
+    res.status(403).json({ error: { code: 'FORBIDDEN', message: 'Not a friend of the event owner' } });
+    return;
+  }
+
+  const comments = await prisma.feedEventComment.findMany({
+    where: { feedEventId: eventId },
+    orderBy: { createdAt: 'asc' },
+    include: { user: { select: { id: true, username: true } } },
+  });
+
+  res.json({
+    comments: comments.map((c) => ({
+      id: c.id,
+      feedEventId: c.feedEventId,
+      userId: c.userId,
+      username: c.user.username,
+      text: c.text,
+      createdAt: c.createdAt,
+    })),
+  });
+});
+
+router.delete('/feed/:eventId/comments/:commentId', async (req: AuthRequest, res: Response) => {
+  const userId = getUserId(req);
+  const eventId = parseInt(req.params.eventId as string, 10);
+  const commentId = parseInt(req.params.commentId as string, 10);
+
+  if (isNaN(eventId) || isNaN(commentId)) {
+    res.status(400).json({ error: { code: 'INVALID_ID', message: 'Invalid ID' } });
+    return;
+  }
+
+  const event = await prisma.feedEvent.findUnique({ where: { id: eventId } });
+  if (!event) {
+    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Feed event not found' } });
+    return;
+  }
+
+  const comment = await prisma.feedEventComment.findUnique({
+    where: { id: commentId },
+  });
+  if (!comment || comment.feedEventId !== eventId) {
+    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Comment not found' } });
+    return;
+  }
+
+  const isAuthor = userId === comment.userId;
+  const isEventOwner = userId === event.userId;
+  if (!isAuthor && !isEventOwner) {
+    res.status(403).json({ error: { code: 'FORBIDDEN', message: 'Not authorized to delete this comment' } });
+    return;
+  }
+
+  await prisma.feedEventComment.delete({ where: { id: commentId } });
+
+  res.json({ id: commentId });
 });
 
 export default router;

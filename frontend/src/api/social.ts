@@ -6,6 +6,8 @@ import {
   LeaderboardResponseSchema,
   ReactResponseSchema,
   UserSearchResponseSchema,
+  CommentsResponseSchema,
+  CreateCommentResponseSchema,
 } from './schemas';
 export type {
   Friend,
@@ -19,6 +21,9 @@ export type {
   LeaderboardResponse,
   UserSearchResult,
   UserSearchResponse,
+  FeedEventComment,
+  CommentsResponse,
+  CreateCommentResponse,
 } from './schemas';
 
 export async function sendFriendRequest(email: string): Promise<void> {
@@ -83,4 +88,21 @@ export async function toggleReaction(eventId: number, emoji: string): Promise<ty
     body: JSON.stringify({ emoji }),
   });
   return ReactResponseSchema.parse(data);
+}
+
+export async function getComments(eventId: number): Promise<typeof CommentsResponseSchema._output> {
+  const data = await apiFetch(`/social/feed/${eventId}/comments`);
+  return CommentsResponseSchema.parse(data);
+}
+
+export async function createComment(eventId: number, text: string): Promise<typeof CreateCommentResponseSchema._output> {
+  const data = await apiFetch(`/social/feed/${eventId}/comments`, {
+    method: 'POST',
+    body: JSON.stringify({ text }),
+  });
+  return CreateCommentResponseSchema.parse(data);
+}
+
+export async function deleteComment(eventId: number, commentId: number): Promise<void> {
+  await apiFetch(`/social/feed/${eventId}/comments/${commentId}`, { method: 'DELETE' });
 }
