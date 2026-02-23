@@ -404,6 +404,22 @@ router.get('/feed', async (req: AuthRequest, res: Response) => {
     commentCountMap.set(c.feedEventId, c._count._all);
   }
 
+  // Batch-fetch all comments for visible events, then slice to last 2 per event in memory
+  const allComments = await prisma.feedEventComment.findMany({
+    where: { feedEventId: { in: eventIds } },
+    orderBy: { createdAt: 'asc' },
+    include: { user: { select: { id: true, username: true } } },
+  });
+  const commentsMap = new Map<number, typeof allComments>();
+  for (const c of allComments) {
+    const existing = commentsMap.get(c.feedEventId);
+    if (existing) {
+      existing.push(c);
+    } else {
+      commentsMap.set(c.feedEventId, [c]);
+    }
+  }
+
   const result = events.map((e) => {
     // Collect all unique emojis for this event from the already-built reactionMap
     const prefix = `${e.id}:`;
@@ -415,6 +431,15 @@ router.get('/feed', async (req: AuthRequest, res: Response) => {
         reactedByMe: group.reactedByMe,
       }));
 
+    const latestComments = (commentsMap.get(e.id) ?? []).slice(-2).map((c) => ({
+      id: c.id,
+      feedEventId: c.feedEventId,
+      userId: c.userId,
+      username: c.user.username,
+      text: c.text,
+      createdAt: c.createdAt,
+    }));
+
     return {
       id: e.id,
       userId: e.userId,
@@ -425,6 +450,7 @@ router.get('/feed', async (req: AuthRequest, res: Response) => {
       reactions,
       streak: streakMap.get(e.userId) ?? 0,
       commentCount: commentCountMap.get(e.id) ?? 0,
+      latestComments,
     };
   });
 

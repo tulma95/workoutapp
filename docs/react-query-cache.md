@@ -16,7 +16,7 @@
 | `['admin-plans']` | All plans (admin) | PlanListPage |
 | `['progress']` | All exercises with current TMs and TM history | ProgressPage |
 | `['achievements']` | All achievement badges with locked/unlocked state for the current user | AchievementsPage |
-| `['social', 'feed']` | Last 20 feed events from confirmed friends (includes `streak` per event owner) | SocialPage (FeedTab) |
+| `['social', 'feed']` | Last 20 feed events from confirmed friends (includes `streak` per event owner, and `latestComments`: last 2 comments per event) | SocialPage (FeedTab) |
 | `['social', 'friends']` | Accepted friends list (includes `streak` per friend) | SocialPage (FriendsTab) |
 | `['social', 'friend-requests']` | Pending incoming friend requests | SocialPage (FriendsTab) |
 | `['social', 'leaderboard']` | TM rankings per exercise across friends | SocialPage (LeaderboardTab) |
@@ -44,8 +44,8 @@
 | **Remove friend** | FriendsTab.tsx | `['social', 'friends']`, `['social', 'leaderboard']` |
 | **Send friend request** | FriendsTab.tsx | none (inline success message only) |
 | **Toggle feed reaction** | ReactionBar.tsx | `['social', 'feed']` (via `invalidateQueries` in `onSettled`) |
-| **Create comment** | CommentSection.tsx | `['social', 'feed', eventId, 'comments']`, `['social', 'feed']` (to update commentCount) |
-| **Delete comment** | CommentSection.tsx | `['social', 'feed', eventId, 'comments']`, `['social', 'feed']` (to update commentCount) |
+| **Create comment** | CommentSection.tsx | `['social', 'feed', eventId, 'comments']`, `['social', 'feed']` (to update commentCount and latestComments) |
+| **Delete comment** | CommentSection.tsx | `['social', 'feed', eventId, 'comments']`, `['social', 'feed']` (to update commentCount and latestComments) |
 
 ## Page Data Dependencies
 

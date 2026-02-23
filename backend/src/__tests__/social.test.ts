@@ -356,6 +356,89 @@ describe('Social API', () => {
       expect(event.eventType).toBe('workout_completed');
       expect(event.payload).toHaveProperty('workoutId');
     });
+
+    it('feed events include latestComments (last 2, chronological order)', async () => {
+      // Create a fresh event for latestComments test
+      const uidLC = randomUUID().slice(0, 8);
+      const resLcA = await request(app).post('/api/auth/register').send({
+        email: `lc-a-${uidLC}@example.com`,
+        password: 'password123',
+        username: `lc_a_${uidLC}`,
+      });
+      const tokenLcA = resLcA.body.accessToken;
+      const userIdLcA = resLcA.body.user.id;
+
+      const resLcB = await request(app).post('/api/auth/register').send({
+        email: `lc-b-${uidLC}@example.com`,
+        password: 'password123',
+        username: `lc_b_${uidLC}`,
+      });
+      const tokenLcB = resLcB.body.accessToken;
+
+      // Make A and B friends
+      const reqRes = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenLcA}`)
+        .send({ email: `lc-b-${uidLC}@example.com` });
+      await request(app)
+        .patch(`/api/social/requests/${reqRes.body.id}/accept`)
+        .set('Authorization', `Bearer ${tokenLcB}`);
+
+      // Create a feed event for A
+      const feedEvent = await prisma.feedEvent.create({
+        data: {
+          userId: userIdLcA,
+          eventType: 'workout_completed',
+          payload: { workoutId: 5000, dayNumber: 1 },
+        },
+      });
+
+      // Post 3 comments (B, A, B) — feed should return last 2
+      await request(app)
+        .post(`/api/social/feed/${feedEvent.id}/comments`)
+        .set('Authorization', `Bearer ${tokenLcB}`)
+        .send({ text: 'first comment' });
+      await request(app)
+        .post(`/api/social/feed/${feedEvent.id}/comments`)
+        .set('Authorization', `Bearer ${tokenLcA}`)
+        .send({ text: 'second comment' });
+      await request(app)
+        .post(`/api/social/feed/${feedEvent.id}/comments`)
+        .set('Authorization', `Bearer ${tokenLcB}`)
+        .send({ text: 'third comment' });
+
+      const res = await request(app)
+        .get('/api/social/feed')
+        .set('Authorization', `Bearer ${tokenLcA}`);
+      expect(res.status).toBe(200);
+
+      const event = res.body.events.find((e: { id: number }) => e.id === feedEvent.id);
+      expect(event).toBeDefined();
+      expect(event.commentCount).toBe(3);
+      expect(Array.isArray(event.latestComments)).toBe(true);
+      expect(event.latestComments).toHaveLength(2);
+      // Should be the last 2 comments in chronological order (oldest first)
+      expect(event.latestComments[0].text).toBe('second comment');
+      expect(event.latestComments[1].text).toBe('third comment');
+      // Check shape: id, feedEventId, userId, username, text, createdAt
+      expect(typeof event.latestComments[0].id).toBe('number');
+      expect(event.latestComments[0].feedEventId).toBe(feedEvent.id);
+      expect(typeof event.latestComments[0].username).toBe('string');
+    });
+
+    it('feed events with no comments have empty latestComments array', async () => {
+      const res = await request(app)
+        .get('/api/social/feed')
+        .set('Authorization', `Bearer ${tokenFeedC}`);
+      expect(res.status).toBe(200);
+      // C's own event (workoutId: 998) has no comments
+      const event = res.body.events.find(
+        (e: { payload: { workoutId: number } }) => e.payload.workoutId === 998
+      );
+      expect(event).toBeDefined();
+      expect(Array.isArray(event.latestComments)).toBe(true);
+      expect(event.latestComments).toHaveLength(0);
+    });
   });
 
   describe('Feed reactions', () => {
