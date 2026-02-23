@@ -53,6 +53,7 @@ export function CommentSection({
     queryFn: () => getComments(eventId),
     enabled: expanded,
     initialData: latestComments !== undefined ? { comments: latestComments } : undefined,
+    initialDataUpdatedAt: 0,
   });
 
   const createMutation = useMutation({
