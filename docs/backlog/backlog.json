@@ -342,12 +342,5 @@
     "status": "backlog",
     "priority": "low",
     "description": "SocialContent.tsx and its CSS are no longer imported after the social sub-route refactor in ticket 108. Delete the file."
-  },
-  {
-    "id": "117",
-    "title": "Fix webkit E2E strict mode violations in social tests",
-    "status": "backlog",
-    "priority": "medium",
-    "description": "getByText regex matches display name AND toast notification simultaneously in webkit, causing 14 webkit-only E2E test failures across social.spec.ts, social-username.spec.ts, feed-comments.spec.ts, feed-new-events.spec.ts, feed-reactions.spec.ts. Need to scope getByText calls more precisely."
   }
 ]
