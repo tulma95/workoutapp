@@ -6,10 +6,12 @@ interface CommentModalProps {
   open: boolean;
   eventId: number;
   eventOwnerId: number;
+  commentCount: number;
+  currentUserId: number;
   onClose: () => void;
 }
 
-export function CommentModal({ open, eventId, eventOwnerId, onClose }: CommentModalProps) {
+export function CommentModal({ open, eventId, eventOwnerId, commentCount, currentUserId, onClose }: CommentModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -52,7 +54,7 @@ export function CommentModal({ open, eventId, eventOwnerId, onClose }: CommentMo
             ✕
           </button>
         </div>
-        <CommentSection eventId={eventId} eventOwnerId={eventOwnerId} />
+        <CommentSection eventId={eventId} eventOwnerId={eventOwnerId} commentCount={commentCount} currentUserId={currentUserId} />
       </div>
     </dialog>
   );

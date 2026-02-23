@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getComments, createComment, deleteComment } from '../api/social';
-import type { FeedEventComment } from '../api/social';
+import type { FeedEventComment, CommentsResponse } from '../api/social';
 import type { User } from '../api/schemas';
 import styles from './CommentSection.module.css';
 
 interface CommentSectionProps {
   eventId: number;
+  commentCount: number;
   eventOwnerId: number;
+  currentUserId: number;
+  latestComments?: FeedEventComment[];
+  inputRef?: React.RefObject<HTMLInputElement>;
 }
 
 function formatRelativeTime(createdAt: string): string {
@@ -21,42 +25,83 @@ function formatRelativeTime(createdAt: string): string {
   return `${days}d ago`;
 }
 
-export function CommentSection({ eventId, eventOwnerId }: CommentSectionProps) {
+export function CommentSection({
+  eventId,
+  commentCount,
+  eventOwnerId,
+  currentUserId,
+  latestComments,
+  inputRef,
+}: CommentSectionProps) {
   const queryClient = useQueryClient();
   const [text, setText] = useState('');
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
 
   const currentUser = queryClient.getQueryData<User>(['user', 'me']);
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isFetching, isError } = useQuery({
     queryKey: ['social', 'feed', eventId, 'comments'],
     queryFn: () => getComments(eventId),
+    enabled: expanded,
+    initialData: latestComments !== undefined ? { comments: latestComments } : undefined,
   });
 
   const createMutation = useMutation({
     mutationFn: (commentText: string) => createComment(eventId, commentText),
+    onMutate: async (commentText) => {
+      await queryClient.cancelQueries({ queryKey: ['social', 'feed', eventId, 'comments'] });
+      const previous = queryClient.getQueryData<CommentsResponse>(['social', 'feed', eventId, 'comments']);
+      const optimisticComment: FeedEventComment = {
+        id: -Date.now(),
+        feedEventId: eventId,
+        userId: currentUserId,
+        username: currentUser?.username ?? '',
+        text: commentText,
+        createdAt: new Date().toISOString(),
+      };
+      queryClient.setQueryData<CommentsResponse>(['social', 'feed', eventId, 'comments'], (old) => ({
+        comments: [...(old?.comments ?? []), optimisticComment],
+      }));
+      setText('');
+      return { previous };
+    },
     onSuccess: () => {
+      setSubmitError(null);
       void queryClient.invalidateQueries({ queryKey: ['social', 'feed', eventId, 'comments'] });
       void queryClient.invalidateQueries({ queryKey: ['social', 'feed'] });
-      setText('');
-      setSubmitError(null);
     },
-    onError: (err) => {
-      setSubmitError(err instanceof Error ? err.message : 'Failed to post comment');
+    onError: (_err, _vars, context) => {
+      if (context?.previous !== undefined) {
+        queryClient.setQueryData(['social', 'feed', eventId, 'comments'], context.previous);
+      }
+      setSubmitError('Failed to post comment');
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (commentId: number) => deleteComment(eventId, commentId),
+    onMutate: async (commentId) => {
+      await queryClient.cancelQueries({ queryKey: ['social', 'feed', eventId, 'comments'] });
+      const previous = queryClient.getQueryData<CommentsResponse>(['social', 'feed', eventId, 'comments']);
+      queryClient.setQueryData<CommentsResponse>(['social', 'feed', eventId, 'comments'], (old) => ({
+        comments: (old?.comments ?? []).filter((c) => c.id !== commentId),
+      }));
+      return { previous };
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['social', 'feed', eventId, 'comments'] });
       void queryClient.invalidateQueries({ queryKey: ['social', 'feed'] });
     },
+    onError: (_err, _vars, context) => {
+      if (context?.previous !== undefined) {
+        queryClient.setQueryData(['social', 'feed', eventId, 'comments'], context.previous);
+      }
+    },
   });
 
   const canDelete = (comment: FeedEventComment) => {
-    if (!currentUser) return false;
-    return comment.userId === currentUser.id || eventOwnerId === currentUser.id;
+    return comment.userId === currentUserId || eventOwnerId === currentUserId;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -66,20 +111,28 @@ export function CommentSection({ eventId, eventOwnerId }: CommentSectionProps) {
     createMutation.mutate(trimmed);
   };
 
+  const visibleComments = data?.comments ?? [];
+
   return (
     <div className={styles.commentSection}>
-      {isLoading && (
-        <p className={styles.statusText}>Loading comments...</p>
+      {commentCount > 2 && !expanded && (
+        <button
+          type="button"
+          className={styles.viewAllBtn}
+          onClick={() => setExpanded(true)}
+        >
+          View all {commentCount} comments
+        </button>
       )}
       {isError && (
         <p className={styles.errorText} role="alert">Failed to load comments</p>
       )}
-      {!isLoading && !isError && (
+      {expanded && !data && isFetching && (
+        <p className={styles.statusText}>Loading comments...</p>
+      )}
+      {visibleComments.length > 0 && (
         <ul className={styles.commentList} aria-label="Comments">
-          {(data?.comments ?? []).length === 0 && (
-            <li className={styles.emptyText}>No comments yet</li>
-          )}
-          {(data?.comments ?? []).map((comment) => (
+          {visibleComments.map((comment) => (
             <li key={comment.id} className={styles.commentItem}>
               <div className={styles.commentHeader}>
                 <span className={styles.commentUsername}>{comment.username}</span>
@@ -112,14 +165,15 @@ export function CommentSection({ eventId, eventOwnerId }: CommentSectionProps) {
         <label htmlFor={`comment-input-${eventId}`} className={styles.srOnly}>
           Add a comment
         </label>
-        <textarea
+        <input
+          ref={inputRef}
           id={`comment-input-${eventId}`}
+          type="text"
           className={styles.commentInput}
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Add a comment..."
           maxLength={500}
-          rows={2}
         />
         {submitError && (
           <p className={styles.errorText} role="alert">{submitError}</p>

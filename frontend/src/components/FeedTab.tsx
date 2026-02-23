@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getFeed } from '../api/social';
 import type { FeedEvent } from '../api/social';
 import { FeedEventPayloadSchema } from '../api/schemas';
+import type { User } from '../api/schemas';
 import { formatWeight } from '../utils/weight';
 import { SkeletonLine, SkeletonCard } from './Skeleton';
 import { ReactionBar } from './ReactionBar';
@@ -49,6 +50,9 @@ function formatRelativeTime(createdAt: string): string {
 }
 
 export function FeedTab() {
+  const queryClient = useQueryClient();
+  const currentUser = queryClient.getQueryData<User>(['user', 'me']);
+  const currentUserId = currentUser?.id ?? 0;
   const [openCommentEventId, setOpenCommentEventId] = useState<number | null>(null);
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['social', 'feed'],
@@ -128,6 +132,8 @@ export function FeedTab() {
           open={openCommentEventId !== null}
           eventId={openEvent.id}
           eventOwnerId={openEvent.userId}
+          commentCount={openEvent.commentCount}
+          currentUserId={currentUserId}
           onClose={() => setOpenCommentEventId(null)}
         />
       )}
