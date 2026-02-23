@@ -313,5 +313,18 @@
     "status": "done",
     "priority": "low",
     "description": "The db-schema.md feed_events documentation only lists workout_completed and tm_increased as event_type values. Three new event types added in ticket 065 (streak_milestone, badge_unlocked, plan_switched) are not reflected in the doc. Should be updated per CLAUDE.md documentation requirements."
+  },
+  {
+    "id": "112",
+    "title": "workout.service.ts push calls for workout_completed and badge_unlocked are missing url field — navigation from those self-push notifications lands on / instead of /social/feed or /achievements",
+    "status": "done",
+    "priority": "medium",
+    "description": "The workout.service.ts completeWorkout and createCustomWorkout functions call pushService.sendToUser with workout_completed and badge_unlocked payloads that lack a url field. The notificationclick handler in sw.js falls back to / for missing urls. Only the NEW calls added to workouts.ts route handler include the url field. The existing service-layer calls, which fire first for self-notifications, do not."
+  },
+  {
+    "id": "108",
+    "title": "Push notification click navigation",
+    "status": "done",
+    "description": "When a push notification is tapped, navigate the user to the relevant view in the app. Implementation:\n\n1. **Backend**: Add a `url` field to each push notification payload (include `feedEventId` in comment_received payload for deep-linking):\n   - `comment_received` → `/social/feed?event=<feedEventId>` (scroll to and highlight the specific feed event)\n   - `friend_request_received` → `/social/friends`\n   - `friend_request_accepted` → `/social/friends`\n   - `workout_completed` → `/social/feed`\n   - `badge_unlocked` → `/achievements`\n\n2. **Service worker (sw.js)**: Add a `notificationclick` event handler that:\n   - Closes the notification\n   - Reads `data.url` from the notification\n   - If an app window is already open, navigates it and focuses it\n   - Otherwise opens a new window at that URL\n\n3. **Frontend social page**: Convert tabs to proper sub-routes:\n   - Create route files: `social/feed.tsx`, `social/friends.tsx`, `social/leaderboard.tsx`\n   - `/social` redirects to `/social/feed` (default tab)\n   - Tab navigation uses `<Link>` / `<ButtonLink>` for proper anchor tags\n   - `social/feed.tsx` reads optional `?event=<id>` search param via `validateSearch`\n   - When `event` search param is present, scroll to that feed event and highlight it (e.g. brief CSS animation)\n\nBump service worker cache name to `setforge-v3` since behavior changes."
   }
 ]
