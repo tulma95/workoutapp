@@ -1,11 +1,5 @@
 [
   {
-    "id": "116",
-    "title": "Backend route utilities: shared helpers & constants",
-    "status": "backlog",
-    "description": "Unify recurring backend patterns into shared utilities: (1) parseIntParam() helper to eliminate 14 copy-paste ID parsing blocks across workouts, plans, social, and admin routes. (2) Shared Prisma error handling - extract isPrismaError() and P2002 unique constraint field extraction (currently duplicated in auth.ts/users.ts and admin/plans.ts/admin/exercises.ts). (3) Plan detail include constant for the deeply nested days→exercises→sets query used in 4 places. (4) notifyWithPush() helper to consolidate the 5+ notification+push pairs in social.ts and workouts.ts. (5) Shared username regex Zod schema used in auth.ts, users.ts, and social.ts."
-  },
-  {
     "id": "117",
     "title": "Frontend API & query layer cleanup",
     "status": "backlog",
