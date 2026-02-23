@@ -2,7 +2,7 @@
   {
     "id": "117",
     "title": "Add background styling to comments for visual distinction",
-    "status": "backlog",
+    "status": "done",
     "description": "Comments in the feed lack visual separation — they are plain text blocks with only a thin border-bottom between them, making them hard to distinguish from each other and from the surrounding card content.\n\nAdd a subtle background (e.g. slightly tinted var(--bg) or a lighter shade) with rounded corners and padding to each .commentItem, so each comment feels like its own distinct block. This gives immediate visual clarity about where one comment ends and another begins.\n\nReference: CommentSection.module.css .commentItem"
   },
   {
@@ -704,5 +704,12 @@
     "status": "backlog",
     "priority": "low",
     "description": "In react-query-cache.md the invalidation table still refers to 'ReactionBar.tsx' and the query key table says 'CommentSection (inside CommentModal)'. Both components were deleted in ticket 109 — update to ActionRow.tsx and CommentSection.tsx respectively."
+  },
+  {
+    "id": "118",
+    "title": "Flaky E2E: admin-plan-editor unsaved changes warning test",
+    "status": "backlog",
+    "priority": "low",
+    "description": "Test times out on Create Account button click in admin setup phase (webkit, intermittent)"
   }
 ]
