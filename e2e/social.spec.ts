@@ -54,7 +54,7 @@ test.describe('Streak visibility', () => {
       });
       await expect(acceptButton).toBeVisible();
       await acceptButton.click();
-      await expect(pageB.getByText(new RegExp(usernameA))).toBeVisible();
+      await expect(pageB.getByRole('list', { name: /friends list/i }).getByText(new RegExp(usernameA))).toBeVisible();
 
       // Get userB's auth token and an exercise ID
       const tokenB = await pageB.evaluate(() => localStorage.getItem('accessToken'));
@@ -186,7 +186,7 @@ test.describe('Social features', () => {
       await acceptButton.click();
 
       // userA should now appear in userB's confirmed friends list
-      await expect(pageB.getByText(new RegExp(usernameA))).toBeVisible();
+      await expect(pageB.getByRole('list', { name: /friends list/i }).getByText(new RegExp(usernameA))).toBeVisible();
 
       // --- userA completes a workout ---
       await pageA.getByRole('link', { name: /home/i }).click();
@@ -265,7 +265,7 @@ test.describe('Deep-link navigation', () => {
       });
       await expect(acceptButton).toBeVisible();
       await acceptButton.click();
-      await expect(pageB.getByText(new RegExp(usernameA))).toBeVisible();
+      await expect(pageB.getByRole('list', { name: /friends list/i }).getByText(new RegExp(usernameA))).toBeVisible();
 
       // userA completes a workout to create a feed event visible to userB
       await pageA.getByRole('link', { name: /home/i }).click();

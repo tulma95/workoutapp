@@ -36,7 +36,7 @@ async function registerAndSetup(
 
 async function navigateToFriendsTab(page: Page) {
   await page.getByRole('link', { name: /social/i }).click();
-  await page.getByRole('tab', { name: /friends/i }).click();
+  await page.getByRole('link', { name: /friends/i }).click();
 }
 
 async function typeInSearchAndWaitForResults(page: Page, query: string) {
@@ -100,12 +100,12 @@ test.describe('Username: full friend request flow via autocomplete', () => {
       await acceptButton.click();
 
       // userA now sees userB in friends list
-      await expect(pageA.getByText(new RegExp(usernameB))).toBeVisible();
+      await expect(pageA.getByRole('list', { name: /friends list/i }).getByText(new RegExp(usernameB))).toBeVisible();
 
       // userB reloads to get fresh friends list (no real-time updates)
       await pageB.reload();
       await navigateToFriendsTab(pageB);
-      await expect(pageB.getByText(new RegExp(usernameA))).toBeVisible();
+      await expect(pageB.getByRole('list', { name: /friends list/i }).getByText(new RegExp(usernameA))).toBeVisible();
     } finally {
       await ctxA.close();
       await ctxB.close();
@@ -235,7 +235,7 @@ test.describe('Username: search excludes accepted friends', () => {
       });
       await expect(acceptButton).toBeVisible();
       await acceptButton.click();
-      await expect(pageB.getByText(new RegExp(usernameA))).toBeVisible();
+      await expect(pageB.getByRole('list', { name: /friends list/i }).getByText(new RegExp(usernameA))).toBeVisible();
 
       // Now userB searches for userA — should NOT appear (they're friends)
       const searchInput = pageB.getByLabel('Search by username');

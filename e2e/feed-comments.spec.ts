@@ -26,7 +26,7 @@ async function setupFriendship(
   // userA sends friend request to userB
   await pageA.getByRole('link', { name: /social/i }).click();
   await expect(pageA.getByRole('heading', { name: /social/i })).toBeVisible();
-  await pageA.getByRole('tab', { name: /friends/i }).click();
+  await pageA.getByRole('link', { name: /friends/i }).click();
   await pageA.getByRole('button', { name: /send by email/i }).click();
 
   await expect(pageA.getByLabel(/friend's email address/i)).toBeVisible();
@@ -38,14 +38,14 @@ async function setupFriendship(
   // userB accepts
   await pageB.getByRole('link', { name: /social/i }).click();
   await expect(pageB.getByRole('heading', { name: /social/i })).toBeVisible();
-  await pageB.getByRole('tab', { name: /friends/i }).click();
+  await pageB.getByRole('link', { name: /friends/i }).click();
 
   const acceptButton = pageB.getByRole('button', {
     name: `Accept friend request from ${usernameA}`,
   });
   await expect(acceptButton).toBeVisible();
   await acceptButton.click();
-  await expect(pageB.getByText(new RegExp(usernameA))).toBeVisible();
+  await expect(pageB.getByRole('list', { name: /friends list/i }).getByText(new RegExp(usernameA))).toBeVisible();
 }
 
 async function completeWorkoutAsA(pageA: Page) {
@@ -85,7 +85,7 @@ test.describe('Feed comments (inline UI)', () => {
       // B navigates to Social page and then the Feed tab
       await pageB.getByRole('link', { name: /social/i }).click();
       await expect(pageB.getByRole('heading', { name: /social/i })).toBeVisible();
-      await pageB.getByRole('tab', { name: /feed/i }).click();
+      await pageB.getByRole('link', { name: /feed/i }).click();
       await expect(
         pageB.getByText(new RegExp(`${usernameA}.*completed Day`, 'i')),
       ).toBeVisible({ timeout: 10000 });
@@ -115,8 +115,8 @@ test.describe('Feed comments (inline UI)', () => {
       });
 
       // Switch to Friends tab then back to Feed to force refetch (refetchOnMount: 'always')
-      await pageB.getByRole('tab', { name: /friends/i }).click();
-      await pageB.getByRole('tab', { name: /feed/i }).click();
+      await pageB.getByRole('link', { name: /friends/i }).click();
+      await pageB.getByRole('link', { name: /feed/i }).click();
       await expect(
         pageB.getByText(new RegExp(`${usernameA}.*completed Day`, 'i')),
       ).toBeVisible({ timeout: 10000 });
@@ -176,7 +176,7 @@ test.describe('Feed comments (inline UI)', () => {
       // B navigates to Feed and posts a comment on A's event
       await pageB.getByRole('link', { name: /social/i }).click();
       await expect(pageB.getByRole('heading', { name: /social/i })).toBeVisible();
-      await pageB.getByRole('tab', { name: /feed/i }).click();
+      await pageB.getByRole('link', { name: /feed/i }).click();
       await expect(
         pageB.getByText(new RegExp(`${usernameA}.*completed Day`, 'i')),
       ).toBeVisible({ timeout: 10000 });
@@ -190,7 +190,7 @@ test.describe('Feed comments (inline UI)', () => {
       // A navigates to their own Social page Feed tab
       await pageA.getByRole('link', { name: /social/i }).click();
       await expect(pageA.getByRole('heading', { name: /social/i })).toBeVisible();
-      await pageA.getByRole('tab', { name: /feed/i }).click();
+      await pageA.getByRole('link', { name: /feed/i }).click();
       await expect(
         pageA.getByText(new RegExp(`${usernameA}.*completed Day`, 'i')),
       ).toBeVisible({ timeout: 10000 });

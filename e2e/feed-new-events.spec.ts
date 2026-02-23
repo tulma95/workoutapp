@@ -26,7 +26,7 @@ async function sendAndAcceptFriendRequest(
   // userA sends a friend request to userB
   await pageA.getByRole('link', { name: /social/i }).click();
   await expect(pageA.getByRole('heading', { name: /social/i })).toBeVisible();
-  await pageA.getByRole('tab', { name: /friends/i }).click();
+  await pageA.getByRole('link', { name: /friends/i }).click();
   await pageA.getByRole('button', { name: /send by email/i }).click();
   await pageA.getByLabel(/friend's email address/i).fill(emailB);
   await pageA.getByRole('button', { name: /^send$/i }).click();
@@ -35,13 +35,13 @@ async function sendAndAcceptFriendRequest(
   // userB accepts the friend request
   await pageB.getByRole('link', { name: /social/i }).click();
   await expect(pageB.getByRole('heading', { name: /social/i })).toBeVisible();
-  await pageB.getByRole('tab', { name: /friends/i }).click();
+  await pageB.getByRole('link', { name: /friends/i }).click();
   const acceptButton = pageB.getByRole('button', {
     name: `Accept friend request from ${usernameA}`,
   });
   await expect(acceptButton).toBeVisible();
   await acceptButton.click();
-  await expect(pageB.getByText(new RegExp(usernameA))).toBeVisible();
+  await expect(pageB.getByRole('list', { name: /friends list/i }).getByText(new RegExp(usernameA))).toBeVisible();
 }
 
 test.describe('Feed new event types', () => {
@@ -81,7 +81,7 @@ test.describe('Feed new event types', () => {
       await expect(workout.backToDashboardButton).toBeVisible({ timeout: 10000 });
 
       // userB navigates to Feed tab and sees the badge_unlocked event
-      await pageB.getByRole('tab', { name: /feed/i }).click();
+      await pageB.getByRole('link', { name: /feed/i }).click();
       await expect(
         pageB.getByText(/unlocked/i).first(),
       ).toBeVisible({ timeout: 10000 });
@@ -117,7 +117,7 @@ test.describe('Feed new event types', () => {
       await sendAndAcceptFriendRequest(pageA, emailB, pageB, usernameA);
 
       // userB navigates to Feed tab and sees A's plan_switched event
-      await pageB.getByRole('tab', { name: /feed/i }).click();
+      await pageB.getByRole('link', { name: /feed/i }).click();
       await expect(
         pageB.getByText(/switched to/i).first(),
       ).toBeVisible({ timeout: 10000 });
