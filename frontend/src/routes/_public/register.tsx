@@ -46,9 +46,7 @@ function RegisterPage() {
       await register(email, password, trimmedUsername)
       navigate({ to: '/' })
     } catch (err: unknown) {
-      const msg = err && typeof err === 'object' && 'error' in err
-        ? (err as { error: { message: string } }).error.message
-        : 'Registration failed'
+      const msg = err instanceof Error ? err.message : 'Registration failed'
       setError(msg)
     } finally {
       setLoading(false)

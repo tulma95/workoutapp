@@ -50,7 +50,7 @@ run_e2e_tests() {
   echo "=== Building Docker image ==="
   cd "$PROJECT_ROOT"
 
-  test_compose -f "$COMPOSE_FILE" --profile e2e build app
+  test_compose -f "$COMPOSE_FILE" --profile e2e build setforge
 
   echo "Docker image built."
 
