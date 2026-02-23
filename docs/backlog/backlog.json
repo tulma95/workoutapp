@@ -1,10 +1,16 @@
 [
   {
+    "id": "108",
+    "title": "Push notification click navigation",
+    "status": "backlog",
+    "description": "When a push notification is tapped, navigate the user to the relevant view in the app. Implementation:\n\n1. **Backend**: Add a `url` field to each push notification payload (include `feedEventId` in comment_received payload for deep-linking):\n   - `comment_received` → `/social/feed?event=<feedEventId>` (scroll to and highlight the specific feed event)\n   - `friend_request_received` → `/social/friends`\n   - `friend_request_accepted` → `/social/friends`\n   - `workout_completed` → `/social/feed`\n   - `badge_unlocked` → `/achievements`\n\n2. **Service worker (sw.js)**: Add a `notificationclick` event handler that:\n   - Closes the notification\n   - Reads `data.url` from the notification\n   - If an app window is already open, navigates it and focuses it\n   - Otherwise opens a new window at that URL\n\n3. **Frontend social page**: Convert tabs to proper sub-routes:\n   - Create route files: `social/feed.tsx`, `social/friends.tsx`, `social/leaderboard.tsx`\n   - `/social` redirects to `/social/feed` (default tab)\n   - Tab navigation uses `<Link>` / `<ButtonLink>` for proper anchor tags\n   - `social/feed.tsx` reads optional `?event=<id>` search param via `validateSearch`\n   - When `event` search param is present, scroll to that feed event and highlight it (e.g. brief CSS animation)\n\nBump service worker cache name to `setforge-v3` since behavior changes."
+  },
+  {
     "id": "086",
-    "title": "Extract emitStreakAndBadgeEvents helper to deduplicate completeWorkout transaction paths",
+    "title": "Refactor workout.service.ts: extract streak/badge helper and STREAK_MILESTONES constant",
     "status": "backlog",
     "priority": "low",
-    "description": "The streak + badge feed event emission block (~40 lines) is duplicated in both plan and no-plan completeWorkout transaction paths. Extract to a shared helper function."
+    "description": "Two small refactors in workout.service.ts:\n\n1. The streak + badge feed event emission block (~40 lines) is duplicated in both plan and no-plan completeWorkout transaction paths. Extract to a shared helper function.\n\n2. The array [7, 14, 30, 60, 90] is defined inline at three separate locations (lines 530, 614, 809). Extract to a single module-level STREAK_MILESTONES constant."
   },
   {
     "id": "087",
@@ -15,10 +21,10 @@
   },
   {
     "id": "088",
-    "title": "Docs: update api-endpoints.md and db-schema.md for username field and GET /api/social/search endpoint",
+    "title": "Docs catchup: update api-endpoints.md, db-schema.md, and react-query-cache.md",
     "status": "backlog",
     "priority": "medium",
-    "description": "Task 9 from ticket 068 was acknowledged as not done. Three docs need updating: api-endpoints.md needs GET /api/social/search and the updated POST /api/social/request; db-schema.md needs the username column in users; react-query-cache.md needs the social/search query key."
+    "description": "Multiple doc files are stale. All updates in one pass:\n\n1. api-endpoints.md: add GET /api/social/search, updated POST /api/social/request (from ticket 068). Add POST/GET/DELETE /api/social/feed/:eventId/comments and commentCount + latestComments fields in GET /api/social/feed response. Add comment_received notification type.\n\n2. db-schema.md: add username column in users table. Add push_subscriptions table (id, user_id FK, endpoint TEXT, p256dh TEXT, auth TEXT, created_at; unique user_id+endpoint).\n\n3. react-query-cache.md: add social/search query key. Update stale references from ReactionBar.tsx to ActionRow.tsx, and from 'CommentSection (inside CommentModal)' to CommentSection.tsx."
   },
   {
     "id": "070",
@@ -29,17 +35,10 @@
   },
   {
     "id": "052",
-    "title": "Calendar: selectedDateKey not cleared after workout deletion causes Add Custom Workout button to appear unsolicited",
+    "title": "Calendar: clear selectedDateKey after deletion and custom workout save",
     "status": "backlog",
     "priority": "medium",
-    "description": "When a workout is deleted from history, selectedDateKey in history.tsx is not cleared. After the calendar refetches, the deleted day now has no workouts, so showAddCustomWorkoutButton becomes true and the button appears without user interaction. Fix: call setSelectedDateKey(null) in handleConfirmDelete."
-  },
-  {
-    "id": "053",
-    "title": "Clear selectedDateKey after custom workout is saved",
-    "status": "backlog",
-    "priority": "low",
-    "description": "After saving a custom workout via the modal, selectedDateKey is not cleared in history.tsx. The Add Custom Workout button correctly disappears once calendarWorkouts refreshes, but the .selected highlight on the calendar day persists until the user clicks another day or changes month. Fix: call setSelectedDateKey(null) in handleCustomWorkoutSaved."
+    "description": "Two places in history.tsx fail to clear selectedDateKey:\n\n1. After workout deletion: calendar refetches, deleted day has no workouts, showAddCustomWorkoutButton becomes true and button appears without user interaction. Fix: call setSelectedDateKey(null) in handleConfirmDelete.\n\n2. After custom workout save: the .selected highlight on the calendar day persists until the user clicks another day or changes month. Fix: call setSelectedDateKey(null) in handleCustomWorkoutSaved."
   },
   {
     "id": "061",
@@ -285,52 +284,17 @@
   },
   {
     "id": "090",
-    "title": "Flaky test: workout-feed-events.test.ts occasionally fails with 404 on POST /api/workouts",
+    "title": "Flaky tests: workout-feed-events 404 and admin-plan-editor timeout",
     "status": "backlog",
     "priority": "medium",
-    "description": "workout-feed-events.test.ts is flaky - sometimes returns 404 on POST /api/workouts during parallel test execution (likely a race condition in test setup). Second run passes. Investigate and fix test isolation."
+    "description": "Two flaky tests to investigate:\n\n1. workout-feed-events.test.ts: occasionally fails with 404 on POST /api/workouts during parallel test execution (likely a race condition in test setup). Second run passes.\n\n2. admin-plan-editor E2E: unsaved changes warning test times out on Create Account button click in admin setup phase (webkit, intermittent)."
   },
   {
     "id": "093",
-    "title": "Fix VAPID public key format: /public-key endpoint should return raw EC point (65 bytes base64url) not SPKI DER (91 bytes) — browser PushManager.subscribe() rejects SPKI",
+    "title": "Fix push notifications: VAPID key format, subscribe schema mismatch, and button touch targets",
     "status": "backlog",
     "priority": "high",
-    "description": "The GET /api/notifications/public-key endpoint returns the SPKI DER base64url (91 bytes) of the VAPID public key, but the Web Push API specification requires the applicationServerKey passed to PushManager.subscribe() to be the raw uncompressed EC point (65 bytes, 04||x||y). Real browsers will throw InvalidAccessError. The fix is to return the raw EC point from the endpoint, or convert it in the frontend. The E2E tests do not catch this because the mock subscribe() ignores the opts parameter entirely."
-  },
-  {
-    "id": "094",
-    "title": "Fix pushSubscribeResponseSchema mismatch: backend POST /subscribe returns { ok: true } but frontend schema expects { id, userId, endpoint, createdAt } causing ZodError on enable",
-    "status": "backlog",
-    "priority": "high",
-    "description": "The pushSubscribeResponseSchema in frontend/src/api/schemas.ts defines { id, userId, endpoint, createdAt } but the actual backend response is { ok: true }. When subscribePush() calls pushSubscribeResponseSchema.parse(data), it throws a ZodError even on a successful 201 response. This propagates to handleEnable catch block and shows 'Failed to enable notifications' to the user. Fix: change the schema to z.object({ ok: z.boolean() }) to match the actual API, or change the backend to return the created subscription record."
-  },
-  {
-    "id": "095",
-    "title": "Add push_subscriptions table to docs/db-schema.md",
-    "status": "backlog",
-    "priority": "low",
-    "description": "The push_subscriptions table added in migration 20260222155927_add_push_subscriptions is not documented in docs/db-schema.md. Add an entry: push_subscriptions: id, user_id (FK users CASCADE), endpoint (TEXT), p256dh (TEXT), auth (TEXT), created_at. Unique: (user_id, endpoint)."
-  },
-  {
-    "id": "096",
-    "title": "Push notification button touch targets use 2.75rem instead of project-standard 3rem",
-    "status": "backlog",
-    "priority": "low",
-    "description": "PushNotificationSettings.module.css .actionBtn and .actionBtnSecondary use min-height: 2.75rem (44px at 16px base), but all other interactive elements in the project use min-height: 3rem per CLAUDE.md convention ('All interactive elements min 44px (3rem)'). Additionally 2.75rem is not on the 8-point grid (should be 2.5rem or 3rem). Update both button classes to use 3rem."
-  },
-  {
-    "id": "100",
-    "title": "Extract STREAK_MILESTONES constant to module scope in workout.service.ts",
-    "status": "backlog",
-    "priority": "low",
-    "description": "The array [7, 14, 30, 60, 90] is defined inline at three separate locations in workout.service.ts (lines 530, 614, 809). It should be a single module-level constant to avoid divergence if milestone thresholds ever change."
-  },
-  {
-    "id": "102",
-    "title": "docs/api-endpoints.md missing comment endpoints and commentCount field in feed",
-    "status": "backlog",
-    "priority": "medium",
-    "description": "Three new endpoints (POST/GET/DELETE /api/social/feed/:eventId/comments) and the new commentCount field in GET /api/social/feed response are not documented in docs/api-endpoints.md. The notification type comment_received is also undocumented."
+    "description": "Push subscribe is broken in real browsers due to multiple issues. Fix all together:\n\n1. VAPID public key format: GET /api/notifications/public-key returns SPKI DER base64url (91 bytes) but PushManager.subscribe() requires raw EC point (65 bytes, 04||x||y). Real browsers throw InvalidAccessError. Fix: return raw EC point from the endpoint, or convert in frontend.\n\n2. Subscribe response schema mismatch: pushSubscribeResponseSchema expects { id, userId, endpoint, createdAt } but backend POST /subscribe returns { ok: true }. Causes ZodError on successful 201, showing 'Failed to enable notifications'. Fix: align schema to match actual API response.\n\n3. Button touch targets: PushNotificationSettings.module.css .actionBtn and .actionBtnSecondary use min-height 2.75rem instead of project-standard 3rem. Update to 3rem."
   },
   {
     "id": "103",
@@ -346,21 +310,9 @@
   },
   {
     "id": "105",
-    "title": "Calendar badge shows 0 for custom workouts",
+    "title": "Custom workout small fixes: calendar badge shows 0, no error for future date",
     "status": "backlog",
-    "description": "In WorkoutCalendar.tsx:219, when a single workout exists on a date, the badge displays dayNumber instead of the count. Custom workouts have dayNumber: 0, so the badge renders 0 instead of 1. Fix: handle dayNumber === 0 case, e.g. day.workouts[0]!.dayNumber || day.workouts.length."
-  },
-  {
-    "id": "106",
-    "title": "Custom workout modal: no error shown for future date",
-    "status": "backlog",
-    "description": "In CustomWorkoutModal, when a user manually edits the date input to a future date, the field gets native HTML5 invalid state (from max attribute) but there is no visible error message. The Save button silently stays disabled with no explanation. Add inline validation text like 'Date cannot be in the future' when the date input is invalid."
-  },
-  {
-    "id": "108",
-    "title": "Push notification click navigation",
-    "status": "backlog",
-    "description": "When a push notification is tapped, navigate the user to the relevant view in the app. Implementation:\n\n1. **Backend**: Add a `url` field to each push notification payload (include `feedEventId` in comment_received payload for deep-linking):\n   - `comment_received` → `/social/feed?event=<feedEventId>` (scroll to and highlight the specific feed event)\n   - `friend_request_received` → `/social/friends`\n   - `friend_request_accepted` → `/social/friends`\n   - `workout_completed` → `/social/feed`\n   - `badge_unlocked` → `/achievements`\n\n2. **Service worker (sw.js)**: Add a `notificationclick` event handler that:\n   - Closes the notification\n   - Reads `data.url` from the notification\n   - If an app window is already open, navigates it and focuses it\n   - Otherwise opens a new window at that URL\n\n3. **Frontend social page**: Convert tabs to proper sub-routes:\n   - Create route files: `social/feed.tsx`, `social/friends.tsx`, `social/leaderboard.tsx`\n   - `/social` redirects to `/social/feed` (default tab)\n   - Tab navigation uses `<Link>` / `<ButtonLink>` for proper anchor tags\n   - `social/feed.tsx` reads optional `?event=<id>` search param via `validateSearch`\n   - When `event` search param is present, scroll to that feed event and highlight it (e.g. brief CSS animation)\n\nBump service worker cache name to `setforge-v3` since behavior changes."
+    "description": "Two small custom workout bugs:\n\n1. Calendar badge shows 0: In WorkoutCalendar.tsx:219, badge displays dayNumber instead of count. Custom workouts have dayNumber: 0, so badge renders 0 instead of 1. Fix: day.workouts[0]!.dayNumber || day.workouts.length.\n\n2. No error for future date: In CustomWorkoutModal, manually entering a future date gets native HTML5 invalid state but no visible error message. Save button silently stays disabled. Fix: add inline validation text 'Date cannot be in the future' when date input is invalid."
   },
   {
     "id": "110",
@@ -375,26 +327,5 @@
     "status": "backlog",
     "priority": "medium",
     "description": "GET /api/social/feed batch-fetches ALL comments for up to 20 events with no LIMIT. In the worst case this could be thousands of rows. The backend should instead use a ranked subquery or window function to fetch only the 2 most recent comments per event at the DB level, not slice in memory."
-  },
-  {
-    "id": "112",
-    "title": "docs/api-endpoints.md: GET /api/social/feed response shape missing latestComments field",
-    "status": "backlog",
-    "priority": "low",
-    "description": "The api-endpoints.md documentation for GET /api/social/feed still describes the response without the latestComments field added in ticket 109. The doc should be updated to reflect the new field so future developers know it is part of the contract."
-  },
-  {
-    "id": "113",
-    "title": "react-query-cache.md has stale references to ReactionBar.tsx and CommentModal — update to ActionRow.tsx",
-    "status": "backlog",
-    "priority": "low",
-    "description": "In react-query-cache.md the invalidation table still refers to 'ReactionBar.tsx' and the query key table says 'CommentSection (inside CommentModal)'. Both components were deleted in ticket 109 — update to ActionRow.tsx and CommentSection.tsx respectively."
-  },
-  {
-    "id": "118",
-    "title": "Flaky E2E: admin-plan-editor unsaved changes warning test",
-    "status": "backlog",
-    "priority": "low",
-    "description": "Test times out on Create Account button click in admin setup phase (webkit, intermittent)"
   }
 ]

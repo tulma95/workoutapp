@@ -5,7 +5,7 @@
  *
  * Usage: node --experimental-strip-types docs/backlog/ticket.ts <command> [args]
  *
- * Commands: list, add, show, move, status, delete, next, readme, start, current, clear, archive
+ * Commands: list, add, show, move, status, delete, next, readme, start, current, clear, archive, combine
  */
 
 const fs = require("node:fs") as typeof import("node:fs");
@@ -461,6 +461,73 @@ function cmdReadme(): void {
   console.log(`Written: ${README_PATH}`);
 }
 
+function cmdCombine(refs: string[]): void {
+  if (refs.length < 2) {
+    die("Usage: combine <target-id> <id> [id...] --title <new-title>\n  Merges tickets into the first one. Descriptions are concatenated. Others are deleted.");
+  }
+
+  // Parse --title flag from refs
+  const titleFlagIdx = refs.indexOf("--title");
+  let newTitle: string | undefined;
+  if (titleFlagIdx !== -1) {
+    newTitle = refs.slice(titleFlagIdx + 1).join(" ").trim();
+    if (!newTitle) die("--title requires a value");
+    refs = refs.slice(0, titleFlagIdx);
+  }
+
+  if (refs.length < 2) {
+    die("Need at least 2 ticket references to combine");
+  }
+
+  const tickets = readBacklog();
+  const targetIdx = resolveRef(tickets, refs[0]);
+  const target = tickets[targetIdx];
+
+  // Resolve all source tickets (the ones being merged in)
+  const sourceIdxs: number[] = [];
+  for (let i = 1; i < refs.length; i++) {
+    const idx = resolveRef(tickets, refs[i]);
+    if (idx === targetIdx) die(`Cannot combine ticket ${refs[i]} with itself`);
+    sourceIdxs.push(idx);
+  }
+
+  // Build combined description
+  const sections: string[] = [];
+  sections.push(`## From ${target.id}: ${target.title}\n${target.description || "(no description)"}`);
+  for (const idx of sourceIdxs) {
+    const t = tickets[idx];
+    sections.push(`## From ${t.id}: ${t.title}\n${t.description || "(no description)"}`);
+  }
+  target.description = sections.join("\n\n");
+
+  if (newTitle) {
+    target.title = newTitle;
+  }
+
+  // Keep highest priority from all combined tickets
+  const allPriorities = [target, ...sourceIdxs.map((i) => tickets[i])]
+    .map((t) => t.priority)
+    .filter(Boolean) as TicketPriority[];
+  if (allPriorities.length > 0) {
+    const priorityRank: Record<TicketPriority, number> = { low: 1, medium: 2, high: 3 };
+    target.priority = allPriorities.sort((a, b) => priorityRank[b] - priorityRank[a])[0];
+  }
+
+  // Remove source tickets (iterate in reverse to preserve indices)
+  const sortedIdxs = [...sourceIdxs].sort((a, b) => b - a);
+  for (const idx of sortedIdxs) {
+    const removed = tickets[idx];
+    console.log(`  Merged [${removed.id}] "${removed.title}"`);
+    tickets.splice(idx, 1);
+  }
+
+  writeBacklog(tickets);
+
+  console.log(`\nCombined into [${target.id}] "${target.title}"`);
+  console.log("");
+  cmdList();
+}
+
 // ---------------------------------------------------------------------------
 // Entry point
 // ---------------------------------------------------------------------------
@@ -468,7 +535,7 @@ function cmdReadme(): void {
 const [command, ...commandArgs] = process.argv.slice(2);
 
 if (!command) {
-  die("Usage: ticket.ts <list|add|show|move|status|delete|next|readme|start|current|clear|archive> [args]");
+  die("Usage: ticket.ts <list|add|show|move|status|delete|next|readme|start|current|clear|archive|combine> [args]");
 }
 
 switch (command) {
@@ -527,8 +594,12 @@ switch (command) {
     cmdArchive();
     break;
 
+  case "combine":
+    cmdCombine(commandArgs);
+    break;
+
   default:
     die(
-      `Unknown command: "${command}". Valid commands: list, add, show, move, status, delete, next, readme, start, current, clear, archive`
+      `Unknown command: "${command}". Valid commands: list, add, show, move, status, delete, next, readme, start, current, clear, archive, combine`
     );
 }
