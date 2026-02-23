@@ -104,7 +104,7 @@ test.describe('Feed reactions', () => {
       // (c) Click 🔥 emoji — reaction toggled on, picker closes
       await pageB.getByRole('button', { name: '🔥' }).first().click();
       // Picker should be gone
-      await expect(pageB.getByRole('button', { name: '🔥' })).toHaveCount(0);
+      await expect(pageB.getByRole('button', { name: '🔥', exact: true })).toHaveCount(0);
       // React button now reflects the active reaction
       const activeReactButton = pageB
         .getByRole('button', { name: 'You reacted with 🔥', exact: true })
@@ -114,23 +114,23 @@ test.describe('Feed reactions', () => {
 
       // (e) ReactionSummary shows the emoji count — "1" visible in the first feed item
       await expect(
-        pageB.getByRole('listitem').first().getByText('1'),
+        pageB.getByRole('listitem').first().getByText('1', { exact: true }),
       ).toBeVisible({ timeout: 5000 });
 
       // (f) Click the active React button to open picker, then click 🔥 again to toggle off
       await activeReactButton.click();
-      await expect(pageB.getByRole('button', { name: '🔥' }).first()).toBeVisible();
-      await pageB.getByRole('button', { name: '🔥' }).first().click();
+      await expect(pageB.getByRole('button', { name: '🔥', exact: true }).first()).toBeVisible();
+      await pageB.getByRole('button', { name: '🔥', exact: true }).first().click();
 
       // Picker closes and reaction is removed
-      await expect(pageB.getByRole('button', { name: '🔥' })).toHaveCount(0);
+      await expect(pageB.getByRole('button', { name: '🔥', exact: true })).toHaveCount(0);
       const inactiveReactButton = pageB
         .getByRole('button', { name: 'React', exact: true })
         .first();
       await expect(inactiveReactButton).toHaveAttribute('aria-pressed', 'false', { timeout: 5000 });
       // ReactionSummary should no longer show count "1" in the feed item
       await expect(
-        pageB.getByRole('listitem').first().getByText('1'),
+        pageB.getByRole('listitem').first().getByText('1', { exact: true }),
       ).toHaveCount(0);
     } finally {
       await contextA.close();

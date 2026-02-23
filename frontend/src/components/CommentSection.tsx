@@ -112,7 +112,7 @@ export function CommentSection({
     createMutation.mutate(trimmed);
   };
 
-  const visibleComments = data?.comments ?? [];
+  const visibleComments = expanded ? (data?.comments ?? []) : (latestComments ?? []);
 
   return (
     <div className={styles.commentSection}>
