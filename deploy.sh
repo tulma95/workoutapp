@@ -58,7 +58,7 @@ build_image() {
     fs.writeFileSync(f, s.replace(/const CACHE_NAME = 'setforge-v[^']*'/, \"const CACHE_NAME = 'setforge-v$IMAGE_TAG'\"));
   "
 
-  APP_IMAGE="$FULL_TAG" test_compose -f "$COMPOSE_FILE" --profile e2e build app
+  APP_IMAGE="$FULL_TAG" test_compose -f "$COMPOSE_FILE" --profile e2e build setforge
 
   echo "Docker image built: $FULL_TAG"
 }
