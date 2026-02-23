@@ -1,5 +1,11 @@
 [
   {
+    "id": "116",
+    "title": "View all comments button does not show all comments",
+    "status": "done",
+    "description": "Bug: Clicking 'View all N comments' hides the button but still only shows the 2 latest comments instead of all N.\n\nRepro steps:\n1. Have a feed event with 3+ comments\n2. Feed shows 2 latest comments and a 'View all N comments' button\n3. Click the button\n4. Button disappears but only the same 2 comments remain visible\n\nRoot cause likely in CommentSection.tsx: when expanded is set to true, the query fires with initialData set to latestComments (2 most recent). The query may be serving initialData without refetching, or the backend GET /api/social/feed/:eventId/comments endpoint may not be returning all comments.\n\nReference: CommentSection.tsx lines 44-49 (initialData / enabled logic)"
+  },
+  {
     "id": "114",
     "title": "Improve comment visual separation in feed",
     "status": "done",
