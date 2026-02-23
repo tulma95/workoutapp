@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getFeed } from '../api/social';
 import type { FeedEvent } from '../api/social';
@@ -53,15 +53,19 @@ function formatRelativeTime(createdAt: string): string {
 interface FeedItemProps {
   event: FeedEvent;
   currentUserId: number;
+  isHighlighted: boolean;
 }
 
-function FeedItem({ event, currentUserId }: FeedItemProps) {
+function FeedItem({ event, currentUserId, isHighlighted }: FeedItemProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const text = renderEventText(event);
   if (text === null) return null;
 
   return (
-    <li className={styles.eventItem}>
+    <li
+      className={isHighlighted ? `${styles.eventItem} ${styles.highlighted}` : styles.eventItem}
+      data-event-id={event.id}
+    >
       <div className={styles.eventHeader}>
         <span className={styles.eventUsername}>{event.username}</span>
         <time
@@ -92,7 +96,11 @@ function FeedItem({ event, currentUserId }: FeedItemProps) {
   );
 }
 
-export function FeedTab() {
+interface FeedTabProps {
+  highlightEventId?: number;
+}
+
+export function FeedTab({ highlightEventId }: FeedTabProps = {}) {
   const queryClient = useQueryClient();
   const currentUser = queryClient.getQueryData<User>(['user', 'me']);
   const currentUserId = currentUser?.id ?? 0;
@@ -101,6 +109,14 @@ export function FeedTab() {
     queryFn: getFeed,
     refetchOnMount: 'always',
   });
+
+  useEffect(() => {
+    if (!highlightEventId || !data) return;
+    const el = document.querySelector<HTMLElement>(`[data-event-id="${highlightEventId}"]`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [data, highlightEventId]);
 
   if (isLoading) {
     return (
@@ -143,7 +159,12 @@ export function FeedTab() {
   return (
     <ul className={styles.list} aria-label="Activity feed" aria-live="polite">
       {events.map((event) => (
-        <FeedItem key={event.id} event={event} currentUserId={currentUserId} />
+        <FeedItem
+          key={event.id}
+          event={event}
+          currentUserId={currentUserId}
+          isHighlighted={event.id === highlightEventId}
+        />
       ))}
     </ul>
   );

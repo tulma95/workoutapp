@@ -40,7 +40,7 @@ test.describe('Streak visibility', () => {
 
       // userA sends friend request to userB
       await pageA.getByRole('link', { name: /social/i }).click();
-      await pageA.getByRole('tab', { name: /friends/i }).click();
+      await pageA.getByRole('link', { name: /friends/i }).click();
       await pageA.getByRole('button', { name: /send by email/i }).click();
       await pageA.getByLabel(/friend's email address/i).fill(emailB);
       await pageA.getByRole('button', { name: /^send$/i }).click();
@@ -48,7 +48,7 @@ test.describe('Streak visibility', () => {
 
       // userB accepts the friend request
       await pageB.getByRole('link', { name: /social/i }).click();
-      await pageB.getByRole('tab', { name: /friends/i }).click();
+      await pageB.getByRole('link', { name: /friends/i }).click();
       const acceptButton = pageB.getByRole('button', {
         name: `Accept friend request from ${usernameA}`,
       });
@@ -82,11 +82,11 @@ test.describe('Streak visibility', () => {
       // Reload to clear React Query cache (staleTime=60s, data won't auto-refetch within the test)
       await pageA.reload();
       await pageA.getByRole('link', { name: /social/i }).click();
-      await pageA.getByRole('tab', { name: /friends/i }).click();
+      await pageA.getByRole('link', { name: /friends/i }).click();
       await expect(pageA.getByText(/2 day streak/i)).toBeVisible({ timeout: 10000 });
 
       // userA navigates to Feed tab and sees "2-day streak" suffix on userB's event
-      await pageA.getByRole('tab', { name: /feed/i }).click();
+      await pageA.getByRole('link', { name: /feed/i }).click();
       await expect(pageA.getByText(/2-day streak/i).first()).toBeVisible({ timeout: 10000 });
     } finally {
       await contextA.close();
@@ -116,7 +116,7 @@ test.describe('Leaderboard toggle', () => {
 
     await page.getByRole('link', { name: /social/i }).click();
     await expect(page.getByRole('heading', { name: /social/i })).toBeVisible();
-    await page.getByRole('tab', { name: /leaderboard/i }).click();
+    await page.getByRole('link', { name: /leaderboard/i }).click();
 
     // Training Max button is visible and active by default
     const tmButton = page.getByRole('button', { name: 'Training Max' });
@@ -165,7 +165,7 @@ test.describe('Social features', () => {
       // --- userA navigates to Social > Friends and sends a request ---
       await pageA.getByRole('link', { name: /social/i }).click();
       await expect(pageA.getByRole('heading', { name: /social/i })).toBeVisible();
-      await pageA.getByRole('tab', { name: /friends/i }).click();
+      await pageA.getByRole('link', { name: /friends/i }).click();
       await pageA.getByRole('button', { name: /send by email/i }).click();
 
       await expect(pageA.getByLabel(/friend's email address/i)).toBeVisible();
@@ -177,7 +177,7 @@ test.describe('Social features', () => {
       // --- userB opens Social > Friends and sees the pending request ---
       await pageB.getByRole('link', { name: /social/i }).click();
       await expect(pageB.getByRole('heading', { name: /social/i })).toBeVisible();
-      await pageB.getByRole('tab', { name: /friends/i }).click();
+      await pageB.getByRole('link', { name: /friends/i }).click();
 
       const acceptButton = pageB.getByRole('button', {
         name: `Accept friend request from ${usernameA}`,
@@ -201,7 +201,7 @@ test.describe('Social features', () => {
 
       // --- userB's feed shows userA's workout_completed event ---
       // The feed endpoint shows friends' events; userB is a friend of userA
-      await pageB.getByRole('tab', { name: /feed/i }).click();
+      await pageB.getByRole('link', { name: /feed/i }).click();
       await expect(
         pageB.getByText(new RegExp(`${usernameA}.*completed Day`, 'i')),
       ).toBeVisible({ timeout: 10000 });
@@ -211,14 +211,87 @@ test.describe('Social features', () => {
       // userA navigates to Social > Leaderboard
       await pageA.getByRole('link', { name: /social/i }).click();
       await expect(pageA.getByRole('heading', { name: /social/i })).toBeVisible();
-      await pageA.getByRole('tab', { name: /leaderboard/i }).click();
+      await pageA.getByRole('link', { name: /leaderboard/i }).click();
 
       // userA sees userB in the leaderboard
       await expect(pageA.getByText(new RegExp(usernameB)).first()).toBeVisible();
 
       // userB switches to the leaderboard tab and sees userA
-      await pageB.getByRole('tab', { name: /leaderboard/i }).click();
+      await pageB.getByRole('link', { name: /leaderboard/i }).click();
       await expect(pageB.getByText(new RegExp(usernameA)).first()).toBeVisible();
+    } finally {
+      await contextA.close();
+      await contextB.close();
+    }
+  });
+});
+
+test.describe('Deep-link navigation', () => {
+  test.setTimeout(60000);
+
+  // Note: testing the service worker notificationclick handler itself is not feasible
+  // in headless CI. This test verifies the deep-link URL behaviour directly.
+  test('navigates to /social/feed?event=<id> and shows the target event', async ({ browser, baseURL }) => {
+    const uniqueA = crypto.randomUUID().slice(0, 8);
+    const uniqueB = crypto.randomUUID().slice(0, 8);
+    const emailA = `deeplink-a-${uniqueA}@example.com`;
+    const emailB = `deeplink-b-${uniqueB}@example.com`;
+    const usernameA = `dlinkA${uniqueA}`;
+    const usernameB = `dlinkB${uniqueB}`;
+
+    const contextA = await browser.newContext({ baseURL });
+    const contextB = await browser.newContext({ baseURL });
+    const pageA = await contextA.newPage();
+    const pageB = await contextB.newPage();
+
+    try {
+      // Register both users
+      await registerAndSetup(pageA, emailA, usernameA);
+      await registerAndSetup(pageB, emailB, usernameB);
+
+      // userA sends friend request to userB
+      await pageA.getByRole('link', { name: /social/i }).click();
+      await pageA.getByRole('link', { name: /friends/i }).click();
+      await pageA.getByRole('button', { name: /send by email/i }).click();
+      await pageA.getByLabel(/friend's email address/i).fill(emailB);
+      await pageA.getByRole('button', { name: /^send$/i }).click();
+      await expect(pageA.getByRole('status')).toContainText(/friend request sent/i);
+
+      // userB accepts the friend request
+      await pageB.getByRole('link', { name: /social/i }).click();
+      await pageB.getByRole('link', { name: /friends/i }).click();
+      const acceptButton = pageB.getByRole('button', {
+        name: `Accept friend request from ${usernameA}`,
+      });
+      await expect(acceptButton).toBeVisible();
+      await acceptButton.click();
+      await expect(pageB.getByText(new RegExp(usernameA))).toBeVisible();
+
+      // userA completes a workout to create a feed event visible to userB
+      await pageA.getByRole('link', { name: /home/i }).click();
+      await pageA.getByRole('link', { name: /start workout/i }).first().click();
+      const workout = new WorkoutPage(pageA);
+      await expect(workout.completeButton).toBeVisible({ timeout: 15000 });
+      await workout.completeWithDialog();
+      await workout.dismissAchievementDialogIfPresent();
+      await expect(workout.backToDashboardButton).toBeVisible({ timeout: 10000 });
+
+      // userB fetches the feed API to get the event ID
+      const tokenB = await pageB.evaluate(() => localStorage.getItem('accessToken'));
+      const feedResp = await pageB.request.get('/api/social/feed', {
+        headers: { Authorization: `Bearer ${tokenB}` },
+      });
+      const feedData = await feedResp.json() as { events: Array<{ id: number }> };
+      expect(feedData.events.length).toBeGreaterThan(0);
+      const eventId = feedData.events[0].id;
+
+      // userB navigates directly to the deep-link URL (simulating a push notification tap)
+      await pageB.goto(`/social/feed?event=${eventId}`);
+
+      // The target event should be visible in the viewport
+      const targetEvent = pageB.locator(`[data-event-id="${eventId}"]`);
+      await expect(targetEvent).toBeVisible({ timeout: 10000 });
+      await expect(targetEvent).toBeInViewport();
     } finally {
       await contextA.close();
       await contextB.close();

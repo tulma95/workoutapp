@@ -91,3 +91,24 @@
   outline-offset: 2px;
 }
 
+@keyframes highlightFade {
+  0% {
+    background-color: rgba(37, 99, 235, 0.15);
+  }
+  100% {
+    background-color: var(--bg-card);
+  }
+}
+
+.highlighted {
+  animation: highlightFade 1.5s ease forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .highlighted {
+    animation: none;
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+  }
+}
+
