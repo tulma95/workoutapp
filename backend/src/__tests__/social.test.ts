@@ -259,6 +259,7 @@ describe('Social API', () => {
     let tokenFeedB: string;
     let userIdFeedB: number;
     let tokenFeedC: string;
+    let userIdFeedC: number;
 
     beforeAll(async () => {
       const uidFeed = randomUUID().slice(0, 8);
@@ -286,7 +287,7 @@ describe('Social API', () => {
         username: `feed_c_${uidFeed}`,
       });
       tokenFeedC = resC.body.accessToken;
-      const userIdFeedC = resC.body.user.id;
+      userIdFeedC = resC.body.user.id;
 
       // Make A and B friends
       const reqRes = await request(app)
@@ -297,9 +298,14 @@ describe('Social API', () => {
         .patch(`/api/social/requests/${reqRes.body.id}/accept`)
         .set('Authorization', `Bearer ${tokenFeedB}`);
 
-      // Create feed events for B (friend of A) and C (not friend of A)
+      // Create feed events for A (self), B (friend of A), and C (not friend of A)
       await prisma.feedEvent.createMany({
         data: [
+          {
+            userId: userIdFeedA,
+            eventType: 'workout_completed',
+            payload: { workoutId: 1000, dayNumber: 3 },
+          },
           {
             userId: userIdFeedB,
             eventType: 'workout_completed',
@@ -314,27 +320,29 @@ describe('Social API', () => {
       });
     });
 
-    it('feed returns empty when user has no friends', async () => {
+    it('feed returns own events even when user has no friends', async () => {
+      // C has no friends but has their own event (workoutId: 998)
       const res = await request(app)
         .get('/api/social/feed')
         .set('Authorization', `Bearer ${tokenFeedC}`);
       expect(res.status).toBe(200);
-      expect(res.body.events).toHaveLength(0);
+      expect(res.body.events.length).toBeGreaterThanOrEqual(1);
+      const userIds = res.body.events.map((e: { userId: number }) => e.userId);
+      expect(userIds).toContain(userIdFeedC);
     });
 
-    it('feed returns only events from confirmed friends', async () => {
+    it('feed returns own events and friends events, but not strangers', async () => {
       const res = await request(app)
         .get('/api/social/feed')
         .set('Authorization', `Bearer ${tokenFeedA}`);
       expect(res.status).toBe(200);
-      // Only B's event should appear (not C's)
-      expect(res.body.events.length).toBeGreaterThanOrEqual(1);
+      // A's own event and B's event should appear
+      expect(res.body.events.length).toBeGreaterThanOrEqual(2);
       const userIds = res.body.events.map((e: { userId: number }) => e.userId);
-      expect(userIds).toContain(userIdFeedB);
-      // C should NOT be in the feed
-      res.body.events.forEach((e: { userId: number }) => {
-        expect(e.userId).not.toBe(userIdFeedA); // No own events
-      });
+      expect(userIds).toContain(userIdFeedA); // own events included
+      expect(userIds).toContain(userIdFeedB); // friend's events included
+      // C (not a friend) should NOT be in the feed
+      expect(userIds).not.toContain(userIdFeedC);
     });
 
     it('feed events include username and payload', async () => {

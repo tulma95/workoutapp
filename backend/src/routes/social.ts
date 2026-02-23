@@ -362,13 +362,8 @@ router.get('/feed', async (req: AuthRequest, res: Response) => {
   const userId = getUserId(req);
   const friendIds = await getAcceptedFriendIds(userId);
 
-  if (friendIds.length === 0) {
-    res.json({ events: [] });
-    return;
-  }
-
   const events = await prisma.feedEvent.findMany({
-    where: { userId: { in: friendIds } },
+    where: { userId: { in: [userId, ...friendIds] } },
     orderBy: { createdAt: 'desc' },
     take: 20,
     include: {
