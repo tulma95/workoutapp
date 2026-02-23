@@ -474,9 +474,9 @@ describe('Social API', () => {
         .set('Authorization', `Bearer ${tokenReactA}`)
         .send({ emoji: '💪' });
 
-      // Need B to also be friends with B's own event author — B is the event author
-      // B cannot react to their own event (they're not a friend of themselves)
-      // So we need another user who is friends with B
+      // Using a separate user D for the second reaction to keep emoji counts
+      // isolated from other test cases. B (the event owner) could also react,
+      // but that would require carefully coordinating emoji state across tests.
       // tokenReactB's event — A is already a friend. Let's register user D as friend of B
       const uidD = randomUUID().slice(0, 8);
       const resD = await request(app).post('/api/auth/register').send({
