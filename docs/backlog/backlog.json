@@ -1,5 +1,11 @@
 [
   {
+    "id": "114",
+    "title": "Improve comment visual separation in feed",
+    "status": "done",
+    "description": "Comments in the social feed are hard to distinguish from each other. Currently they only have a thin border-bottom line between them, with no background differentiation, no avatars/initials, and small similar-colored text that blends together.\n\nProposed improvements:\n- Add colored user initial circles (avatar placeholders) to the left of each comment, using a deterministic color based on username — this provides instant visual anchoring for who said what\n- Add a subtle background color to each comment (e.g. var(--bg-card) or a slightly lighter shade) with rounded corners and padding, so each comment feels like its own distinct bubble\n- Increase vertical spacing between comments (gap: var(--space-md) instead of var(--space-sm))\n- Make the username bolder/slightly larger to create clearer visual hierarchy\n\nReference: CommentSection.tsx and CommentSection.module.css"
+  },
+  {
     "id": "109",
     "title": "Facebook-style social feed redesign",
     "status": "done",
@@ -680,5 +686,11 @@
     "status": "backlog",
     "priority": "low",
     "description": "In react-query-cache.md the invalidation table still refers to 'ReactionBar.tsx' and the query key table says 'CommentSection (inside CommentModal)'. Both components were deleted in ticket 109 — update to ActionRow.tsx and CommentSection.tsx respectively."
+  },
+  {
+    "id": "115",
+    "title": "Limit reactions to one emoji per user per feed event",
+    "status": "backlog",
+    "description": "Currently users can react with multiple different emojis on the same feed event. Users should only be able to select one emoji reaction per event — selecting a new emoji should replace the previous one, similar to LinkedIn reactions.\n\nReference: ActionRow.tsx, backend social routes (POST /api/social/feed/:eventId/reactions)"
   }
 ]
