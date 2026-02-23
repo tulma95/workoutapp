@@ -19,7 +19,7 @@
   align-items: flex-start;
   gap: var(--space-sm);
   padding: var(--space-sm) var(--space-md);
-  background: var(--bg-card);
+  background: var(--bg);
   border-radius: var(--space-sm);
 }
 
