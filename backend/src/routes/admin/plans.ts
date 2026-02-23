@@ -5,6 +5,8 @@ import { authenticate } from '../../middleware/auth';
 import { requireAdmin } from '../../middleware/admin';
 import { AuthRequest } from '../../types';
 import prisma from '../../lib/db';
+import { parseIntParam, isPrismaError } from '../../lib/routeHelpers';
+import { PLAN_SETS_INCLUDE } from '../../lib/planIncludes';
 
 const router = Router();
 
@@ -41,10 +43,6 @@ const createPlanSchema = z.object({
   isPublic: z.boolean().optional(),
   days: z.array(planDaySchema).min(1),
 });
-
-function isPrismaError(e: unknown, code: string): boolean {
-  return e instanceof Error && 'code' in e && (e as Record<string, unknown>).code === code;
-}
 
 router.post('/', validate(createPlanSchema), async (req: AuthRequest, res: Response) => {
   const { slug, name, description, daysPerWeek, isPublic, days } = req.body;
@@ -101,21 +99,7 @@ router.post('/', validate(createPlanSchema), async (req: AuthRequest, res: Respo
       // Return the full plan structure
       return await tx.workoutPlan.findUnique({
         where: { id: createdPlan.id },
-        include: {
-          days: {
-            include: {
-              exercises: {
-                include: {
-                  sets: {
-                    orderBy: { setOrder: 'asc' },
-                  },
-                },
-                orderBy: { sortOrder: 'asc' },
-              },
-            },
-            orderBy: { dayNumber: 'asc' },
-          },
-        },
+        include: PLAN_SETS_INCLUDE,
       });
     });
 
@@ -153,14 +137,8 @@ router.get('/', async (_req: AuthRequest, res: Response) => {
 });
 
 router.get('/:id', async (req: AuthRequest, res: Response) => {
-  const id = parseInt(req.params.id as string, 10);
-
-  if (isNaN(id)) {
-    res.status(400).json({
-      error: { code: 'BAD_REQUEST', message: 'Invalid plan ID' }
-    });
-    return;
-  }
+  const id = parseIntParam(res, req.params.id as string, 'plan ID');
+  if (id === null) return;
 
   const plan = await prisma.workoutPlan.findUnique({
     where: { id },
@@ -209,14 +187,8 @@ const updatePlanSchema = z.object({
 });
 
 router.put('/:id', validate(updatePlanSchema), async (req: AuthRequest, res: Response) => {
-  const id = parseInt(req.params.id as string, 10);
-
-  if (isNaN(id)) {
-    res.status(400).json({
-      error: { code: 'BAD_REQUEST', message: 'Invalid plan ID' }
-    });
-    return;
-  }
+  const id = parseIntParam(res, req.params.id as string, 'plan ID');
+  if (id === null) return;
 
   const { slug, name, description, daysPerWeek, isPublic, days } = req.body;
 
@@ -298,21 +270,7 @@ router.put('/:id', validate(updatePlanSchema), async (req: AuthRequest, res: Res
       // Return the full plan structure
       return await tx.workoutPlan.findUnique({
         where: { id },
-        include: {
-          days: {
-            include: {
-              exercises: {
-                include: {
-                  sets: {
-                    orderBy: { setOrder: 'asc' },
-                  },
-                },
-                orderBy: { sortOrder: 'asc' },
-              },
-            },
-            orderBy: { dayNumber: 'asc' },
-          },
-        },
+        include: PLAN_SETS_INCLUDE,
       });
     });
 
@@ -329,14 +287,8 @@ router.put('/:id', validate(updatePlanSchema), async (req: AuthRequest, res: Res
 });
 
 router.delete('/:id', async (req: AuthRequest, res: Response) => {
-  const id = parseInt(req.params.id as string, 10);
-
-  if (isNaN(id)) {
-    res.status(400).json({
-      error: { code: 'BAD_REQUEST', message: 'Invalid plan ID' }
-    });
-    return;
-  }
+  const id = parseIntParam(res, req.params.id as string, 'plan ID');
+  if (id === null) return;
 
   const plan = await prisma.workoutPlan.findUnique({
     where: { id },
@@ -380,14 +332,8 @@ const setProgressionRulesSchema = z.object({
 });
 
 router.post('/:id/progression-rules', validate(setProgressionRulesSchema), async (req: AuthRequest, res: Response) => {
-  const id = parseInt(req.params.id as string, 10);
-
-  if (isNaN(id)) {
-    res.status(400).json({
-      error: { code: 'BAD_REQUEST', message: 'Invalid plan ID' }
-    });
-    return;
-  }
+  const id = parseIntParam(res, req.params.id as string, 'plan ID');
+  if (id === null) return;
 
   const { rules } = req.body;
 
