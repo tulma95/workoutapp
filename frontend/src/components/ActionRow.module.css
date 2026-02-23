@@ -1,0 +1,46 @@
+.actionRow {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-xs);
+  padding: var(--space-xs) 0;
+  border-top: 1px solid var(--border);
+}
+
+.reactButtonWrapper {
+  position: relative;
+}
+
+.actionButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 3rem;
+  min-width: 3rem;
+  padding: 0 var(--space-sm);
+  background-color: transparent;
+  color: var(--text-muted);
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.1s, color 0.1s;
+}
+
+.actionButton:hover {
+  background-color: var(--bg);
+}
+
+.actionButton:active {
+  background-color: color-mix(in srgb, var(--border) 60%, transparent);
+}
+
+.actionButton:focus-visible {
+  outline: 0.125rem solid var(--primary);
+  outline-offset: 2px;
+}
+
+.actionButtonActive {
+  color: var(--primary);
+}
