@@ -5,6 +5,13 @@ import type { FeedEventComment, CommentsResponse } from '../api/social';
 import type { User } from '../api/schemas';
 import styles from './CommentSection.module.css';
 
+const AVATAR_PALETTE = ['#4f46e5', '#0891b2', '#059669', '#d97706', '#dc2626', '#7c3aed'];
+
+function getUserAvatarColor(username: string): string {
+  const idx = username.charCodeAt(0) % AVATAR_PALETTE.length;
+  return AVATAR_PALETTE[idx] as string;
+}
+
 interface CommentSectionProps {
   eventId: number;
   commentCount: number;
@@ -135,28 +142,37 @@ export function CommentSection({
         <ul className={styles.commentList} aria-label="Comments">
           {visibleComments.map((comment) => (
             <li key={comment.id} className={styles.commentItem}>
-              <div className={styles.commentHeader}>
-                <span className={styles.commentUsername}>{comment.username}</span>
-                <time
-                  className={styles.commentTime}
-                  dateTime={comment.createdAt}
-                  title={new Date(comment.createdAt).toLocaleString()}
-                >
-                  {formatRelativeTime(comment.createdAt)}
-                </time>
-                {canDelete(comment) && (
-                  <button
-                    type="button"
-                    className={styles.deleteBtn}
-                    aria-label={`Delete comment by ${comment.username}`}
-                    onClick={() => deleteMutation.mutate(comment.id)}
-                    disabled={deleteMutation.isPending && deleteMutation.variables === comment.id}
-                  >
-                    ✕
-                  </button>
-                )}
+              <div
+                className={styles.avatar}
+                style={{ backgroundColor: getUserAvatarColor(comment.username) }}
+                aria-hidden="true"
+              >
+                {(comment.username[0] ?? '?').toUpperCase()}
               </div>
-              <p className={styles.commentText}>{comment.text}</p>
+              <div className={styles.commentContent}>
+                <div className={styles.commentHeader}>
+                  <span className={styles.commentUsername}>{comment.username}</span>
+                  <time
+                    className={styles.commentTime}
+                    dateTime={comment.createdAt}
+                    title={new Date(comment.createdAt).toLocaleString()}
+                  >
+                    {formatRelativeTime(comment.createdAt)}
+                  </time>
+                  {canDelete(comment) && (
+                    <button
+                      type="button"
+                      className={styles.deleteBtn}
+                      aria-label={`Delete comment by ${comment.username}`}
+                      onClick={() => deleteMutation.mutate(comment.id)}
+                      disabled={deleteMutation.isPending && deleteMutation.variables === comment.id}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+                <p className={styles.commentText}>{comment.text}</p>
+              </div>
             </li>
           ))}
         </ul>
