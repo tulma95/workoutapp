@@ -117,6 +117,7 @@ data: {"type":"workout_completed","message":"Alice just finished Day 1"}
 |---|---|
 | `workout_completed` | A friend completes a workout |
 | `achievement_earned` | A friend earns a new achievement badge |
+| `friend_request_received` | Someone sends you a friend request |
 | `friend_request_accepted` | Someone accepts your outgoing friend request |
 | `comment_received` | Someone comments on your feed event (not triggered for self-comments) |
 
@@ -127,6 +128,18 @@ data: {"type":"workout_completed","message":"Alice just finished Day 1"}
 **Multiple tabs**: Each open connection (tab) is registered independently. All connections for the same user receive the same events simultaneously. Connections are cleaned up automatically when the socket closes.
 
 **Errors**: Returns `401 { error: { code: 'TOKEN_INVALID' } }` if the token is missing or invalid.
+
+### Push Notification Payloads
+
+Web push payloads are JSON strings sent via `pushService.sendToUser()`. The `url` field is used by the service worker `notificationclick` handler to navigate when a notification is tapped. All push types include `{ type, message, url }`.
+
+| `type` | Recipient | `url` | Extra fields |
+|---|---|---|---|
+| `comment_received` | feed event owner | `/social/feed?event=<feedEventId>` | — |
+| `friend_request_received` | request recipient | `/social/friends` | — |
+| `friend_request_accepted` | request sender | `/social/friends` | — |
+| `workout_completed` | all accepted friends | `/social/feed` | — |
+| `badge_unlocked` | self | `/achievements` | `slug`, `name`, `description` |
 
 ## Achievement Endpoints (JWT required)
 
