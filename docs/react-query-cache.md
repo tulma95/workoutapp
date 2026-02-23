@@ -21,7 +21,7 @@
 | `['social', 'friend-requests']` | Pending incoming friend requests | SocialPage (FriendsTab) |
 | `['social', 'leaderboard']` | TM rankings per exercise across friends | SocialPage (LeaderboardTab) |
 | `['social', 'leaderboard', 'e1rm']` | e1RM rankings per exercise across user+friends (staleTime: 60s) | SocialPage (LeaderboardTab, e1RM mode) |
-| `['social', 'feed', eventId, 'comments']` | Comments for a specific feed event (ordered by createdAt ASC) | CommentSection (inside CommentModal) |
+| `['social', 'feed', eventId, 'comments']` | Comments for a specific feed event (ordered by createdAt ASC) | CommentSection (inline, fetched lazily when "View all" is clicked) |
 
 ## Invalidation Rules
 
@@ -43,7 +43,7 @@
 | **Decline friend request** | FriendsTab.tsx | `['social', 'friend-requests']`, `['social', 'friends']` |
 | **Remove friend** | FriendsTab.tsx | `['social', 'friends']`, `['social', 'leaderboard']` |
 | **Send friend request** | FriendsTab.tsx | none (inline success message only) |
-| **Toggle feed reaction** | ReactionBar.tsx | `['social', 'feed']` (via `invalidateQueries` in `onSettled`) |
+| **Toggle feed reaction** | ActionRow.tsx | `['social', 'feed']` (via `invalidateQueries` in `onSettled`) |
 | **Create comment** | CommentSection.tsx | `['social', 'feed', eventId, 'comments']`, `['social', 'feed']` (to update commentCount and latestComments) |
 | **Delete comment** | CommentSection.tsx | `['social', 'feed', eventId, 'comments']`, `['social', 'feed']` (to update commentCount and latestComments) |
 

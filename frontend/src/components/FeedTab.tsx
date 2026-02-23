@@ -85,7 +85,7 @@ function FeedItem({ event, currentUserId }: FeedItemProps) {
         commentCount={event.commentCount}
         eventOwnerId={event.userId}
         currentUserId={currentUserId}
-        latestComments={event.latestComments}
+        latestComments={event.latestComments ?? []}
         inputRef={inputRef}
       />
     </li>
