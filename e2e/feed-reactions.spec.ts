@@ -20,7 +20,7 @@ async function registerAndSetup(page: Page, email: string, username: string) {
 test.describe('Feed reactions', () => {
   test.setTimeout(60000);
 
-  test('B can react to A\'s feed event and toggle the reaction off', async ({ browser, baseURL }) => {
+  test("B can react to A's feed event with emoji picker and toggle off", async ({ browser, baseURL }) => {
     const uniqueA = crypto.randomUUID().slice(0, 8);
     const uniqueB = crypto.randomUUID().slice(0, 8);
     const emailA = `react-a-${uniqueA}@example.com`;
@@ -79,30 +79,58 @@ test.describe('Feed reactions', () => {
         pageB.getByText(new RegExp(`${usernameA}.*completed Day`, 'i')),
       ).toBeVisible({ timeout: 10000 });
 
-      // --- userB taps the 🔥 button ---
-      // Initially: aria-label="React with 🔥", aria-pressed="false"
-      const fireButton = pageB.getByRole('button', { name: 'React with 🔥', exact: true }).first();
-      await expect(fireButton).toBeVisible();
-      await expect(fireButton).toHaveAttribute('aria-pressed', 'false');
-      await fireButton.click();
+      // (a) Verify "React" button is visible in the action row
+      const reactButton = pageB.getByRole('button', { name: 'React', exact: true }).first();
+      await expect(reactButton).toBeVisible();
 
-      // After react: aria-label="React with 🔥 (1)", aria-pressed="true"
-      const activeFireButton = pageB
-        .getByRole('button', { name: 'React with 🔥 (1)', exact: true })
-        .first();
-      await expect(activeFireButton).toBeVisible({ timeout: 5000 });
-      await expect(activeFireButton).toHaveAttribute('aria-pressed', 'true');
+      // (b) Click the React button — EmojiPicker should appear
+      await reactButton.click();
+      const fireEmojiButton = pageB.getByRole('button', { name: '🔥' }).first();
+      await expect(fireEmojiButton).toBeVisible();
 
-      // --- Tap again to toggle off ---
-      await activeFireButton.click();
-
-      // After toggle off: aria-label="React with 🔥", aria-pressed="false", count gone
-      const inactiveFireButton = pageB
-        .getByRole('button', { name: 'React with 🔥', exact: true })
-        .first();
-      await expect(inactiveFireButton).toHaveAttribute('aria-pressed', 'false', { timeout: 5000 });
+      // (d) Click outside the picker to close it without selecting a reaction
+      await pageB.getByText(new RegExp(`${usernameA}.*completed Day`, 'i')).first().click();
+      // Picker should close — no emoji buttons visible
+      await expect(pageB.getByRole('button', { name: '🔥' })).toHaveCount(0);
+      // React button still shows no reaction (aria-pressed="false")
       await expect(
-        pageB.getByRole('button', { name: 'React with 🔥 (1)', exact: true }),
+        pageB.getByRole('button', { name: 'React', exact: true }).first(),
+      ).toHaveAttribute('aria-pressed', 'false');
+
+      // (b again) Click React button again — picker opens
+      await pageB.getByRole('button', { name: 'React', exact: true }).first().click();
+      await expect(pageB.getByRole('button', { name: '🔥' }).first()).toBeVisible();
+
+      // (c) Click 🔥 emoji — reaction toggled on, picker closes
+      await pageB.getByRole('button', { name: '🔥' }).first().click();
+      // Picker should be gone
+      await expect(pageB.getByRole('button', { name: '🔥' })).toHaveCount(0);
+      // React button now reflects the active reaction
+      const activeReactButton = pageB
+        .getByRole('button', { name: 'You reacted with 🔥', exact: true })
+        .first();
+      await expect(activeReactButton).toBeVisible({ timeout: 5000 });
+      await expect(activeReactButton).toHaveAttribute('aria-pressed', 'true');
+
+      // (e) ReactionSummary shows the emoji count — "1" visible in the first feed item
+      await expect(
+        pageB.getByRole('listitem').first().getByText('1'),
+      ).toBeVisible({ timeout: 5000 });
+
+      // (f) Click the active React button to open picker, then click 🔥 again to toggle off
+      await activeReactButton.click();
+      await expect(pageB.getByRole('button', { name: '🔥' }).first()).toBeVisible();
+      await pageB.getByRole('button', { name: '🔥' }).first().click();
+
+      // Picker closes and reaction is removed
+      await expect(pageB.getByRole('button', { name: '🔥' })).toHaveCount(0);
+      const inactiveReactButton = pageB
+        .getByRole('button', { name: 'React', exact: true })
+        .first();
+      await expect(inactiveReactButton).toHaveAttribute('aria-pressed', 'false', { timeout: 5000 });
+      // ReactionSummary should no longer show count "1" in the feed item
+      await expect(
+        pageB.getByRole('listitem').first().getByText('1'),
       ).toHaveCount(0);
     } finally {
       await contextA.close();
