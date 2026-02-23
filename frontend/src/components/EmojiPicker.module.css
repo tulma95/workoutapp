@@ -1,0 +1,50 @@
+.container {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 100;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  gap: 0.25rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.emojiButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3rem;
+  min-height: 3rem;
+  font-size: 1.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.1s;
+  line-height: 1;
+}
+
+.emojiButton:hover {
+  background-color: var(--bg);
+}
+
+.emojiButton:active {
+  background-color: color-mix(in srgb, var(--border) 60%, transparent);
+}
+
+.emojiButton:focus-visible {
+  outline: 0.125rem solid var(--primary);
+  outline-offset: 2px;
+}
+
+.emojiButton[aria-pressed='true'] {
+  background-color: color-mix(in srgb, var(--primary) 12%, transparent);
+  outline: 1px solid var(--primary);
+}
