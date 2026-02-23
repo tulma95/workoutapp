@@ -566,6 +566,7 @@ export async function completeWorkout(workoutId: number, userId: number) {
       message: 'Workout completed!',
       workoutId,
       dayNumber: workout.dayNumber,
+      url: '/',
     }));
 
     for (const achievement of newAchievements) {
@@ -575,6 +576,7 @@ export async function completeWorkout(workoutId: number, userId: number) {
         slug: achievement.slug,
         name: achievement.name,
         description: achievement.description,
+        url: '/achievements',
       }));
     }
 
@@ -644,6 +646,7 @@ export async function completeWorkout(workoutId: number, userId: number) {
     message: 'Workout completed!',
     workoutId,
     dayNumber: workout.dayNumber,
+    url: '/',
   }));
 
   for (const achievement of noPlanAchievements) {
@@ -653,6 +656,7 @@ export async function completeWorkout(workoutId: number, userId: number) {
       slug: achievement.slug,
       name: achievement.name,
       description: achievement.description,
+      url: '/achievements',
     }));
   }
 
@@ -848,6 +852,7 @@ export async function createCustomWorkout(userId: number, payload: CustomWorkout
     message: 'Workout completed!',
     workoutId: workout.id,
     dayNumber: 0,
+    url: '/',
   }));
 
   for (const achievement of newAchievements) {
@@ -857,6 +862,7 @@ export async function createCustomWorkout(userId: number, payload: CustomWorkout
       slug: achievement.slug,
       name: achievement.name,
       description: achievement.description,
+      url: '/achievements',
     }));
   }
 

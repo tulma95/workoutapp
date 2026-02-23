@@ -175,12 +175,7 @@ router.post('/:id/complete', async (req: AuthRequest, res: Response) => {
         type: 'achievement_earned',
         message: `${username} earned ${achievement.name}`,
       });
-      // Push achievement to the user themselves
-      void pushService.sendToUser(userId, JSON.stringify({
-        type: 'achievement_earned',
-        message: `${username} earned ${achievement.name}`,
-        url: '/achievements',
-      }));
+      // Self push is handled by workout.service.ts (badge_unlocked with url: '/achievements')
     }
   })();
 
