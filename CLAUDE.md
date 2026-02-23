@@ -12,7 +12,6 @@ A workout tracking application supporting configurable training plans. Ships wit
 - **Database**: PostgreSQL latest (Dockerized via docker-compose)
 - **Package manager**: npm workspaces (monorepo: `backend/`, `frontend/`)
 - **Node**: v22 (`.nvmrc`)
-- Prefer simple solutions
 
 ## Architecture
 
