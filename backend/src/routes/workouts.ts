@@ -6,6 +6,7 @@ import { AuthRequest, ExistingWorkoutError, getUserId } from '../types';
 import * as workoutService from '../services/workout.service';
 import prisma from '../lib/db';
 import { notificationManager } from '../services/notifications.service';
+import { pushService } from '../services/push.service';
 
 const router = Router();
 
@@ -150,11 +151,36 @@ router.post('/:id/complete', async (req: AuthRequest, res: Response) => {
       type: 'workout_completed',
       message: `${username} just finished Day ${workout.dayNumber}`,
     });
+    // Push workout completion to all friends
+    const friendships = await prisma.friendship.findMany({
+      where: {
+        OR: [
+          { requesterId: userId, status: 'accepted' },
+          { addresseeId: userId, status: 'accepted' },
+        ],
+      },
+    });
+    const friendIds = friendships.map((f) => (f.requesterId === userId ? f.addresseeId : f.requesterId));
+    await Promise.all(
+      friendIds.map((friendId) =>
+        pushService.sendToUser(friendId, JSON.stringify({
+          type: 'workout_completed',
+          message: `${username} just finished Day ${workout.dayNumber}`,
+          url: '/social/feed',
+        })),
+      ),
+    );
     for (const achievement of newAchievements) {
       await notificationManager.notifyFriends(userId, {
         type: 'achievement_earned',
         message: `${username} earned ${achievement.name}`,
       });
+      // Push achievement to the user themselves
+      void pushService.sendToUser(userId, JSON.stringify({
+        type: 'achievement_earned',
+        message: `${username} earned ${achievement.name}`,
+        url: '/achievements',
+      }));
     }
   })();
 

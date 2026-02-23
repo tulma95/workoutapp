@@ -126,6 +126,7 @@ router.post('/request', validate(requestSchema), async (req: AuthRequest, res: R
     void pushService.sendToUser(target.id, JSON.stringify({
       type: 'friend_request_received',
       message: `${senderUsername} sent you a friend request`,
+      url: '/social/friends',
     }));
     res.status(201).json({ id: friendship.id });
     return;
@@ -143,6 +144,7 @@ router.post('/request', validate(requestSchema), async (req: AuthRequest, res: R
   void pushService.sendToUser(target.id, JSON.stringify({
     type: 'friend_request_received',
     message: `${senderUsername} sent you a friend request`,
+    url: '/social/friends',
   }));
 
   res.status(201).json({ id: friendship.id });
@@ -291,6 +293,7 @@ router.patch('/requests/:id/accept', async (req: AuthRequest, res: Response) => 
     void pushService.sendToUser(friendship.initiatorId, JSON.stringify({
       type: 'friend_request_accepted',
       message: `${acceptorUsername} accepted your friend request`,
+      url: '/social/friends',
     }));
   }
 
@@ -701,7 +704,11 @@ router.post('/feed/:eventId/comments', validate(commentSchema), async (req: Auth
     });
     void pushService.sendToUser(
       event.userId,
-      JSON.stringify({ type: 'comment_received', message: `${commenterUsername} commented on your activity` }),
+      JSON.stringify({
+        type: 'comment_received',
+        message: `${commenterUsername} commented on your activity`,
+        url: `/social/feed?event=${eventId}`,
+      }),
     );
   }
 

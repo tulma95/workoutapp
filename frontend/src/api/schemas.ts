@@ -422,7 +422,7 @@ export type AchievementsResponse = z.infer<typeof AchievementsResponseSchema>;
 
 // Notification SSE schemas
 export const notificationEventSchema = z.object({
-  type: z.enum(['workout_completed', 'achievement_earned', 'friend_request_accepted', 'comment_received']),
+  type: z.enum(['workout_completed', 'achievement_earned', 'friend_request_accepted', 'friend_request_received', 'comment_received']),
   message: z.string(),
 });
 

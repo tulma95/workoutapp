@@ -1,4 +1,4 @@
-const CACHE_NAME = 'setforge-v2';
+const CACHE_NAME = 'setforge-v3';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -53,7 +53,29 @@ self.addEventListener('push', event => {
       body: data.message ?? 'New notification',
       icon: '/icon.svg',
       badge: '/icon.svg',
-      tag: data.type ?? 'generic'
+      tag: data.type ?? 'generic',
+      data: { url: data.url ?? '/' }
+    })
+  );
+});
+
+// Notification click: focus an existing window or open a new one.
+// Note: this handler is not covered by E2E tests because headless browsers
+// do not support the Notification API in a way that allows click simulation.
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url ?? '/';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      for (const client of windowClients) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          client.navigate(url);
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(url);
+      }
     })
   );
 });
