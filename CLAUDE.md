@@ -217,7 +217,9 @@ When you add or change API endpoints, DB schema, query keys, or invalidation rul
 
 Dont use typescript-code-review skill
 
-dont use co-author in commits
+Dont use co-author in commits
+
+Explain in commit messages why instead of what
 
 **Ticket workflow**: Use `ticket start <id>` to set the active ticket before starting work. Include the ticket ID in all commit messages — get it via `ticket current` and format as `feat(027): add achievement badges page`. When work is complete, mark the ticket done with `ticket status <id> done` (this auto-clears the current ticket).
 
