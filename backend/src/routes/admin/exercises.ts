@@ -5,6 +5,7 @@ import { authenticate } from '../../middleware/auth';
 import { requireAdmin } from '../../middleware/admin';
 import { AuthRequest } from '../../types';
 import prisma from '../../lib/db';
+import { parseIntParam, isPrismaError } from '../../lib/routeHelpers';
 
 const router = Router();
 
@@ -26,10 +27,6 @@ const updateExerciseSchema = z.object({
   category: z.string().optional(),
   isUpperBody: z.boolean().optional(),
 });
-
-function isPrismaError(e: unknown, code: string): boolean {
-  return e instanceof Error && 'code' in e && (e as Record<string, unknown>).code === code;
-}
 
 router.post('/', validate(createExerciseSchema), async (req: AuthRequest, res: Response) => {
   try {
@@ -56,7 +53,8 @@ router.get('/', async (_req: AuthRequest, res: Response) => {
 });
 
 router.patch('/:id', validate(updateExerciseSchema), async (req: AuthRequest, res: Response) => {
-  const id = parseInt(req.params.id as string);
+  const id = parseIntParam(res, req.params.id as string, 'exercise ID');
+  if (id === null) return;
 
   try {
     const exercise = await prisma.exercise.update({
@@ -76,7 +74,8 @@ router.patch('/:id', validate(updateExerciseSchema), async (req: AuthRequest, re
 });
 
 router.delete('/:id', async (req: AuthRequest, res: Response) => {
-  const id = parseInt(req.params.id as string);
+  const id = parseIntParam(res, req.params.id as string, 'exercise ID');
+  if (id === null) return;
 
   // Check if exercise is referenced by any PlanDayExercise
   const referencedBy = await prisma.planDayExercise.findFirst({

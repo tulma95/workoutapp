@@ -3,14 +3,9 @@ import { z } from 'zod';
 import { validate } from '../middleware/validate';
 import * as authService from '../services/auth.service';
 import { logger } from '../lib/logger';
+import { usernameSchema, isP2002UsernameViolation } from '../lib/routeHelpers';
 
 const router = Router();
-
-const usernameSchema = z
-  .string()
-  .min(3)
-  .max(30)
-  .regex(/^[a-zA-Z0-9_]+$/, 'Username may only contain letters, numbers, and underscores');
 
 const registerSchema = z.object({
   email: z.email(),
@@ -31,26 +26,16 @@ router.post('/register', validate(registerSchema), async (req: Request, res: Res
     const result = await authService.register(email, password, username);
     res.status(201).json(result);
   } catch (err: unknown) {
+    if (isP2002UsernameViolation(err)) {
+      res.status(409).json({
+        error: { code: 'USERNAME_EXISTS', message: 'This username is already taken' },
+      });
+      return;
+    }
     if (err && typeof err === 'object' && 'code' in err && err.code === 'P2002') {
-      const meta = (err as { meta?: Record<string, unknown> }).meta ?? {};
-      // Prisma v7 with PG adapter puts constraint info in driverAdapterError.cause.constraint.fields
-      const adapterFields: string[] =
-        (meta.driverAdapterError as { cause?: { constraint?: { fields?: string[] } } } | undefined)
-          ?.cause?.constraint?.fields ?? [];
-      const legacyTarget = meta.target as string[] | string | undefined;
-      const isUsernameDuplicate =
-        adapterFields.includes('username') ||
-        (Array.isArray(legacyTarget) && legacyTarget.some((t) => String(t).includes('username'))) ||
-        (typeof legacyTarget === 'string' && legacyTarget.includes('username'));
-      if (isUsernameDuplicate) {
-        res.status(409).json({
-          error: { code: 'USERNAME_EXISTS', message: 'This username is already taken' },
-        });
-      } else {
-        res.status(409).json({
-          error: { code: 'EMAIL_EXISTS', message: 'An account with this email already exists' },
-        });
-      }
+      res.status(409).json({
+        error: { code: 'EMAIL_EXISTS', message: 'An account with this email already exists' },
+      });
       return;
     }
     throw err;
