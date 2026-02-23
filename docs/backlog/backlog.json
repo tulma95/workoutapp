@@ -1,5 +1,12 @@
 [
   {
+    "id": "101",
+    "title": "Feed event owner cannot read or post comments on their own events",
+    "status": "done",
+    "priority": "high",
+    "description": "POST and GET /api/social/feed/:eventId/comments use getAcceptedFriendIds() which does not include self. The event owner is blocked from commenting on or reading comments on their own events (403). DELETE correctly allows owner to delete. Access control should allow: friends of owner + owner themselves."
+  },
+  {
     "id": "107",
     "title": "Include own events in social feed",
     "status": "done",
@@ -602,13 +609,6 @@
     "status": "backlog",
     "priority": "low",
     "description": "The array [7, 14, 30, 60, 90] is defined inline at three separate locations in workout.service.ts (lines 530, 614, 809). It should be a single module-level constant to avoid divergence if milestone thresholds ever change."
-  },
-  {
-    "id": "101",
-    "title": "Feed event owner cannot read or post comments on their own events",
-    "status": "backlog",
-    "priority": "high",
-    "description": "POST and GET /api/social/feed/:eventId/comments use getAcceptedFriendIds() which does not include self. The event owner is blocked from commenting on or reading comments on their own events (403). DELETE correctly allows owner to delete. Access control should allow: friends of owner + owner themselves."
   },
   {
     "id": "102",
