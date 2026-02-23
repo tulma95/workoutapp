@@ -36,7 +36,8 @@ export function CommentSection({
   const queryClient = useQueryClient();
   const [text, setText] = useState('');
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState(false);
+  // Auto-expand when no latestComments provided (e.g. modal context) so query fires immediately
+  const [expanded, setExpanded] = useState(latestComments === undefined);
 
   const currentUser = queryClient.getQueryData<User>(['user', 'me']);
 
