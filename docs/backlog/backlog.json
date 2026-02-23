@@ -1,5 +1,11 @@
 [
   {
+    "id": "107",
+    "title": "Include own events in social feed",
+    "status": "done",
+    "description": "The feed currently only shows friends' activity (userId: { in: friendIds }), excluding the user's own events. This means if someone comments or reacts on your workout, you can't find that feed item anywhere in the UI. Fix: include the current user's ID in the feed query so your own events always appear alongside friends' events. Change the feed query in backend/src/routes/social.ts to include userId in the friendIds array. Also handle the edge case where friendIds is empty — currently returns early with empty array, but should still show own events."
+  },
+  {
     "id": "098",
     "title": "Friend request received push notification",
     "status": "done",
@@ -634,12 +640,6 @@
     "title": "Custom workout modal: no error shown for future date",
     "status": "backlog",
     "description": "In CustomWorkoutModal, when a user manually edits the date input to a future date, the field gets native HTML5 invalid state (from max attribute) but there is no visible error message. The Save button silently stays disabled with no explanation. Add inline validation text like 'Date cannot be in the future' when the date input is invalid."
-  },
-  {
-    "id": "107",
-    "title": "Include own events in social feed",
-    "status": "backlog",
-    "description": "The feed currently only shows friends' activity (userId: { in: friendIds }), excluding the user's own events. This means if someone comments or reacts on your workout, you can't find that feed item anywhere in the UI. Fix: include the current user's ID in the feed query so your own events always appear alongside friends' events. Change the feed query in backend/src/routes/social.ts to include userId in the friendIds array. Also handle the edge case where friendIds is empty — currently returns early with empty array, but should still show own events."
   },
   {
     "id": "108",
