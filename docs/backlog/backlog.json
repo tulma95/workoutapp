@@ -1,11 +1,5 @@
 [
   {
-    "id": "108",
-    "title": "Push notification click navigation",
-    "status": "backlog",
-    "description": "When a push notification is tapped, navigate the user to the relevant view in the app. Implementation:\n\n1. **Backend**: Add a `url` field to each push notification payload (include `feedEventId` in comment_received payload for deep-linking):\n   - `comment_received` → `/social/feed?event=<feedEventId>` (scroll to and highlight the specific feed event)\n   - `friend_request_received` → `/social/friends`\n   - `friend_request_accepted` → `/social/friends`\n   - `workout_completed` → `/social/feed`\n   - `badge_unlocked` → `/achievements`\n\n2. **Service worker (sw.js)**: Add a `notificationclick` event handler that:\n   - Closes the notification\n   - Reads `data.url` from the notification\n   - If an app window is already open, navigates it and focuses it\n   - Otherwise opens a new window at that URL\n\n3. **Frontend social page**: Convert tabs to proper sub-routes:\n   - Create route files: `social/feed.tsx`, `social/friends.tsx`, `social/leaderboard.tsx`\n   - `/social` redirects to `/social/feed` (default tab)\n   - Tab navigation uses `<Link>` / `<ButtonLink>` for proper anchor tags\n   - `social/feed.tsx` reads optional `?event=<id>` search param via `validateSearch`\n   - When `event` search param is present, scroll to that feed event and highlight it (e.g. brief CSS animation)\n\nBump service worker cache name to `setforge-v3` since behavior changes."
-  },
-  {
     "id": "086",
     "title": "Refactor workout.service.ts: extract streak/badge helper and STREAK_MILESTONES constant",
     "status": "backlog",
@@ -327,5 +321,33 @@
     "status": "backlog",
     "priority": "medium",
     "description": "GET /api/social/feed batch-fetches ALL comments for up to 20 events with no LIMIT. In the worst case this could be thousands of rows. The backend should instead use a ranked subquery or window function to fetch only the 2 most recent comments per event at the DB level, not slice in memory."
+  },
+  {
+    "id": "113",
+    "title": "SocialContent.tsx component is now a dead code orphan — social route was refactored to sub-routes but SocialContent was not deleted",
+    "status": "backlog",
+    "priority": "low",
+    "description": "After converting social.tsx to a layout route with sub-routes in ticket 108, the SocialContent component (frontend/src/components/SocialContent.tsx) is no longer imported by any route. It remains in the codebase as dead code. The social.tsx route layout now imports SocialContent.module.css directly. SocialContent.tsx itself can be deleted."
+  },
+  {
+    "id": "114",
+    "title": "docs/api-endpoints.md push payload section is missing: url field documentation, friend_request_received event type, and workout_completed/achievement_earned push notifications to friends/self",
+    "status": "backlog",
+    "priority": "low",
+    "description": "After ticket 108, the push notification payload format now includes a url field and the push event table is missing friend_request_received. The workouts route handler now also sends push notifications to friends on workout completion, and to self on achievement, which are undocumented. The SSE event table in docs/api-endpoints.md is also missing friend_request_received."
+  },
+  {
+    "id": "115",
+    "title": "Remove orphaned SocialContent.tsx component after sub-route refactor",
+    "status": "backlog",
+    "priority": "low",
+    "description": "SocialContent.tsx and its CSS are no longer imported after the social sub-route refactor in ticket 108. Delete the file."
+  },
+  {
+    "id": "116",
+    "title": "Update api-endpoints.md push payload section for ticket 108 changes",
+    "status": "backlog",
+    "priority": "low",
+    "description": "Add url field to push payload docs, add friend_request_received to SSE event table, and document new friend/self push notifications added in ticket 108."
   }
 ]
