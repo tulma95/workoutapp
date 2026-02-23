@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getFeed } from '../api/social';
 import type { FeedEvent } from '../api/social';
@@ -6,8 +6,9 @@ import { FeedEventPayloadSchema } from '../api/schemas';
 import type { User } from '../api/schemas';
 import { formatWeight } from '../utils/weight';
 import { SkeletonLine, SkeletonCard } from './Skeleton';
-import { ReactionBar } from './ReactionBar';
-import { CommentModal } from './CommentModal';
+import { ReactionSummary } from './ReactionSummary';
+import { ActionRow } from './ActionRow';
+import { CommentSection } from './CommentSection';
 import styles from './FeedTab.module.css';
 
 function renderEventText(event: FeedEvent): string | null {
@@ -49,11 +50,52 @@ function formatRelativeTime(createdAt: string): string {
   return `${days}d ago`;
 }
 
+interface FeedItemProps {
+  event: FeedEvent;
+  currentUserId: number;
+}
+
+function FeedItem({ event, currentUserId }: FeedItemProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const text = renderEventText(event);
+  if (text === null) return null;
+
+  return (
+    <li className={styles.eventItem}>
+      <div className={styles.eventHeader}>
+        <span className={styles.eventUsername}>{event.username}</span>
+        <time
+          className={styles.eventTime}
+          dateTime={event.createdAt}
+          title={new Date(event.createdAt).toLocaleString()}
+        >
+          {formatRelativeTime(event.createdAt)}
+        </time>
+      </div>
+      <p className={styles.eventText}>{text}</p>
+      <ReactionSummary reactions={event.reactions} commentCount={event.commentCount} />
+      <ActionRow
+        eventId={event.id}
+        reactions={event.reactions}
+        currentUserId={currentUserId}
+        onCommentFocus={() => inputRef.current?.focus()}
+      />
+      <CommentSection
+        eventId={event.id}
+        commentCount={event.commentCount}
+        eventOwnerId={event.userId}
+        currentUserId={currentUserId}
+        latestComments={event.latestComments}
+        inputRef={inputRef}
+      />
+    </li>
+  );
+}
+
 export function FeedTab() {
   const queryClient = useQueryClient();
   const currentUser = queryClient.getQueryData<User>(['user', 'me']);
   const currentUserId = currentUser?.id ?? 0;
-  const [openCommentEventId, setOpenCommentEventId] = useState<number | null>(null);
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['social', 'feed'],
     queryFn: getFeed,
@@ -98,69 +140,11 @@ export function FeedTab() {
     );
   }
 
-  const openEvent = events.find((e) => e.id === openCommentEventId) ?? null;
-
   return (
-    <>
-      <ul className={styles.list} aria-label="Activity feed" aria-live="polite">
-        {events.map((event) => {
-          const text = renderEventText(event);
-          if (text === null) return null;
-          return (
-            <li key={event.id} className={styles.eventItem}>
-              <p className={styles.eventText}>{text}</p>
-              <time
-                className={styles.eventTime}
-                dateTime={event.createdAt}
-                title={new Date(event.createdAt).toLocaleString()}
-              >
-                {formatRelativeTime(event.createdAt)}
-              </time>
-              <div className={styles.eventActions}>
-                <ReactionBar eventId={event.id} reactions={event.reactions} />
-                <CommentButton
-                  count={event.commentCount}
-                  onClick={() => setOpenCommentEventId(event.id)}
-                />
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-      {openEvent !== null && (
-        <CommentModal
-          open={openCommentEventId !== null}
-          eventId={openEvent.id}
-          eventOwnerId={openEvent.userId}
-          commentCount={openEvent.commentCount}
-          currentUserId={currentUserId}
-          onClose={() => setOpenCommentEventId(null)}
-        />
-      )}
-    </>
-  );
-}
-
-interface CommentButtonProps {
-  count: number;
-  onClick: () => void;
-}
-
-function CommentButton({ count, onClick }: CommentButtonProps) {
-  const ariaLabel = count > 0 ? `Comments (${count})` : 'Comments';
-  return (
-    <button
-      type="button"
-      className={styles.commentBtn}
-      aria-label={ariaLabel}
-      onClick={onClick}
-    >
-      <span aria-hidden="true">💬</span>
-      {count > 0 && (
-        <span className={styles.commentCount} aria-hidden="true">
-          {count}
-        </span>
-      )}
-    </button>
+    <ul className={styles.list} aria-label="Activity feed" aria-live="polite">
+      {events.map((event) => (
+        <FeedItem key={event.id} event={event} currentUserId={currentUserId} />
+      ))}
+    </ul>
   );
 }

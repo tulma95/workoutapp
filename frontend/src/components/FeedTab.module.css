@@ -20,6 +20,19 @@
   flex-direction: column;
   gap: var(--space-xs);
   min-height: 3rem;
+  overflow: visible;
+}
+
+.eventHeader {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+}
+
+.eventUsername {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text);
 }
 
 .eventText {
@@ -30,8 +43,9 @@
 }
 
 .eventTime {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
+  margin-left: auto;
 }
 
 .emptyState {
@@ -77,46 +91,3 @@
   outline-offset: 2px;
 }
 
-.eventActions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-xs);
-  margin-top: var(--space-xs);
-}
-
-.commentBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  min-height: 3rem;
-  min-width: 3rem;
-  padding: 0 var(--space-sm);
-  background-color: transparent;
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  font-size: 1rem;
-  line-height: 1;
-  cursor: pointer;
-  transition: background-color 0.1s, border-color 0.1s, color 0.1s;
-}
-
-.commentBtn:hover {
-  background-color: color-mix(in srgb, var(--primary) 8%, transparent);
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.commentBtn:focus-visible {
-  outline: 0.125rem solid var(--primary);
-  outline-offset: 2px;
-}
-
-.commentCount {
-  font-size: 0.75rem;
-  font-weight: 600;
-  line-height: 1;
-  min-width: 0.75rem;
-  text-align: center;
-}

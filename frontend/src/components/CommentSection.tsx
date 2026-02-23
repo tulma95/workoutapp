@@ -11,7 +11,7 @@ interface CommentSectionProps {
   eventOwnerId: number;
   currentUserId: number;
   latestComments?: FeedEventComment[];
-  inputRef?: React.RefObject<HTMLInputElement>;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
 function formatRelativeTime(createdAt: string): string {
