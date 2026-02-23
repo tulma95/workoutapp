@@ -616,5 +616,41 @@
     "title": "Improve logging coverage across backend services",
     "status": "backlog",
     "description": "Fill gaps identified in logging analysis where entire subsystems are silent and client-facing errors go unrecorded. Specific improvements: 1) Add warn-level logging for validation failures (Zod errors) and route-level caught errors (400s, 409s). 2) Add debug-level logging in achievement, notification, and feed services. 3) Add Prisma query event logging for slow queries. 4) Log weight calculation steps at debug level."
+  },
+  {
+    "id": "104",
+    "title": "Audit frontend catch blocks for incorrect error message extraction",
+    "status": "backlog",
+    "description": "The register page used err.error.message instead of err.message to extract ApiError messages, causing generic fallback messages. Other catch blocks in settings.tsx, FriendsTab.tsx, and workout.$dayNumber.tsx use the same 'error' in err pattern but operate on raw response bodies (not ApiError). These should be audited to confirm they work correctly now that ApiError is used consistently via the api/client.ts layer."
+  },
+  {
+    "id": "105",
+    "title": "Calendar badge shows 0 for custom workouts",
+    "status": "backlog",
+    "description": "In WorkoutCalendar.tsx:219, when a single workout exists on a date, the badge displays dayNumber instead of the count. Custom workouts have dayNumber: 0, so the badge renders 0 instead of 1. Fix: handle dayNumber === 0 case, e.g. day.workouts[0]!.dayNumber || day.workouts.length."
+  },
+  {
+    "id": "106",
+    "title": "Custom workout modal: no error shown for future date",
+    "status": "backlog",
+    "description": "In CustomWorkoutModal, when a user manually edits the date input to a future date, the field gets native HTML5 invalid state (from max attribute) but there is no visible error message. The Save button silently stays disabled with no explanation. Add inline validation text like 'Date cannot be in the future' when the date input is invalid."
+  },
+  {
+    "id": "107",
+    "title": "Include own events in social feed",
+    "status": "backlog",
+    "description": "The feed currently only shows friends' activity (userId: { in: friendIds }), excluding the user's own events. This means if someone comments or reacts on your workout, you can't find that feed item anywhere in the UI. Fix: include the current user's ID in the feed query so your own events always appear alongside friends' events. Change the feed query in backend/src/routes/social.ts to include userId in the friendIds array. Also handle the edge case where friendIds is empty — currently returns early with empty array, but should still show own events."
+  },
+  {
+    "id": "108",
+    "title": "Push notification click navigation",
+    "status": "backlog",
+    "description": "When a push notification is tapped, navigate the user to the relevant view in the app. Implementation:\n\n1. **Backend**: Add a `url` field to each push notification payload (include `feedEventId` in comment_received payload for deep-linking):\n   - `comment_received` → `/social/feed?event=<feedEventId>` (scroll to and highlight the specific feed event)\n   - `friend_request_received` → `/social/friends`\n   - `friend_request_accepted` → `/social/friends`\n   - `workout_completed` → `/social/feed`\n   - `badge_unlocked` → `/achievements`\n\n2. **Service worker (sw.js)**: Add a `notificationclick` event handler that:\n   - Closes the notification\n   - Reads `data.url` from the notification\n   - If an app window is already open, navigates it and focuses it\n   - Otherwise opens a new window at that URL\n\n3. **Frontend social page**: Convert tabs to proper sub-routes:\n   - Create route files: `social/feed.tsx`, `social/friends.tsx`, `social/leaderboard.tsx`\n   - `/social` redirects to `/social/feed` (default tab)\n   - Tab navigation uses `<Link>` / `<ButtonLink>` for proper anchor tags\n   - `social/feed.tsx` reads optional `?event=<id>` search param via `validateSearch`\n   - When `event` search param is present, scroll to that feed event and highlight it (e.g. brief CSS animation)\n\nBump service worker cache name to `setforge-v3` since behavior changes."
+  },
+  {
+    "id": "109",
+    "title": "Facebook-style social feed redesign",
+    "status": "backlog",
+    "doc": "docs/plans/2026-02-23-facebook-style-feed-design.md"
   }
 ]
