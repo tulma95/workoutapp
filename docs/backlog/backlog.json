@@ -1,130 +1,5 @@
 [
   {
-    "id": "117",
-    "title": "Add background styling to comments for visual distinction",
-    "status": "done",
-    "description": "Comments in the feed lack visual separation — they are plain text blocks with only a thin border-bottom between them, making them hard to distinguish from each other and from the surrounding card content.\n\nAdd a subtle background (e.g. slightly tinted var(--bg) or a lighter shade) with rounded corners and padding to each .commentItem, so each comment feels like its own distinct block. This gives immediate visual clarity about where one comment ends and another begins.\n\nReference: CommentSection.module.css .commentItem"
-  },
-  {
-    "id": "116",
-    "title": "View all comments button does not show all comments",
-    "status": "done",
-    "description": "Bug: Clicking 'View all N comments' hides the button but still only shows the 2 latest comments instead of all N.\n\nRepro steps:\n1. Have a feed event with 3+ comments\n2. Feed shows 2 latest comments and a 'View all N comments' button\n3. Click the button\n4. Button disappears but only the same 2 comments remain visible\n\nRoot cause likely in CommentSection.tsx: when expanded is set to true, the query fires with initialData set to latestComments (2 most recent). The query may be serving initialData without refetching, or the backend GET /api/social/feed/:eventId/comments endpoint may not be returning all comments.\n\nReference: CommentSection.tsx lines 44-49 (initialData / enabled logic)"
-  },
-  {
-    "id": "115",
-    "title": "Limit reactions to one emoji per user per feed event",
-    "status": "done",
-    "description": "Currently users can react with multiple different emojis on the same feed event. Users should only be able to select one emoji reaction per event — selecting a new emoji should replace the previous one, similar to LinkedIn reactions.\n\nReference: ActionRow.tsx, backend social routes (POST /api/social/feed/:eventId/reactions)"
-  },
-  {
-    "id": "114",
-    "title": "Improve comment visual separation in feed",
-    "status": "done",
-    "description": "Comments in the social feed are hard to distinguish from each other. Currently they only have a thin border-bottom line between them, with no background differentiation, no avatars/initials, and small similar-colored text that blends together.\n\nProposed improvements:\n- Add colored user initial circles (avatar placeholders) to the left of each comment, using a deterministic color based on username — this provides instant visual anchoring for who said what\n- Add a subtle background color to each comment (e.g. var(--bg-card) or a slightly lighter shade) with rounded corners and padding, so each comment feels like its own distinct bubble\n- Increase vertical spacing between comments (gap: var(--space-md) instead of var(--space-sm))\n- Make the username bolder/slightly larger to create clearer visual hierarchy\n\nReference: CommentSection.tsx and CommentSection.module.css"
-  },
-  {
-    "id": "109",
-    "title": "Facebook-style social feed redesign",
-    "status": "done",
-    "doc": "docs/plans/2026-02-23-facebook-style-feed-design.md"
-  },
-  {
-    "id": "101",
-    "title": "Feed event owner cannot read or post comments on their own events",
-    "status": "done",
-    "priority": "high",
-    "description": "POST and GET /api/social/feed/:eventId/comments use getAcceptedFriendIds() which does not include self. The event owner is blocked from commenting on or reading comments on their own events (403). DELETE correctly allows owner to delete. Access control should allow: friends of owner + owner themselves."
-  },
-  {
-    "id": "107",
-    "title": "Include own events in social feed",
-    "status": "done",
-    "description": "The feed currently only shows friends' activity (userId: { in: friendIds }), excluding the user's own events. This means if someone comments or reacts on your workout, you can't find that feed item anywhere in the UI. Fix: include the current user's ID in the feed query so your own events always appear alongside friends' events. Change the feed query in backend/src/routes/social.ts to include userId in the friendIds array. Also handle the edge case where friendIds is empty — currently returns early with empty array, but should still show own events."
-  },
-  {
-    "id": "098",
-    "title": "Friend request received push notification",
-    "status": "done",
-    "description": "Send a notification to the user when someone sends them a friend request. Currently only friend request acceptance triggers a notification; the recipient of a new request gets no notification at all."
-  },
-  {
-    "id": "092",
-    "title": "Fix WebKit E2E flakiness on CI",
-    "status": "done",
-    "description": "E2E tests fail on CI in WebKit: (1) achievements.spec.ts - completion dialog not found after clicking complete button, times out waiting for confirm dialog or Back to Dashboard link. (2) admin-plan-editor.spec.ts - page.goto encounters WebKit internal error. Likely WebKit-specific timing/stability issues in CI environment."
-  },
-  {
-    "id": "089",
-    "title": "Merge username and displayName into a single field",
-    "status": "done",
-    "description": "Currently User has both username (optional, unique) and displayName (required, not unique). For a workout tracker, a single required unique username field that serves as both the identifier and display name is simpler. Combine them: make username required and unique, remove displayName, use username everywhere displayName was used (UI display, friend lists, etc.). Update registration, settings, friend search, and all API responses."
-  },
-  {
-    "id": "046",
-    "title": "Flaky E2E: isVisible() snapshot check in rest-timer confirmSet loop",
-    "status": "done",
-    "description": "e2e/rest-timer.spec.ts line 79 uses isVisible() (point-in-time snapshot) inside a loop guard before skipRestButton.click(). If the timer banner appears a few ms after the check, the click is never reached. Pre-existing issue found during ticket 040 review."
-  },
-  {
-    "id": "049",
-    "title": "Fix UTC/local timezone inconsistency in date input max and calendar day comparison",
-    "status": "done",
-    "description": "The date input max attribute uses .toISOString().slice(0,10) (UTC) while WorkoutCalendar.handleDayClick compares dates in local time. For users east of UTC, after midnight UTC but before midnight local time, the max date could be set to yesterday while the calendar allows clicking today, causing an inconsistency. Both should use the same local-time date string (e.g., toLocaleDateString('en-CA'))."
-  },
-  {
-    "id": "074",
-    "title": "ReactionBar: block only the clicked emoji during pending mutation, not all emoji buttons",
-    "status": "done",
-    "priority": "low",
-    "description": "When a mutation is pending, all 5 emoji buttons are disabled via mutation.isPending. Only the tapped emoji should be blocked. Prevents the user from reacting with a different emoji while one is in flight."
-  },
-  {
-    "id": "080",
-    "title": "Real-Time Notifications (SSE + Toast)",
-    "status": "done",
-    "doc": "docs/backlog/features/real-time-notifications.md"
-  },
-  {
-    "id": "091",
-    "title": "PWA bottom navbar touch targets too small — hard to tap",
-    "status": "done",
-    "description": "The bottom navigation bar in the PWA is too small, making it difficult to tap on mobile devices. Increase the height and touch target size of the bottom navbar to meet the 44px minimum touch target guideline."
-  },
-  {
-    "id": "081",
-    "title": "Push Notifications (Service Worker)",
-    "status": "done",
-    "description": "Add push notifications via Web Push API so users get notified even when the app is in the background. Requires VAPID key generation, subscription management (store push subscriptions in DB), and service worker push event handler. Builds on top of ticket 080 (SSE + Toast) — reuse the same notification events but deliver via push when user is offline/backgrounded. Scope: VAPID setup, PushSubscription CRUD endpoint, sw.js push handler, opt-in UI. CONSTRAINT: Do not add any npm dependencies — implement everything using built-in Node.js crypto and native Web Push APIs."
-  },
-  {
-    "id": "077",
-    "title": "E2E streak test uses setDate (local) instead of setUTCDate for yesterday calculation — may produce wrong date near midnight in UTC-offset environments",
-    "status": "done",
-    "priority": "low",
-    "description": "In e2e/social.spec.ts line 70, yesterday is computed with setDate(getDate() - 1) which uses local time. The streak calculation in the backend uses UTC. In UTC+N timezones, the local date could be one day ahead of UTC, causing the custom workout to be saved with the wrong UTC date and the streak test to fail near midnight. Should use setUTCDate / getUTCDate like the backend does."
-  },
-  {
-    "id": "082",
-    "title": "streak_milestone and badge_unlocked not emitted for custom workouts",
-    "status": "done",
-    "priority": "medium",
-    "description": "The createCustomWorkout() path in workout.service.ts only creates a workout_completed feed event. It does not run the streak/badge logic that the two completeWorkout() paths run. Custom workouts can advance a streak and should trigger the same milestone checks."
-  },
-  {
-    "id": "099",
-    "title": "Comment on friend activity feed events",
-    "status": "done",
-    "description": "Allow users to comment on their friends' activity feed events (workouts, achievements, streaks, etc). Users should be able to add text comments and view a comment thread on any feed event. Remember notifications"
-  },
-  {
-    "id": "085",
-    "title": "streak_milestone deduplication has no DB-level uniqueness guarantee — concurrent completions can create duplicate events",
-    "status": "done",
-    "priority": "medium",
-    "description": "The findFirst + create pattern inside the transaction prevents duplicate streak_milestone events under normal sequential execution, but does not protect against two concurrent completeWorkout calls racing in separate transactions for the same user. A unique partial index on (user_id, event_type, payload->>'days') would provide a hard guarantee at the database level."
-  },
-  {
     "id": "086",
     "title": "Extract emitStreakAndBadgeEvents helper to deduplicate completeWorkout transaction paths",
     "status": "backlog",
@@ -153,13 +28,6 @@
     "description": "The achievements test suite has a positive test for century-club (bench TM=200) but no negative test confirming it does NOT trigger when all set weights are below 100 kg. The default benchTM=100 users (TM=90) could serve as a negative baseline."
   },
   {
-    "id": "051",
-    "title": "Calendar: selected day indicator does not show date label near Add Custom Workout button",
-    "status": "done",
-    "priority": "low",
-    "description": "After selecting an empty calendar day, the Add Custom Workout button gives no indication of which date was selected. Add a small selected-date label or include the date in the button text for clarity."
-  },
-  {
     "id": "052",
     "title": "Calendar: selectedDateKey not cleared after workout deletion causes Add Custom Workout button to appear unsolicited",
     "status": "backlog",
@@ -172,162 +40,6 @@
     "status": "backlog",
     "priority": "low",
     "description": "After saving a custom workout via the modal, selectedDateKey is not cleared in history.tsx. The Add Custom Workout button correctly disappears once calendarWorkouts refreshes, but the .selected highlight on the calendar day persists until the user clicks another day or changes month. Fix: call setSelectedDateKey(null) in handleCustomWorkoutSaved."
-  },
-  {
-    "id": "050",
-    "title": "Calendar improvements: selectable days with custom workout button",
-    "status": "done",
-    "description": "Users can click/select days in the calendar. After selecting a day, buttons appear below the calendar to add a custom workout for that date."
-  },
-  {
-    "id": "048",
-    "title": "Polish custom workout modal: pre-select clicked calendar day",
-    "status": "done",
-    "description": "When opening the custom workout modal from a calendar day, the date should be pre-filled with the clicked day so users don't have to pick it again."
-  },
-  {
-    "id": "047",
-    "title": "Custom free-form workout logging",
-    "status": "done",
-    "description": "Allow users to log ad-hoc gym sessions (not from a plan) directly from the calendar view. User can pick a date, add exercises (from existing exercise list), specify sets with reps and weight for each, and save. These custom workouts appear in the calendar and workout history for later review. Key requirements: (1) Add workout entry point from calendar day tap/click, (2) Exercise picker from existing exercises, (3) Per-set logging: weight (kg) and reps, (4) Save as a new workout type (e.g. status=custom or a flag) so it's distinguishable from plan-generated workouts, (5) View saved custom workouts in history/calendar."
-  },
-  {
-    "id": "045",
-    "title": "Social / Gym Buddy Features",
-    "status": "done",
-    "description": "Share workouts with friends, compare progress on the same plan, leaderboard, simple feed. Friend system, notifications (e.g. 'Your friend just hit a new Bench TM'). Multi-layer: DB (friend relationships, feed events), API (social endpoints), frontend (feed, profiles, friend management)."
-  },
-  {
-    "id": "038",
-    "title": "N+1 queries in workout completion logic",
-    "status": "done",
-    "description": "The completeWorkout service (workout.service.ts:354-406) runs individual Exercise.findUnique and TrainingMax.findFirst queries inside a loop over progression sets. Should batch-fetch all exercises and current TMs before the loop to avoid N+1."
-  },
-  {
-    "id": "039",
-    "title": "Missing database indexes on foreign keys",
-    "status": "done",
-    "description": "Several high-query foreign keys lack explicit indexes: TrainingMax needs @@index([userId, exerciseId]) for 'get current TM' queries (the @@unique includes effectiveDate which is less efficient for latest-TM lookups), Workout needs @@index([userId, createdAt]) for calendar/history queries, UserPlan needs @@index([userId]) for subscription lookups. These become important as data grows."
-  },
-  {
-    "id": "040",
-    "title": "Flaky E2E: replace waitForTimeout in rest-timer tests",
-    "status": "done",
-    "description": "rest-timer.spec.ts lines 87 and 111 use page.waitForTimeout(200) before asserting timer is not visible. This is a classic flakiness pattern. Replace with expect(restTimerBanner).not.toBeVisible() which polls automatically. Also line 98 uses page.locator('#rest-timer-enabled') instead of semantic getByRole locator."
-  },
-  {
-    "id": "041",
-    "title": "Unsafe error handling in frontend catch blocks",
-    "status": "done",
-    "description": "Multiple frontend files use catch (err: any) and access err.message without type checking: ExerciseFormModal.tsx:76, usePlanEditorState.ts:118, login.tsx:26-28. Should use 'err instanceof Error ? err.message : String(err)' pattern consistently. Also api/client.ts line 53 throws raw response body without wrapping in a proper Error - callers have to guess the shape."
-  },
-  {
-    "id": "042",
-    "title": "Inconsistent getUserId() usage in backend routes",
-    "status": "done",
-    "description": "Some routes use the getUserId(req) helper (which throws if userId is missing) while others access req.userId directly (which is typed as optional). Inconsistent files: users.ts:13,28 and trainingMaxes.ts:28,58 use raw req.userId. All authenticated routes should use getUserId(req) for consistency and runtime safety."
-  },
-  {
-    "id": "043",
-    "title": "Missing DATABASE_URL validation in db.ts",
-    "status": "done",
-    "description": "backend/src/lib/db.ts passes process.env.DATABASE_URL to PrismaPg without checking if it's defined. If the env var is missing, the error will come from deep inside PrismaPg with a cryptic message. Add an explicit check: if (\\!process.env.DATABASE_URL) throw new Error('DATABASE_URL environment variable is required')."
-  },
-  {
-    "id": "044",
-    "title": "Update CLAUDE.md: vitest fileParallelism is true not false",
-    "status": "done",
-    "description": "CLAUDE.md states 'Backend vitest.config.ts uses fileParallelism: false' but the actual config has fileParallelism: true. Either update the docs to match reality, or change the config to false if test isolation requires it. Currently setup.ts only disconnects in afterAll (no table truncation per file), so parallel execution may be intentional."
-  },
-  {
-    "id": "021",
-    "title": "Workout Schedule",
-    "status": "done",
-    "description": "Assign plan days to specific weekdays (e.g. Day 1 = Monday, Day 2 = Wednesday) and visualize upcoming sessions in the calendar. Set once, referenced often for planning rest days and travel."
-  },
-  {
-    "id": "003",
-    "title": "Progression Charts",
-    "status": "done",
-    "description": "New /progress page with charts: TM progression lines per lift, AMRAP performance scatter plot, workout frequency heatmap. Time range selector (1M/3M/6M/All). New backend endpoint for AMRAP history. Lightweight chart library (uPlot or similar)."
-  },
-  {
-    "id": "024",
-    "title": "Workout History Refinement",
-    "status": "done",
-    "description": "Improve the workout history view: better readability and visual design, ability to delete old workouts, and overall UI/UX polish. Current history is hard to read and lacks basic management features."
-  },
-  {
-    "id": "001",
-    "title": "Rest Timer",
-    "status": "done",
-    "description": "Configurable rest timer that auto-starts on set completion with countdown display, adjust/skip controls, and settings for duration."
-  },
-  {
-    "id": "007",
-    "title": "Screen Wake Lock",
-    "status": "done",
-    "description": "Keep screen on during active workouts using the Screen Wake Lock API. Auto-acquire on workout page mount, release on leave/complete. Re-acquire on visibilitychange for iOS. No UI needed, graceful no-op on unsupported browsers."
-  },
-  {
-    "id": "025",
-    "title": "Dynamic exercise list on Progress page",
-    "status": "done",
-    "description": "The Progress page currently hardcodes 4 exercises (Bench, Squat, OHP, Deadlift) in EXERCISE_CONFIGS. Make the exercise list dynamic, driven by the active plan's exercises. This way if a user subscribes to a plan with different exercises, the Progress page adapts automatically."
-  },
-  {
-    "id": "026",
-    "title": "Plan switch marker on progression chart",
-    "status": "done",
-    "description": "When a user switches plans, TM values may not be directly comparable (e.g. different TM percentages). Add a visual vertical marker on the progression chart showing when a plan switch occurred, so users understand context for any jumps or drops in TM values."
-  },
-  {
-    "id": "019",
-    "title": "Custom TM Override",
-    "status": "done",
-    "description": "Manually adjust a training max with a reason note (e.g. deload reset, injury setback, form correction). Uses existing append-only TM history. Critical when auto-progression overshoots reality."
-  },
-  {
-    "id": "035",
-    "title": "PWA support - installable to home screen",
-    "status": "done",
-    "description": "Add web app manifest (manifest.json) with app name, icons, theme color, display: standalone. Add minimal service worker for installability. Link manifest in index.html. Goal: be able to Add to Home Screen on iOS Safari and get a standalone app experience."
-  },
-  {
-    "id": "027",
-    "title": "Achievement Badges",
-    "status": "done",
-    "description": "Unlock badges for workout milestones. Examples: 'Century Club' (100kg lift), 'Iron Streak' (4 weeks no missed days), 'AMRAP King' (+5 reps on progression set), 'Sunrise Grinder' (workout before 7am). Shareable badge cards. Requires defining achievement criteria, detection logic, and a display page."
-  },
-  {
-    "id": "058",
-    "title": "Feed Event Reactions",
-    "status": "done",
-    "description": "React to friends' feed events with quick emoji reactions (fire, clap, skull, flexed bicep, etc.). Tap-to-react on any feed item. Reactions shown as small emoji row under the event. Low-friction social engagement without typing."
-  },
-  {
-    "id": "056",
-    "title": "Workout Streak Visibility",
-    "status": "done",
-    "description": "Show friends' current workout streaks on the friends list and in the feed. 'Chris is on a 12-day streak 🔥'. Streaks calculated from consecutive scheduled workout completions. Motivates casual users through social proof."
-  },
-  {
-    "id": "054",
-    "title": "Estimated 1RM Leaderboard",
-    "status": "done",
-    "description": "Leaderboard based on calculated e1RM from AMRAP sets using Epley formula (weight * (1 + reps/30)), not just static TMs. More dynamic and rewards actual performance. Could be a tab or toggle on the existing leaderboard."
-  },
-  {
-    "id": "065",
-    "title": "Richer Feed Event Types",
-    "status": "done",
-    "description": "Expand feed beyond workout_completed and tm_increased. New event types: streak_milestone (7/14/30/60/90 day streaks), badge_unlocked (from Achievement Badges #027), plan_switched, workout_note_shared. Makes the feed more varied and engaging."
-  },
-  {
-    "id": "068",
-    "title": "Find Friends by Username",
-    "status": "done",
-    "description": "Add optional username field to user profile (unique, alphanumeric + underscores). Allow sending friend requests by username instead of email. More natural for gym acquaintances where you wouldn't share email. Search with autocomplete."
   },
   {
     "id": "061",
@@ -534,12 +246,6 @@
     "description": "Detect tempo of music playing (via mic permission) and pulse the UI to the beat. Rest timer syncs to song endings. Pure vibes, experimental feature."
   },
   {
-    "id": "036",
-    "title": "Rename app from nSuns to SetForge",
-    "status": "done",
-    "description": "Rename all user-facing surfaces: HTML title, PWA manifest, Layout header, SW cache name, E2E test assertions, and CLAUDE.md references"
-  },
-  {
     "id": "037",
     "title": "Validate URL params and query strings with Zod",
     "status": "backlog",
@@ -564,13 +270,6 @@
     "description": "Generate a personal QR code in the app that encodes your friend request link. Show it at the gym for someone to scan and instantly send a friend request. Uses invite link system (#063). No typing needed - just scan and connect."
   },
   {
-    "id": "071",
-    "title": "Update POST /api/workouts/:id/complete docs to mention newAchievements in response",
-    "status": "done",
-    "priority": "low",
-    "description": "The docs/api-endpoints.md entry for POST /api/workouts/:id/complete still says 'returns { progressions: [...] }'. It should be updated to include newAchievements: [...] in the documented response shape after ticket 027 added achievements."
-  },
-  {
     "id": "075",
     "title": "Add backend test: user cannot react to their own feed event via direct API call",
     "status": "backlog",
@@ -583,20 +282,6 @@
     "status": "backlog",
     "priority": "medium",
     "description": "getStreaksForUsers in social.ts fetches every completed workout for the given user IDs with no date bound. A user with years of history causes a large scan on every GET /api/social/friends and GET /api/social/feed call. The streak only needs the most recent contiguous block; a WHERE completedAt >= NOW() - INTERVAL '365 days' (or similar) would cap the scan with no correctness impact."
-  },
-  {
-    "id": "079",
-    "title": "Fix E2E streak test to use setUTCDate for yesterday calculation",
-    "status": "done",
-    "priority": "low",
-    "description": "E2E streak test uses setDate/getDate (local time) for yesterday but toISOString() returns UTC. Near midnight in UTC-offset timezones this produces the wrong date, causing the 2 day streak assertion to fail."
-  },
-  {
-    "id": "083",
-    "title": "docs/db-schema.md feed_events event_type list is missing streak_milestone, badge_unlocked, and plan_switched",
-    "status": "done",
-    "priority": "low",
-    "description": "The db-schema.md feed_events documentation only lists workout_completed and tm_increased as event_type values. Three new event types added in ticket 065 (streak_milestone, badge_unlocked, plan_switched) are not reflected in the doc. Should be updated per CLAUDE.md documentation requirements."
   },
   {
     "id": "090",

@@ -5,7 +5,7 @@
  *
  * Usage: node --experimental-strip-types docs/backlog/ticket.ts <command> [args]
  *
- * Commands: list, add, show, move, status, delete, next, readme, start, current, clear
+ * Commands: list, add, show, move, status, delete, next, readme, start, current, clear, archive
  */
 
 const fs = require("node:fs") as typeof import("node:fs");
@@ -44,6 +44,7 @@ const VALID_STATUSES: TicketStatus[] = [
 const BACKLOG_DIR = __dirname;
 const PROJECT_ROOT = path.resolve(BACKLOG_DIR, "..", "..");
 const BACKLOG_PATH = path.join(BACKLOG_DIR, "backlog.json");
+const DONE_PATH = path.join(BACKLOG_DIR, "done-backlog.json");
 const README_PATH = path.join(BACKLOG_DIR, "README.md");
 const CURRENT_TICKET_PATH = path.join(PROJECT_ROOT, ".current-ticket");
 
@@ -58,6 +59,25 @@ function readBacklog(): Ticket[] {
 
 function writeBacklog(tickets: Ticket[]): void {
   fs.writeFileSync(BACKLOG_PATH, JSON.stringify(tickets, null, 2) + "\n");
+}
+
+function readDone(): Ticket[] {
+  if (!fs.existsSync(DONE_PATH)) return [];
+  const raw = fs.readFileSync(DONE_PATH, "utf-8");
+  return JSON.parse(raw) as Ticket[];
+}
+
+function writeDone(tickets: Ticket[]): void {
+  fs.writeFileSync(DONE_PATH, JSON.stringify(tickets, null, 2) + "\n");
+}
+
+function archiveTicket(ticket: Ticket): void {
+  const done = readDone();
+  // Avoid duplicates
+  if (!done.some((t) => t.id === ticket.id)) {
+    done.push(ticket);
+    writeDone(done);
+  }
 }
 
 function die(message: string): never {
@@ -190,12 +210,60 @@ function cmdAdd(commandArgs: string[]): void {
   cmdList();
 }
 
+function cmdArchive(): void {
+  const tickets = readBacklog();
+  const done = tickets.filter((t) => t.status === "done");
+  const active = tickets.filter((t) => t.status !== "done");
+
+  if (done.length === 0) {
+    console.log("No done tickets to archive.");
+    return;
+  }
+
+  const existing = readDone();
+  const existingIds = new Set(existing.map((t) => t.id));
+  const newDone = done.filter((t) => !existingIds.has(t.id));
+  writeDone([...existing, ...newDone]);
+  writeBacklog(active);
+
+  console.log(`Archived ${done.length} done ticket(s) to done-backlog.json`);
+  console.log("");
+  cmdList();
+}
+
 function cmdShow(ref: string): void {
   const tickets = readBacklog();
-  const idx = resolveRef(tickets, ref);
-  const ticket = tickets[idx];
+  // Search active backlog first, then done archive
+  let idx = tickets.findIndex((t) => t.id === ref);
+  let ticket: Ticket;
+  let source = "backlog";
 
-  console.log(`Position:    ${idx + 1}`);
+  if (idx !== -1) {
+    ticket = tickets[idx];
+  } else {
+    // Try position in active backlog
+    const pos = parseInt(ref, 10);
+    if (!Number.isNaN(pos) && pos >= 1 && pos <= tickets.length) {
+      idx = pos - 1;
+      ticket = tickets[idx];
+    } else {
+      // Search done archive
+      const done = readDone();
+      const doneTicket = done.find((t) => t.id === ref);
+      if (doneTicket) {
+        ticket = doneTicket;
+        source = "done-archive";
+      } else {
+        die(`No ticket found for "${ref}" (tried backlog and done archive)`);
+      }
+    }
+  }
+
+  if (source === "backlog") {
+    console.log(`Position:    ${idx + 1}`);
+  } else {
+    console.log(`Source:      ${source}`);
+  }
   console.log(`ID:          ${ticket.id}`);
   console.log(`Title:       ${ticket.title}`);
   console.log(`Status:      ${ticket.status}`);
@@ -244,6 +312,13 @@ function cmdStatus(ref: string, newStatus: string): void {
   const oldStatus = ticket.status;
 
   ticket.status = newStatus as TicketStatus;
+
+  // Auto-archive to done-backlog.json and remove from backlog when marking done
+  if (newStatus === "done") {
+    archiveTicket(ticket);
+    tickets.splice(idx, 1);
+  }
+
   writeBacklog(tickets);
 
   // Auto-clear current ticket when marking it as done
@@ -393,7 +468,7 @@ function cmdReadme(): void {
 const [command, ...commandArgs] = process.argv.slice(2);
 
 if (!command) {
-  die("Usage: ticket.ts <list|add|show|move|status|delete|next|readme|start|current|clear> [args]");
+  die("Usage: ticket.ts <list|add|show|move|status|delete|next|readme|start|current|clear|archive> [args]");
 }
 
 switch (command) {
@@ -448,8 +523,12 @@ switch (command) {
     cmdClear();
     break;
 
+  case "archive":
+    cmdArchive();
+    break;
+
   default:
     die(
-      `Unknown command: "${command}". Valid commands: list, add, show, move, status, delete, next, readme, start, current, clear`
+      `Unknown command: "${command}". Valid commands: list, add, show, move, status, delete, next, readme, start, current, clear, archive`
     );
 }
