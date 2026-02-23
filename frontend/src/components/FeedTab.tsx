@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getFeed } from '../api/social';
 import type { FeedEvent } from '../api/social';
@@ -54,15 +54,17 @@ interface FeedItemProps {
   event: FeedEvent;
   currentUserId: number;
   isHighlighted: boolean;
+  ref?: React.Ref<HTMLLIElement>;
 }
 
-function FeedItem({ event, currentUserId, isHighlighted }: FeedItemProps) {
+function FeedItem({ event, currentUserId, isHighlighted, ref }: FeedItemProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const text = renderEventText(event);
   if (text === null) return null;
 
   return (
     <li
+      ref={ref}
       className={isHighlighted ? `${styles.eventItem} ${styles.highlighted}` : styles.eventItem}
       data-event-id={event.id}
     >
@@ -110,13 +112,11 @@ export function FeedTab({ highlightEventId }: FeedTabProps = {}) {
     refetchOnMount: 'always',
   });
 
-  useEffect(() => {
-    if (!highlightEventId || !data) return;
-    const el = document.querySelector<HTMLElement>(`[data-event-id="${highlightEventId}"]`);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  const highlightRef = useCallback((node: HTMLElement | null) => {
+    if (node) {
+      node.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
-  }, [data, highlightEventId]);
+  }, []);
 
   if (isLoading) {
     return (
@@ -161,6 +161,7 @@ export function FeedTab({ highlightEventId }: FeedTabProps = {}) {
       {events.map((event) => (
         <FeedItem
           key={event.id}
+          ref={event.id === highlightEventId ? highlightRef : undefined}
           event={event}
           currentUserId={currentUserId}
           isHighlighted={event.id === highlightEventId}
