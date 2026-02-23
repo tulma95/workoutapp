@@ -300,7 +300,7 @@ describe('Push notification payloads contain url field', () => {
       const achievementPushes = sendToUserSpy.mock.calls.filter(([uid, payload]) => {
         if (uid !== freshUserId) return false;
         const parsed = JSON.parse(payload as string) as { type: string };
-        return parsed.type === 'achievement_earned';
+        return parsed.type === 'badge_unlocked';
       });
 
       expect(achievementPushes.length).toBeGreaterThanOrEqual(1);
