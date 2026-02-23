@@ -587,14 +587,29 @@ describe('Social API', () => {
       expect(res.body).toEqual({ reacted: true, count: 2 });
     });
 
-    it('GET /social/feed includes reactions array with correct reactedByMe', async () => {
-      // A has 💪 reaction on feedEventId (from previous test), D also has 💪
-      // Re-add A's 🔥 reaction (was toggled off)
-      await request(app)
+    it('reacting with a different emoji replaces the previous one', async () => {
+      // A currently has 💪 (from the "two users" test above). React with 🔥 instead.
+      const res = await request(app)
         .post(`/api/social/feed/${feedEventId}/react`)
         .set('Authorization', `Bearer ${tokenReactA}`)
         .send({ emoji: '🔥' });
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ reacted: true, count: 1 });
 
+      // Verify A no longer has 💪 — count should now be 1 (only D's reaction remains)
+      const feedRes = await request(app)
+        .get('/api/social/feed')
+        .set('Authorization', `Bearer ${tokenReactA}`);
+      const event = feedRes.body.events.find((e: { id: number }) => e.id === feedEventId);
+      const muscleReaction = event.reactions.find((r: { emoji: string }) => r.emoji === '💪');
+      // A's 💪 was replaced, only D's remains
+      expect(muscleReaction).toBeDefined();
+      expect(muscleReaction.count).toBe(1);
+      expect(muscleReaction.reactedByMe).toBe(false);
+    });
+
+    it('GET /social/feed includes reactions array with correct reactedByMe', async () => {
+      // At this point A has 🔥 (from the replace test above), D has 💪
       const res = await request(app)
         .get('/api/social/feed')
         .set('Authorization', `Bearer ${tokenReactA}`);
@@ -610,11 +625,11 @@ describe('Social API', () => {
       expect(fireReaction.count).toBe(1);
       expect(fireReaction.reactedByMe).toBe(true);
 
-      // 💪 reaction: A and D reacted, count=2, reactedByMe=true for A
+      // 💪 reaction: only D remains (A's was replaced), reactedByMe=false for A
       const muscleReaction = event.reactions.find((r: { emoji: string }) => r.emoji === '💪');
       expect(muscleReaction).toBeDefined();
-      expect(muscleReaction.count).toBe(2);
-      expect(muscleReaction.reactedByMe).toBe(true);
+      expect(muscleReaction.count).toBe(1);
+      expect(muscleReaction.reactedByMe).toBe(false);
     });
   });
 

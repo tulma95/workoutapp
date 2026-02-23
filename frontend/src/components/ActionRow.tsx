@@ -40,6 +40,7 @@ export function ActionRow({ eventId, reactions, currentUserId: _currentUserId, o
             const reactedByMe = existing?.reactedByMe ?? false;
 
             if (reactedByMe) {
+              // Toggle off the same emoji
               return {
                 ...event,
                 reactions: event.reactions
@@ -48,14 +49,23 @@ export function ActionRow({ eventId, reactions, currentUserId: _currentUserId, o
                       ? { ...r, count: r.count - 1, reactedByMe: false }
                       : r
                   )
-                  .filter((r) => r.count > 0 || r.emoji !== emoji),
+                  .filter((r) => r.count > 0),
               };
             } else {
-              const hasEntry = event.reactions.some((r) => r.emoji === emoji);
+              // Remove any previous reaction by this user (different emoji) and add/increment new one
+              const withoutPrevious = event.reactions
+                .map((r) =>
+                  r.reactedByMe && r.emoji !== emoji
+                    ? { ...r, count: r.count - 1, reactedByMe: false }
+                    : r
+                )
+                .filter((r) => r.count > 0);
+
+              const hasEntry = withoutPrevious.some((r) => r.emoji === emoji);
               if (hasEntry) {
                 return {
                   ...event,
-                  reactions: event.reactions.map((r) =>
+                  reactions: withoutPrevious.map((r) =>
                     r.emoji === emoji
                       ? { ...r, count: r.count + 1, reactedByMe: true }
                       : r
@@ -65,7 +75,7 @@ export function ActionRow({ eventId, reactions, currentUserId: _currentUserId, o
                 return {
                   ...event,
                   reactions: [
-                    ...event.reactions,
+                    ...withoutPrevious,
                     { emoji, count: 1, reactedByMe: true },
                   ],
                 };

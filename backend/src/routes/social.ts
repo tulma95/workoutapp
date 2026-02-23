@@ -488,6 +488,8 @@ router.post('/feed/:eventId/react', validate(reactSchema), async (req: AuthReque
     await prisma.feedEventReaction.delete({ where: { id: existing.id } });
     reacted = false;
   } else {
+    // Delete any previous reaction by this user on this event (different emoji)
+    await prisma.feedEventReaction.deleteMany({ where: { feedEventId: eventId, userId } });
     await prisma.feedEventReaction.create({ data: { feedEventId: eventId, userId, emoji } });
     reacted = true;
   }
