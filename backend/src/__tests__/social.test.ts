@@ -440,6 +440,15 @@ describe('Social API', () => {
       expect(res.status).toBe(404);
     });
 
+    it('owner can react to their own event', async () => {
+      const res = await request(app)
+        .post(`/api/social/feed/${feedEventId}/react`)
+        .set('Authorization', `Bearer ${tokenReactB}`)
+        .send({ emoji: '👏' });
+      expect(res.status).toBe(200);
+      expect(res.body).toMatchObject({ reacted: expect.any(Boolean), count: expect.any(Number) });
+    });
+
     it('toggle on returns { reacted: true, count: 1 }', async () => {
       const res = await request(app)
         .post(`/api/social/feed/${feedEventId}/react`)

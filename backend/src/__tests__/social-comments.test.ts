@@ -152,6 +152,15 @@ describe('Feed event comments', () => {
     });
   });
 
+  // GET returns 200 when event owner reads comments on own event
+  it('GET returns 200 when event owner reads comments on own event', async () => {
+    const res = await request(app)
+      .get(`/api/social/feed/${eventId}/comments`)
+      .set('Authorization', `Bearer ${tokenA}`);
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.comments)).toBe(true);
+  });
+
   // GET returns comments ordered by createdAt ASC
   it('GET returns comments ordered by createdAt ASC', async () => {
     // Create a fresh event to isolate ordering test

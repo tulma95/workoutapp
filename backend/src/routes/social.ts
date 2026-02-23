@@ -448,7 +448,7 @@ router.post('/feed/:eventId/react', validate(reactSchema), async (req: AuthReque
   }
 
   const friendIds = await getAcceptedFriendIds(userId);
-  if (!friendIds.includes(event.userId)) {
+  if (userId !== event.userId && !friendIds.includes(event.userId)) {
     res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Feed event not found' } });
     return;
   }
