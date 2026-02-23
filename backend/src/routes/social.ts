@@ -5,8 +5,8 @@ import { authenticate } from '../middleware/auth';
 import { AuthRequest, getUserId } from '../types';
 import prisma from '../lib/db';
 import { calculateStreak } from '../lib/streak';
-import { notificationManager } from '../services/notifications.service';
-import { pushService } from '../services/push.service';
+import { parseIntParam, usernameSchema } from '../lib/routeHelpers';
+import { notifyWithPush } from '../lib/notificationHelpers';
 
 const router = Router();
 
@@ -58,7 +58,7 @@ async function getAcceptedFriendIds(userId: number): Promise<number[]> {
 
 const requestSchema = z.object({
   email: z.string().email().optional(),
-  username: z.string().regex(/^[a-zA-Z0-9_]+$/).min(3).max(30).optional(),
+  username: usernameSchema.optional(),
 });
 
 const reactSchema = z.object({
@@ -119,15 +119,11 @@ router.post('/request', validate(requestSchema), async (req: AuthRequest, res: R
     });
     const sender = await prisma.user.findUnique({ where: { id: callerId }, select: { username: true } });
     const senderUsername = sender?.username ?? 'Someone';
-    notificationManager.notifyUser(target.id, {
-      type: 'friend_request_received',
-      message: `${senderUsername} sent you a friend request`,
-    });
-    void pushService.sendToUser(target.id, JSON.stringify({
+    void notifyWithPush(target.id, {
       type: 'friend_request_received',
       message: `${senderUsername} sent you a friend request`,
       url: '/social/friends',
-    }));
+    });
     res.status(201).json({ id: friendship.id });
     return;
   }
@@ -137,15 +133,11 @@ router.post('/request', validate(requestSchema), async (req: AuthRequest, res: R
   const friendship = await prisma.friendship.create({
     data: { requesterId, addresseeId, initiatorId: callerId, status: 'pending' },
   });
-  notificationManager.notifyUser(target.id, {
-    type: 'friend_request_received',
-    message: `${senderUsername} sent you a friend request`,
-  });
-  void pushService.sendToUser(target.id, JSON.stringify({
+  void notifyWithPush(target.id, {
     type: 'friend_request_received',
     message: `${senderUsername} sent you a friend request`,
     url: '/social/friends',
-  }));
+  });
 
   res.status(201).json({ id: friendship.id });
 });
@@ -252,12 +244,8 @@ router.get('/requests', async (req: AuthRequest, res: Response) => {
 
 router.patch('/requests/:id/accept', async (req: AuthRequest, res: Response) => {
   const userId = getUserId(req);
-  const id = parseInt(req.params.id as string, 10);
-
-  if (isNaN(id)) {
-    res.status(400).json({ error: { code: 'INVALID_ID', message: 'Invalid request ID' } });
-    return;
-  }
+  const id = parseIntParam(res, req.params.id as string, 'request ID');
+  if (id === null) return;
 
   const friendship = await prisma.friendship.findUnique({ where: { id } });
   if (!friendship || friendship.status !== 'pending') {
@@ -286,15 +274,11 @@ router.patch('/requests/:id/accept', async (req: AuthRequest, res: Response) => 
       select: { username: true },
     });
     const acceptorUsername = acceptor?.username ?? 'Someone';
-    notificationManager.notifyUser(friendship.initiatorId, {
-      type: 'friend_request_accepted',
-      message: `${acceptorUsername} accepted your friend request`,
-    });
-    void pushService.sendToUser(friendship.initiatorId, JSON.stringify({
+    void notifyWithPush(friendship.initiatorId, {
       type: 'friend_request_accepted',
       message: `${acceptorUsername} accepted your friend request`,
       url: '/social/friends',
-    }));
+    });
   }
 
   res.json({ id: updated.id, status: updated.status });
@@ -302,12 +286,8 @@ router.patch('/requests/:id/accept', async (req: AuthRequest, res: Response) => 
 
 router.patch('/requests/:id/decline', async (req: AuthRequest, res: Response) => {
   const userId = getUserId(req);
-  const id = parseInt(req.params.id as string, 10);
-
-  if (isNaN(id)) {
-    res.status(400).json({ error: { code: 'INVALID_ID', message: 'Invalid request ID' } });
-    return;
-  }
+  const id = parseIntParam(res, req.params.id as string, 'request ID');
+  if (id === null) return;
 
   const friendship = await prisma.friendship.findUnique({ where: { id } });
   if (!friendship || friendship.status !== 'pending') {
@@ -335,12 +315,8 @@ router.patch('/requests/:id/decline', async (req: AuthRequest, res: Response) =>
 
 router.delete('/friends/:id', async (req: AuthRequest, res: Response) => {
   const userId = getUserId(req);
-  const id = parseInt(req.params.id as string, 10);
-
-  if (isNaN(id)) {
-    res.status(400).json({ error: { code: 'INVALID_ID', message: 'Invalid friendship ID' } });
-    return;
-  }
+  const id = parseIntParam(res, req.params.id as string, 'friendship ID');
+  if (id === null) return;
 
   const friendship = await prisma.friendship.findUnique({ where: { id } });
   if (!friendship || friendship.status !== 'accepted') {
@@ -462,11 +438,8 @@ router.get('/feed', async (req: AuthRequest, res: Response) => {
 
 router.post('/feed/:eventId/react', validate(reactSchema), async (req: AuthRequest, res: Response) => {
   const userId = getUserId(req);
-  const eventId = parseInt(req.params.eventId as string, 10);
-  if (isNaN(eventId)) {
-    res.status(400).json({ error: { code: 'INVALID_ID', message: 'Invalid event ID' } });
-    return;
-  }
+  const eventId = parseIntParam(res, req.params.eventId as string, 'event ID');
+  if (eventId === null) return;
 
   const { emoji } = req.body as { emoji: string };
 
@@ -671,11 +644,8 @@ router.get('/leaderboard', async (req: AuthRequest, res: Response) => {
 
 router.post('/feed/:eventId/comments', validate(commentSchema), async (req: AuthRequest, res: Response) => {
   const userId = getUserId(req);
-  const eventId = parseInt(req.params.eventId as string, 10);
-  if (isNaN(eventId)) {
-    res.status(400).json({ error: { code: 'INVALID_ID', message: 'Invalid event ID' } });
-    return;
-  }
+  const eventId = parseIntParam(res, req.params.eventId as string, 'event ID');
+  if (eventId === null) return;
 
   const { text } = req.body as { text: string };
 
@@ -698,18 +668,11 @@ router.post('/feed/:eventId/comments', validate(commentSchema), async (req: Auth
   if (userId !== event.userId) {
     const commenter = await prisma.user.findUnique({ where: { id: userId }, select: { username: true } });
     const commenterUsername = commenter?.username ?? 'Someone';
-    notificationManager.notifyUser(event.userId, {
+    void notifyWithPush(event.userId, {
       type: 'comment_received',
       message: `${commenterUsername} commented on your activity`,
+      url: `/social/feed?event=${eventId}`,
     });
-    void pushService.sendToUser(
-      event.userId,
-      JSON.stringify({
-        type: 'comment_received',
-        message: `${commenterUsername} commented on your activity`,
-        url: `/social/feed?event=${eventId}`,
-      }),
-    );
   }
 
   res.status(201).json({
@@ -723,11 +686,8 @@ router.post('/feed/:eventId/comments', validate(commentSchema), async (req: Auth
 
 router.get('/feed/:eventId/comments', async (req: AuthRequest, res: Response) => {
   const userId = getUserId(req);
-  const eventId = parseInt(req.params.eventId as string, 10);
-  if (isNaN(eventId)) {
-    res.status(400).json({ error: { code: 'INVALID_ID', message: 'Invalid event ID' } });
-    return;
-  }
+  const eventId = parseIntParam(res, req.params.eventId as string, 'event ID');
+  if (eventId === null) return;
 
   const event = await prisma.feedEvent.findUnique({ where: { id: eventId } });
   if (!event) {
@@ -761,13 +721,10 @@ router.get('/feed/:eventId/comments', async (req: AuthRequest, res: Response) =>
 
 router.delete('/feed/:eventId/comments/:commentId', async (req: AuthRequest, res: Response) => {
   const userId = getUserId(req);
-  const eventId = parseInt(req.params.eventId as string, 10);
-  const commentId = parseInt(req.params.commentId as string, 10);
-
-  if (isNaN(eventId) || isNaN(commentId)) {
-    res.status(400).json({ error: { code: 'INVALID_ID', message: 'Invalid ID' } });
-    return;
-  }
+  const eventId = parseIntParam(res, req.params.eventId as string, 'event ID');
+  if (eventId === null) return;
+  const commentId = parseIntParam(res, req.params.commentId as string, 'comment ID');
+  if (commentId === null) return;
 
   const event = await prisma.feedEvent.findUnique({ where: { id: eventId } });
   if (!event) {

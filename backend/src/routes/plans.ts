@@ -2,6 +2,8 @@ import { Router, Response } from 'express';
 import { authenticate } from '../middleware/auth';
 import { AuthRequest, getUserId } from '../types';
 import prisma from '../lib/db';
+import { parseIntParam } from '../lib/routeHelpers';
+import { PLAN_DETAIL_INCLUDE } from '../lib/planIncludes';
 
 const router = Router();
 
@@ -43,23 +45,7 @@ router.get('/current', async (req: AuthRequest, res: Response) => {
     },
     include: {
       plan: {
-        include: {
-          days: {
-            include: {
-              exercises: {
-                include: {
-                  exercise: true,
-                  tmExercise: true,
-                  sets: {
-                    orderBy: { setOrder: 'asc' },
-                  },
-                },
-                orderBy: { sortOrder: 'asc' },
-              },
-            },
-            orderBy: { dayNumber: 'asc' },
-          },
-        },
+        include: PLAN_DETAIL_INCLUDE,
       },
     },
   });
@@ -74,14 +60,8 @@ router.get('/current', async (req: AuthRequest, res: Response) => {
 
 // GET /api/plans/:id — get plan details
 router.get('/:id', async (req: AuthRequest, res: Response) => {
-  const id = parseInt(req.params.id as string, 10);
-
-  if (isNaN(id)) {
-    res.status(400).json({
-      error: { code: 'BAD_REQUEST', message: 'Invalid plan ID' }
-    });
-    return;
-  }
+  const id = parseIntParam(res, req.params.id as string, 'plan ID');
+  if (id === null) return;
 
   const plan = await prisma.workoutPlan.findFirst({
     where: {
@@ -89,23 +69,7 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
       isPublic: true,
       archivedAt: null,
     },
-    include: {
-      days: {
-        include: {
-          exercises: {
-            include: {
-              exercise: true,
-              tmExercise: true,
-              sets: {
-                orderBy: { setOrder: 'asc' },
-              },
-            },
-            orderBy: { sortOrder: 'asc' },
-          },
-        },
-        orderBy: { dayNumber: 'asc' },
-      },
-    },
+    include: PLAN_DETAIL_INCLUDE,
   });
 
   if (!plan) {
@@ -120,14 +84,8 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
 
 // POST /api/plans/:id/subscribe — subscribe to a plan
 router.post('/:id/subscribe', async (req: AuthRequest, res: Response) => {
-  const id = parseInt(req.params.id as string, 10);
-
-  if (isNaN(id)) {
-    res.status(400).json({
-      error: { code: 'BAD_REQUEST', message: 'Invalid plan ID' }
-    });
-    return;
-  }
+  const id = parseIntParam(res, req.params.id as string, 'plan ID');
+  if (id === null) return;
 
   // Check if plan exists and is public
   const plan = await prisma.workoutPlan.findFirst({

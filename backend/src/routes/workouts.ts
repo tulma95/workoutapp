@@ -7,6 +7,7 @@ import * as workoutService from '../services/workout.service';
 import prisma from '../lib/db';
 import { notificationManager } from '../services/notifications.service';
 import { pushService } from '../services/push.service';
+import { parseIntParam } from '../lib/routeHelpers';
 
 const router = Router();
 
@@ -97,11 +98,8 @@ router.post('/custom', validate(customWorkoutSchema), async (req: AuthRequest, r
 });
 
 router.get('/:id', async (req: AuthRequest, res: Response) => {
-  const id = parseInt(req.params.id as string, 10);
-  if (isNaN(id)) {
-    res.status(400).json({ error: { code: 'INVALID_ID', message: 'Invalid workout ID' } });
-    return;
-  }
+  const id = parseIntParam(res, req.params.id as string, 'workout ID');
+  if (id === null) return;
   const workout = await workoutService.getWorkout(id, getUserId(req));
   if (!workout) {
     res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Workout not found' } });
@@ -116,11 +114,8 @@ const logSetSchema = z.object({
 });
 
 router.patch('/:id/sets/:setId', validate(logSetSchema), async (req: AuthRequest, res: Response) => {
-  const setId = parseInt(req.params.setId as string, 10);
-  if (isNaN(setId)) {
-    res.status(400).json({ error: { code: 'INVALID_ID', message: 'Invalid set ID' } });
-    return;
-  }
+  const setId = parseIntParam(res, req.params.setId as string, 'set ID');
+  if (setId === null) return;
   const result = await workoutService.logSet(setId, getUserId(req), req.body);
   if (!result) {
     res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Set not found' } });
@@ -130,11 +125,8 @@ router.patch('/:id/sets/:setId', validate(logSetSchema), async (req: AuthRequest
 });
 
 router.post('/:id/complete', async (req: AuthRequest, res: Response) => {
-  const id = parseInt(req.params.id as string, 10);
-  if (isNaN(id)) {
-    res.status(400).json({ error: { code: 'INVALID_ID', message: 'Invalid workout ID' } });
-    return;
-  }
+  const id = parseIntParam(res, req.params.id as string, 'workout ID');
+  if (id === null) return;
   const userId = getUserId(req);
   const result = await workoutService.completeWorkout(id, userId);
   if (!result) {
@@ -183,11 +175,8 @@ router.post('/:id/complete', async (req: AuthRequest, res: Response) => {
 });
 
 router.delete('/:id', async (req: AuthRequest, res: Response) => {
-  const id = parseInt(req.params.id as string, 10);
-  if (isNaN(id)) {
-    res.status(400).json({ error: { code: 'INVALID_ID', message: 'Invalid workout ID' } });
-    return;
-  }
+  const id = parseIntParam(res, req.params.id as string, 'workout ID');
+  if (id === null) return;
   try {
     const result = await workoutService.cancelWorkout(id, getUserId(req));
     if (!result) {
