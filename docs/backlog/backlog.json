@@ -1,5 +1,11 @@
 [
   {
+    "id": "109",
+    "title": "Facebook-style social feed redesign",
+    "status": "done",
+    "doc": "docs/plans/2026-02-23-facebook-style-feed-design.md"
+  },
+  {
     "id": "101",
     "title": "Feed event owner cannot read or post comments on their own events",
     "status": "done",
@@ -648,9 +654,31 @@
     "description": "When a push notification is tapped, navigate the user to the relevant view in the app. Implementation:\n\n1. **Backend**: Add a `url` field to each push notification payload (include `feedEventId` in comment_received payload for deep-linking):\n   - `comment_received` → `/social/feed?event=<feedEventId>` (scroll to and highlight the specific feed event)\n   - `friend_request_received` → `/social/friends`\n   - `friend_request_accepted` → `/social/friends`\n   - `workout_completed` → `/social/feed`\n   - `badge_unlocked` → `/achievements`\n\n2. **Service worker (sw.js)**: Add a `notificationclick` event handler that:\n   - Closes the notification\n   - Reads `data.url` from the notification\n   - If an app window is already open, navigates it and focuses it\n   - Otherwise opens a new window at that URL\n\n3. **Frontend social page**: Convert tabs to proper sub-routes:\n   - Create route files: `social/feed.tsx`, `social/friends.tsx`, `social/leaderboard.tsx`\n   - `/social` redirects to `/social/feed` (default tab)\n   - Tab navigation uses `<Link>` / `<ButtonLink>` for proper anchor tags\n   - `social/feed.tsx` reads optional `?event=<id>` search param via `validateSearch`\n   - When `event` search param is present, scroll to that feed event and highlight it (e.g. brief CSS animation)\n\nBump service worker cache name to `setforge-v3` since behavior changes."
   },
   {
-    "id": "109",
-    "title": "Facebook-style social feed redesign",
+    "id": "110",
+    "title": "ActionRow React button shows same 'React' label in both active and inactive state",
     "status": "backlog",
-    "doc": "docs/plans/2026-02-23-facebook-style-feed-design.md"
+    "priority": "low",
+    "description": "The button text reads 'React' whether the user has already reacted or not. When active it should say something like 'Remove' or 'Reacted' so the label conveys the action that will happen on press."
+  },
+  {
+    "id": "111",
+    "title": "Backend feed endpoint fetches ALL comments unbounded — add LIMIT or take-last-2 in DB query instead of in-memory slice",
+    "status": "backlog",
+    "priority": "medium",
+    "description": "GET /api/social/feed batch-fetches ALL comments for up to 20 events with no LIMIT. In the worst case this could be thousands of rows. The backend should instead use a ranked subquery or window function to fetch only the 2 most recent comments per event at the DB level, not slice in memory."
+  },
+  {
+    "id": "112",
+    "title": "docs/api-endpoints.md: GET /api/social/feed response shape missing latestComments field",
+    "status": "backlog",
+    "priority": "low",
+    "description": "The api-endpoints.md documentation for GET /api/social/feed still describes the response without the latestComments field added in ticket 109. The doc should be updated to reflect the new field so future developers know it is part of the contract."
+  },
+  {
+    "id": "113",
+    "title": "react-query-cache.md has stale references to ReactionBar.tsx and CommentModal — update to ActionRow.tsx",
+    "status": "backlog",
+    "priority": "low",
+    "description": "In react-query-cache.md the invalidation table still refers to 'ReactionBar.tsx' and the query key table says 'CommentSection (inside CommentModal)'. Both components were deleted in ticket 109 — update to ActionRow.tsx and CommentSection.tsx respectively."
   }
 ]
