@@ -216,7 +216,7 @@ export default function WorkoutCalendar({
               <span className={styles.dayNumber}>{day.date}</span>
               {day.workouts.length > 0 && (
                 <span className={styles.dayBadge}>
-                  {day.workouts.length > 1 ? day.workouts.length : day.workouts[0]!.dayNumber}
+                  {day.workouts.length > 1 ? day.workouts.length : (day.workouts[0]!.dayNumber || day.workouts.length)}
                 </span>
               )}
               {isScheduledOnly && (

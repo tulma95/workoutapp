@@ -151,6 +151,47 @@ test.describe('Custom Workout', () => {
     await expect(dateInput).toHaveValue(expectedDate);
   });
 
+  test('calendar badge shows 1 (not 0) after saving a custom workout', async ({ setupCompletePage }) => {
+    const { page } = setupCompletePage;
+    const history = new HistoryPage(page);
+    const dashboard = new DashboardPage(page);
+
+    const today = await openCustomWorkoutModal(page, history, dashboard);
+
+    await fillExercise(page, 0, 0, 'Bench Press', '100', '5');
+    await saveCustomWorkout(page);
+
+    // Find the calendar day button for today and check its badge
+    const todayButton = history.calendarGrid.getByRole('button').filter({ hasText: today.toString() }).first();
+    const badge = todayButton.locator('span').filter({ hasText: /^1$/ });
+    await expect(badge).toBeVisible();
+  });
+
+  test('entering a future date shows inline error message', async ({ setupCompletePage }) => {
+    const { page } = setupCompletePage;
+    const history = new HistoryPage(page);
+    const dashboard = new DashboardPage(page);
+
+    await openCustomWorkoutModal(page, history, dashboard);
+
+    // Type a future date by evaluating a date string one year from now
+    const futureDate = await page.evaluate(() => {
+      const d = new Date();
+      d.setFullYear(d.getFullYear() + 1);
+      return d.toLocaleDateString('en-CA');
+    });
+
+    const dateInput = page.getByLabel('Date');
+    await dateInput.fill(futureDate);
+
+    await expect(page.getByText('Date cannot be in the future')).toBeVisible();
+    // Save button should remain disabled
+    await page.locator('#exercise-select-0').selectOption({ label: 'Bench Press' });
+    await page.locator('#weight-0-0').fill('100');
+    await page.locator('#reps-0-0').fill('5');
+    await expect(page.getByRole('button', { name: /^save$/i })).toBeDisabled();
+  });
+
   test('Save button is disabled without exercise selected or with empty sets', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
     const history = new HistoryPage(page);

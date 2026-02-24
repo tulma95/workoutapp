@@ -35,6 +35,7 @@ export function CustomWorkoutModal({ open, initialDate, onClose, onSaved }: Cust
   const [exercises, setExercises] = useState<ExerciseEntry[]>([defaultExercise()]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dateError, setDateError] = useState<string | null>(null);
 
   const { data: exerciseList } = useQuery({
     queryKey: queryKeys.exercises.list(),
@@ -49,8 +50,19 @@ export function CustomWorkoutModal({ open, initialDate, onClose, onSaved }: Cust
       setDate(initialDate);
       setExercises([defaultExercise()]);
       setError(null);
+      setDateError(null);
     }
   }, [open, initialDate]);
+
+  const validateDate = (value: string) => {
+    if (!value) return;
+    const today = new Date().toLocaleDateString('en-CA');
+    if (value > today) {
+      setDateError('Date cannot be in the future');
+    } else {
+      setDateError(null);
+    }
+  };
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDialogElement>) => {
     if (e.target === dialogRef.current) {
@@ -143,9 +155,10 @@ export function CustomWorkoutModal({ open, initialDate, onClose, onSaved }: Cust
             id="custom-workout-date"
             type="date"
             value={date}
-            onChange={e => setDate(e.target.value)}
+            onChange={e => { setDate(e.target.value); validateDate(e.target.value); }}
             max={new Date().toLocaleDateString('en-CA')}
           />
+          {dateError && <p className={styles.error}>{dateError}</p>}
         </div>
 
         <div className={styles.exerciseList}>
@@ -255,7 +268,7 @@ export function CustomWorkoutModal({ open, initialDate, onClose, onSaved }: Cust
           <Button
             variant="primary"
             onClick={handleSave}
-            disabled={saving || !isValid()}
+            disabled={saving || !isValid() || !!dateError}
           >
             {saving ? 'Saving...' : 'Save'}
           </Button>
