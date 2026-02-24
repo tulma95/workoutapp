@@ -11,7 +11,7 @@ export async function login(email: string, password: string) {
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: { message: 'Login failed' } }));
-    throw new ApiError(body.error?.message || res.statusText, res.status);
+    throw new ApiError(body.error?.message || res.statusText, res.status, body.error?.code);
   }
 
   const data = await res.json();
@@ -31,7 +31,7 @@ export async function register(
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: { message: 'Registration failed' } }));
-    throw new ApiError(body.error?.message || res.statusText, res.status);
+    throw new ApiError(body.error?.message || res.statusText, res.status, body.error?.code);
   }
 
   const data = await res.json();

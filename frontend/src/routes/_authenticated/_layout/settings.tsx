@@ -16,6 +16,7 @@ import styles from '../../../styles/SettingsPage.module.css'
 import { queryKeys } from '../../../api/queryKeys'
 import { invalidateAfterTmUpdate } from '../../../api/invalidation'
 import { extractErrorMessage } from '../../../api/errors'
+import { ApiError } from '../../../api/client'
 
 export const Route = createFileRoute('/_authenticated/_layout/settings')({
   loader: ({ context: { queryClient } }) =>
@@ -124,7 +125,11 @@ function SettingsPage() {
       await queryClient.invalidateQueries({ queryKey: queryKeys.user.me() })
       setUsernameInput(trimmed)
     } catch (err) {
-      setUsernameError(extractErrorMessage(err, 'Failed to update username'))
+      if (err instanceof ApiError && err.code === 'USERNAME_EXISTS') {
+        setUsernameError(err.message)
+      } else {
+        setUsernameError(extractErrorMessage(err, 'Failed to update username'))
+      }
     } finally {
       setUsernameSaving(false)
     }
