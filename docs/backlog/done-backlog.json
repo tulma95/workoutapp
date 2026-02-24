@@ -326,5 +326,11 @@
     "title": "Push notification click navigation",
     "status": "done",
     "description": "When a push notification is tapped, navigate the user to the relevant view in the app. Implementation:\n\n1. **Backend**: Add a `url` field to each push notification payload (include `feedEventId` in comment_received payload for deep-linking):\n   - `comment_received` → `/social/feed?event=<feedEventId>` (scroll to and highlight the specific feed event)\n   - `friend_request_received` → `/social/friends`\n   - `friend_request_accepted` → `/social/friends`\n   - `workout_completed` → `/social/feed`\n   - `badge_unlocked` → `/achievements`\n\n2. **Service worker (sw.js)**: Add a `notificationclick` event handler that:\n   - Closes the notification\n   - Reads `data.url` from the notification\n   - If an app window is already open, navigates it and focuses it\n   - Otherwise opens a new window at that URL\n\n3. **Frontend social page**: Convert tabs to proper sub-routes:\n   - Create route files: `social/feed.tsx`, `social/friends.tsx`, `social/leaderboard.tsx`\n   - `/social` redirects to `/social/feed` (default tab)\n   - Tab navigation uses `<Link>` / `<ButtonLink>` for proper anchor tags\n   - `social/feed.tsx` reads optional `?event=<id>` search param via `validateSearch`\n   - When `event` search param is present, scroll to that feed event and highlight it (e.g. brief CSS animation)\n\nBump service worker cache name to `setforge-v3` since behavior changes."
+  },
+  {
+    "id": "118",
+    "title": "Frontend UI pattern hooks: useDialog and shared validation",
+    "status": "done",
+    "description": "Extract recurring frontend UI patterns into reusable hooks and shared modules: (1) useDialog(open, onClose) hook to replace the duplicated dialog lifecycle useEffect pairs (showModal/close sync + close event listener) found in CustomWorkoutModal.tsx, workout page achievement dialog, and future modals. (2) Shared validation module (validators.ts) for username validation — currently defined separately in register.tsx and settings.tsx with slightly different behavior. Move the regex and rules to one place, parameterize required-vs-optional. Also covers the backend username regex in auth.ts, users.ts, social.ts (could share via a common package or just align)."
   }
 ]
