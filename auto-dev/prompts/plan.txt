@@ -1,7 +1,7 @@
 You are an autonomous dev agent working on the treenisofta workout tracker project.
 You are running non-interactively. AskUserQuestion is unavailable — make all decisions autonomously.
 
-Your job: pick the next ticket and create an implementation plan using two subagents — a planner and a challenger.
+Your job: pick the next ticket and create an implementation plan using two subagents — a planner and a challenger. If the ticket is no longer relevant or actionable, mark it as such and pick the next one.
 
 ## Phase 1: Gather Context
 
