@@ -3,6 +3,9 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
 import { setupTrainingMaxesFromExercises, getTrainingMaxes, type ExerciseTM } from '../../../api/trainingMaxes'
 import { getCurrentPlan, type Exercise } from '../../../api/plans'
+import { queryKeys } from '../../../api/queryKeys'
+import { invalidateAfterTmUpdate } from '../../../api/invalidation'
+import { extractErrorMessage } from '../../../api/errors'
 import { SkeletonLine, SkeletonHeading } from '../../../components/Skeleton'
 import { SetupForm } from '../../../components/SetupForm'
 import styles from '../../../styles/SetupPage.module.css'
@@ -13,8 +16,8 @@ export const Route = createFileRoute('/_authenticated/_layout/setup')({
   }),
   loader: ({ context: { queryClient } }) =>
     Promise.all([
-      queryClient.ensureQueryData({ queryKey: ['plan', 'current'], queryFn: getCurrentPlan }),
-      queryClient.ensureQueryData({ queryKey: ['training-maxes'], queryFn: getTrainingMaxes }),
+      queryClient.ensureQueryData({ queryKey: queryKeys.plan.current(), queryFn: getCurrentPlan }),
+      queryClient.ensureQueryData({ queryKey: queryKeys.trainingMaxes.all(), queryFn: getTrainingMaxes }),
     ]),
   pendingComponent: () => (
     <div className={styles.page}>
@@ -41,8 +44,8 @@ function SetupPage() {
   const queryClient = useQueryClient()
   const { missingTMs: isMissingTMsMode } = Route.useSearch()
 
-  const { data: currentPlan } = useSuspenseQuery({ queryKey: ['plan', 'current'], queryFn: getCurrentPlan })
-  const { data: trainingMaxes } = useSuspenseQuery({ queryKey: ['training-maxes'], queryFn: getTrainingMaxes })
+  const { data: currentPlan } = useSuspenseQuery({ queryKey: queryKeys.plan.current(), queryFn: getCurrentPlan })
+  const { data: trainingMaxes } = useSuspenseQuery({ queryKey: queryKeys.trainingMaxes.all(), queryFn: getTrainingMaxes })
 
   const [formData, setFormData] = useState<Record<string, string>>({})
   const [error, setError] = useState('')
@@ -102,11 +105,10 @@ function SetupPage() {
 
     try {
       await setupTrainingMaxesFromExercises(exerciseTMs)
-      await queryClient.invalidateQueries({ queryKey: ['training-maxes'] })
-      await queryClient.invalidateQueries({ queryKey: ['progress'] })
+      await invalidateAfterTmUpdate(queryClient)
       navigate({ to: '/' })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to setup training maxes')
+      setError(extractErrorMessage(err, 'Failed to setup training maxes'))
     } finally {
       setIsSubmitting(false)
     }

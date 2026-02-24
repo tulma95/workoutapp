@@ -9,11 +9,14 @@ import { ErrorMessage } from '../../../components/ErrorMessage'
 import { type PlanSwitchWarnings } from '../../../components/PlanSwitchConfirmModal'
 import { PlanSelectionContent } from '../../../components/PlanSelectionContent'
 import styles from '../../../styles/PlanSelectionPage.module.css'
+import { queryKeys } from '../../../api/queryKeys'
+import { removeCacheAfterPlanSwitch } from '../../../api/invalidation'
+import { extractErrorMessage } from '../../../api/errors'
 
 export const Route = createFileRoute('/_authenticated/_layout/select-plan')({
   loader: ({ context: { queryClient } }) =>
     queryClient.ensureQueryData({
-      queryKey: ['plans'],
+      queryKey: queryKeys.plan.list(),
       queryFn: getPlans,
     }),
   pendingComponent: () => (
@@ -46,7 +49,7 @@ export const Route = createFileRoute('/_authenticated/_layout/select-plan')({
   ),
   errorComponent: ({ error }) => (
     <div className={styles.page}>
-      <ErrorMessage message={error instanceof Error ? error.message : 'Failed to load plans'} />
+      <ErrorMessage message={extractErrorMessage(error, 'Failed to load plans')} />
     </div>
   ),
   component: PlanSelectionPage,
@@ -56,7 +59,7 @@ function PlanSelectionPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { data: plans } = useSuspenseQuery({
-    queryKey: ['plans'],
+    queryKey: queryKeys.plan.list(),
     queryFn: getPlans,
   })
 
@@ -69,11 +72,8 @@ function PlanSelectionPage() {
   const subscribeMutation = useMutation({
     mutationFn: subscribeToPlan,
     onSuccess: async (result) => {
-      queryClient.removeQueries({ queryKey: ['plan', 'current'] })
-      queryClient.removeQueries({ queryKey: ['training-maxes'] })
-      queryClient.removeQueries({ queryKey: ['progress'] })
-      queryClient.removeQueries({ queryKey: ['schedule'] })
-      await queryClient.invalidateQueries({ queryKey: ['workout', 'current'] })
+      removeCacheAfterPlanSwitch(queryClient)
+      await queryClient.invalidateQueries({ queryKey: queryKeys.workout.current() })
 
       if (result.missingTMs.length > 0) {
         navigate({ to: '/setup', search: { missingTMs: true } })
@@ -82,13 +82,13 @@ function PlanSelectionPage() {
       }
     },
     onError: (err) => {
-      setError(err instanceof Error ? err.message : 'Failed to subscribe to plan')
+      setError(extractErrorMessage(err, 'Failed to subscribe to plan'))
       setSubscribing(null)
     },
   })
 
   async function handleSelectPlan(planId: number) {
-    const currentPlan = queryClient.getQueryData<WorkoutPlan | null>(['plan', 'current'])
+    const currentPlan = queryClient.getQueryData<WorkoutPlan | null>(queryKeys.plan.current())
     if (currentPlan && currentPlan.id !== planId) {
       await showSwitchConfirmation(planId)
     } else {
@@ -149,7 +149,7 @@ function PlanSelectionPage() {
       setModalWarnings(warnings)
       setShowModal(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to check plan compatibility')
+      setError(extractErrorMessage(err, 'Failed to check plan compatibility'))
     }
   }
 

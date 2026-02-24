@@ -11,21 +11,24 @@ import { getRestTimerSettings, saveRestTimerSettings, type RestTimerSettings } f
 import { SkeletonLine, SkeletonHeading } from '../../../components/Skeleton'
 import { SettingsContent } from '../../../components/SettingsContent'
 import styles from '../../../styles/SettingsPage.module.css'
+import { queryKeys } from '../../../api/queryKeys'
+import { invalidateAfterTmUpdate } from '../../../api/invalidation'
+import { extractErrorMessage } from '../../../api/errors'
 
 export const Route = createFileRoute('/_authenticated/_layout/settings')({
   loader: ({ context: { queryClient } }) =>
     Promise.all([
-      queryClient.ensureQueryData({ queryKey: ['user', 'me'], queryFn: getMe }),
+      queryClient.ensureQueryData({ queryKey: queryKeys.user.me(), queryFn: getMe }),
       queryClient.ensureQueryData({
-        queryKey: ['plan', 'current'],
+        queryKey: queryKeys.plan.current(),
         queryFn: getCurrentPlan,
       }),
       queryClient.ensureQueryData({
-        queryKey: ['training-maxes'],
+        queryKey: queryKeys.trainingMaxes.all(),
         queryFn: getTrainingMaxes,
       }),
       queryClient.ensureQueryData({
-        queryKey: ['schedule'],
+        queryKey: queryKeys.schedule.all(),
         queryFn: getSchedule,
       }),
     ]),
@@ -75,19 +78,19 @@ function SettingsPage() {
   const queryClient = useQueryClient()
   const { logout } = useAuth()
   const { data: user } = useSuspenseQuery({
-    queryKey: ['user', 'me'],
+    queryKey: queryKeys.user.me(),
     queryFn: getMe,
   })
   const { data: currentPlan } = useSuspenseQuery({
-    queryKey: ['plan', 'current'],
+    queryKey: queryKeys.plan.current(),
     queryFn: getCurrentPlan,
   })
   const { data: trainingMaxes } = useSuspenseQuery({
-    queryKey: ['training-maxes'],
+    queryKey: queryKeys.trainingMaxes.all(),
     queryFn: getTrainingMaxes,
   })
   const { data: schedule } = useSuspenseQuery({
-    queryKey: ['schedule'],
+    queryKey: queryKeys.schedule.all(),
     queryFn: getSchedule,
   })
 
@@ -126,32 +129,10 @@ function SettingsPage() {
 
     try {
       await updateMe({ username: trimmed || null })
-      await queryClient.invalidateQueries({ queryKey: ['user', 'me'] })
+      await queryClient.invalidateQueries({ queryKey: queryKeys.user.me() })
       setUsernameInput(trimmed)
     } catch (err) {
-      if (
-        err !== null &&
-        typeof err === 'object' &&
-        'error' in err &&
-        err.error !== null &&
-        typeof err.error === 'object' &&
-        'code' in err.error &&
-        err.error.code === 'USERNAME_EXISTS'
-      ) {
-        setUsernameError('Username already taken')
-      } else if (
-        err !== null &&
-        typeof err === 'object' &&
-        'error' in err &&
-        err.error !== null &&
-        typeof err.error === 'object' &&
-        'message' in err.error &&
-        typeof err.error.message === 'string'
-      ) {
-        setUsernameError(err.error.message)
-      } else {
-        setUsernameError('Failed to save username')
-      }
+      setUsernameError(extractErrorMessage(err, 'Failed to update username'))
     } finally {
       setUsernameSaving(false)
     }
@@ -163,11 +144,11 @@ function SettingsPage() {
     mutationFn: saveSchedule,
     onSuccess: async (data) => {
       setScheduleError('')
-      queryClient.setQueryData(['schedule'], data)
-      await queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
+      queryClient.setQueryData(queryKeys.schedule.all(), data)
+      await queryClient.invalidateQueries({ queryKey: queryKeys.workout.calendarAll() })
     },
     onError: (err) => {
-      setScheduleError(err instanceof Error ? err.message : 'Failed to save schedule')
+      setScheduleError(extractErrorMessage(err, 'Failed to save schedule'))
     },
   })
 
@@ -236,13 +217,10 @@ function SettingsPage() {
 
     try {
       await updateTrainingMax(editingExercise, weightInKg, editReason.trim() || undefined)
-      await queryClient.invalidateQueries({ queryKey: ['training-maxes'] })
-      await queryClient.invalidateQueries({ queryKey: ['progress'] })
+      await invalidateAfterTmUpdate(queryClient)
       closeEditModal()
     } catch (err) {
-      setTmError(
-        err instanceof Error ? err.message : 'Failed to update training max',
-      )
+      setTmError(extractErrorMessage(err, 'Failed to update training max'))
     } finally {
       setTmSaving(false)
     }

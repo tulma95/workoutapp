@@ -12,27 +12,11 @@ import {
 } from '../api/social'
 import type { Friend, FriendRequest, UserSearchResult } from '../api/social'
 import { SkeletonLine, SkeletonCard } from './Skeleton'
+import { queryKeys } from '../api/queryKeys'
+import { extractErrorMessage } from '../api/errors'
 import styles from './FriendsTab.module.css'
 
 type SendMode = 'search' | 'email'
-
-function extractErrorMessage(err: unknown, fallback: string): string {
-  if (err !== null && typeof err === 'object' && 'error' in err) {
-    const e = (err as { error: unknown }).error
-    if (e !== null && typeof e === 'object') {
-      if ('code' in e) {
-        const code = (e as { code: string }).code
-        if (code === 'NOT_FOUND') return 'User not found'
-        if (code === 'ALREADY_FRIEND') return 'Already friends'
-        if (code === 'ALREADY_REQUESTED') return 'Friend request already pending'
-      }
-      if ('message' in e && typeof (e as { message: unknown }).message === 'string') {
-        return (e as { message: string }).message
-      }
-    }
-  }
-  return fallback
-}
 
 export function FriendsTab() {
   const queryClient = useQueryClient()
@@ -68,42 +52,42 @@ export function FriendsTab() {
   }, [])
 
   const userSearchQuery = useQuery({
-    queryKey: ['social', 'search', debouncedQuery],
+    queryKey: queryKeys.social.search(debouncedQuery),
     queryFn: () => searchUsers(debouncedQuery),
     enabled: debouncedQuery.length >= 1,
   })
 
   const friendsQuery = useQuery({
-    queryKey: ['social', 'friends'],
+    queryKey: queryKeys.social.friends(),
     queryFn: getFriends,
   })
 
   const requestsQuery = useQuery({
-    queryKey: ['social', 'friend-requests'],
+    queryKey: queryKeys.social.friendRequests(),
     queryFn: getFriendRequests,
   })
 
   const acceptMutation = useMutation({
     mutationFn: (id: number) => acceptFriendRequest(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['social', 'friend-requests'] })
-      queryClient.invalidateQueries({ queryKey: ['social', 'friends'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.social.friendRequests() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.social.friends() })
     },
   })
 
   const declineMutation = useMutation({
     mutationFn: (id: number) => declineFriendRequest(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['social', 'friend-requests'] })
-      queryClient.invalidateQueries({ queryKey: ['social', 'friends'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.social.friendRequests() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.social.friends() })
     },
   })
 
   const removeMutation = useMutation({
     mutationFn: (id: number) => removeFriend(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['social', 'friends'] })
-      queryClient.invalidateQueries({ queryKey: ['social', 'leaderboard'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.social.friends() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.social.leaderboard() })
     },
   })
 
@@ -123,7 +107,7 @@ export function FriendsTab() {
   const sendByUsernameMutation = useMutation({
     mutationFn: (username: string) => sendFriendRequestByUsername(username),
     onSuccess: () => {
-      queryClient.removeQueries({ queryKey: ['social', 'search'] })
+      queryClient.removeQueries({ queryKey: queryKeys.social.searchAll() })
       setSearchQuery('')
       setDebouncedQuery('')
       setSendError('')

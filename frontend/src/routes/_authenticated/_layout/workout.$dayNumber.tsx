@@ -10,6 +10,8 @@ import {
   type Workout,
   type ProgressionResult,
 } from '../../../api/workouts'
+import { invalidateAfterWorkoutComplete, invalidateAfterWorkoutCancel } from '../../../api/invalidation'
+import { extractErrorMessage } from '../../../api/errors'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import { SkeletonLine, SkeletonHeading } from '../../../components/Skeleton'
@@ -185,8 +187,7 @@ function WorkoutPage() {
         } else {
           setPhase({
             phase: 'error',
-            message:
-              err instanceof Error ? err.message : 'Failed to start workout',
+            message: extractErrorMessage(err, 'Failed to start workout'),
           })
         }
       })
@@ -224,8 +225,7 @@ function WorkoutPage() {
     } catch (err) {
       setPhase({
         phase: 'error',
-        message:
-          err instanceof Error ? err.message : 'Failed to start new workout',
+        message: extractErrorMessage(err, 'Failed to start new workout'),
       })
     }
   }
@@ -418,12 +418,7 @@ function ActiveWorkout({
       const result = await completeWorkout(workout.id)
       const progressionArray =
         result.progressions || (result.progression ? [result.progression] : [])
-      await queryClient.invalidateQueries({ queryKey: ['workout'] })
-      await queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
-      await queryClient.invalidateQueries({ queryKey: ['training-maxes'] })
-      await queryClient.invalidateQueries({ queryKey: ['progress'] })
-      await queryClient.invalidateQueries({ queryKey: ['social', 'feed'] })
-      await queryClient.invalidateQueries({ queryKey: ['achievements'] })
+      await invalidateAfterWorkoutComplete(queryClient)
       setPhase({ phase: 'completed', progressions: progressionArray })
       if (result.newAchievements && result.newAchievements.length > 0) {
         setNewAchievements(result.newAchievements)
@@ -432,8 +427,7 @@ function ActiveWorkout({
     } catch (err) {
       setPhase({
         phase: 'error',
-        message:
-          err instanceof Error ? err.message : 'Failed to complete workout',
+        message: extractErrorMessage(err, 'Failed to complete workout'),
       })
     }
   }
@@ -448,14 +442,12 @@ function ActiveWorkout({
 
     try {
       await cancelWorkout(workout.id)
-      await queryClient.invalidateQueries({ queryKey: ['workout'] })
-      await queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
+      await invalidateAfterWorkoutCancel(queryClient)
       navigate({ to: '/' })
     } catch (err) {
       setPhase({
         phase: 'error',
-        message:
-          err instanceof Error ? err.message : 'Failed to cancel workout',
+        message: extractErrorMessage(err, 'Failed to cancel workout'),
       })
     }
   }
