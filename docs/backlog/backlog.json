@@ -1,11 +1,5 @@
 [
   {
-    "id": "122",
-    "title": "Fix flaky social test: 'no longer shows in pending requests after acceptance' gets 404 intermittently",
-    "status": "backlog",
-    "description": "The test at social.test.ts:165 calls GET /api/social/requests but intermittently receives 404 instead of 200. The route exists and has no 404 code path, suggesting a race condition or Express 5 routing issue. All ticket 117 changes are frontend-only — this is a pre-existing backend test fragility."
-  },
-  {
     "id": "070",
     "title": "Missing negative test for century-club achievement (low TM should not unlock)",
     "status": "backlog",
