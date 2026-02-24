@@ -1,12 +1,5 @@
 [
   {
-    "id": "114",
-    "title": "docs/api-endpoints.md push payload section is missing: url field documentation, friend_request_received event type, and workout_completed/achievement_earned push notifications to friends/self",
-    "status": "backlog",
-    "priority": "low",
-    "description": "After ticket 108, the push notification payload format now includes a url field and the push event table is missing friend_request_received. The workouts route handler now also sends push notifications to friends on workout completion, and to self on achievement, which are undocumented. The SSE event table in docs/api-endpoints.md is also missing friend_request_received."
-  },
-  {
     "id": "115",
     "title": "Remove orphaned SocialContent.tsx component after sub-route refactor",
     "status": "backlog",
@@ -320,5 +313,12 @@
     "status": "backlog",
     "priority": "low",
     "description": "The social.test.ts latestComments suite covers 0-comment and 3-comment (truncated to 2) cases but not: (a) exactly 1 comment on an event, (b) the eventIds-empty early-exit branch when the feed returns zero events. Both are handled correctly by the implementation but lack explicit test coverage."
+  },
+  {
+    "id": "125",
+    "title": "docs: DELETE /social/feed/:eventId/comments/:commentId returns 200 with body but docs say 204",
+    "status": "backlog",
+    "priority": "low",
+    "description": "social.ts line 769 returns res.json({ id: commentId }) with default 200, but api-endpoints.md line 52 documents the response as 204. Fix the doc to say 200 with body { id: number }."
   }
 ]
