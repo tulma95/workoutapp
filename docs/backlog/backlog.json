@@ -1,25 +1,5 @@
 [
   {
-    "id": "115",
-    "title": "Remove orphaned SocialContent.tsx component after sub-route refactor",
-    "status": "backlog",
-    "priority": "low",
-    "description": "SocialContent.tsx and its CSS are no longer imported after the social sub-route refactor in ticket 108. Delete the file."
-  },
-  {
-    "id": "119",
-    "title": "auth.ts: email-exists P2002 guard still uses raw object check instead of isPrismaError()",
-    "status": "backlog",
-    "priority": "low",
-    "description": "The username-exists branch in auth.ts register handler correctly uses isP2002UsernameViolation, but the fallback email-exists branch (line 35) uses a hand-rolled check (err && 'code' in err && err.code === 'P2002') instead of the new isPrismaError() helper. Should be replaced for consistency."
-  },
-  {
-    "id": "120",
-    "title": "auth.ts email-exists P2002 guard uses raw object check instead of isPrismaError",
-    "status": "backlog",
-    "description": "In auth.ts POST /register, the username-exists branch uses isP2002UsernameViolation() but the email-exists fallthrough at line 35 still does a raw object check (err.code === P2002). Should use isPrismaError(err, P2002) for consistency."
-  },
-  {
     "id": "121",
     "title": "Fix ApiError to preserve error.code from server responses",
     "status": "backlog",
@@ -320,5 +300,12 @@
     "status": "backlog",
     "priority": "low",
     "description": "social.ts line 769 returns res.json({ id: commentId }) with default 200, but api-endpoints.md line 52 documents the response as 204. Fix the doc to say 200 with body { id: number }."
+  },
+  {
+    "id": "126",
+    "title": "routeHelpers.ts: isP2002UsernameViolation uses weaker typeof check vs isPrismaError instanceof Error guard — align both helpers to the same standard",
+    "status": "backlog",
+    "priority": "low",
+    "description": "isP2002UsernameViolation checks typeof err === 'object' while isPrismaError checks instanceof Error. Both live in routeHelpers.ts. The inconsistency was surfaced by ticket 119 (the two helpers are now used side-by-side in auth.ts). Update isP2002UsernameViolation to use instanceof Error so both helpers apply the same type narrowing."
   }
 ]
