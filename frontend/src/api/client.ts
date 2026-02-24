@@ -65,3 +65,12 @@ export async function apiFetch(path: string, options?: RequestInit): Promise<unk
 
   return res.json();
 }
+
+export async function apiFetchParsed<T>(
+  path: string,
+  schema: { parse: (data: unknown) => T },
+  options?: RequestInit,
+): Promise<T> {
+  const data = await apiFetch(path, options);
+  return schema.parse(data);
+}
