@@ -1,5 +1,6 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
+import { Prisma } from '../generated/prisma/client';
 import { validate } from '../middleware/validate';
 import { authenticate } from '../middleware/auth';
 import { AuthRequest, getUserId } from '../types';
@@ -383,14 +384,30 @@ router.get('/feed', async (req: AuthRequest, res: Response) => {
     commentCountMap.set(c.feedEventId, c._count._all);
   }
 
-  // Batch-fetch all comments for visible events, then slice to last 2 per event in memory
-  const allComments = await prisma.feedEventComment.findMany({
-    where: { feedEventId: { in: eventIds } },
-    orderBy: { createdAt: 'asc' },
-    include: { user: { select: { id: true, username: true } } },
-  });
-  const commentsMap = new Map<number, typeof allComments>();
-  for (const c of allComments) {
+  // Fetch the 2 most recent comments per event at the DB level using ROW_NUMBER()
+  type RawComment = {
+    id: number;
+    feedEventId: number;
+    userId: number;
+    username: string;
+    text: string;
+    createdAt: Date;
+  };
+  const latestCommentsRaw = eventIds.length > 0
+    ? await prisma.$queryRaw<RawComment[]>(Prisma.sql`
+        SELECT c.id, c.feed_event_id AS "feedEventId", c.user_id AS "userId", u.username, c.text, c.created_at AS "createdAt"
+        FROM (
+          SELECT *, ROW_NUMBER() OVER (PARTITION BY feed_event_id ORDER BY created_at DESC) AS rn
+          FROM feed_event_comments
+          WHERE feed_event_id IN (${Prisma.join(eventIds)})
+        ) c
+        JOIN users u ON u.id = c.user_id
+        WHERE c.rn <= 2
+        ORDER BY c.feed_event_id, c.created_at ASC
+      `)
+    : [];
+  const commentsMap = new Map<number, RawComment[]>();
+  for (const c of latestCommentsRaw) {
     const existing = commentsMap.get(c.feedEventId);
     if (existing) {
       existing.push(c);
@@ -410,11 +427,11 @@ router.get('/feed', async (req: AuthRequest, res: Response) => {
         reactedByMe: group.reactedByMe,
       }));
 
-    const latestComments = (commentsMap.get(e.id) ?? []).slice(-2).map((c) => ({
+    const latestComments = (commentsMap.get(e.id) ?? []).map((c) => ({
       id: c.id,
       feedEventId: c.feedEventId,
       userId: c.userId,
-      username: c.user.username,
+      username: c.username,
       text: c.text,
       createdAt: c.createdAt,
     }));
