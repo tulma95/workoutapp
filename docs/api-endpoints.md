@@ -138,6 +138,7 @@ Web push payloads are JSON strings sent via `pushService.sendToUser()`. The `url
 | `comment_received` | feed event owner | `/social/feed?event=<feedEventId>` | — |
 | `friend_request_received` | request recipient | `/social/friends` | — |
 | `friend_request_accepted` | request sender | `/social/friends` | — |
+| `workout_completed` | self | `/` | `workoutId`, `dayNumber` |
 | `workout_completed` | all accepted friends | `/social/feed` | — |
 | `badge_unlocked` | self | `/achievements` | `slug`, `name`, `description` |
 
