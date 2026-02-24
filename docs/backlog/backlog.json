@@ -1,12 +1,5 @@
 [
   {
-    "id": "110",
-    "title": "ActionRow React button shows same 'React' label in both active and inactive state",
-    "status": "backlog",
-    "priority": "low",
-    "description": "The button text reads 'React' whether the user has already reacted or not. When active it should say something like 'Remove' or 'Reacted' so the label conveys the action that will happen on press."
-  },
-  {
     "id": "111",
     "title": "Backend feed endpoint fetches ALL comments unbounded — add LIMIT or take-last-2 in DB query instead of in-memory slice",
     "status": "backlog",

@@ -353,5 +353,18 @@
     "status": "done",
     "priority": "medium",
     "description": "Two places in history.tsx fail to clear selectedDateKey:\n\n1. After workout deletion: calendar refetches, deleted day has no workouts, showAddCustomWorkoutButton becomes true and button appears without user interaction. Fix: call setSelectedDateKey(null) in handleConfirmDelete.\n\n2. After custom workout save: the .selected highlight on the calendar day persists until the user clicks another day or changes month. Fix: call setSelectedDateKey(null) in handleCustomWorkoutSaved."
+  },
+  {
+    "id": "105",
+    "title": "Custom workout small fixes: calendar badge shows 0, no error for future date",
+    "status": "done",
+    "description": "Two small custom workout bugs:\n\n1. Calendar badge shows 0: In WorkoutCalendar.tsx:219, badge displays dayNumber instead of count. Custom workouts have dayNumber: 0, so badge renders 0 instead of 1. Fix: day.workouts[0]!.dayNumber || day.workouts.length.\n\n2. No error for future date: In CustomWorkoutModal, manually entering a future date gets native HTML5 invalid state but no visible error message. Save button silently stays disabled. Fix: add inline validation text 'Date cannot be in the future' when date input is invalid."
+  },
+  {
+    "id": "110",
+    "title": "ActionRow React button shows same 'React' label in both active and inactive state",
+    "status": "done",
+    "priority": "low",
+    "description": "The button text reads 'React' whether the user has already reacted or not. When active it should say something like 'Remove' or 'Reacted' so the label conveys the action that will happen on press."
   }
 ]
