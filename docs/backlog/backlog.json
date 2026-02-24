@@ -1,12 +1,5 @@
 [
   {
-    "id": "113",
-    "title": "SocialContent.tsx component is now a dead code orphan — social route was refactored to sub-routes but SocialContent was not deleted",
-    "status": "backlog",
-    "priority": "low",
-    "description": "After converting social.tsx to a layout route with sub-routes in ticket 108, the SocialContent component (frontend/src/components/SocialContent.tsx) is no longer imported by any route. It remains in the codebase as dead code. The social.tsx route layout now imports SocialContent.module.css directly. SocialContent.tsx itself can be deleted."
-  },
-  {
     "id": "114",
     "title": "docs/api-endpoints.md push payload section is missing: url field documentation, friend_request_received event type, and workout_completed/achievement_earned push notifications to friends/self",
     "status": "backlog",

@@ -366,5 +366,19 @@
     "status": "done",
     "priority": "low",
     "description": "The button text reads 'React' whether the user has already reacted or not. When active it should say something like 'Remove' or 'Reacted' so the label conveys the action that will happen on press."
+  },
+  {
+    "id": "111",
+    "title": "Backend feed endpoint fetches ALL comments unbounded — add LIMIT or take-last-2 in DB query instead of in-memory slice",
+    "status": "done",
+    "priority": "medium",
+    "description": "GET /api/social/feed batch-fetches ALL comments for up to 20 events with no LIMIT. In the worst case this could be thousands of rows. The backend should instead use a ranked subquery or window function to fetch only the 2 most recent comments per event at the DB level, not slice in memory."
+  },
+  {
+    "id": "113",
+    "title": "SocialContent.tsx component is now a dead code orphan — social route was refactored to sub-routes but SocialContent was not deleted",
+    "status": "done",
+    "priority": "low",
+    "description": "After converting social.tsx to a layout route with sub-routes in ticket 108, the SocialContent component (frontend/src/components/SocialContent.tsx) is no longer imported by any route. It remains in the codebase as dead code. The social.tsx route layout now imports SocialContent.module.css directly. SocialContent.tsx itself can be deleted."
   }
 ]
