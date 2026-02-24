@@ -4,9 +4,54 @@ import { roundWeight } from '../lib/weightRounding';
 import type { WorkoutStatus } from '../types';
 import { ExistingWorkoutError } from '../types';
 import { logger } from '../lib/logger';
-import { checkAndUnlockAchievements } from './achievement.service';
+import { checkAndUnlockAchievements, type PrismaTransactionClient } from './achievement.service';
 import { calculateStreak } from '../lib/streak';
 import { pushService } from './push.service';
+
+const STREAK_MILESTONES = [7, 14, 30, 60, 90];
+
+async function emitStreakAndBadgeEvents(
+  tx: PrismaTransactionClient,
+  userId: number,
+  workoutId: number,
+  setsForAchievements: Array<{
+    prescribedWeight: number;
+    actualReps: number | null;
+    prescribedReps: number;
+    isProgression: boolean;
+  }>,
+) {
+  const completedWorkouts = await tx.workout.findMany({
+    where: { userId, status: 'completed' },
+    select: { completedAt: true },
+  });
+  const dates = completedWorkouts
+    .filter((w) => w.completedAt !== null)
+    .map((w) => w.completedAt!.toISOString().slice(0, 10));
+  const streak = calculateStreak(dates);
+  const milestoneData = STREAK_MILESTONES.filter((t) => streak >= t).map((threshold) => ({
+    userId,
+    eventType: 'streak_milestone' as const,
+    payload: { days: threshold },
+  }));
+  if (milestoneData.length > 0) {
+    await tx.feedEvent.createMany({ data: milestoneData, skipDuplicates: true });
+  }
+
+  const newAchievements = await checkAndUnlockAchievements(tx, userId, workoutId, setsForAchievements);
+
+  if (newAchievements.length > 0) {
+    await tx.feedEvent.createMany({
+      data: newAchievements.map((a) => ({
+        userId,
+        eventType: 'badge_unlocked',
+        payload: { slug: a.slug, name: a.name, description: a.description },
+      })),
+    });
+  }
+
+  return newAchievements;
+}
 
 export type ScheduledDay = {
   date: string;
@@ -518,37 +563,7 @@ export async function completeWorkout(workoutId: number, userId: number) {
         });
       }
 
-      // Calculate streak and emit streak_milestone if threshold crossed
-      const completedWorkouts = await tx.workout.findMany({
-        where: { userId, status: 'completed' },
-        select: { completedAt: true },
-      });
-      const dates = completedWorkouts
-        .filter((w) => w.completedAt !== null)
-        .map((w) => w.completedAt!.toISOString().slice(0, 10));
-      const streak = calculateStreak(dates);
-      const STREAK_MILESTONES = [7, 14, 30, 60, 90];
-      const milestoneData = STREAK_MILESTONES.filter((t) => streak >= t).map((threshold) => ({
-        userId,
-        eventType: 'streak_milestone' as const,
-        payload: { days: threshold },
-      }));
-      if (milestoneData.length > 0) {
-        await tx.feedEvent.createMany({ data: milestoneData, skipDuplicates: true });
-      }
-
-      const newAchievements = await checkAndUnlockAchievements(tx, userId, workoutId, setsForAchievements);
-
-      // Create badge_unlocked feed events
-      if (newAchievements.length > 0) {
-        await tx.feedEvent.createMany({
-          data: newAchievements.map((a) => ({
-            userId,
-            eventType: 'badge_unlocked',
-            payload: { slug: a.slug, name: a.name, description: a.description },
-          })),
-        });
-      }
+      const newAchievements = await emitStreakAndBadgeEvents(tx, userId, workoutId, setsForAchievements);
 
       return { completed, progressions, newAchievements };
     });
@@ -604,37 +619,7 @@ export async function completeWorkout(workoutId: number, userId: number) {
       },
     });
 
-    // Calculate streak and emit streak_milestone if threshold crossed
-    const completedWorkouts = await tx.workout.findMany({
-      where: { userId, status: 'completed' },
-      select: { completedAt: true },
-    });
-    const dates = completedWorkouts
-      .filter((w) => w.completedAt !== null)
-      .map((w) => w.completedAt!.toISOString().slice(0, 10));
-    const streak = calculateStreak(dates);
-    const STREAK_MILESTONES = [7, 14, 30, 60, 90];
-    const milestoneData = STREAK_MILESTONES.filter((t) => streak >= t).map((threshold) => ({
-      userId,
-      eventType: 'streak_milestone' as const,
-      payload: { days: threshold },
-    }));
-    if (milestoneData.length > 0) {
-      await tx.feedEvent.createMany({ data: milestoneData, skipDuplicates: true });
-    }
-
-    const newAchievements = await checkAndUnlockAchievements(tx, userId, workoutId, noPlansetsForAchievements);
-
-    // Create badge_unlocked feed events
-    if (newAchievements.length > 0) {
-      await tx.feedEvent.createMany({
-        data: newAchievements.map((a) => ({
-          userId,
-          eventType: 'badge_unlocked',
-          payload: { slug: a.slug, name: a.name, description: a.description },
-        })),
-      });
-    }
+    const newAchievements = await emitStreakAndBadgeEvents(tx, userId, workoutId, noPlansetsForAchievements);
 
     return { completed, newAchievements };
   });
@@ -801,36 +786,7 @@ export async function createCustomWorkout(userId: number, payload: CustomWorkout
       },
     });
 
-    // Calculate streak and emit streak_milestone if threshold crossed
-    const completedWorkouts = await tx.workout.findMany({
-      where: { userId, status: 'completed' },
-      select: { completedAt: true },
-    });
-    const dates = completedWorkouts
-      .filter((cw) => cw.completedAt !== null)
-      .map((cw) => cw.completedAt!.toISOString().slice(0, 10));
-    const streak = calculateStreak(dates);
-    const STREAK_MILESTONES = [7, 14, 30, 60, 90];
-    const milestoneData = STREAK_MILESTONES.filter((t) => streak >= t).map((threshold) => ({
-      userId,
-      eventType: 'streak_milestone' as const,
-      payload: { days: threshold },
-    }));
-    if (milestoneData.length > 0) {
-      await tx.feedEvent.createMany({ data: milestoneData, skipDuplicates: true });
-    }
-
-    const newAchievements = await checkAndUnlockAchievements(tx, userId, w.id, setsForAchievements);
-
-    if (newAchievements.length > 0) {
-      await tx.feedEvent.createMany({
-        data: newAchievements.map((a) => ({
-          userId,
-          eventType: 'badge_unlocked',
-          payload: { slug: a.slug, name: a.name, description: a.description },
-        })),
-      });
-    }
+    const newAchievements = await emitStreakAndBadgeEvents(tx, userId, w.id, setsForAchievements);
 
     const completedWorkout = await tx.workout.findUniqueOrThrow({
       where: { id: w.id },
