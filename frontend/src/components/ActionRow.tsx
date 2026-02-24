@@ -3,6 +3,7 @@ import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { toggleReaction } from '../api/social';
 import type { FeedReaction } from '../api/social';
 import type { FeedResponseSchema } from '../api/schemas';
+import { queryKeys } from '../api/queryKeys';
 import { EmojiPicker } from './EmojiPicker';
 import styles from './ActionRow.module.css';
 
@@ -26,10 +27,10 @@ export function ActionRow({ eventId, reactions, currentUserId: _currentUserId, o
   const mutation = useMutation({
     mutationFn: (emoji: string) => toggleReaction(eventId, emoji),
     onMutate: async (emoji: string) => {
-      await queryClient.cancelQueries({ queryKey: ['social', 'feed'] });
-      const snapshot = queryClient.getQueryData<FeedResponse>(['social', 'feed']);
+      await queryClient.cancelQueries({ queryKey: queryKeys.social.feed() });
+      const snapshot = queryClient.getQueryData<FeedResponse>(queryKeys.social.feed());
 
-      queryClient.setQueryData<FeedResponse>(['social', 'feed'], (old) => {
+      queryClient.setQueryData<FeedResponse>(queryKeys.social.feed(), (old) => {
         if (!old) return old;
         return {
           ...old,
@@ -89,11 +90,11 @@ export function ActionRow({ eventId, reactions, currentUserId: _currentUserId, o
     },
     onError: (_err, _emoji, context) => {
       if (context?.snapshot !== undefined) {
-        queryClient.setQueryData(['social', 'feed'], context.snapshot);
+        queryClient.setQueryData(queryKeys.social.feed(), context.snapshot);
       }
     },
     onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: ['social', 'feed'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.feed() });
     },
   });
 

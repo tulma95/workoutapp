@@ -4,6 +4,7 @@ import { getFeed } from '../api/social';
 import type { FeedEvent } from '../api/social';
 import { FeedEventPayloadSchema } from '../api/schemas';
 import type { User } from '../api/schemas';
+import { queryKeys } from '../api/queryKeys';
 import { formatWeight } from '../utils/weight';
 import { SkeletonLine, SkeletonCard } from './Skeleton';
 import { ReactionSummary } from './ReactionSummary';
@@ -104,10 +105,10 @@ interface FeedTabProps {
 
 export function FeedTab({ highlightEventId }: FeedTabProps = {}) {
   const queryClient = useQueryClient();
-  const currentUser = queryClient.getQueryData<User>(['user', 'me']);
+  const currentUser = queryClient.getQueryData<User>(queryKeys.user.me());
   const currentUserId = currentUser?.id ?? 0;
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['social', 'feed'],
+    queryKey: queryKeys.social.feed(),
     queryFn: getFeed,
     refetchOnMount: 'always',
   });

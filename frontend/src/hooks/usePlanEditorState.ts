@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useBlocker } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '../api/queryKeys';
 import {
   getAdminPlan,
   createPlan,
@@ -486,7 +487,7 @@ export function usePlanEditorState(planId?: string) {
       }
 
       if (!isEditMode) {
-        await queryClient.invalidateQueries({ queryKey: ['admin-plans'] });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.admin.plans() });
         navigate({ to: '/admin/plans/$id', params: { id: String(savedPlanId) } });
       }
     } catch (err) {

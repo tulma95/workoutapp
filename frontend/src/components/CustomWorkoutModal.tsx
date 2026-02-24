@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from './Button';
+import { queryKeys } from '../api/queryKeys';
 import { getExerciseList } from '../api/exercises';
 import { createCustomWorkout } from '../api/workouts';
 import styles from './CustomWorkoutModal.module.css';
@@ -35,7 +36,7 @@ export function CustomWorkoutModal({ open, initialDate, onClose, onSaved }: Cust
   const [error, setError] = useState<string | null>(null);
 
   const { data: exerciseList } = useQuery({
-    queryKey: ['exercises'],
+    queryKey: queryKeys.exercises.list(),
     queryFn: getExerciseList,
     staleTime: 5 * 60 * 1000,
   });
@@ -134,7 +135,7 @@ export function CustomWorkoutModal({ open, initialDate, onClose, onSaved }: Cust
           })),
         })),
       });
-      await queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.workout.calendarAll() });
       onSaved();
       onClose();
     } catch (err) {

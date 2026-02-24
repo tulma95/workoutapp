@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { getMe } from '../api/user'
+import { queryKeys } from '../api/queryKeys'
 
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: () => {
@@ -10,7 +11,7 @@ export const Route = createFileRoute('/_authenticated')({
   },
   loader: ({ context: { queryClient } }) =>
     queryClient.ensureQueryData({
-      queryKey: ['user', 'me'],
+      queryKey: queryKeys.user.me(),
       queryFn: getMe,
     }),
   component: () => <Outlet />,

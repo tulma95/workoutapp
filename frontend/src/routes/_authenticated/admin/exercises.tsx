@@ -11,11 +11,12 @@ import {
   type UpdateExerciseInput,
 } from '../../../api/exercises'
 import { ExerciseListContent } from '../../../components/admin/ExerciseListContent'
+import { queryKeys } from '../../../api/queryKeys'
 
 export const Route = createFileRoute('/_authenticated/admin/exercises')({
   loader: ({ context: { queryClient } }) =>
     queryClient.ensureQueryData({
-      queryKey: ['admin-exercises'],
+      queryKey: queryKeys.admin.exercises(),
       queryFn: getExercises,
     }),
   component: ExerciseListPage,
@@ -24,7 +25,7 @@ export const Route = createFileRoute('/_authenticated/admin/exercises')({
 function ExerciseListPage() {
   const queryClient = useQueryClient()
   const { data: exercises } = useSuspenseQuery({
-    queryKey: ['admin-exercises'],
+    queryKey: queryKeys.admin.exercises(),
     queryFn: getExercises,
   })
 
@@ -49,7 +50,7 @@ function ExerciseListPage() {
     } else {
       await createExercise(input as CreateExerciseInput)
     }
-    await queryClient.invalidateQueries({ queryKey: ['admin-exercises'] })
+    await queryClient.invalidateQueries({ queryKey: queryKeys.admin.exercises() })
   }
 
   const handleDelete = async (exercise: Exercise) => {
@@ -63,7 +64,7 @@ function ExerciseListPage() {
 
     try {
       await deleteExercise(exercise.id)
-      await queryClient.invalidateQueries({ queryKey: ['admin-exercises'] })
+      await queryClient.invalidateQueries({ queryKey: queryKeys.admin.exercises() })
     } catch (error: any) {
       setAlertMessage(error.message)
     }

@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { queryKeys } from '../api/queryKeys'
 import styles from './ProgressContent.module.css'
 import { TimeRangeSelector, type TimeRange } from './TimeRangeSelector'
 import {
@@ -26,7 +27,7 @@ export function ProgressContent() {
   const [announcement, setAnnouncement] = useState('')
 
   const { data, isLoading } = useQuery({
-    queryKey: ['progress'],
+    queryKey: queryKeys.progress.all(),
     queryFn: getProgress,
   })
 

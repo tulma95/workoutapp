@@ -5,6 +5,7 @@ import { getWorkoutCalendar, getWorkout, cancelWorkout, type Workout, type Calen
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { HistoryContent } from '../../../components/HistoryContent'
 import { CustomWorkoutModal } from '../../../components/CustomWorkoutModal'
+import { queryKeys } from '../../../api/queryKeys'
 import styles from '../../../styles/HistoryPage.module.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/history')({
@@ -30,7 +31,7 @@ function HistoryPage() {
     error: calendarError,
     refetch: refetchCalendar,
   } = useQuery({
-    queryKey: ['workoutCalendar', currentYear, currentMonth],
+    queryKey: queryKeys.workout.calendar(currentYear, currentMonth),
     queryFn: () => getWorkoutCalendar(currentYear, currentMonth),
     placeholderData: keepPreviousData,
   })
@@ -83,7 +84,7 @@ function HistoryPage() {
   }
 
   const handleCustomWorkoutSaved = () => {
-    queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
+    queryClient.invalidateQueries({ queryKey: queryKeys.workout.calendarAll() })
     setSelectedDateKey(null)
   }
 
@@ -95,7 +96,7 @@ function HistoryPage() {
     if (!selectedWorkout) return
     try {
       await cancelWorkout(selectedWorkout.id)
-      queryClient.invalidateQueries({ queryKey: ['workoutCalendar'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.workout.calendarAll() })
       setSelectedWorkout(null)
       setDayWorkouts(null)
       setSelectedDateKey(null)

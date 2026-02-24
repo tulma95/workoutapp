@@ -3,11 +3,12 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useSuspenseQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getAdminPlans, archivePlan } from '../../../api/adminPlans'
 import { PlanListContent } from '../../../components/admin/PlanListContent'
+import { queryKeys } from '../../../api/queryKeys'
 
 export const Route = createFileRoute('/_authenticated/admin/plans/')({
   loader: ({ context: { queryClient } }) =>
     queryClient.ensureQueryData({
-      queryKey: ['admin-plans'],
+      queryKey: queryKeys.admin.plans(),
       queryFn: getAdminPlans,
     }),
   component: PlanListPage,
@@ -16,7 +17,7 @@ export const Route = createFileRoute('/_authenticated/admin/plans/')({
 function PlanListPage() {
   const queryClient = useQueryClient()
   const { data: plans } = useSuspenseQuery({
-    queryKey: ['admin-plans'],
+    queryKey: queryKeys.admin.plans(),
     queryFn: getAdminPlans,
   })
 
@@ -26,7 +27,7 @@ function PlanListPage() {
   const archiveMutation = useMutation({
     mutationFn: archivePlan,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-plans'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.plans() })
     },
     onError: (error: any) => {
       setAlertMessage(error.message || 'Failed to archive plan')

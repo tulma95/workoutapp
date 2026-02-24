@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getLeaderboard, getE1rmLeaderboard } from '../api/social';
 import type { LeaderboardExercise } from '../api/social';
+import { queryKeys } from '../api/queryKeys';
 import { formatWeight } from '../utils/weight';
 import { SkeletonLine, SkeletonCard } from './Skeleton';
 import styles from './LeaderboardTab.module.css';
@@ -31,12 +32,12 @@ export function LeaderboardTab() {
   const [mode, setMode] = useState<'tm' | 'e1rm'>('tm');
 
   const tmQuery = useQuery({
-    queryKey: ['social', 'leaderboard'],
+    queryKey: queryKeys.social.leaderboard(),
     queryFn: getLeaderboard,
   });
 
   const e1rmQuery = useQuery({
-    queryKey: ['social', 'leaderboard', 'e1rm'],
+    queryKey: queryKeys.social.leaderboardE1rm(),
     queryFn: getE1rmLeaderboard,
     staleTime: 60_000,
     enabled: mode === 'e1rm',

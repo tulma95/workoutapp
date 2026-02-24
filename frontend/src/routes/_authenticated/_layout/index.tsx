@@ -6,12 +6,13 @@ import { getCurrentWorkout } from '../../../api/workouts'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import { SkeletonLine, SkeletonHeading, SkeletonCard } from '../../../components/Skeleton'
 import { DashboardContent } from '../../../components/DashboardContent'
+import { queryKeys } from '../../../api/queryKeys'
 import styles from '../../../styles/DashboardPage.module.css'
 
 export const Route = createFileRoute('/_authenticated/_layout/')({
   beforeLoad: async ({ context: { queryClient } }) => {
     const plan = await queryClient.fetchQuery({
-      queryKey: ['plan', 'current'],
+      queryKey: queryKeys.plan.current(),
       queryFn: getCurrentPlan,
       staleTime: 30_000,
     })
@@ -20,7 +21,7 @@ export const Route = createFileRoute('/_authenticated/_layout/')({
     }
 
     const tms = await queryClient.fetchQuery({
-      queryKey: ['training-maxes'],
+      queryKey: queryKeys.trainingMaxes.all(),
       queryFn: getTrainingMaxes,
       staleTime: 30_000,
     })
@@ -78,11 +79,11 @@ export const Route = createFileRoute('/_authenticated/_layout/')({
 
 function DashboardPage() {
   const { data: plan } = useSuspenseQuery({
-    queryKey: ['plan', 'current'],
+    queryKey: queryKeys.plan.current(),
     queryFn: getCurrentPlan,
   })
   const { data: currentWorkout } = useSuspenseQuery({
-    queryKey: ['workout', 'current'],
+    queryKey: queryKeys.workout.current(),
     queryFn: getCurrentWorkout,
   })
 

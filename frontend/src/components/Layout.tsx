@@ -1,12 +1,13 @@
 import { Outlet, Link, useLocation } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { getMe } from '../api/user'
+import { queryKeys } from '../api/queryKeys'
 import shared from '../styles/shared.module.css'
 
 export default function Layout() {
   const location = useLocation()
   const { data: user } = useQuery({
-    queryKey: ['user', 'me'],
+    queryKey: queryKeys.user.me(),
     queryFn: getMe,
   })
 

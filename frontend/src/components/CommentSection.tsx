@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getComments, createComment, deleteComment } from '../api/social';
 import type { FeedEventComment, CommentsResponse } from '../api/social';
 import type { User } from '../api/schemas';
+import { queryKeys } from '../api/queryKeys';
 import styles from './CommentSection.module.css';
 
 const AVATAR_PALETTE = ['#4f46e5', '#0891b2', '#059669', '#d97706', '#dc2626', '#7c3aed'];
@@ -46,10 +47,10 @@ export function CommentSection({
   // Auto-expand when no latestComments provided (e.g. modal context) so query fires immediately
   const [expanded, setExpanded] = useState(latestComments === undefined);
 
-  const currentUser = queryClient.getQueryData<User>(['user', 'me']);
+  const currentUser = queryClient.getQueryData<User>(queryKeys.user.me());
 
   const { data, isFetching, isError } = useQuery({
-    queryKey: ['social', 'feed', eventId, 'comments'],
+    queryKey: queryKeys.social.feedComments(eventId),
     queryFn: () => getComments(eventId),
     enabled: expanded,
     initialData: latestComments !== undefined ? { comments: latestComments } : undefined,
@@ -59,8 +60,8 @@ export function CommentSection({
   const createMutation = useMutation({
     mutationFn: (commentText: string) => createComment(eventId, commentText),
     onMutate: async (commentText) => {
-      await queryClient.cancelQueries({ queryKey: ['social', 'feed', eventId, 'comments'] });
-      const previous = queryClient.getQueryData<CommentsResponse>(['social', 'feed', eventId, 'comments']);
+      await queryClient.cancelQueries({ queryKey: queryKeys.social.feedComments(eventId) });
+      const previous = queryClient.getQueryData<CommentsResponse>(queryKeys.social.feedComments(eventId));
       const optimisticComment: FeedEventComment = {
         id: -Date.now(),
         feedEventId: eventId,
@@ -69,7 +70,7 @@ export function CommentSection({
         text: commentText,
         createdAt: new Date().toISOString(),
       };
-      queryClient.setQueryData<CommentsResponse>(['social', 'feed', eventId, 'comments'], (old) => ({
+      queryClient.setQueryData<CommentsResponse>(queryKeys.social.feedComments(eventId), (old) => ({
         comments: [...(old?.comments ?? []), optimisticComment],
       }));
       setText('');
@@ -77,12 +78,12 @@ export function CommentSection({
     },
     onSuccess: () => {
       setSubmitError(null);
-      void queryClient.invalidateQueries({ queryKey: ['social', 'feed', eventId, 'comments'] });
-      void queryClient.invalidateQueries({ queryKey: ['social', 'feed'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.feedComments(eventId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.feed() });
     },
     onError: (_err, _vars, context) => {
       if (context?.previous !== undefined) {
-        queryClient.setQueryData(['social', 'feed', eventId, 'comments'], context.previous);
+        queryClient.setQueryData(queryKeys.social.feedComments(eventId), context.previous);
       }
       setSubmitError('Failed to post comment');
     },
@@ -91,20 +92,20 @@ export function CommentSection({
   const deleteMutation = useMutation({
     mutationFn: (commentId: number) => deleteComment(eventId, commentId),
     onMutate: async (commentId) => {
-      await queryClient.cancelQueries({ queryKey: ['social', 'feed', eventId, 'comments'] });
-      const previous = queryClient.getQueryData<CommentsResponse>(['social', 'feed', eventId, 'comments']);
-      queryClient.setQueryData<CommentsResponse>(['social', 'feed', eventId, 'comments'], (old) => ({
+      await queryClient.cancelQueries({ queryKey: queryKeys.social.feedComments(eventId) });
+      const previous = queryClient.getQueryData<CommentsResponse>(queryKeys.social.feedComments(eventId));
+      queryClient.setQueryData<CommentsResponse>(queryKeys.social.feedComments(eventId), (old) => ({
         comments: (old?.comments ?? []).filter((c) => c.id !== commentId),
       }));
       return { previous };
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['social', 'feed', eventId, 'comments'] });
-      void queryClient.invalidateQueries({ queryKey: ['social', 'feed'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.feedComments(eventId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.feed() });
     },
     onError: (_err, _vars, context) => {
       if (context?.previous !== undefined) {
-        queryClient.setQueryData(['social', 'feed', eventId, 'comments'], context.previous);
+        queryClient.setQueryData(queryKeys.social.feedComments(eventId), context.previous);
       }
     },
   });
