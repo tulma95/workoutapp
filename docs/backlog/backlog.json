@@ -1,11 +1,5 @@
 [
   {
-    "id": "117",
-    "title": "Frontend API & query layer cleanup",
-    "status": "in-progress",
-    "description": "Unify recurring frontend API and React Query patterns: (1) apiFetchParsed(path, schema, options?) wrapper to eliminate 41 repetitions of the apiFetch()+Schema.parse() two-liner across 12 API files. (2) queryKeys factory (queryKeys.ts) to centralize all React Query key definitions — prevents string duplication and typo bugs. (3) Cache invalidation helpers for common sequences (e.g., invalidateAfterWorkoutComplete, invalidateAfterPlanSwitch) currently repeated in workout page, select-plan, and setup. (4) Shared extractApiError() utility to replace the inconsistent error message extraction in FriendsTab.tsx (~17 lines) and settings.tsx (~22 lines)."
-  },
-  {
     "id": "118",
     "title": "Frontend UI pattern hooks: useDialog and shared validation",
     "status": "backlog",
