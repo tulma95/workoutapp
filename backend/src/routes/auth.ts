@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { validate } from '../middleware/validate';
 import * as authService from '../services/auth.service';
 import { logger } from '../lib/logger';
-import { usernameSchema, isP2002UsernameViolation } from '../lib/routeHelpers';
+import { usernameSchema, isP2002UsernameViolation, isPrismaError } from '../lib/routeHelpers';
 
 const router = Router();
 
@@ -32,7 +32,7 @@ router.post('/register', validate(registerSchema), async (req: Request, res: Res
       });
       return;
     }
-    if (err && typeof err === 'object' && 'code' in err && err.code === 'P2002') {
+    if (isPrismaError(err, 'P2002')) {
       res.status(409).json({
         error: { code: 'EMAIL_EXISTS', message: 'An account with this email already exists' },
       });
