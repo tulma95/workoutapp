@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
+import { useDialog } from '../../../hooks/useDialog'
+import { validateUsername } from '../../../utils/validators'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useSuspenseQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getMe, updateMe } from '../../../api/user'
@@ -102,23 +104,13 @@ function SettingsPage() {
     setUsernameInput(user.username ?? '')
   }, [user.username])
 
-  const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/
-
-  function validateUsername(value: string): string {
-    if (value === '') return ''
-    if (value.length < 3) return 'Username must be at least 3 characters'
-    if (value.length > 30) return 'Username must be at most 30 characters'
-    if (!USERNAME_REGEX.test(value)) return 'Username may only contain letters, numbers, and underscores'
-    return ''
-  }
-
   function handleUsernameBlur() {
-    setUsernameError(validateUsername(usernameInput))
+    setUsernameError(validateUsername(usernameInput, { required: false }))
   }
 
   async function handleUsernameSave() {
     const trimmed = usernameInput.trim()
-    const validationError = validateUsername(trimmed)
+    const validationError = validateUsername(trimmed, { required: false })
     if (validationError) {
       setUsernameError(validationError)
       return
@@ -160,25 +152,7 @@ function SettingsPage() {
   const [tmError, setTmError] = useState('')
   const dialogRef = useRef<HTMLDialogElement>(null)
 
-  useEffect(() => {
-    const dialog = dialogRef.current
-    if (!dialog) return
-
-    if (editingExercise) {
-      dialog.showModal()
-    } else {
-      dialog.close()
-    }
-  }, [editingExercise])
-
-  useEffect(() => {
-    const dialog = dialogRef.current
-    if (!dialog) return
-
-    const handleClose = () => closeEditModal()
-    dialog.addEventListener('close', handleClose)
-    return () => dialog.removeEventListener('close', handleClose)
-  }, [])
+  useDialog(dialogRef, !!editingExercise, () => setEditingExercise(null))
 
   const handleRestTimerChange = (updates: Partial<RestTimerSettings>) => {
     setRestTimerSettings(prev => {

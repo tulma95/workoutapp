@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useDialog } from '../../../hooks/useDialog'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import {
@@ -315,23 +316,7 @@ function ActiveWorkout({
     }
   }, [])
 
-  useEffect(() => {
-    const dialog = achievementDialogRef.current
-    if (!dialog) return
-    if (achievementDialogOpen) {
-      dialog.showModal()
-    } else {
-      if (dialog.open) dialog.close()
-    }
-  }, [achievementDialogOpen])
-
-  useEffect(() => {
-    const dialog = achievementDialogRef.current
-    if (!dialog) return
-    const handleClose = () => setAchievementDialogOpen(false)
-    dialog.addEventListener('close', handleClose)
-    return () => dialog.removeEventListener('close', handleClose)
-  }, [])
+  useDialog(achievementDialogRef, achievementDialogOpen, () => setAchievementDialogOpen(false))
 
   const debouncedLogSet = (
     setId: number,
