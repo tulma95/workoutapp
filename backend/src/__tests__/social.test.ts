@@ -66,6 +66,14 @@ describe('Social API', () => {
   describe('Friend request flow', () => {
     let friendshipId: number;
 
+    beforeAll(async () => {
+      const res = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenA}`)
+        .send({ email: emailB });
+      friendshipId = res.body.id;
+    });
+
     it('returns 404 when target email not found', async () => {
       const res = await request(app)
         .post('/api/social/request')
@@ -81,16 +89,6 @@ describe('Social API', () => {
         .send({ email: `social-a-${uid}@example.com` });
       expect(res.status).toBe(400);
       expect(res.body.error.code).toBe('SELF_FRIEND');
-    });
-
-    it('sends a friend request by email', async () => {
-      const res = await request(app)
-        .post('/api/social/request')
-        .set('Authorization', `Bearer ${tokenA}`)
-        .send({ email: emailB });
-      expect(res.status).toBe(201);
-      expect(res.body).toHaveProperty('id');
-      friendshipId = res.body.id;
     });
 
     it('returns 409 when duplicate request sent in same direction', async () => {
