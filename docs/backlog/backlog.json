@@ -1,12 +1,5 @@
 [
   {
-    "id": "111",
-    "title": "Backend feed endpoint fetches ALL comments unbounded — add LIMIT or take-last-2 in DB query instead of in-memory slice",
-    "status": "backlog",
-    "priority": "medium",
-    "description": "GET /api/social/feed batch-fetches ALL comments for up to 20 events with no LIMIT. In the worst case this could be thousands of rows. The backend should instead use a ranked subquery or window function to fetch only the 2 most recent comments per event at the DB level, not slice in memory."
-  },
-  {
     "id": "113",
     "title": "SocialContent.tsx component is now a dead code orphan — social route was refactored to sub-routes but SocialContent was not deleted",
     "status": "backlog",
@@ -327,5 +320,12 @@
     "status": "backlog",
     "priority": "low",
     "description": "validateDate is only called from the onChange handler, not on modal open. If initialDate is ever a future date the modal opens with no error and Save enabled. Fix: call validateDate(initialDate) inside the open useEffect."
+  },
+  {
+    "id": "124",
+    "title": "Add feed latestComments edge-case tests: exactly 1 comment and zero-event feed",
+    "status": "backlog",
+    "priority": "low",
+    "description": "The social.test.ts latestComments suite covers 0-comment and 3-comment (truncated to 2) cases but not: (a) exactly 1 comment on an event, (b) the eventIds-empty early-exit branch when the feed returns zero events. Both are handled correctly by the implementation but lack explicit test coverage."
   }
 ]
