@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from './Button';
+import { useDialog } from '../hooks/useDialog';
 import { queryKeys } from '../api/queryKeys';
 import { getExerciseList } from '../api/exercises';
 import { createCustomWorkout } from '../api/workouts';
@@ -41,23 +42,7 @@ export function CustomWorkoutModal({ open, initialDate, onClose, onSaved }: Cust
     staleTime: 5 * 60 * 1000,
   });
 
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (open) {
-      dialog.showModal();
-    } else {
-      dialog.close();
-    }
-  }, [open]);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    const handleClose = () => onClose();
-    dialog.addEventListener('close', handleClose);
-    return () => dialog.removeEventListener('close', handleClose);
-  }, [onClose]);
+  useDialog(dialogRef, open, onClose);
 
   useEffect(() => {
     if (open) {
