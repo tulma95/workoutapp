@@ -1,4 +1,4 @@
-import { apiFetch } from './client';
+import { apiFetchParsed } from './client';
 import {
   TrainingMaxSchema,
   SetupResponseSchema,
@@ -15,30 +15,26 @@ export interface ExerciseTM {
 }
 
 export async function getTrainingMaxes(): Promise<typeof SetupResponseSchema._output> {
-  const data = await apiFetch('/training-maxes');
-  return SetupResponseSchema.parse(data);
+  return apiFetchParsed('/training-maxes', SetupResponseSchema);
 }
 
 export async function setupTrainingMaxes(oneRepMaxes: typeof import('./schemas').OneRepMaxesSchema._output): Promise<typeof SetupResponseSchema._output> {
-  const data = await apiFetch('/training-maxes/setup', {
+  return apiFetchParsed('/training-maxes/setup', SetupResponseSchema, {
     method: 'POST',
     body: JSON.stringify({ oneRepMaxes }),
   });
-  return SetupResponseSchema.parse(data);
 }
 
 export async function setupTrainingMaxesFromExercises(exerciseTMs: ExerciseTM[]): Promise<typeof SetupResponseSchema._output> {
-  const data = await apiFetch('/training-maxes/setup', {
+  return apiFetchParsed('/training-maxes/setup', SetupResponseSchema, {
     method: 'POST',
     body: JSON.stringify({ exerciseTMs }),
   });
-  return SetupResponseSchema.parse(data);
 }
 
 export async function updateTrainingMax(exercise: string, weight: number, reason?: string): Promise<typeof TrainingMaxSchema._output> {
-  const data = await apiFetch(`/training-maxes/${exercise}`, {
+  return apiFetchParsed(`/training-maxes/${exercise}`, TrainingMaxSchema, {
     method: 'PATCH',
     body: JSON.stringify({ weight, ...(reason ? { reason } : {}) }),
   });
-  return TrainingMaxSchema.parse(data);
 }

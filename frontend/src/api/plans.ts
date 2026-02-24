@@ -1,4 +1,4 @@
-import { apiFetch } from './client';
+import { apiFetch, apiFetchParsed } from './client';
 import {
   WorkoutPlanSchema,
   SubscribeResponseSchema,
@@ -18,8 +18,7 @@ export async function getCurrentPlan(): Promise<WorkoutPlan | null> {
 }
 
 export async function subscribeToPlan(planId: number): Promise<SubscribeResponse> {
-  const data = await apiFetch(`/plans/${planId}/subscribe`, {
+  return apiFetchParsed(`/plans/${planId}/subscribe`, SubscribeResponseSchema, {
     method: 'POST',
   });
-  return SubscribeResponseSchema.parse(data);
 }

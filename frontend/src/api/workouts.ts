@@ -1,4 +1,4 @@
-import { apiFetch } from './client';
+import { apiFetch, apiFetchParsed } from './client';
 import {
   WorkoutSchema,
   WorkoutSetSchema,
@@ -30,11 +30,10 @@ export type {
 } from './schemas';
 
 export async function startWorkout(dayNumber: number): Promise<typeof WorkoutSchema._output> {
-  const data = await apiFetch('/workouts', {
+  return apiFetchParsed('/workouts', WorkoutSchema, {
     method: 'POST',
     body: JSON.stringify({ dayNumber }),
   });
-  return WorkoutSchema.parse(data);
 }
 
 export async function getCurrentWorkout(): Promise<typeof WorkoutSchema._output | null> {
@@ -43,8 +42,7 @@ export async function getCurrentWorkout(): Promise<typeof WorkoutSchema._output 
 }
 
 export async function getWorkout(id: number): Promise<typeof WorkoutSchema._output> {
-  const data = await apiFetch(`/workouts/${id}`);
-  return WorkoutSchema.parse(data);
+  return apiFetchParsed(`/workouts/${id}`, WorkoutSchema);
 }
 
 export async function logSet(
@@ -52,18 +50,16 @@ export async function logSet(
   setId: number,
   data: { actualReps?: number | null; completed?: boolean }
 ): Promise<typeof WorkoutSetSchema._output> {
-  const result = await apiFetch(`/workouts/${workoutId}/sets/${setId}`, {
+  return apiFetchParsed(`/workouts/${workoutId}/sets/${setId}`, WorkoutSetSchema, {
     method: 'PATCH',
     body: JSON.stringify(data),
   });
-  return WorkoutSetSchema.parse(result);
 }
 
 export async function completeWorkout(id: number): Promise<typeof CompleteWorkoutResponseSchema._output> {
-  const data = await apiFetch(`/workouts/${id}/complete`, {
+  return apiFetchParsed(`/workouts/${id}/complete`, CompleteWorkoutResponseSchema, {
     method: 'POST',
   });
-  return CompleteWorkoutResponseSchema.parse(data);
 }
 
 export async function getWorkoutHistory(
@@ -84,14 +80,12 @@ export async function getWorkoutCalendar(
   year: number,
   month: number
 ): Promise<typeof WorkoutCalendarResponseSchema._output> {
-  const data = await apiFetch(`/workouts/calendar?year=${year}&month=${month}`);
-  return WorkoutCalendarResponseSchema.parse(data);
+  return apiFetchParsed(`/workouts/calendar?year=${year}&month=${month}`, WorkoutCalendarResponseSchema);
 }
 
 export async function createCustomWorkout(payload: CreateCustomWorkoutPayload): Promise<typeof WorkoutSchema._output> {
-  const data = await apiFetch('/workouts/custom', {
+  return apiFetchParsed('/workouts/custom', WorkoutSchema, {
     method: 'POST',
     body: JSON.stringify(payload),
   });
-  return WorkoutSchema.parse(data);
 }

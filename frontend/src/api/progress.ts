@@ -1,8 +1,7 @@
-import { apiFetch } from './client';
+import { apiFetchParsed } from './client';
 import { ProgressResponseSchema } from './schemas';
 export type { ProgressResponse, ProgressExercise } from './schemas';
 
 export async function getProgress() {
-  const data = await apiFetch('/progress');
-  return ProgressResponseSchema.parse(data);
+  return apiFetchParsed('/progress', ProgressResponseSchema);
 }

@@ -1,15 +1,13 @@
-import { apiFetch } from './client'
+import { apiFetchParsed } from './client'
 import { UserSchema } from './schemas'
 
 export async function getMe() {
-  const data = await apiFetch('/users/me')
-  return UserSchema.parse(data)
+  return apiFetchParsed('/users/me', UserSchema)
 }
 
 export async function updateMe(updates: { username?: string | null }) {
-  const data = await apiFetch('/users/me', {
+  return apiFetchParsed('/users/me', UserSchema, {
     method: 'PATCH',
     body: JSON.stringify(updates),
   })
-  return UserSchema.parse(data)
 }

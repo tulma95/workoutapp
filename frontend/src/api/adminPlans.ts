@@ -1,4 +1,4 @@
-import { apiFetch } from './client';
+import { apiFetch, apiFetchParsed } from './client';
 import {
   WorkoutPlanBasicSchema,
   AdminPlanListItemSchema,
@@ -46,16 +46,14 @@ export async function getAdminPlans(): Promise<AdminPlanListItem[]> {
 }
 
 export async function getAdminPlan(planId: number): Promise<PlanWithDetails> {
-  const data = await apiFetch(`/admin/plans/${planId}`);
-  return PlanWithDetailsSchema.parse(data);
+  return apiFetchParsed(`/admin/plans/${planId}`, PlanWithDetailsSchema);
 }
 
 export async function createPlan(input: CreatePlanInput): Promise<{ id: number }> {
-  const data = await apiFetch('/admin/plans', {
+  return apiFetchParsed('/admin/plans', WorkoutPlanBasicSchema, {
     method: 'POST',
     body: JSON.stringify(input),
   });
-  return WorkoutPlanBasicSchema.parse(data);
 }
 
 export async function updatePlan(planId: number, input: CreatePlanInput): Promise<void> {
