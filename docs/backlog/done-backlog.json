@@ -339,5 +339,19 @@
     "status": "done",
     "priority": "low",
     "description": "Two small refactors in workout.service.ts:\n\n1. The streak + badge feed event emission block (~40 lines) is duplicated in both plan and no-plan completeWorkout transaction paths. Extract to a shared helper function.\n\n2. The array [7, 14, 30, 60, 90] is defined inline at three separate locations (lines 530, 614, 809). Extract to a single module-level STREAK_MILESTONES constant."
+  },
+  {
+    "id": "088",
+    "title": "Docs catchup: update api-endpoints.md, db-schema.md, and react-query-cache.md",
+    "status": "done",
+    "priority": "medium",
+    "description": "Multiple doc files are stale. All updates in one pass:\n\n1. api-endpoints.md: add GET /api/social/search, updated POST /api/social/request (from ticket 068). Add POST/GET/DELETE /api/social/feed/:eventId/comments and commentCount + latestComments fields in GET /api/social/feed response. Add comment_received notification type.\n\n2. db-schema.md: add username column in users table. Add push_subscriptions table (id, user_id FK, endpoint TEXT, p256dh TEXT, auth TEXT, created_at; unique user_id+endpoint).\n\n3. react-query-cache.md: add social/search query key. Update stale references from ReactionBar.tsx to ActionRow.tsx, and from 'CommentSection (inside CommentModal)' to CommentSection.tsx."
+  },
+  {
+    "id": "052",
+    "title": "Calendar: clear selectedDateKey after deletion and custom workout save",
+    "status": "done",
+    "priority": "medium",
+    "description": "Two places in history.tsx fail to clear selectedDateKey:\n\n1. After workout deletion: calendar refetches, deleted day has no workouts, showAddCustomWorkoutButton becomes true and button appears without user interaction. Fix: call setSelectedDateKey(null) in handleConfirmDelete.\n\n2. After custom workout save: the .selected highlight on the calendar day persists until the user clicks another day or changes month. Fix: call setSelectedDateKey(null) in handleCustomWorkoutSaved."
   }
 ]

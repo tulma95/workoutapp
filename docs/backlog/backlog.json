@@ -7,13 +7,6 @@
     "description": "The achievements test suite has a positive test for century-club (bench TM=200) but no negative test confirming it does NOT trigger when all set weights are below 100 kg. The default benchTM=100 users (TM=90) could serve as a negative baseline."
   },
   {
-    "id": "052",
-    "title": "Calendar: clear selectedDateKey after deletion and custom workout save",
-    "status": "backlog",
-    "priority": "medium",
-    "description": "Two places in history.tsx fail to clear selectedDateKey:\n\n1. After workout deletion: calendar refetches, deleted day has no workouts, showAddCustomWorkoutButton becomes true and button appears without user interaction. Fix: call setSelectedDateKey(null) in handleConfirmDelete.\n\n2. After custom workout save: the .selected highlight on the calendar day persists until the user clicks another day or changes month. Fix: call setSelectedDateKey(null) in handleCustomWorkoutSaved."
-  },
-  {
     "id": "061",
     "title": "Shareable Workout Card",
     "status": "backlog",
@@ -54,12 +47,6 @@
     "title": "Gym Crew / Groups",
     "status": "backlog",
     "description": "Create a named group of friends (a 'crew') that shares its own leaderboard and activity feed. Good for real-life gym groups or online communities running the same plan. Crew has a name, members, shared leaderboard, and crew feed."
-  },
-  {
-    "id": "052",
-    "title": "Weekly Challenge",
-    "status": "backlog",
-    "description": "Auto-generated weekly goals between friends. Examples: 'who can hit more total reps this week', 'who completes all scheduled workouts first'. Challenges auto-start Monday, results shown Sunday. Opt-in per friend pair."
   },
   {
     "id": "059",
