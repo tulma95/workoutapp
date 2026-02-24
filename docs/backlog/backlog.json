@@ -1,11 +1,5 @@
 [
   {
-    "id": "121",
-    "title": "Fix ApiError to preserve error.code from server responses",
-    "status": "backlog",
-    "description": "Currently apiFetch discards the code field when constructing ApiError, making code-based error handling impossible in UI (e.g. USERNAME_EXISTS check in settings.tsx)"
-  },
-  {
     "id": "122",
     "title": "Fix flaky social test: 'no longer shows in pending requests after acceptance' gets 404 intermittently",
     "status": "backlog",
