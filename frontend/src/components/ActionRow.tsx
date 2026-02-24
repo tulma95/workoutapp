@@ -115,7 +115,7 @@ export function ActionRow({ eventId, reactions, currentUserId: _currentUserId, o
           onClick={() => setIsPickerOpen((open) => !open)}
         >
           <span aria-hidden="true">{currentEmoji ?? '🔥'}</span>
-          <span>{currentEmoji ? 'React' : 'React'}</span>
+          <span>{currentEmoji ? 'Reacted' : 'React'}</span>
         </button>
         <EmojiPicker
           isOpen={isPickerOpen}
