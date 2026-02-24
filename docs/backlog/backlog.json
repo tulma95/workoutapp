@@ -1,12 +1,5 @@
 [
   {
-    "id": "088",
-    "title": "Docs catchup: update api-endpoints.md, db-schema.md, and react-query-cache.md",
-    "status": "backlog",
-    "priority": "medium",
-    "description": "Multiple doc files are stale. All updates in one pass:\n\n1. api-endpoints.md: add GET /api/social/search, updated POST /api/social/request (from ticket 068). Add POST/GET/DELETE /api/social/feed/:eventId/comments and commentCount + latestComments fields in GET /api/social/feed response. Add comment_received notification type.\n\n2. db-schema.md: add username column in users table. Add push_subscriptions table (id, user_id FK, endpoint TEXT, p256dh TEXT, auth TEXT, created_at; unique user_id+endpoint).\n\n3. react-query-cache.md: add social/search query key. Update stale references from ReactionBar.tsx to ActionRow.tsx, and from 'CommentSection (inside CommentModal)' to CommentSection.tsx."
-  },
-  {
     "id": "070",
     "title": "Missing negative test for century-club achievement (low TM should not unlock)",
     "status": "backlog",
