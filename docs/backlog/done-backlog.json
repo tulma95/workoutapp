@@ -332,5 +332,12 @@
     "title": "Frontend UI pattern hooks: useDialog and shared validation",
     "status": "done",
     "description": "Extract recurring frontend UI patterns into reusable hooks and shared modules: (1) useDialog(open, onClose) hook to replace the duplicated dialog lifecycle useEffect pairs (showModal/close sync + close event listener) found in CustomWorkoutModal.tsx, workout page achievement dialog, and future modals. (2) Shared validation module (validators.ts) for username validation — currently defined separately in register.tsx and settings.tsx with slightly different behavior. Move the regex and rules to one place, parameterize required-vs-optional. Also covers the backend username regex in auth.ts, users.ts, social.ts (could share via a common package or just align)."
+  },
+  {
+    "id": "086",
+    "title": "Refactor workout.service.ts: extract streak/badge helper and STREAK_MILESTONES constant",
+    "status": "done",
+    "priority": "low",
+    "description": "Two small refactors in workout.service.ts:\n\n1. The streak + badge feed event emission block (~40 lines) is duplicated in both plan and no-plan completeWorkout transaction paths. Extract to a shared helper function.\n\n2. The array [7, 14, 30, 60, 90] is defined inline at three separate locations (lines 530, 614, 809). Extract to a single module-level STREAK_MILESTONES constant."
   }
 ]
