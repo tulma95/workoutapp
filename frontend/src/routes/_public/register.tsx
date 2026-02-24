@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useAuth } from '../../context/useAuth'
 import { RegisterForm } from '../../components/RegisterForm'
+import { validateUsername } from '../../utils/validators'
 
 export const Route = createFileRoute('/_public/register')({
   component: RegisterPage,
@@ -17,14 +18,6 @@ function RegisterPage() {
   const [passwordError, setPasswordError] = useState('')
   const [usernameError, setUsernameError] = useState('')
   const [loading, setLoading] = useState(false)
-
-  function validateUsername(value: string): string {
-    if (value.length === 0) return 'Username is required'
-    if (value.length < 3) return 'Username must be at least 3 characters'
-    if (value.length > 30) return 'Username must be at most 30 characters'
-    if (!/^[a-zA-Z0-9_]+$/.test(value)) return 'Username can only contain letters, numbers, and underscores'
-    return ''
-  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()

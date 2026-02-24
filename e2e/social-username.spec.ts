@@ -368,7 +368,7 @@ test.describe('Username: registration validation', () => {
     await usernameInput.blur();
 
     // Should show inline validation error about invalid characters
-    await expect(page.getByText(/username can only contain letters, numbers, and underscores/i)).toBeVisible();
+    await expect(page.getByText(/username may only contain letters, numbers, and underscores/i)).toBeVisible();
   });
 
   test('too short username at registration shows inline error', async ({ page }) => {
