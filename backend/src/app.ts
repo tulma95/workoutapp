@@ -85,6 +85,11 @@ if (config.nodeEnv === 'test' || config.nodeEnv === 'development') {
   });
 }
 
+// Return structured JSON 404 for unmatched API routes instead of HTML
+app.use('/api', (_req, res) => {
+  res.status(404).json({ error: { code: 'NOT_FOUND', message: 'API route not found' } });
+});
+
 // Serve frontend static files and handle SPA routing
 const frontendPath = path.join(__dirname, '../../frontend/dist');
 app.use(express.static(frontendPath));
