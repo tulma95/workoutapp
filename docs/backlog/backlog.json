@@ -2,7 +2,7 @@
   {
     "id": "117",
     "title": "Frontend API & query layer cleanup",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "Unify recurring frontend API and React Query patterns: (1) apiFetchParsed(path, schema, options?) wrapper to eliminate 41 repetitions of the apiFetch()+Schema.parse() two-liner across 12 API files. (2) queryKeys factory (queryKeys.ts) to centralize all React Query key definitions — prevents string duplication and typo bugs. (3) Cache invalidation helpers for common sequences (e.g., invalidateAfterWorkoutComplete, invalidateAfterPlanSwitch) currently repeated in workout page, select-plan, and setup. (4) Shared extractApiError() utility to replace the inconsistent error message extraction in FriendsTab.tsx (~17 lines) and settings.tsx (~22 lines)."
   },
   {
@@ -360,5 +360,17 @@
     "title": "auth.ts email-exists P2002 guard uses raw object check instead of isPrismaError",
     "status": "backlog",
     "description": "In auth.ts POST /register, the username-exists branch uses isP2002UsernameViolation() but the email-exists fallthrough at line 35 still does a raw object check (err.code === P2002). Should use isPrismaError(err, P2002) for consistency."
+  },
+  {
+    "id": "121",
+    "title": "Fix ApiError to preserve error.code from server responses",
+    "status": "backlog",
+    "description": "Currently apiFetch discards the code field when constructing ApiError, making code-based error handling impossible in UI (e.g. USERNAME_EXISTS check in settings.tsx)"
+  },
+  {
+    "id": "122",
+    "title": "Fix flaky social test: 'no longer shows in pending requests after acceptance' gets 404 intermittently",
+    "status": "backlog",
+    "description": "The test at social.test.ts:165 calls GET /api/social/requests but intermittently receives 404 instead of 200. The route exists and has no 404 code path, suggesting a race condition or Express 5 routing issue. All ticket 117 changes are frontend-only — this is a pre-existing backend test fragility."
   }
 ]
