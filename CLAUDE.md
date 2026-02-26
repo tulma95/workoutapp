@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-A workout tracking application supporting configurable training plans. Ships with nSuns 4-Day LP as the default plan. Users register, subscribe to a plan, enter 1 Rep Maxes for the plan's exercises, and the app generates workouts with auto-calculated weights. Training maxes update automatically based on AMRAP performance and plan-specific progression rules.
+A workout tracking application supporting configurable training plans. Users register, subscribe to a plan, enter 1 Rep Maxes, and the app generates workouts with auto-calculated weights. Training maxes update automatically based on AMRAP performance and plan-specific progression rules.
 
 ## Tech Stack
 
@@ -18,10 +18,10 @@ A workout tracking application supporting configurable training plans. Ships wit
 - Monorepo with npm workspaces
 - Backend on port 3001, frontend Vite dev server on 5173 with `/api` proxy
 - JWT auth (`accessToken` in localStorage, `Authorization: Bearer` header)
-- All weights in **kg** (no unit conversion)
-- Training maxes are **append-only** rows (latest `effective_date` = current TM, older rows = history)
-- **Plan-driven**: All workout generation and progression requires an active plan subscription (no hardcoded fallback)
-- **Environment variables**: Exported by shell scripts (`start_local_env.sh`, `run_test.sh`), never loaded from .env files. Backend reads `process.env` directly without dotenv.
+- All weights in **kg** (no unit conversion), round to nearest **2.5 kg**
+- Training maxes are **append-only** rows (latest `effective_date` = current TM)
+- **Plan-driven**: All workout generation and progression requires an active plan subscription
+- **Environment variables**: Exported by shell scripts (`start_local_env.sh`, `run_test.sh`), never loaded from .env files
 - Prefer simple solutions
 
 ## Reference Docs (read on demand, not loaded by default)
@@ -30,180 +30,50 @@ A workout tracking application supporting configurable training plans. Ships wit
 - **API endpoints**: `docs/api-endpoints.md`
 - **React Query cache map & invalidation rules**: `docs/react-query-cache.md`
 
-## Plan System
-
-### How Plans Work
-
-- **WorkoutPlan** defines the program: name, slug, days per week, system flag
-- **PlanDay** defines each training day with exercises
-- **PlanDayExercise** links exercises to days with display name, TM exercise reference, sort order
-- **PlanSet** defines set schemes: percentage, reps, isAmrap, isProgression per exercise per day
-- **PlanProgressionRule** defines TM increases: minReps/maxReps ranges with increase amounts, can be exercise-specific or category-based (upper/lower)
-- **UserPlan** tracks user subscriptions with isActive flag
-
-### User Flow
-
-Register -> Dashboard -> /select-plan redirect -> subscribe to plan -> /setup (if missing TMs) -> Dashboard -> start workouts
-
-### Progression
-
-- Each plan defines its own progression rules (not hardcoded)
-- Progression sets marked with `isProgression: true` in PlanSet
-- Rule matching: exercise-specific rule takes precedence over category-based ('upper'/'lower')
-- Category determined by `exercise.isUpperBody`: true = 'upper', false = 'lower'
-- Completing a workout can produce multiple progressions (one per progression set)
-
-## Default nSuns 4-Day LP Plan
-
-Seeded via `backend/prisma/seed.ts`. 4 lifts tracked: Bench, Squat, OHP, Deadlift. TM = 90% of 1RM.
-
-| Day | Primary (9 sets)        | Secondary (8 sets)                  |
-| --- | ----------------------- | ----------------------------------- |
-| 1   | Bench Volume (Bench TM) | OHP (OHP TM, 50-70%)                |
-| 2   | Squat (Squat TM)        | Sumo Deadlift (Deadlift TM, 50-70%) |
-| 3   | Bench Heavy (Bench TM)  | Close Grip Bench (Bench TM, 40-60%) |
-| 4   | Deadlift (Deadlift TM)  | Front Squat (Squat TM, 35-55%)      |
-
-### Weight Rounding
-
-Round calculated weights to nearest **2.5 kg**.
-
-## Key Business Logic
-
-### Starting a Workout (`POST /api/workouts`)
-
-1. Require active plan subscription
-2. Load PlanDay with exercises and sets for the requested dayNumber
-3. Look up current TMs for each exercise's tmExerciseId
-4. Calculate weights: `round(TM * percentage)` using plan set schemes
-5. Insert workout + workout_sets with exerciseId and isProgression from plan
-6. Return full workout with sets
-
-### Completing a Workout (`POST /api/workouts/:id/complete`)
-
-1. Find all sets with `isProgression: true`
-2. For each progression set: look up exercise, find matching progression rule
-3. Rule matching: exercise-specific first, then category fallback (upper/lower)
-4. Calculate TM increase from matched rule based on actual_reps
-5. Insert new training_maxes rows if increase > 0
-6. Return `{ progressions: [...] }` array (multiple possible per workout)
-
-### Canceling a Workout (`DELETE /api/workouts/:id`)
-
-- Soft delete: sets status to 'discarded' (not hard delete)
-- Discarded workouts excluded from history, calendar, and current workout queries
-
 ## Frontend Patterns
 
-- **Zod schemas**: All API responses validated at runtime via `frontend/src/api/schemas.ts`
-- **Weight display**: All display uses `formatWeight()` from `frontend/src/utils/weight.ts` (always kg, rounds to 2.5).
-- **CSS Modules**: Component-scoped styles via `.module.css` files, rem units on 8-point grid, shared custom properties in `global.css`, border widths stay as px
+- **CSS Modules**: `.module.css` files, rem units on 8-point grid, shared custom properties in `global.css`, border widths stay as px
 - **Touch targets**: All interactive elements min 44px (3rem)
-- **No view transitions**: Removed due to Safari/iOS issues.
-- **Controlled components**: Complex stateful UI (e.g., WorkoutCalendar) uses props not internal state to prevent reset on re-render
-- **Loading states**: Calendar uses a thin animated progress bar (not opacity fade). Skeleton loading screens for initial page loads. Never unmount components during loading.
-- **Caching**: `defaultPreloadStaleTime: 0` delegates all caching to React Query. Route loaders use `ensureQueryData()` for preloading. Calendar uses `keepPreviousData` for smooth month transitions.
-- **Workout creation**: Done in component `useEffect` with `useRef` guard (not in route loader) to prevent phantom workouts from preloading. Route preloading disabled on workout page.
-- **Modals**: Use native `<dialog>` element with `showModal()`. Dialog fills viewport (transparent background), visual content in inner `__content` div. Gives free backdrop, focus trapping, and Escape key handling. Listen for `close` event to sync parent state.
-- **Navigation**: Never use `<Button onClick={() => navigate(...)}>` for navigation. Use `<ButtonLink to="...">` (renders an `<a>` tag) for all navigational actions. Only use `navigate()` for post-action redirects (after form submit, login, logout, API call).
+- **No view transitions**: Removed due to Safari/iOS issues
+- **Loading states**: Calendar uses thin animated progress bar (not opacity fade). Skeleton loading for initial page loads. Never unmount components during loading.
+- **Workout creation**: Done in component `useEffect` with `useRef` guard (not in route loader) to prevent phantom workouts from preloading
+- **Modals**: Use native `<dialog>` element with `showModal()`. Dialog fills viewport (transparent background), visual content in inner `__content` div. Listen for `close` event to sync parent state.
+- **Navigation**: Never use `<Button onClick={() => navigate(...)}>`. Use `<ButtonLink to="...">` for navigation. Only use `navigate()` for post-action redirects.
 
 ## Testing
 
 Always write tests for new code.
 
-- **Backend integration tests**: Run against a real PostgreSQL test database (port 5433). No `vi.mock` for DB, config, or bcrypt — use real modules.
-- **Test infrastructure**: `./run_test.sh` handles the full lifecycle: starts test Postgres container, runs migrations, runs backend vitest tests, starts dev servers, runs Playwright E2E tests, cleans up.
-- **Test isolation**: Backend `vitest.config.ts` uses `fileParallelism: true`. Each test file uses `crypto.randomUUID()` in email addresses so parallel test files don't conflict. `setup.ts` only calls `prisma.$disconnect()` in `afterAll` — no table truncation per file.
-- **E2E tests**: Playwright for end-to-end user flows. Test files in `e2e/`, config in `playwright.config.ts`. Parallel execution with `crypto.randomUUID()` for unique test users.
-- **Do not write frontend unit tests.** All frontend testing is done via Playwright E2E tests.
+- **Backend integration tests**: Run against real PostgreSQL (port 5433). No `vi.mock` for DB, config, or bcrypt — use real modules.
+- **Test isolation**: Each test file uses `crypto.randomUUID()` in emails so parallel files don't conflict.
+- **Do not write frontend unit tests.** All frontend testing via Playwright E2E tests.
 - **Playwright**: Use locator-based API, prefer `getByRole`/`getByLabel`/`getByText` over CSS selectors, wait with `expect` assertions (never `waitForTimeout`), use `.first()` when multiple elements match.
-- Run tests before committing: `npm test` or `./run_test.sh`
 - **Backend typecheck**: `npm run build -w backend`
-- **Frontend typecheck**: `cd frontend && npx tsc --build --noEmit` (must use `--build` because `tsconfig.json` uses project references)
+- **Frontend typecheck**: `cd frontend && npx tsc --build --noEmit` (must use `--build` for project references)
 
 ## Commands
 
 ```bash
-# Start full local dev environment (Docker + backend + frontend in tmux)
-./start_local_env.sh      # Creates/attaches to tmux session 'treenisofta'
+# Start full local dev environment
+./start_local_env.sh
 
-# Or start services manually:
-docker compose up -d
-npm install
-cd backend && npx prisma generate && npx prisma migrate dev && cd ..
-npm run dev -w backend    # Express on :3001
-npm run dev -w frontend   # Vite on :5173
-
-# Run tests (starts test DB, migrates, runs backend + E2E tests, cleans up)
+# Run all tests (backend + E2E)
 ./run_test.sh
 
-# Prisma commands (MUST run from backend/ directory, not workspace flag)
+# Prisma commands (MUST cd backend first, no workspace flag)
 cd backend
 npx prisma generate
 npx prisma migrate dev
 npx prisma db seed
-
-# Regenerate PWA PNG icons after editing frontend/public/icon.svg
-cd frontend && npm run generate-icons
-
-# Generate a fresh VAPID key pair (for production deployments)
-cd backend && node src/scripts/generate-vapid-keys.mts
 ```
-
-## Prisma v7 Notes
-
-- Uses `prisma-client` generator (not `prisma-client-js`)
-- No `url` in `schema.prisma` datasource; connection URL goes in `prisma.config.ts`
-- Requires `@prisma/adapter-pg`: `new PrismaClient({ adapter: new PrismaPg({ connectionString }) })`
-- Client generated to `backend/src/generated/prisma/` (gitignored)
-- Seed config in `prisma.config.ts` (`migrations.seed` field), not `package.json`
-- Prisma CLI does NOT support npm workspace `-w` flag — must `cd backend` first
-- Export `DATABASE_URL` before running Prisma CLI commands
 
 ## Known Gotchas
 
-### Stale dist/ artifacts
-
-The backend build (`tsc`) does NOT clean `dist/` before compiling. If a source file is moved, the old `.js` remains and shadows the new one. The build script now runs `rm -rf dist && tsc` to prevent this.
-
-### React StrictMode double-fires useEffect
-
-In dev mode, effects run twice. Guard side-effectful API calls with `useRef`. The WorkoutPage uses `loadingRef` for this.
-
-### E2E debugging: check backend-test.log
-
-When E2E tests fail, check `backend-test.log` in the project root. Filter with `grep -i "error\|500\|409"` to find API failures the frontend swallows silently.
-
-### Exercise names vs slugs
-
-The workout API returns `exercise.name` (like "Bench Press") not `exercise.slug` (like "bench-press"). PlanDayExercise has `displayName` (like "Bench Volume") used only on dashboard day cards.
-
-### Service worker cache busting
-
-`frontend/public/sw.js` uses `CACHE_NAME = 'setforge-v1'`. Bump this constant when deploying breaking changes that require users to receive fresh assets (e.g., renamed routes, changed API contracts). The old cache is deleted on SW activation.
-
-## Environment Variables
-
-```
-DATABASE_URL=postgresql://treenisofta:treenisofta_dev@localhost:5432/treenisofta
-JWT_SECRET=change-me-in-production
-PORT=3001
-NODE_ENV=development
-VAPID_PUBLIC_KEY=<base64url-encoded EC public key>
-VAPID_PRIVATE_KEY=<base64url-encoded EC private key>
-```
-
-These are exported by `start_local_env.sh` and `run_test.sh`. No .env files.
-
-`start_local_env.sh` and `run_test.sh` contain hard-coded test VAPID keys (safe for local dev and CI). For production, generate a fresh key pair with:
-
-```bash
-cd backend && node src/scripts/generate-vapid-keys.mts
-```
-
-## Backlog Tickets
-
-Always create a new ticket (`/ticket add`) when you discover a bug, identify a potential new feature, or notice an improvement opportunity during any work. Err on the side of adding — it's better to have a ticket you later delete than to lose track of an idea.
+- **Stale dist/**: Backend `tsc` does NOT clean `dist/` before compiling. Build script runs `rm -rf dist && tsc`.
+- **StrictMode double-fires useEffect**: Guard side-effectful API calls with `useRef`.
+- **E2E debugging**: Check `backend-test.log` in project root. Filter with `grep -i "error\|500\|409"`.
+- **Exercise names vs slugs**: API returns `exercise.name` ("Bench Press") not `exercise.slug` ("bench-press"). `displayName` is on PlanDayExercise only.
+- **Prisma v7**: Must `cd backend` first (no `-w` flag). Export `DATABASE_URL` before CLI commands. Connection URL in `prisma.config.ts`, not `schema.prisma`.
 
 ## Keeping Docs Up to Date
 
@@ -214,21 +84,18 @@ When you add or change API endpoints, DB schema, query keys, or invalidation rul
 - New queries or invalidation changes -> `docs/react-query-cache.md`
 - Architecture, patterns, or gotchas -> this file (`CLAUDE.md`)
 
-Dont use typescript-code-review skill
+## Workflow & Conventions
 
-Dont use co-author in commits
-
-Explain in commit messages why instead of what
-
-**Ticket workflow**: Use `ticket start <id>` to set the active ticket before starting work. Include the ticket ID in all commit messages — get it via `ticket current` and format as `feat(027): add achievement badges page`. When work is complete, mark the ticket done with `ticket status <id> done` (this auto-clears the current ticket).
-
-After committing code, always invoke the `ticket-code-review` skill to review commits for the current ticket.
+- Dont use typescript-code-review skill
+- Dont use co-author in commits
+- Explain in commit messages why instead of what
+- Always create tickets (`/ticket add`) when you discover bugs, features, or improvements
+- **Ticket workflow**: Use `ticket start <id>` to set active ticket. Include ticket ID in commits: `feat(027): add achievement badges page`. Mark done with `ticket status <id> done`.
+- After committing code, always invoke the `ticket-code-review` skill
 
 !IMPORTANT! ALWAYS USE run_test.sh to run tests !IMPORTANT!
 
 ### Capturing test output
-
-`run_test.sh` output often exceeds the truncation limit. Always run it with output captured to a file so you can read the tail on failure:
 
 ```bash
 ./run_test.sh > /tmp/test_output.log 2>&1; echo "EXIT_CODE=$?" >> /tmp/test_output.log
