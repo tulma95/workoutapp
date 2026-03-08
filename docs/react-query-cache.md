@@ -14,7 +14,7 @@
 | `['exercises']` | All exercises (public, sorted by name) | CustomWorkoutModal (staleTime: 5min) |
 | `['admin-exercises']` | All exercises (admin) | ExerciseListPage |
 | `['admin-plans']` | All plans (admin) | PlanListPage |
-| `['progress']` | All exercises with current TMs and TM history | ProgressPage |
+| `['progress']` | e1RM progression per exercise from completed sets (Epley formula); includes `inCurrentPlan` flag | ProgressPage |
 | `['achievements']` | All achievement badges with locked/unlocked state for the current user | AchievementsPage |
 | `['social', 'feed']` | Last 20 feed events from confirmed friends (includes `streak` per event owner, and `latestComments`: last 2 comments per event) | SocialPage (FeedTab) |
 | `['social', 'friends']` | Accepted friends list (includes `streak` per friend) | SocialPage (FriendsTab) |
@@ -29,8 +29,8 @@
 | Action | Trigger file | Keys invalidated |
 |--------|-------------|-----------------|
 | **Plan subscription** | select-plan.tsx | remove `['plan', 'current']`, remove `['training-maxes']`, remove `['progress']`, remove `['schedule']`, invalidate `['workout', 'current']` |
-| **TM setup** | setup.tsx | `['training-maxes']`, `['progress']` |
-| **TM manual update** | settings.tsx | `['training-maxes']`, `['progress']` |
+| **TM setup** | setup.tsx | `['training-maxes']` |
+| **TM manual update** | settings.tsx | `['training-maxes']` |
 | **Workout complete** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']`, `['training-maxes']`, `['progress']`, `['social', 'feed']`, `['social', 'friends']`, `['achievements']` |
 | **Workout cancel** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']` |
 | **Workout delete (history)** | history.tsx | `['workoutCalendar']` |
@@ -59,7 +59,7 @@ HistoryPage --delete---> History (calendar)
 HistoryPage --custom workout save--> History (calendar)
 PlanSelectionPage --subscribe--> Dashboard (plan, TMs, current workout), Settings (plan, TMs, schedule), Progress (progress)
 SetupPage --save TMs--> Dashboard (TMs), Settings (TMs), Progress (progress)
-SettingsPage --edit TM--> Dashboard (TMs), Progress (TM history, progress)
+SettingsPage --edit TM--> Dashboard (TMs), Progress (e1RM history)
 SettingsPage --save schedule--> History (calendar)
 SettingsPage --logout---> ALL pages (cache cleared)
 Admin: ExerciseList --CRUD--> ExerciseList only

@@ -101,7 +101,7 @@ export function ProgressContent() {
     )
   }
 
-  const hasTMs = data && data.exercises.some((ex) => ex.currentE1rm !== null)
+  const hasData = data && data.exercises.some((ex) => ex.currentE1rm !== null)
   const hasProgression = Array.from(histories.values()).some((h) => h.length >= 2)
 
   return (
@@ -122,7 +122,7 @@ export function ProgressContent() {
         </label>
       )}
 
-      {hasTMs ? (
+      {hasData ? (
         <>
           <ProgressSummaryCards
             exercises={displayedExercises}
@@ -169,7 +169,7 @@ export function ProgressContent() {
         <div className={styles.empty}>
           <p className={styles.emptyTitle}>No training data yet</p>
           <p className={styles.emptyText}>
-            No workout data yet
+            Complete workouts to start tracking your estimated strength.
           </p>
         </div>
       )}
