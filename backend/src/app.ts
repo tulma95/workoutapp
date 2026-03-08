@@ -83,6 +83,43 @@ if (config.nodeEnv === 'test' || config.nodeEnv === 'development') {
     });
     res.json({ ok: true, id: row.id });
   });
+
+  // Create a backdated completed workout with sets for testing e1RM progress charts
+  // Body: { exerciseSlug: string, weight: number, reps: number, daysAgo: number }
+  app.post('/api/dev/backdate-workout', authenticate, async (req: AuthRequest, res) => {
+    const { exerciseSlug, weight, reps, daysAgo } = req.body;
+    if (typeof exerciseSlug !== 'string' || typeof weight !== 'number' || typeof reps !== 'number' || typeof daysAgo !== 'number') {
+      res.status(400).json({ error: 'Required: exerciseSlug (string), weight (number), reps (number), daysAgo (number)' });
+      return;
+    }
+    const exercise = await prisma.exercise.findUnique({ where: { slug: exerciseSlug } });
+    if (!exercise) { res.status(400).json({ error: 'Exercise not found' }); return; }
+    const date = new Date();
+    date.setDate(date.getDate() - daysAgo);
+    date.setHours(12, 0, 0, 0);
+    const workout = await prisma.workout.create({
+      data: {
+        userId: req.userId!,
+        dayNumber: 1,
+        status: 'completed',
+        completedAt: date,
+        sets: {
+          create: {
+            exerciseId: exercise.id,
+            exerciseOrder: 1,
+            setOrder: 1,
+            prescribedWeight: weight,
+            prescribedReps: reps,
+            actualReps: reps,
+            completed: true,
+            isAmrap: false,
+            isProgression: false,
+          },
+        },
+      },
+    });
+    res.json({ ok: true, workoutId: workout.id });
+  });
 }
 
 // Return structured JSON 404 for unmatched API routes instead of HTML

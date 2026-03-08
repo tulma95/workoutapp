@@ -19,22 +19,22 @@ interface Props {
 }
 
 function computeGain(history: HistoryEntry[], rangeStart: Date | null): number {
-  const first = history[0]
-  const last = history[history.length - 1]
-  if (!first || !last) return 0
-  // History is sorted DESC by effectiveDate
-  const current = first.weight
+  if (history.length === 0) return 0
+  // History is sorted ASC by date
+  const current = history[history.length - 1]!.e1rm
   if (rangeStart === null) {
-    return current - last.weight
+    return current - history[0]!.e1rm
   }
-  // Find the TM at or just before the range start
-  const baseline = history.find(
-    (tm) => new Date(tm.effectiveDate) <= rangeStart
-  )
-  if (!baseline) {
-    return current - last.weight
+  // Find baseline: last entry at or before range start
+  let baseline = history[0]!.e1rm
+  for (const entry of history) {
+    if (new Date(entry.date) <= rangeStart) {
+      baseline = entry.e1rm
+    } else {
+      break
+    }
   }
-  return current - baseline.weight
+  return current - baseline
 }
 
 export function ProgressSummaryCards({
@@ -50,7 +50,7 @@ export function ProgressSummaryCards({
     <div className={styles.grid}>
       {exercises.map((ex) => {
         const history = histories.get(ex.slug) ?? []
-        const currentTM = history[0]?.weight ?? null
+        const currentE1rm = history.length > 0 ? history[history.length - 1]!.e1rm : null
         const gain = computeGain(history, rangeStart)
         const isSelected = selectedExercise === ex.slug
         const hasData = history.length > 0
@@ -70,7 +70,7 @@ export function ProgressSummaryCards({
               {ex.name}
             </span>
             <span className={styles.currentWeight}>
-              {hasData ? formatWeight(currentTM!) : '—'}
+              {hasData ? formatWeight(currentE1rm!) : '—'}
             </span>
             {hasData && gain > 0 ? (
               <span className={styles.gain}>+{formatWeight(gain)}</span>

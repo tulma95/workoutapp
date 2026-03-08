@@ -5,8 +5,8 @@ import { getRangeStartDate } from './TimeRangeSelector'
 import type { TimeRange } from './TimeRangeSelector'
 
 export interface HistoryEntry {
-  weight: number
-  effectiveDate: string
+  e1rm: number
+  date: string
 }
 
 interface Props {
@@ -28,7 +28,7 @@ interface TooltipData {
   x: number
   y: number
   date: string
-  weight: number
+  e1rm: number
 }
 
 export function ProgressChart({ history, color, exerciseName, timeRange, planSwitches }: Props) {
@@ -53,10 +53,10 @@ export function ProgressChart({ history, color, exerciseName, timeRange, planSwi
   const filteredData = useMemo(() => {
     const rangeStart = getRangeStartDate(timeRange)
     const sorted = [...history].sort(
-      (a, b) => new Date(a.effectiveDate).getTime() - new Date(b.effectiveDate).getTime()
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     )
     if (!rangeStart) return sorted
-    return sorted.filter((tm) => new Date(tm.effectiveDate) >= rangeStart)
+    return sorted.filter((tm) => new Date(tm.date) >= rangeStart)
   }, [history, timeRange])
 
   const { width, height } = dimensions
@@ -65,11 +65,11 @@ export function ProgressChart({ history, color, exerciseName, timeRange, planSwi
 
   const linePath = useMemo(() => {
     if (filteredData.length < 2 || plotWidth <= 0 || plotHeight <= 0) return ''
-    const weights = filteredData.map((d) => d.weight)
+    const weights = filteredData.map((d) => d.e1rm)
     const minWeight = Math.floor(Math.min(...weights) / 2.5) * 2.5 - 2.5
     const maxWeight = Math.ceil(Math.max(...weights) / 2.5) * 2.5 + 2.5
     const weightRange = maxWeight - minWeight || 5
-    const dates = filteredData.map((d) => new Date(d.effectiveDate).getTime())
+    const dates = filteredData.map((d) => new Date(d.date).getTime())
     const minDate = dates[0]!
     const maxDate = dates[dates.length - 1]!
     const dateRange = maxDate - minDate || 1
@@ -77,8 +77,8 @@ export function ProgressChart({ history, color, exerciseName, timeRange, planSwi
     const sy = (w: number) => CHART_PADDING.top + (1 - (w - minWeight) / weightRange) * plotHeight
     const parts: string[] = []
     filteredData.forEach((point, i) => {
-      const x = sx(new Date(point.effectiveDate).getTime())
-      const y = sy(point.weight)
+      const x = sx(new Date(point.date).getTime())
+      const y = sy(point.e1rm)
       if (i === 0) {
         parts.push(`M ${x} ${y}`)
       } else {
@@ -106,12 +106,12 @@ export function ProgressChart({ history, color, exerciseName, timeRange, planSwi
     )
   }
 
-  const weights = filteredData.map((d) => d.weight)
+  const weights = filteredData.map((d) => d.e1rm)
   const minWeight = Math.floor(Math.min(...weights) / 2.5) * 2.5 - 2.5
   const maxWeight = Math.ceil(Math.max(...weights) / 2.5) * 2.5 + 2.5
   const weightRange = maxWeight - minWeight || 5
 
-  const dates = filteredData.map((d) => new Date(d.effectiveDate).getTime())
+  const dates = filteredData.map((d) => new Date(d.date).getTime())
   const minDate = dates[0]!
   const maxDate = dates[dates.length - 1]!
   const dateRange = maxDate - minDate || 1
@@ -142,8 +142,8 @@ export function ProgressChart({ history, color, exerciseName, timeRange, planSwi
     setTooltip({
       x,
       y,
-      date: formatDateLabel(new Date(point.effectiveDate)),
-      weight: point.weight,
+      date: formatDateLabel(new Date(point.date)),
+      e1rm: point.e1rm,
     })
   }
 
@@ -166,7 +166,7 @@ export function ProgressChart({ history, color, exerciseName, timeRange, planSwi
             onClick={handleSvgClick}
           >
             <title id={`chart-title-${exerciseName}`}>
-              {exerciseName} Training Max progression chart
+              {exerciseName} Estimated 1RM progression chart
             </title>
             <defs>
               <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -232,12 +232,12 @@ export function ProgressChart({ history, color, exerciseName, timeRange, planSwi
             />
 
             {filteredData.map((point) => {
-              const x = scaleX(new Date(point.effectiveDate).getTime())
-              const y = scaleY(point.weight)
-              const isActive = tooltip?.date === formatDateLabel(new Date(point.effectiveDate))
+              const x = scaleX(new Date(point.date).getTime())
+              const y = scaleY(point.e1rm)
+              const isActive = tooltip?.date === formatDateLabel(new Date(point.date))
               return (
                 <circle
-                  key={point.effectiveDate}
+                  key={point.date}
                   cx={x}
                   cy={y}
                   r={isActive ? 5.5 : 3}
@@ -298,29 +298,29 @@ export function ProgressChart({ history, color, exerciseName, timeRange, planSwi
             <span className={styles.tooltipDot} style={{ color }}>
               &bull;
             </span>
-            <span>{formatWeight(tooltip.weight)}</span>
+            <span>{formatWeight(tooltip.e1rm)}</span>
           </div>
         )}
       </div>
 
       <div className={styles.srOnly}>
         <table>
-          <caption>{exerciseName} Training Max History</caption>
+          <caption>{exerciseName} Estimated 1RM History</caption>
           <thead>
             <tr>
               <th scope="col">Date</th>
-              <th scope="col">Weight (kg)</th>
+              <th scope="col">Est. 1RM (kg)</th>
             </tr>
           </thead>
           <tbody>
             {filteredData.map((point) => (
-              <tr key={point.effectiveDate}>
+              <tr key={point.date}>
                 <th scope="row">
-                  <time dateTime={point.effectiveDate}>
-                    {formatDateLabel(new Date(point.effectiveDate))}
+                  <time dateTime={point.date}>
+                    {formatDateLabel(new Date(point.date))}
                   </time>
                 </th>
-                <td>{point.weight}</td>
+                <td>{point.e1rm}</td>
               </tr>
             ))}
           </tbody>

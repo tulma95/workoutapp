@@ -91,14 +91,14 @@ describe('GET /api/progress', () => {
     expect(res.body.planSwitches[0].planName).toBe('Second Plan');
   });
 
-  it('returns exercises with TMs and history for active plan', async () => {
+  it('returns e1RM history from completed workout sets', async () => {
     const exerciseMap = await getExercisesBySlug(['bench-press', 'squat', 'ohp', 'deadlift']);
     const benchId = exerciseMap['bench-press']!.id;
     const squatId = exerciseMap['squat']!.id;
     const ohpId = exerciseMap['ohp']!.id;
     const deadliftId = exerciseMap['deadlift']!.id;
 
-    // Create a test plan with 4 TM exercises
+    // Create a test plan with exercises
     const plan = await prisma.workoutPlan.create({
       data: {
         slug: `progress-test-${uid}`,
@@ -142,33 +142,86 @@ describe('GET /api/progress', () => {
       },
     });
 
-    // Set up TMs
-    await request(app)
-      .post('/api/training-maxes/setup')
-      .set('Authorization', `Bearer ${token}`)
-      .send({
-        exerciseTMs: [
-          { exerciseId: benchId, oneRepMax: 100 },
-          { exerciseId: squatId, oneRepMax: 140 },
-          { exerciseId: ohpId, oneRepMax: 60 },
-          { exerciseId: deadliftId, oneRepMax: 180 },
-        ],
-      });
+    // Create a completed workout with sets
+    const workout = await prisma.workout.create({
+      data: {
+        userId,
+        dayNumber: 1,
+        status: 'completed',
+        completedAt: new Date('2025-06-15T10:00:00Z'),
+      },
+    });
+
+    await prisma.workoutSet.createMany({
+      data: [
+        {
+          workoutId: workout.id,
+          exerciseId: benchId,
+          exerciseOrder: 1,
+          setOrder: 1,
+          prescribedWeight: 80,
+          prescribedReps: 5,
+          actualReps: 5,
+          completed: true,
+          isAmrap: false,
+          isProgression: false,
+        },
+        {
+          workoutId: workout.id,
+          exerciseId: benchId,
+          exerciseOrder: 1,
+          setOrder: 2,
+          prescribedWeight: 80,
+          prescribedReps: 5,
+          actualReps: 8,
+          completed: true,
+          isAmrap: true,
+          isProgression: true,
+        },
+        {
+          workoutId: workout.id,
+          exerciseId: ohpId,
+          exerciseOrder: 2,
+          setOrder: 1,
+          prescribedWeight: 40,
+          prescribedReps: 5,
+          actualReps: 5,
+          completed: true,
+          isAmrap: false,
+          isProgression: false,
+        },
+      ],
+    });
 
     const res = await request(app)
       .get('/api/progress')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(200);
-    expect(res.body.exercises).toHaveLength(4);
 
+    // Should have bench and OHP (exercises with completed sets in the plan)
     const bench = res.body.exercises.find((e: any) => e.slug === 'bench-press');
     expect(bench).toBeDefined();
     expect(bench.name).toBe('Bench Press');
-    expect(bench.currentTM).toBe(90); // 100 * 0.9 = 90
+    // Best e1RM: 80 * (1 + 8/30) = 80 * 1.2667 = 101.33
+    expect(bench.currentE1rm).toBeCloseTo(101.33, 0);
     expect(bench.history).toBeInstanceOf(Array);
-    expect(bench.history.length).toBeGreaterThanOrEqual(1);
-    expect(bench.history[0].weight).toBe(90);
-    expect(bench.history[0].effectiveDate).toBeDefined();
+    expect(bench.history.length).toBe(1);
+    expect(bench.history[0].e1rm).toBeCloseTo(101.33, 0);
+    expect(bench.history[0].date).toBe('2025-06-15');
+    expect(bench.inCurrentPlan).toBe(true);
+
+    const ohp = res.body.exercises.find((e: any) => e.slug === 'ohp');
+    expect(ohp).toBeDefined();
+    // e1RM: 40 * (1 + 5/30) = 46.67
+    expect(ohp.currentE1rm).toBeCloseTo(46.67, 0);
+    expect(ohp.inCurrentPlan).toBe(true);
+
+    // Squat and deadlift have no completed sets, so they should NOT be in the response
+    const squat = res.body.exercises.find((e: any) => e.slug === 'squat');
+    expect(squat).toBeUndefined();
+
+    // Should NOT have old TM fields
+    expect(bench.currentTM).toBeUndefined();
   });
 });

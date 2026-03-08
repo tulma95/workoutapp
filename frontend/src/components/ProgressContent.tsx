@@ -31,14 +31,22 @@ export function ProgressContent() {
     queryFn: getProgress,
   })
 
-  const exerciseConfigs: ExerciseConfig[] = useMemo(() => {
+  const [showAllExercises, setShowAllExercises] = useState(false)
+
+  const exerciseConfigs: (ExerciseConfig & { inCurrentPlan: boolean })[] = useMemo(() => {
     if (!data) return []
     return data.exercises.map((ex, i) => ({
       slug: ex.slug,
       name: ex.name,
       color: PALETTE[i % PALETTE.length] ?? PALETTE[0]!,
+      inCurrentPlan: ex.inCurrentPlan,
     }))
   }, [data])
+
+  const displayedExercises = useMemo(() => {
+    if (showAllExercises) return exerciseConfigs
+    return exerciseConfigs.filter(ex => ex.inCurrentPlan)
+  }, [exerciseConfigs, showAllExercises])
 
   const histories = useMemo(() => {
     const map = new Map<string, HistoryEntry[]>()
@@ -49,8 +57,8 @@ export function ProgressContent() {
     return map
   }, [data])
 
-  const activeSelected = selectedExercise ?? exerciseConfigs[0]?.slug ?? null
-  const activeVisible = visibleExercises ?? new Set(exerciseConfigs.map((e) => e.slug))
+  const activeSelected = selectedExercise ?? displayedExercises[0]?.slug ?? null
+  const activeVisible = visibleExercises ?? new Set(displayedExercises.map((e) => e.slug))
 
   const handleRangeChange = (range: TimeRange) => {
     setTimeRange(range)
@@ -60,14 +68,14 @@ export function ProgressContent() {
 
   const handleToggleExercise = (slug: string) => {
     setVisibleExercises((prev) => {
-      const current = prev ?? new Set(exerciseConfigs.map((e) => e.slug))
+      const current = prev ?? new Set(displayedExercises.map((e) => e.slug))
       const next = new Set(current)
       if (next.has(slug)) {
         if (next.size > 1) next.delete(slug)
       } else {
         next.add(slug)
       }
-      const name = exerciseConfigs.find((e) => e.slug === slug)?.name ?? slug
+      const name = displayedExercises.find((e) => e.slug === slug)?.name ?? slug
       setAnnouncement(`${name} ${next.has(slug) ? 'shown on' : 'hidden from'} chart`)
       return next
     })
@@ -76,7 +84,7 @@ export function ProgressContent() {
   const handleSelectExercise = (slug: string) => {
     setSelectedExercise(slug)
     setVisibleExercises((prev) => {
-      const current = prev ?? new Set(exerciseConfigs.map((e) => e.slug))
+      const current = prev ?? new Set(displayedExercises.map((e) => e.slug))
       if (current.has(slug)) return current
       const next = new Set(current)
       next.add(slug)
@@ -93,7 +101,7 @@ export function ProgressContent() {
     )
   }
 
-  const hasTMs = data && data.exercises.some((ex) => ex.currentTM !== null)
+  const hasTMs = data && data.exercises.some((ex) => ex.currentE1rm !== null)
   const hasProgression = Array.from(histories.values()).some((h) => h.length >= 2)
 
   return (
@@ -103,11 +111,21 @@ export function ProgressContent() {
         {announcement}
       </div>
       <TimeRangeSelector value={timeRange} onChange={handleRangeChange} />
+      {exerciseConfigs.some(ex => !ex.inCurrentPlan) && (
+        <label className={styles.allExercisesToggle}>
+          <input
+            type="checkbox"
+            checked={showAllExercises}
+            onChange={(e) => setShowAllExercises(e.target.checked)}
+          />
+          Show all exercises
+        </label>
+      )}
 
       {hasTMs ? (
         <>
           <ProgressSummaryCards
-            exercises={exerciseConfigs}
+            exercises={displayedExercises}
             histories={histories}
             timeRange={timeRange}
             selectedExercise={activeSelected}
@@ -119,19 +137,19 @@ export function ProgressContent() {
                 Complete your first workout to start tracking progress.
               </p>
               <p className={styles.emptyMotivationText}>
-                Complete workouts to see your training maxes increase over time.
+                Complete workouts to see your estimated strength increase over time.
               </p>
             </div>
           ) : (
             <>
               <ExerciseLegend
-                exercises={exerciseConfigs}
+                exercises={displayedExercises}
                 visible={activeVisible}
                 onToggle={handleToggleExercise}
               />
               {(() => {
                 const config = activeSelected
-                  ? exerciseConfigs.find((e) => e.slug === activeSelected)
+                  ? displayedExercises.find((e) => e.slug === activeSelected)
                   : null
                 const exerciseHistory = activeSelected ? (histories.get(activeSelected) ?? []) : []
                 return config && activeSelected && activeVisible.has(activeSelected) ? (
@@ -151,7 +169,7 @@ export function ProgressContent() {
         <div className={styles.empty}>
           <p className={styles.emptyTitle}>No training data yet</p>
           <p className={styles.emptyText}>
-            Set up your training maxes to start tracking progress.
+            No workout data yet
           </p>
         </div>
       )}

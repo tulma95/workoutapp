@@ -231,11 +231,12 @@ export const AdminPlanListItemSchema = WorkoutPlanBasicSchema.extend({
 export const ProgressExerciseSchema = z.object({
   slug: z.string(),
   name: z.string(),
-  currentTM: z.number().nullable(),
+  currentE1rm: z.number().nullable(),
   history: z.array(z.object({
-    weight: z.number(),
-    effectiveDate: z.string(),
+    e1rm: z.number(),
+    date: z.string(),
   })),
+  inCurrentPlan: z.boolean(),
 });
 
 export const ProgressResponseSchema = z.object({

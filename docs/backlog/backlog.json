@@ -295,5 +295,11 @@
     "status": "backlog",
     "priority": "low",
     "description": "isP2002UsernameViolation checks typeof err === 'object' while isPrismaError checks instanceof Error. Both live in routeHelpers.ts. The inconsistency was surfaced by ticket 119 (the two helpers are now used side-by-side in auth.ts). Update isP2002UsernameViolation to use instanceof Error so both helpers apply the same type narrowing."
+  },
+  {
+    "id": "127",
+    "title": "Replace TM progress with e1RM from completed sets",
+    "status": "in-progress",
+    "description": "Replace TM-based progress chart with e1RM computed from completed sets (Epley formula). Program-agnostic progression tracking. Design: docs/plans/2026-03-08-e1rm-progression-design.md. Plan: docs/plans/2026-03-08-e1rm-progression-plan.md"
   }
 ]

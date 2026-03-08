@@ -3,11 +3,12 @@ import prisma from '../lib/db';
 export interface ProgressExercise {
   slug: string;
   name: string;
-  currentTM: number | null;
+  currentE1rm: number | null;
   history: Array<{
-    weight: number;
-    effectiveDate: string;
+    e1rm: number;
+    date: string;
   }>;
+  inCurrentPlan: boolean;
 }
 
 export interface PlanSwitch {
@@ -15,10 +16,28 @@ export interface PlanSwitch {
   planName: string;
 }
 
+function computeE1rm(weight: number, reps: number): number {
+  if (reps <= 0) return 0;
+  if (reps === 1) return weight;
+  return weight * (1 + reps / 30);
+}
+
 export async function getProgress(
   userId: number,
 ): Promise<{ exercises: ProgressExercise[]; planSwitches: PlanSwitch[] }> {
-  // Find active plan with all plan day exercises and their TM exercise references
+  // 1. Get plan switches (unchanged logic)
+  const allUserPlans = await prisma.userPlan.findMany({
+    where: { userId },
+    orderBy: { startedAt: 'asc' },
+    include: { plan: { select: { name: true } } },
+  });
+
+  const planSwitches: PlanSwitch[] = allUserPlans.slice(1).map((up) => ({
+    date: up.startedAt.toISOString(),
+    planName: up.plan.name,
+  }));
+
+  // 2. Get current plan exercise IDs for the inCurrentPlan flag
   const activePlan = await prisma.userPlan.findFirst({
     where: { userId, isActive: true },
     include: {
@@ -38,76 +57,130 @@ export async function getProgress(
     },
   });
 
-  // Query all plan subscriptions to build plan switch markers
-  const allUserPlans = await prisma.userPlan.findMany({
-    where: { userId },
-    orderBy: { startedAt: 'asc' },
-    include: { plan: { select: { name: true } } },
-  });
-
-  // Every subscription after the first is a plan switch
-  const planSwitches: PlanSwitch[] = allUserPlans.slice(1).map((up) => ({
-    date: up.startedAt.toISOString(),
-    planName: up.plan.name,
-  }));
-
-  if (!activePlan) {
-    return { exercises: [], planSwitches };
-  }
-
-  // Extract unique TM exercises in plan day order (by first appearance)
-  const seenIds = new Set<number>();
-  const tmExercises: Array<{ id: number; slug: string; name: string }> = [];
-  for (const day of activePlan.plan.days) {
-    for (const ex of day.exercises) {
-      if (!seenIds.has(ex.tmExerciseId)) {
-        seenIds.add(ex.tmExerciseId);
-        tmExercises.push({
-          id: ex.tmExercise.id,
-          slug: ex.tmExercise.slug,
-          name: ex.tmExercise.name,
-        });
+  const currentPlanExerciseIds = new Set<number>();
+  if (activePlan) {
+    for (const day of activePlan.plan.days) {
+      for (const ex of day.exercises) {
+        currentPlanExerciseIds.add(ex.tmExerciseId);
       }
     }
   }
 
-  if (tmExercises.length === 0) {
-    return { exercises: [], planSwitches };
-  }
-
-  // Fetch all TM history for these exercises in one query, ordered desc by effectiveDate
-  const allTMs = await prisma.trainingMax.findMany({
+  // 3. Query all completed sets for this user
+  const completedSets = await prisma.workoutSet.findMany({
     where: {
-      userId,
-      exerciseId: { in: tmExercises.map((e) => e.id) },
+      workout: {
+        userId,
+        status: 'completed',
+        completedAt: { not: null },
+      },
+      completed: true,
+      actualReps: { not: null, gt: 0 },
     },
-    orderBy: { effectiveDate: 'desc' },
+    select: {
+      exerciseId: true,
+      prescribedWeight: true,
+      actualReps: true,
+      workout: {
+        select: { completedAt: true },
+      },
+      exercise: {
+        select: { id: true, slug: true, name: true },
+      },
+    },
+    orderBy: {
+      workout: { completedAt: 'asc' },
+    },
   });
 
-  // Group TM rows by exerciseId
-  const tmsByExercise = new Map<number, typeof allTMs>();
-  for (const tm of allTMs) {
-    const list = tmsByExercise.get(tm.exerciseId) ?? [];
-    list.push(tm);
-    tmsByExercise.set(tm.exerciseId, list);
+  // Group by exercise -> date -> best e1RM
+  const exerciseMap = new Map<
+    number,
+    {
+      slug: string;
+      name: string;
+      historyByDate: Map<string, number>;
+    }
+  >();
+
+  for (const set of completedSets) {
+    const exerciseId = set.exerciseId;
+    const weight = set.prescribedWeight.toNumber();
+    const reps = set.actualReps as number;
+    const e1rm = computeE1rm(weight, reps);
+    const dateKey = (set.workout.completedAt as Date)
+      .toISOString()
+      .split('T')[0]!;
+
+    if (!exerciseMap.has(exerciseId)) {
+      exerciseMap.set(exerciseId, {
+        slug: set.exercise.slug,
+        name: set.exercise.name,
+        historyByDate: new Map(),
+      });
+    }
+
+    const entry = exerciseMap.get(exerciseId)!;
+    const existing = entry.historyByDate.get(dateKey) ?? 0;
+    if (e1rm > existing) {
+      entry.historyByDate.set(dateKey, e1rm);
+    }
   }
 
-  // Build response preserving plan day order
-  const exercises: ProgressExercise[] = tmExercises.map((ex) => {
-    const history = tmsByExercise.get(ex.id) ?? [];
-    const latest = history[0];
-    const currentTM = latest != null ? latest.weight.toNumber() : null;
+  // Build response: current plan exercises first (in plan order), then others alphabetically
+  const exercises: ProgressExercise[] = [];
+  const addedIds = new Set<number>();
 
-    return {
-      slug: ex.slug,
-      name: ex.name,
-      currentTM,
-      history: history.map((tm) => ({
-        weight: tm.weight.toNumber(),
-        effectiveDate: tm.effectiveDate.toISOString(),
-      })),
-    };
-  });
+  // Add current plan exercises first (in plan order)
+  if (activePlan) {
+    const seen = new Set<number>();
+    for (const day of activePlan.plan.days) {
+      for (const ex of day.exercises) {
+        if (seen.has(ex.tmExerciseId)) continue;
+        seen.add(ex.tmExerciseId);
+
+        const data = exerciseMap.get(ex.tmExerciseId);
+        if (!data) continue;
+
+        const history = Array.from(data.historyByDate.entries())
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([date, e1rm]) => ({
+            e1rm: Math.round(e1rm * 100) / 100,
+            date,
+          }));
+
+        exercises.push({
+          slug: data.slug,
+          name: data.name,
+          currentE1rm:
+            history.length > 0 ? history[history.length - 1]!.e1rm : null,
+          history,
+          inCurrentPlan: true,
+        });
+        addedIds.add(ex.tmExerciseId);
+      }
+    }
+  }
+
+  // Add non-plan exercises (alphabetically by name)
+  const nonPlanExercises = Array.from(exerciseMap.entries())
+    .filter(([id]) => !addedIds.has(id))
+    .sort(([, a], [, b]) => a.name.localeCompare(b.name));
+
+  for (const [, data] of nonPlanExercises) {
+    const history = Array.from(data.historyByDate.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, e1rm]) => ({ e1rm: Math.round(e1rm * 100) / 100, date }));
+
+    exercises.push({
+      slug: data.slug,
+      name: data.name,
+      currentE1rm:
+        history.length > 0 ? history[history.length - 1]!.e1rm : null,
+      history,
+      inCurrentPlan: false,
+    });
+  }
 
   return { exercises, planSwitches };
 }
