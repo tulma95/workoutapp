@@ -405,5 +405,11 @@
     "title": "Fix flaky social test: 'no longer shows in pending requests after acceptance' gets 404 intermittently",
     "status": "done",
     "description": "The test at social.test.ts:165 calls GET /api/social/requests but intermittently receives 404 instead of 200. The route exists and has no 404 code path, suggesting a race condition or Express 5 routing issue. All ticket 117 changes are frontend-only — this is a pre-existing backend test fragility."
+  },
+  {
+    "id": "127",
+    "title": "Replace TM progress with e1RM from completed sets",
+    "status": "done",
+    "description": "Replace TM-based progress chart with e1RM computed from completed sets (Epley formula). Program-agnostic progression tracking. Design: docs/plans/2026-03-08-e1rm-progression-design.md. Plan: docs/plans/2026-03-08-e1rm-progression-plan.md"
   }
 ]
