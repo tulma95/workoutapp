@@ -453,5 +453,29 @@
     "title": "Persist/queue active-workout set logging for offline resilience",
     "status": "done",
     "description": "sw.js passes all api requests through with no caching and there is no React Query persistence. If wifi drops mid-set, logged reps fail silently and data is lost. Add a write queue / background-sync or localStorage-backed mutation retry for set logging."
+  },
+  {
+    "id": "137",
+    "title": "Add root error boundary with branded recovery screen",
+    "status": "done",
+    "description": "__root.tsx has no errorComponent; only 3 leaf routes do. An uncaught render error elsewhere shows TanStack's bare default white screen. Add a root errorComponent with a branded reload screen."
+  },
+  {
+    "id": "138",
+    "title": "Respect safe-area-inset-top on header for notch/standalone",
+    "status": "done",
+    "description": "Layout.tsx header uses fixed padding with no safe-area-inset-top, and status-bar-style is default. In installed standalone mode the header crowds the iPhone notch. Add safe-area-inset-top padding and revisit status-bar-style."
+  },
+  {
+    "id": "139",
+    "title": "Mobile input hints on auth forms (inputMode, autoComplete)",
+    "status": "done",
+    "description": "Login/Register email inputs lack inputMode=email, autoComplete, autoCapitalize=none; password fields lack autoComplete current-password/new-password. Mobile keyboards capitalize emails and password managers do not autofill on the most-used cold-start screen."
+  },
+  {
+    "id": "140",
+    "title": "App-like tap polish: tap-highlight-color, user-select, overscroll-behavior",
+    "status": "done",
+    "description": "No global tap-highlight-color, touch-callout, or user-select none on buttons; tapping flashes grey iOS highlight and long-press selects text. No overscroll-behavior-y contain, so pull-to-refresh can accidentally reload. Add these for native feel."
   }
 ]
