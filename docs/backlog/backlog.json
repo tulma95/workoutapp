@@ -1,11 +1,5 @@
 [
   {
-    "id": "136",
-    "title": "Persist/queue active-workout set logging for offline resilience",
-    "status": "backlog",
-    "description": "sw.js passes all api requests through with no caching and there is no React Query persistence. If wifi drops mid-set, logged reps fail silently and data is lost. Add a write queue / background-sync or localStorage-backed mutation retry for set logging."
-  },
-  {
     "id": "070",
     "title": "Missing negative test for century-club achievement (low TM should not unlock)",
     "status": "backlog",
@@ -500,5 +494,17 @@
     "title": "Latent: workout createRef never resets, so same-instance day-to-day navigation could skip workout creation",
     "status": "backlog",
     "description": "In workout.$dayNumber.tsx the createRef guard is never reset, making the dayNumber dep on the create effect effectively dead: once a create has fired for the component instance, navigating to a different day's 'none' state early-returns without creating. Currently masked by the loader running first and the server EXISTING_WORKOUT conflict path. Only matters if free day-to-day navigation without remount becomes a real flow. Low priority. Surfaced during ticket 164 review."
+  },
+  {
+    "id": "167",
+    "title": "Offline set-log queue: flush pending debounce timer before completing a workout",
+    "status": "backlog",
+    "description": "A set confirmed within ~300ms of tapping Complete may have a debounce timer that hasn't fired, so its log is neither delivered nor queued when doCompleteWorkout flushes. Flush/await pending debounce timers before completion so progression is computed from fully-delivered data. Surfaced in ticket 136 review (I3)."
+  },
+  {
+    "id": "168",
+    "title": "Offline set-log queue: also flush on visibilitychange (iOS Safari online event is unreliable)",
+    "status": "backlog",
+    "description": "iOS Safari fires the 'online' event on interface changes, not real reachability, so flush-on-reconnect can lag. Also flush the set-log queue on document visibilitychange->visible. Minor; from ticket 136 review (M4)."
   }
 ]

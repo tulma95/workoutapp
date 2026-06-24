@@ -55,6 +55,12 @@ export function hasPendingSetLogs(): boolean {
   return Object.keys(read()).length > 0
 }
 
+// Drop the whole queue. Called on logout so one user's un-delivered offline
+// writes can never flush under the next user's credentials on a shared device.
+export function clearSetLogQueue(): void {
+  write({})
+}
+
 let flushing = false
 
 // Attempt to deliver every queued set-log. Stops at the first failure (still
@@ -67,8 +73,19 @@ export async function flushSetLogQueue(): Promise<boolean> {
     for (const [key, item] of Object.entries(read())) {
       try {
         await logSet(item.workoutId, item.setId, item.data)
-      } catch {
-        return false // network still down — keep this and the rest queued
+      } catch (err) {
+        // A 4xx is permanent (set deleted, or queued under a different user on a
+        // shared device): drop this poison item so it can't block the queue
+        // forever, and keep draining. A network error (offline) has no status —
+        // keep it and stop; we'll retry on the next reconnect.
+        const status = (err as { status?: number }).status
+        if (typeof status === 'number' && status >= 400 && status < 500) {
+          const current = read()
+          delete current[key]
+          write(current)
+          continue
+        }
+        return false
       }
       const current = read()
       delete current[key]

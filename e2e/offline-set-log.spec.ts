@@ -1,6 +1,7 @@
 import { test, expect } from './fixtures';
 import { DashboardPage } from './pages/dashboard.page';
 import { WorkoutPage } from './pages/workout.page';
+import { SettingsPage } from './pages/settings.page';
 
 const QUEUE_KEY = 'setforge:pendingSetLogs';
 
@@ -50,5 +51,33 @@ test.describe('Offline set logging', () => {
       .first()
       .getByTestId('reps-value');
     await expect(amrapReps).toHaveText('10');
+  });
+
+  test('logout clears any queued set-logs so they cannot flush under another user', async ({
+    setupCompletePage,
+  }) => {
+    const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const settings = new SettingsPage(page);
+
+    await dashboard.expectLoaded();
+
+    // Simulate a set-log that was queued while offline (the Settings page never
+    // auto-flushes, so this stays put until logout).
+    await settings.navigate();
+    await page.evaluate((k) => {
+      localStorage.setItem(
+        k,
+        JSON.stringify({ '1:1': { workoutId: 1, setId: 1, data: { actualReps: 5, completed: true } } }),
+      );
+    }, QUEUE_KEY);
+    await expect
+      .poll(() => page.evaluate((k) => localStorage.getItem(k), QUEUE_KEY))
+      .not.toBeNull();
+
+    await settings.logout();
+    await expect(page).toHaveURL(/\/login/);
+
+    expect(await page.evaluate((k) => localStorage.getItem(k), QUEUE_KEY)).toBeNull();
   });
 });

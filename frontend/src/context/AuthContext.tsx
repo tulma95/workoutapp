@@ -6,6 +6,7 @@ import {
   type ReactNode,
 } from 'react'
 import * as authApi from '../api/auth'
+import { clearSetLogQueue } from '../utils/setLogQueue'
 
 interface AuthContextValue {
   token: string | null
@@ -53,6 +54,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
+    // Don't let one user's un-delivered offline set-logs flush under the next
+    // user's credentials on a shared device.
+    clearSetLogQueue()
     setToken(null)
   }, [])
 

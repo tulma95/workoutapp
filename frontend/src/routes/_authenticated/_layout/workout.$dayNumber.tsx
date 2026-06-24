@@ -20,7 +20,12 @@ import { ConflictDialog } from '../../../components/ConflictDialog'
 import { Button } from '../../../components/Button'
 import { ButtonLink } from '../../../components/ButtonLink'
 import { ActiveWorkoutView } from '../../../components/ActiveWorkoutView'
-import { enqueueSetLog, removeSetLog, flushSetLogQueue } from '../../../utils/setLogQueue'
+import {
+  enqueueSetLog,
+  removeSetLog,
+  flushSetLogQueue,
+  hasPendingSetLogs,
+} from '../../../utils/setLogQueue'
 import { useRestTimer } from '../../../hooks/useRestTimer'
 import { useWakeLock } from '../../../hooks/useWakeLock'
 import { getRestTimerSettings } from '../../../utils/restTimerSettings'
@@ -414,8 +419,17 @@ function ActiveWorkout({
 
     try {
       // Make sure any set-logs queued during an offline stretch reach the server
-      // before progression is computed from them.
+      // before progression is computed from them. If delivery still fails, block
+      // completion rather than progressing off stale/incomplete data.
       await flushSetLogQueue()
+      if (hasPendingSetLogs()) {
+        setPhase({
+          phase: 'error',
+          message:
+            "Some sets haven't been saved yet — reconnect to the internet and try completing again.",
+        })
+        return
+      }
       const result = await completeWorkout(workout.id)
       const progressionArray =
         result.progressions || (result.progression ? [result.progression] : [])
