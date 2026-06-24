@@ -514,15 +514,15 @@
     "description": "Registration accepts any email with no confirmation. Unverified emails undermine password reset and notifications and allow fake accounts. Add a verification step (depends on email infra)."
   },
   {
-    "id": "164",
-    "title": "Workout page hangs on Loading when starting a fresh workout (StrictMode + cancel-flag drops creation result)",
-    "status": "in-progress",
-    "description": "Starting a new workout (loader returns type:none) creates it server-side (POST /api/workouts 201) but the page stays stuck on 'Loading' until a manual reload. Root cause in workout.$dayNumber.tsx: the create effect's createRef guard prevents StrictMode's second invoke from re-firing, while the first invoke's cleanup sets cancelled=true, so the resolved startWorkout result is discarded. Manifests in dev (StrictMode double-invoke); prod build is unaffected, which is why E2E against the prod image passed. Fixed by dropping the per-run cancelled flag (setState after unmount is a no-op in React 18+)."
-  },
-  {
     "id": "165",
     "title": "Push Notifications settings section hangs on 'Loading...' with no timeout/fallback when service worker never becomes ready",
     "status": "backlog",
     "description": "On the Settings page the Push Notifications section stays on 'Loading...' indefinitely when navigator.serviceWorker.ready never resolves (e.g. in dev where the SW is registered PROD-only, or if SW registration fails in prod). There is no timeout or error fallback, so the section is permanently stuck. Add a timeout/error state. Related to ticket 093 (push notifications)."
+  },
+  {
+    "id": "166",
+    "title": "Latent: workout createRef never resets, so same-instance day-to-day navigation could skip workout creation",
+    "status": "backlog",
+    "description": "In workout.$dayNumber.tsx the createRef guard is never reset, making the dayNumber dep on the create effect effectively dead: once a create has fired for the component instance, navigating to a different day's 'none' state early-returns without creating. Currently masked by the loader running first and the server EXISTING_WORKOUT conflict path. Only matters if free day-to-day navigation without remount becomes a real flow. Low priority. Surfaced during ticket 164 review."
   }
 ]

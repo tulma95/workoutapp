@@ -417,5 +417,11 @@
     "title": "Add security middleware: helmet, rate limiting, CORS origin, body limit, trust proxy",
     "status": "done",
     "description": "backend/src/app.ts uses wide-open cors(), no helmet, no rate limiting on auth (login does real bcrypt = brute-force + CPU DoS), no explicit JSON body limit, no trust proxy for Traefik. Add helmet, express-rate-limit on auth, CORS_ORIGIN gating, body limit, and trust proxy in production."
+  },
+  {
+    "id": "164",
+    "title": "Workout page hangs on Loading when starting a fresh workout (StrictMode + cancel-flag drops creation result)",
+    "status": "done",
+    "description": "Starting a new workout (loader returns type:none) creates it server-side (POST /api/workouts 201) but the page stays stuck on 'Loading' until a manual reload. Root cause in workout.$dayNumber.tsx: the create effect's createRef guard prevents StrictMode's second invoke from re-firing, while the first invoke's cleanup sets cancelled=true, so the resolved startWorkout result is discarded. Manifests in dev (StrictMode double-invoke); prod build is unaffected, which is why E2E against the prod image passed. Fixed by dropping the per-run cancelled flag (setState after unmount is a no-op in React 18+)."
   }
 ]
