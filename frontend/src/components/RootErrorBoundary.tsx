@@ -20,6 +20,10 @@ export function RootErrorBoundary({ error }: { error: Error }) {
         <button className={styles.button} onClick={() => window.location.reload()}>
           Reload
         </button>
+        {/* Escape hatch if a route deterministically throws and reload loops. */}
+        <a className={styles.homeLink} href="/">
+          Go to home
+        </a>
       </div>
     </div>
   )

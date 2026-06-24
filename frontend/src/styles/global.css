@@ -6,8 +6,10 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-html {
-  /* Stop pull-to-refresh / rubber-band from accidentally reloading mid-workout. */
+html,
+body {
+  /* Stop pull-to-refresh / rubber-band from accidentally reloading mid-workout.
+     Must be on the scrolling/viewport element (body), not html alone. */
   overscroll-behavior-y: contain;
 }
 
