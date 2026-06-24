@@ -1,0 +1,42 @@
+.root {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--space-xl) + env(safe-area-inset-top)) var(--space-lg)
+    calc(var(--space-xl) + env(safe-area-inset-bottom));
+  background: var(--bg);
+}
+
+.content {
+  max-width: 24rem;
+  text-align: center;
+}
+
+.title {
+  margin: 0 0 var(--space-sm);
+  font-size: 1.5rem;
+  color: var(--text);
+}
+
+.message {
+  margin: 0 0 var(--space-xl);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.button {
+  min-height: 3rem;
+  padding: var(--space-sm) var(--space-xl);
+  border: none;
+  border-radius: var(--space-sm);
+  background: var(--primary);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button:active {
+  background: var(--primary-dark);
+}

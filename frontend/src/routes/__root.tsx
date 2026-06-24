@@ -2,6 +2,7 @@ import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
 import type { QueryClient } from '@tanstack/react-query'
 import { AuthProvider } from '../context/AuthContext'
 import { ToastProvider } from '../components/Toast'
+import { RootErrorBoundary } from '../components/RootErrorBoundary'
 import { useNotificationStream } from '../hooks/useNotificationStream'
 
 export interface RouterContext {
@@ -10,6 +11,7 @@ export interface RouterContext {
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
+  errorComponent: RootErrorBoundary,
 })
 
 function NotificationSetup() {
