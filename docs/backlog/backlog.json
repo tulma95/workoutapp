@@ -1,17 +1,5 @@
 [
   {
-    "id": "128",
-    "title": "Harden production Dockerfile: non-root USER, HEALTHCHECK, .dockerignore",
-    "status": "backlog",
-    "description": "Container runs as root (Dockerfile stage 3 never sets USER). Add the built-in node user + chown + USER node, a HEALTHCHECK hitting /api/health, and a .dockerignore (excludes node_modules, dist, .git, logs, playwright-report). Container-escape hardening and faster builds for Coolify."
-  },
-  {
-    "id": "129",
-    "title": "Graceful shutdown on SIGTERM/SIGINT with Prisma disconnect",
-    "status": "backlog",
-    "description": "backend/src/index.ts only handles unhandledRejection/uncaughtException. Coolify/Traefik send SIGTERM on every redeploy, killing in-flight requests and leaking DB connections. Add a handler: server.close() then prisma disconnect."
-  },
-  {
     "id": "135",
     "title": "Precache app shell via vite-plugin-pwa for offline reliability",
     "status": "backlog",
