@@ -14,7 +14,7 @@
   {
     "id": "132",
     "title": "Fix vulnerable production dependencies + add npm audit CI gate",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "npm audit --omit=dev reports 14 vulns (9 high), incl. path-to-regexp ReDoS and qs DoS (transitive via Express 5). No audit step in CI. Run npm audit fix and add an audit gate to the deploy workflow."
   },
   {

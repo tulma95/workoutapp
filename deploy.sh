@@ -17,6 +17,18 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
+run_audit_gate() {
+  echo "=== Step 0: Production dependency audit ==="
+  cd "$PROJECT_ROOT"
+  # Fail the pipeline on high/critical advisories in RUNTIME dependencies before
+  # we build or push. Scoped to --omit=dev because dev tooling never ships, and
+  # to --audit-level=high because the only remaining prod advisories are moderate
+  # transitives under the Prisma CLI (@prisma/dev -> hono) that aren't in the
+  # request-serving path and can't be fixed without downgrading Prisma off v7.
+  npm audit --omit=dev --audit-level=high
+  echo "No high/critical production vulnerabilities."
+}
+
 run_backend_tests() {
   echo "=== Step 1: Backend integration tests ==="
 
@@ -98,6 +110,7 @@ push_image() {
 }
 
 main() {
+  run_audit_gate
   run_backend_tests
   build_image
   run_e2e_tests
