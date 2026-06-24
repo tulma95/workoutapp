@@ -2,6 +2,7 @@ import { Button } from './Button'
 import { ButtonLink } from './ButtonLink'
 import { ScheduleEditor } from './ScheduleEditor'
 import { PushNotificationSettings } from './PushNotificationSettings'
+import { InstallAppSettings } from './InstallAppSettings'
 import { formatExerciseName, formatWeight } from '../utils/weight'
 import styles from '../styles/SettingsPage.module.css'
 import type { RefObject } from 'react'
@@ -171,6 +172,8 @@ export function SettingsContent({
       )}
 
       <PushNotificationSettings />
+
+      <InstallAppSettings />
 
       <section className={styles.card}>
         <h3 className={styles.cardLabel}>Rest Timer</h3>

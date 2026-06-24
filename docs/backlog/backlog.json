@@ -324,7 +324,7 @@
   {
     "id": "141",
     "title": "PWA install prompt (Add to Home Screen affordance)",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "Manifest is installable but there is no beforeinstallprompt capture or UI nudging install. The offline + wake-lock benefits only apply once installed, and most users will not discover it. Add a dismissible install prompt."
   },
   {
