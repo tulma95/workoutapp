@@ -20,13 +20,11 @@ trap cleanup EXIT INT TERM
 run_audit_gate() {
   echo "=== Step 0: Production dependency audit ==="
   cd "$PROJECT_ROOT"
-  # Fail the pipeline on high/critical advisories in RUNTIME dependencies before
-  # we build or push. Scoped to --omit=dev because dev tooling never ships, and
-  # to --audit-level=high because the only remaining prod advisories are moderate
-  # transitives under the Prisma CLI (@prisma/dev -> hono) that aren't in the
-  # request-serving path and can't be fixed without downgrading Prisma off v7.
-  npm audit --omit=dev --audit-level=high
-  echo "No high/critical production vulnerabilities."
+  # Fail the pipeline on any un-allowlisted advisory in the RUNTIME (--omit=dev)
+  # dependency tree, before we build or push. The allowlist (by advisory ID, with
+  # justifications) lives in scripts/audit-gate.mjs so a future moderate in the
+  # serving path still fails instead of being globally tolerated.
+  node scripts/audit-gate.mjs
 }
 
 run_backend_tests() {
