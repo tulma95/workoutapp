@@ -2,6 +2,7 @@ import { config } from './config';
 import { logger } from './lib/logger';
 import prisma from './lib/db';
 import { register } from './services/auth.service';
+import { gracefulShutdown } from './lib/shutdown';
 import app from './app';
 
 const DEV_ADMIN_EMAIL = 'admin@dev.local';
@@ -25,9 +26,17 @@ seedDevAdmin().catch((err) => {
   logger.warn('Failed to seed dev admin user', { error: String(err) });
 });
 
-app.listen(config.port, () => {
+const server = app.listen(config.port, () => {
   logger.info(`Server running on port ${config.port}`, { port: config.port, env: config.nodeEnv });
 });
+
+// Drain in-flight requests and close DB connections on redeploy/stop signals.
+for (const signal of ['SIGTERM', 'SIGINT'] as const) {
+  process.on(signal, () => {
+    logger.info(`Received ${signal}, shutting down gracefully`, { signal });
+    gracefulShutdown(server, () => prisma.$disconnect(), (code) => process.exit(code));
+  });
+}
 
 process.on('unhandledRejection', (reason) => {
   logger.critical('Unhandled rejection', { error: String(reason) });
