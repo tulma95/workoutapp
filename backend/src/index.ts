@@ -31,8 +31,10 @@ const server = app.listen(config.port, () => {
 });
 
 // Drain in-flight requests and close DB connections on redeploy/stop signals.
+// `once` so a second signal falls through to Node's default (immediate exit)
+// instead of re-entering shutdown and calling server.close() twice.
 for (const signal of ['SIGTERM', 'SIGINT'] as const) {
-  process.on(signal, () => {
+  process.once(signal, () => {
     logger.info(`Received ${signal}, shutting down gracefully`, { signal });
     gracefulShutdown(server, () => prisma.$disconnect(), (code) => process.exit(code));
   });
