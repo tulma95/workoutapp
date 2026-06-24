@@ -251,9 +251,13 @@ export function ProgressChart({ history, color, exerciseName, timeRange, planSwi
             })}
 
             {planSwitches?.flatMap((ps) => {
-              const d = new Date(ps.date)
-              d.setHours(0, 0, 0, 0)
-              const ts = d.getTime()
+              // Snap to the same UTC-date basis as the data points, whose dates
+              // are `completedAt.toISOString().split('T')[0]` parsed as UTC
+              // midnight. Using local midnight here (setHours) pushed a switch
+              // that happened the same UTC day as the latest workout out of
+              // range in timezones ahead of UTC (e.g. a 21:00Z switch becomes
+              // next-day local), dropping the marker.
+              const ts = new Date(ps.date.slice(0, 10)).getTime()
               if (ts < minDate || ts > maxDate) return []
               const x = scaleX(ts)
               const label = ps.planName.length > 10 ? '▲ Plan' : `▲ ${ps.planName}`
