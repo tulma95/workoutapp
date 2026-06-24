@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
 import app from '../app';
+import { config } from '../config';
 
 describe('security middleware', () => {
   it('sets helmet hardening headers on responses', async () => {
@@ -21,5 +22,23 @@ describe('security middleware', () => {
       .send(JSON.stringify({ email: huge, password: huge }));
 
     expect(res.status).toBe(413);
+  });
+
+  it('throttles auth traffic with 429 once over the limit (production only)', async () => {
+    // The limiter skips outside production, so flip env just for this assertion.
+    const original = config.nodeEnv;
+    config.nodeEnv = 'production';
+    try {
+      // Invalid body -> fast 400, but the limiter counts before the route runs.
+      const limit = 30;
+      let lastStatus = 0;
+      for (let i = 0; i < limit + 1; i++) {
+        const res = await request(app).post('/api/auth/login').send({});
+        lastStatus = res.status;
+      }
+      expect(lastStatus).toBe(429);
+    } finally {
+      config.nodeEnv = original;
+    }
   });
 });

@@ -11,6 +11,8 @@ export function applySecurity(app: Express): void {
   if (config.nodeEnv === 'production') {
     // One reverse-proxy hop (Traefik). Without this, req.ip is always the proxy
     // IP, breaking rate limiting and request logging, and req.protocol is wrong.
+    // Keep this a number (hop count), never `true` — express-rate-limit rejects
+    // a permissive `trust proxy: true` and would throw on the first request.
     app.set('trust proxy', 1);
   }
 
@@ -27,12 +29,13 @@ export function applySecurity(app: Express): void {
 }
 
 function corsOptions(): CorsOptions {
-  // In production the frontend is served same-origin, so cross-origin requests
-  // should be limited to an explicitly configured origin (defense-in-depth).
-  // In dev/test, stay permissive for local tooling and the Vite proxy.
-  if (config.nodeEnv === 'production' && config.corsOrigin) {
-    return { origin: config.corsOrigin, credentials: true };
+  if (config.nodeEnv === 'production') {
+    // The frontend is served same-origin, so cross-origin requests should only
+    // come from an explicitly configured origin. Default closed (origin: false)
+    // so a forgotten CORS_ORIGIN fails safe instead of reflecting any origin.
+    return { origin: config.corsOrigin ?? false };
   }
+  // Dev/test: permissive for local tooling and the Vite proxy.
   return {};
 }
 

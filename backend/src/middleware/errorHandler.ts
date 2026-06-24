@@ -5,8 +5,8 @@ import { logger } from '../lib/logger';
 export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction) {
   // Honor a status carried on the error (body-parser's 413, http-errors, etc.).
   // Anything without a valid 4xx/5xx status is treated as an unexpected 500.
-  const carried = (err as { status?: number; statusCode?: number }).status
-    ?? (err as { statusCode?: number }).statusCode;
+  const e = err as { status?: number; statusCode?: number };
+  const carried = e.status ?? e.statusCode;
   const httpStatus =
     typeof carried === 'number' && carried >= 400 && carried < 600 ? carried : 500;
   const isClientError = httpStatus < 500;
