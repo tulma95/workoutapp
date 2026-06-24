@@ -26,6 +26,10 @@ export function LoginForm({ email, password, error, loading, onEmailChange, onPa
           <input
             id="email"
             type="email"
+            inputMode="email"
+            autoComplete="email"
+            autoCapitalize="none"
+            autoCorrect="off"
             value={email}
             onChange={(e) => onEmailChange(e.target.value)}
             required
@@ -37,6 +41,7 @@ export function LoginForm({ email, password, error, loading, onEmailChange, onPa
           <input
             id="password"
             type="password"
+            autoComplete="current-password"
             value={password}
             onChange={(e) => onPasswordChange(e.target.value)}
             required

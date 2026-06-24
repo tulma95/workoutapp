@@ -46,6 +46,10 @@ export function RegisterForm({
           <input
             id="email"
             type="email"
+            inputMode="email"
+            autoComplete="email"
+            autoCapitalize="none"
+            autoCorrect="off"
             value={email}
             onChange={(e) => onEmailChange(e.target.value)}
             required
@@ -57,6 +61,7 @@ export function RegisterForm({
           <input
             id="password"
             type="password"
+            autoComplete="new-password"
             value={password}
             onChange={(e) => onPasswordChange(e.target.value)}
             onBlur={onPasswordBlur}
@@ -72,6 +77,9 @@ export function RegisterForm({
           <input
             id="username"
             type="text"
+            autoComplete="username"
+            autoCapitalize="none"
+            autoCorrect="off"
             value={username}
             onChange={(e) => onUsernameChange(e.target.value)}
             onBlur={onUsernameBlur}
