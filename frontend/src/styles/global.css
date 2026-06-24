@@ -2,6 +2,21 @@
 *::before,
 *::after {
   box-sizing: border-box;
+  /* Kill the grey iOS tap flash on every interactive element for a native feel. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  /* Stop pull-to-refresh / rubber-band from accidentally reloading mid-workout. */
+  overscroll-behavior-y: contain;
+}
+
+/* Buttons and link-buttons shouldn't be text-selectable or long-press-callout
+   on touch — they're tapped rapidly between sets. */
+button,
+a {
+  -webkit-touch-callout: none;
+  user-select: none;
 }
 
 :root {
