@@ -53,4 +53,21 @@ describe('errorHandler middleware', () => {
     const jsonArg = vi.mocked(res.json).mock.calls[0]![0] as { error: { stack?: string } };
     expect(jsonArg.error.stack).toBeUndefined();
   });
+
+  it('honors a client-error status carried on the error and surfaces its message', () => {
+    config.nodeEnv = 'test';
+    const res = mockRes();
+    // Shape of body-parser's PayloadTooLargeError
+    const error = Object.assign(new Error('request entity too large'), { statusCode: 413 });
+
+    errorHandler(error, req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(413);
+    expect(res.json).toHaveBeenCalledWith({
+      error: {
+        code: 'BAD_REQUEST',
+        message: 'request entity too large',
+      },
+    });
+  });
 });

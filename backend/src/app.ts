@@ -1,6 +1,5 @@
 import path from 'path';
 import express from 'express';
-import cors from 'cors';
 import prisma from './lib/db';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
@@ -18,6 +17,7 @@ import notificationsRoutes from './routes/notifications';
 import { errorHandler } from './middleware/errorHandler';
 import { requestContext } from './middleware/requestContext';
 import { requestLogger } from './middleware/requestLogger';
+import { applySecurity, authRateLimiter } from './middleware/security';
 import { authenticate } from './middleware/auth';
 import { config } from './config';
 import { logger } from './lib/logger';
@@ -25,8 +25,8 @@ import type { AuthRequest } from './types';
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+applySecurity(app);
+app.use(express.json({ limit: '100kb' }));
 app.use(requestContext);
 app.use(requestLogger);
 
@@ -41,7 +41,7 @@ app.get('/api/health', async (_req, res) => {
   }
 });
 
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRateLimiter, authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/training-maxes', trainingMaxRoutes);
 app.use('/api/workouts', workoutRoutes);

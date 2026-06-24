@@ -1,5 +1,41 @@
 [
   {
+    "id": "128",
+    "title": "Harden production Dockerfile: non-root USER, HEALTHCHECK, .dockerignore",
+    "status": "backlog",
+    "description": "Container runs as root (Dockerfile stage 3 never sets USER). Add the built-in node user + chown + USER node, a HEALTHCHECK hitting /api/health, and a .dockerignore (excludes node_modules, dist, .git, logs, playwright-report). Container-escape hardening and faster builds for Coolify."
+  },
+  {
+    "id": "129",
+    "title": "Graceful shutdown on SIGTERM/SIGINT with Prisma disconnect",
+    "status": "backlog",
+    "description": "backend/src/index.ts only handles unhandledRejection/uncaughtException. Coolify/Traefik send SIGTERM on every redeploy, killing in-flight requests and leaking DB connections. Add a handler: server.close() then prisma disconnect."
+  },
+  {
+    "id": "131",
+    "title": "Add security middleware: helmet, rate limiting, CORS origin, body limit, trust proxy",
+    "status": "in-progress",
+    "description": "backend/src/app.ts uses wide-open cors(), no helmet, no rate limiting on auth (login does real bcrypt = brute-force + CPU DoS), no explicit JSON body limit, no trust proxy for Traefik. Add helmet, express-rate-limit on auth, CORS_ORIGIN gating, body limit, and trust proxy in production."
+  },
+  {
+    "id": "135",
+    "title": "Precache app shell via vite-plugin-pwa for offline reliability",
+    "status": "backlog",
+    "description": "public/sw.js only cache.add('/') on install; hashed assets are cached opportunistically only. A cold load or reload on flaky gym wifi fails to boot. Adopt vite-plugin-pwa (Workbox) to precache the built asset manifest with an offline fallback."
+  },
+  {
+    "id": "136",
+    "title": "Persist/queue active-workout set logging for offline resilience",
+    "status": "backlog",
+    "description": "sw.js passes all api requests through with no caching and there is no React Query persistence. If wifi drops mid-set, logged reps fail silently and data is lost. Add a write queue / background-sync or localStorage-backed mutation retry for set logging."
+  },
+  {
+    "id": "132",
+    "title": "Fix vulnerable production dependencies + add npm audit CI gate",
+    "status": "backlog",
+    "description": "npm audit --omit=dev reports 14 vulns (9 high), incl. path-to-regexp ReDoS and qs DoS (transitive via Express 5). No audit step in CI. Run npm audit fix and add an audit gate to the deploy workflow."
+  },
+  {
     "id": "070",
     "title": "Missing negative test for century-club achievement (low TM should not unlock)",
     "status": "backlog",
@@ -302,5 +338,185 @@
     "status": "backlog",
     "priority": "low",
     "description": "Ticket 127 changed the progress endpoint from TM history to e1RM but react-query-cache.md still references TMs. Update key description and invalidation rule comments."
+  },
+  {
+    "id": "130",
+    "title": "Repoint CI/CD from Railway to Coolify deploy",
+    "status": "backlog",
+    "description": "deploy.yml and deploy.sh trigger a Railway redeploy via Railway GraphQL API. Production target is Coolify, which deploys via webhook or registry/git polling. Repoint the pipeline at Coolify (deploy webhook + token) or configure Coolify to pull the ghcr.io image."
+  },
+  {
+    "id": "133",
+    "title": "Document required production env vars for Coolify",
+    "status": "backlog",
+    "description": "Backend requires JWT_SECRET, DATABASE_URL, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY (optional LOG_LEVEL/PORT) via requireEnv. No .env.example or doc lists them, so a Coolify deployer cannot know what secrets to inject. Add a documented required-vars list."
+  },
+  {
+    "id": "134",
+    "title": "Configure Prisma connection pool limit",
+    "status": "backlog",
+    "description": "backend/src/lib/db.ts builds PrismaPg with only a connection string, no pool size. Under Coolify shared Postgres an unbounded pool can exhaust connections. Set an explicit connection_limit sized to the deployment."
+  },
+  {
+    "id": "137",
+    "title": "Add root error boundary with branded recovery screen",
+    "status": "backlog",
+    "description": "__root.tsx has no errorComponent; only 3 leaf routes do. An uncaught render error elsewhere shows TanStack's bare default white screen. Add a root errorComponent with a branded reload screen."
+  },
+  {
+    "id": "138",
+    "title": "Respect safe-area-inset-top on header for notch/standalone",
+    "status": "backlog",
+    "description": "Layout.tsx header uses fixed padding with no safe-area-inset-top, and status-bar-style is default. In installed standalone mode the header crowds the iPhone notch. Add safe-area-inset-top padding and revisit status-bar-style."
+  },
+  {
+    "id": "139",
+    "title": "Mobile input hints on auth forms (inputMode, autoComplete)",
+    "status": "backlog",
+    "description": "Login/Register email inputs lack inputMode=email, autoComplete, autoCapitalize=none; password fields lack autoComplete current-password/new-password. Mobile keyboards capitalize emails and password managers do not autofill on the most-used cold-start screen."
+  },
+  {
+    "id": "140",
+    "title": "App-like tap polish: tap-highlight-color, user-select, overscroll-behavior",
+    "status": "backlog",
+    "description": "No global tap-highlight-color, touch-callout, or user-select none on buttons; tapping flashes grey iOS highlight and long-press selects text. No overscroll-behavior-y contain, so pull-to-refresh can accidentally reload. Add these for native feel."
+  },
+  {
+    "id": "141",
+    "title": "PWA install prompt (Add to Home Screen affordance)",
+    "status": "backlog",
+    "description": "Manifest is installable but there is no beforeinstallprompt capture or UI nudging install. The offline + wake-lock benefits only apply once installed, and most users will not discover it. Add a dismissible install prompt."
+  },
+  {
+    "id": "142",
+    "title": "Change password",
+    "status": "backlog",
+    "description": "No endpoint or UI to change a password (auth.service.ts has only register/login/refresh). A logged-in user can never rotate their password. Table-stakes account security."
+  },
+  {
+    "id": "143",
+    "title": "Password reset / forgot password flow",
+    "status": "backlog",
+    "description": "No reset-token flow and no email-sending infrastructure. A user who forgets their password is permanently locked out. Requires email infra (also unblocks email verification). Hard launch blocker."
+  },
+  {
+    "id": "144",
+    "title": "Delete account (GDPR + app-store requirement)",
+    "status": "backlog",
+    "description": "No DELETE /users/me and no UI. Users cannot remove their account or data, a legal and app-store-review requirement. Add account deletion with data cleanup."
+  },
+  {
+    "id": "145",
+    "title": "Personal data export (GDPR portability)",
+    "status": "backlog",
+    "description": "No export endpoint. Serious lifters expect to download training history (CSV/JSON) and portability is a GDPR right. Add an export of workouts, TMs, and progress."
+  },
+  {
+    "id": "146",
+    "title": "Email verification",
+    "status": "backlog",
+    "description": "Registration accepts any email with no confirmation. Unverified emails undermine password reset and notifications and allow fake accounts. Add a verification step (depends on email infra)."
+  },
+  {
+    "id": "147",
+    "title": "Change account email",
+    "status": "backlog",
+    "description": "PATCH /users/me accepts only username; the email login identifier can never be changed. Add email change with re-verification once email infra exists."
+  },
+  {
+    "id": "148",
+    "title": "Edit past/completed workout sets",
+    "status": "backlog",
+    "description": "Set logging and PATCH sets only work on in-progress workouts; history detail is read-only. Users need to fix a mistyped rep/weight after finishing, otherwise bad data corrupts e1RM/progression analytics. Allow editing completed workouts."
+  },
+  {
+    "id": "149",
+    "title": "Warm-up set calculation",
+    "status": "backlog",
+    "description": "No warm-up logic anywhere; generated workouts jump straight to working sets at high percentages. Mature percentage-based apps auto-generate a warm-up ramp (e.g. 40/50/60% of working weight). Core to safe execution."
+  },
+  {
+    "id": "150",
+    "title": "Exercise library detail (instructions, muscles, video)",
+    "status": "backlog",
+    "description": "Exercise model has only name/slug/category/muscleGroup; no description, instructions, cues, equipment, or video, and no exercise-detail route. New users cannot learn unfamiliar lifts. Add exercise reference content + detail view."
+  },
+  {
+    "id": "151",
+    "title": "New-user onboarding flow",
+    "status": "backlog",
+    "description": "After register the user is dropped into a bare TM-entry form with no welcome, plan-selection guidance, or explanation of what a 1RM is. Add a guided first-run onboarding flow."
+  },
+  {
+    "id": "152",
+    "title": "Unit preference (kg/lbs)",
+    "status": "backlog",
+    "description": "App is hardcoded to kg. A large share of the lifting market (US) trains in pounds. Add a user unit preference with display conversion (storage stays kg, round per unit)."
+  },
+  {
+    "id": "153",
+    "title": "Scheduled workout-day reminders (push)",
+    "status": "backlog",
+    "description": "Push infra fires only for social events. user_plan_schedules already stores which weekday each training day falls on, but there is no time-to-train reminder, the most retention-driving notification for a workout app. Add scheduled-day reminders."
+  },
+  {
+    "id": "154",
+    "title": "Leave plan / no-active-plan state",
+    "status": "backlog",
+    "description": "You can switch plans by subscribing to a different one but cannot stop training and return to a no-plan state. Users taking a break have no clean option. Add unsubscribe / no-active-plan handling."
+  },
+  {
+    "id": "155",
+    "title": "User-created custom plans",
+    "status": "backlog",
+    "description": "Plans are admin/system-defined only; regular users can only pick public plans. Serious users want to build/tweak their own programs. Add user plan creation/editing."
+  },
+  {
+    "id": "156",
+    "title": "Route-based code splitting (autoCodeSplitting)",
+    "status": "backlog",
+    "description": "vite.config.ts tanstackRouter() lacks autoCodeSplitting and there are no lazy routes, so all ~27 route components (admin, social, charts) ship in one bundle. The login screen downloads everything. Enable autoCodeSplitting and/or manualChunks."
+  },
+  {
+    "id": "157",
+    "title": "Cap and validate history pagination limit",
+    "status": "backlog",
+    "description": "workouts.ts history: limit = parseInt(query.limit) || 10 passed straight to Prisma take with no max cap and no negative validation; limit=9999999 loads all workouts+sets (DoS), page=-1 yields negative skip. Cap at ~50 and validate page/limit."
+  },
+  {
+    "id": "158",
+    "title": "validateQuery middleware for query params",
+    "status": "backlog",
+    "description": "middleware/validate.ts only safeParses req.body, leaving query params unvalidated app-wide (leaderboard mode, history page/limit). Add a validateQuery variant and apply to query-driven endpoints."
+  },
+  {
+    "id": "159",
+    "title": "Add DB indexes on hot query columns (WorkoutSet.exerciseId)",
+    "status": "backlog",
+    "description": "WorkoutSet.exerciseId is unindexed but e1RM leaderboard and progress filter workout_sets by exerciseId IN (...). These are the heaviest read paths and will table-scan as data grows. Add targeted indexes."
+  },
+  {
+    "id": "160",
+    "title": "Tune React Query gcTime and refetchOnWindowFocus",
+    "status": "backlog",
+    "description": "router.tsx sets only staleTime 60s + retry 1. refetchOnWindowFocus defaults true, so every tab refocus refetches feed/calendar/TMs, wasteful network/battery on the mobile PWA. Set refetchOnWindowFocus and gcTime appropriately."
+  },
+  {
+    "id": "161",
+    "title": "Cache headers for hashed static assets",
+    "status": "backlog",
+    "description": "app.ts express.static serves the SPA with no maxAge; Vite emits content-hashed filenames safe to cache forever but they revalidate every load. Set maxAge 1y immutable for assets and keep index.html no-cache."
+  },
+  {
+    "id": "162",
+    "title": "axe-core accessibility tests in Playwright",
+    "status": "backlog",
+    "description": "26 E2E specs, none use axe-core/playwright, so a11y regressions ship undetected despite the project's touch-target/semantic-HTML conventions. Add axe checks to key flows."
+  },
+  {
+    "id": "163",
+    "title": "Feed cursor pagination (load more)",
+    "status": "backlog",
+    "description": "social.ts feed is take 20 with no cursor/offset and no load-more, so once a user has >20 events older history is unreachable. Add cursor-based pagination."
   }
 ]
