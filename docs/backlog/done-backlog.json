@@ -477,5 +477,11 @@
     "title": "App-like tap polish: tap-highlight-color, user-select, overscroll-behavior",
     "status": "done",
     "description": "No global tap-highlight-color, touch-callout, or user-select none on buttons; tapping flashes grey iOS highlight and long-press selects text. No overscroll-behavior-y contain, so pull-to-refresh can accidentally reload. Add these for native feel."
+  },
+  {
+    "id": "169",
+    "title": "Flaky/tz-dependent: progress plan-switch marker missing when switch is same-day as latest workout (fails after ~21:00 UTC in UTC+3)",
+    "status": "done",
+    "description": "e2e/progress.spec.ts:100 'shows plan switch marker on chart after switching plans' fails deterministically when the suite runs late enough in the UTC day. Root cause: ProgressChart marker normalizes the switch date to LOCAL midnight (d.setHours(0,0,0,0)) while data-point timestamps (dates = new Date(d.date).getTime()) are NOT normalized. The plan switch occurs chronologically just after the last workout data point, so its timestamp is > maxDate; the local-midnight snap only rescues it while the switch's local day still equals the last workout's day. In UTC+3, a switch at >=21:00 UTC snaps to the NEXT local day (Jun 25), pushing ts past maxDate so 'if (ts < minDate || ts > maxDate) return []' drops the marker. Verified: fails on clean main (without unrelated UX changes) only after 21:00 UTC. Fix: use consistent UTC-based date handling for both data points and markers (or clamp an in-range-by-day switch to maxDate), and make the test robust to timezone/time-of-day. Related to flaky-tests ticket 090."
   }
 ]

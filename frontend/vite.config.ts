@@ -5,7 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   plugins: [
-    tanstackRouter({ quoteStyle: 'single' }),
+    tanstackRouter({ quoteStyle: 'single', autoCodeSplitting: true }),
     react(),
     VitePWA({
       // Keep our custom service worker (push, notification, navigation) and let
