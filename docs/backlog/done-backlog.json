@@ -411,5 +411,11 @@
     "title": "Replace TM progress with e1RM from completed sets",
     "status": "done",
     "description": "Replace TM-based progress chart with e1RM computed from completed sets (Epley formula). Program-agnostic progression tracking. Design: docs/plans/2026-03-08-e1rm-progression-design.md. Plan: docs/plans/2026-03-08-e1rm-progression-plan.md"
+  },
+  {
+    "id": "131",
+    "title": "Add security middleware: helmet, rate limiting, CORS origin, body limit, trust proxy",
+    "status": "done",
+    "description": "backend/src/app.ts uses wide-open cors(), no helmet, no rate limiting on auth (login does real bcrypt = brute-force + CPU DoS), no explicit JSON body limit, no trust proxy for Traefik. Add helmet, express-rate-limit on auth, CORS_ORIGIN gating, body limit, and trust proxy in production."
   }
 ]

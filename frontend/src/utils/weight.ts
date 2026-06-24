@@ -13,13 +13,17 @@ export function formatWeight(weight: number): string {
   return `${rounded} kg`;
 }
 
+// Slugs whose canonical display name isn't just a title-cased version of the
+// slug (e.g. abbreviations). Everything else is derived from the slug below.
 const EXERCISE_NAMES: Record<string, string> = {
-  bench: 'Bench',
-  squat: 'Squat',
-  ohp: 'OHP',
-  deadlift: 'Deadlift',
+  ohp: 'Overhead Press',
 };
 
 export function formatExerciseName(exercise: string): string {
-  return EXERCISE_NAMES[exercise] || exercise.charAt(0).toUpperCase() + exercise.slice(1);
+  if (EXERCISE_NAMES[exercise]) return EXERCISE_NAMES[exercise];
+  // Title-case a hyphenated slug: "bench-press" -> "Bench Press".
+  return exercise
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 }

@@ -12,12 +12,6 @@
     "description": "backend/src/index.ts only handles unhandledRejection/uncaughtException. Coolify/Traefik send SIGTERM on every redeploy, killing in-flight requests and leaking DB connections. Add a handler: server.close() then prisma disconnect."
   },
   {
-    "id": "131",
-    "title": "Add security middleware: helmet, rate limiting, CORS origin, body limit, trust proxy",
-    "status": "in-progress",
-    "description": "backend/src/app.ts uses wide-open cors(), no helmet, no rate limiting on auth (login does real bcrypt = brute-force + CPU DoS), no explicit JSON body limit, no trust proxy for Traefik. Add helmet, express-rate-limit on auth, CORS_ORIGIN gating, body limit, and trust proxy in production."
-  },
-  {
     "id": "135",
     "title": "Precache app shell via vite-plugin-pwa for offline reliability",
     "status": "backlog",
@@ -394,12 +388,6 @@
     "description": "No endpoint or UI to change a password (auth.service.ts has only register/login/refresh). A logged-in user can never rotate their password. Table-stakes account security."
   },
   {
-    "id": "143",
-    "title": "Password reset / forgot password flow",
-    "status": "backlog",
-    "description": "No reset-token flow and no email-sending infrastructure. A user who forgets their password is permanently locked out. Requires email infra (also unblocks email verification). Hard launch blocker."
-  },
-  {
     "id": "144",
     "title": "Delete account (GDPR + app-store requirement)",
     "status": "backlog",
@@ -410,12 +398,6 @@
     "title": "Personal data export (GDPR portability)",
     "status": "backlog",
     "description": "No export endpoint. Serious lifters expect to download training history (CSV/JSON) and portability is a GDPR right. Add an export of workouts, TMs, and progress."
-  },
-  {
-    "id": "146",
-    "title": "Email verification",
-    "status": "backlog",
-    "description": "Registration accepts any email with no confirmation. Unverified emails undermine password reset and notifications and allow fake accounts. Add a verification step (depends on email infra)."
   },
   {
     "id": "147",
@@ -518,5 +500,29 @@
     "title": "Feed cursor pagination (load more)",
     "status": "backlog",
     "description": "social.ts feed is take 20 with no cursor/offset and no load-more, so once a user has >20 events older history is unreachable. Add cursor-based pagination."
+  },
+  {
+    "id": "143",
+    "title": "Password reset / forgot password flow",
+    "status": "backlog",
+    "description": "No reset-token flow and no email-sending infrastructure. A user who forgets their password is permanently locked out. Requires email infra (also unblocks email verification). Hard launch blocker."
+  },
+  {
+    "id": "146",
+    "title": "Email verification",
+    "status": "backlog",
+    "description": "Registration accepts any email with no confirmation. Unverified emails undermine password reset and notifications and allow fake accounts. Add a verification step (depends on email infra)."
+  },
+  {
+    "id": "164",
+    "title": "Workout page hangs on Loading when starting a fresh workout (StrictMode + cancel-flag drops creation result)",
+    "status": "in-progress",
+    "description": "Starting a new workout (loader returns type:none) creates it server-side (POST /api/workouts 201) but the page stays stuck on 'Loading' until a manual reload. Root cause in workout.$dayNumber.tsx: the create effect's createRef guard prevents StrictMode's second invoke from re-firing, while the first invoke's cleanup sets cancelled=true, so the resolved startWorkout result is discarded. Manifests in dev (StrictMode double-invoke); prod build is unaffected, which is why E2E against the prod image passed. Fixed by dropping the per-run cancelled flag (setState after unmount is a no-op in React 18+)."
+  },
+  {
+    "id": "165",
+    "title": "Push Notifications settings section hangs on 'Loading...' with no timeout/fallback when service worker never becomes ready",
+    "status": "backlog",
+    "description": "On the Settings page the Push Notifications section stays on 'Loading...' indefinitely when navigator.serviceWorker.ready never resolves (e.g. in dev where the SW is registered PROD-only, or if SW registration fails in prod). There is no timeout or error fallback, so the section is permanently stuck. Add a timeout/error state. Related to ticket 093 (push notifications)."
   }
 ]

@@ -208,7 +208,7 @@ test.describe('Workout Session', () => {
     await settings.navigate();
     await settings.expectLoaded();
 
-    const benchCardText = await page.locator('text=Bench-press').locator('..').textContent();
+    const benchCardText = await page.locator('text=Bench Press').locator('..').textContent();
     const initialBenchTMMatch = benchCardText?.match(/(\d+(?:\.\d+)?)\s*kg/);
     expect(initialBenchTMMatch).toBeTruthy();
     const initialBenchTM = parseFloat(initialBenchTMMatch![1]);
@@ -232,7 +232,7 @@ test.describe('Workout Session', () => {
     await settings.navigate();
     await settings.expectLoaded();
 
-    const newBenchCardText = await page.locator('text=Bench-press').locator('..').textContent();
+    const newBenchCardText = await page.locator('text=Bench Press').locator('..').textContent();
     const newBenchTMMatch = newBenchCardText?.match(/(\d+(?:\.\d+)?)\s*kg/);
     expect(newBenchTMMatch).toBeTruthy();
     const newBenchTM = parseFloat(newBenchTMMatch![1]);

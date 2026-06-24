@@ -154,24 +154,26 @@ function WorkoutPage() {
     }
   }, [loaderData])
 
-  // Create workout on mount when loader found no existing workout
+  // Create workout on mount when loader found no existing workout.
+  // The createRef guard ensures startWorkout fires exactly once, even under
+  // StrictMode's double-invoke. We deliberately do NOT use a per-run `cancelled`
+  // flag here: StrictMode's simulated unmount would set it true, and the guarded
+  // second run wouldn't re-fire, so the in-flight result would be dropped and the
+  // page would hang on "loading". setState after a real unmount is a no-op in
+  // React 18+, so applying the result unconditionally is safe.
   useEffect(() => {
     if (loaderData.type !== 'none') return
     if (createRef.current) return
     createRef.current = true
 
-    let cancelled = false
     setPhase({ phase: 'loading' })
 
     startWorkout(dayNumber)
       .then((newWorkout) => {
-        if (!cancelled) {
-          setWorkout(newWorkout)
-          setPhase({ phase: 'active' })
-        }
+        setWorkout(newWorkout)
+        setPhase({ phase: 'active' })
       })
       .catch((err: unknown) => {
-        if (cancelled) return
         if (
           err &&
           typeof err === 'object' &&
@@ -192,10 +194,6 @@ function WorkoutPage() {
           })
         }
       })
-
-    return () => {
-      cancelled = true
-    }
   }, [loaderData.type, dayNumber])
 
   const handleContinueExisting = () => {
