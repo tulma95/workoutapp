@@ -400,12 +400,6 @@
     "description": "Plans are admin/system-defined only; regular users can only pick public plans. Serious users want to build/tweak their own programs. Add user plan creation/editing."
   },
   {
-    "id": "156",
-    "title": "Route-based code splitting (autoCodeSplitting)",
-    "status": "in-progress",
-    "description": "vite.config.ts tanstackRouter() lacks autoCodeSplitting and there are no lazy routes, so all ~27 route components (admin, social, charts) ship in one bundle. The login screen downloads everything. Enable autoCodeSplitting and/or manualChunks."
-  },
-  {
     "id": "157",
     "title": "Cap and validate history pagination limit",
     "status": "backlog",
@@ -482,5 +476,11 @@
     "title": "Offline set-log queue: also flush on visibilitychange (iOS Safari online event is unreliable)",
     "status": "backlog",
     "description": "iOS Safari fires the 'online' event on interface changes, not real reachability, so flush-on-reconnect can lag. Also flush the set-log queue on document visibilitychange->visible. Minor; from ticket 136 review (M4)."
+  },
+  {
+    "id": "169",
+    "title": "Handle post-deploy chunk-load 404 for long-lived tabs (reload on dynamic-import failure)",
+    "status": "backlog",
+    "description": "With route code-splitting (156) + the SW skipWaiting/clientsClaim precache purge (135), an already-open tab running an old index-*.js that lazy-navigates to a not-yet-visited route requests an old hashed chunk the new precache purged -> 404 -> unhandled chunk-load rejection. The SW navigation fallback only covers navigations, not script assets. Add a global handler that catches dynamic-import/chunk-load failures and triggers a full reload (or a 'new version available, reload' prompt instead of skipWaiting). Surfaced in 156 review; same caveat noted in 135 review."
   }
 ]
