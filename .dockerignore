@@ -1,0 +1,31 @@
+# Keep the build context small and free of host artifacts/secrets.
+**/node_modules
+backend/dist
+backend/dist-seed
+frontend/dist
+backend/src/generated
+
+.git
+.gitignore
+*.md
+docs
+
+# Test & tooling output
+e2e
+playwright-report
+test-results
+**/*.log
+backend-test.log
+
+# Local env / editor
+.env
+.env.*
+.vscode
+.idea
+.nvmrc
+.current-ticket
+.auto-dev
+
+# CI / compose not needed inside the image
+.github
+docker-compose*.yml
