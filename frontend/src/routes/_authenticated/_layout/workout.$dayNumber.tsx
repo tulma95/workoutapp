@@ -20,6 +20,7 @@ import { ConflictDialog } from '../../../components/ConflictDialog'
 import { Button } from '../../../components/Button'
 import { ButtonLink } from '../../../components/ButtonLink'
 import { ActiveWorkoutView } from '../../../components/ActiveWorkoutView'
+import { enqueueSetLog, removeSetLog, flushSetLogQueue } from '../../../utils/setLogQueue'
 import { useRestTimer } from '../../../hooks/useRestTimer'
 import { useWakeLock } from '../../../hooks/useWakeLock'
 import { getRestTimerSettings } from '../../../utils/restTimerSettings'
@@ -314,6 +315,15 @@ function ActiveWorkout({
     }
   }, [])
 
+  // Deliver any set-logs that were queued while offline — on mount (e.g. after a
+  // reload during a wifi drop) and whenever the connection is restored.
+  useEffect(() => {
+    void flushSetLogQueue()
+    const onOnline = () => void flushSetLogQueue()
+    window.addEventListener('online', onOnline)
+    return () => window.removeEventListener('online', onOnline)
+  }, [])
+
   useDialog(achievementDialogRef, achievementDialogOpen, () => setAchievementDialogOpen(false))
 
   const debouncedLogSet = (
@@ -329,8 +339,13 @@ function ActiveWorkout({
       try {
         await logSet(workout.id, setId, data)
         debounceMap.current.delete(setId)
-      } catch (err) {
-        console.error('Failed to update set:', err)
+        // A prior attempt for this set may have been queued while offline; the
+        // successful write supersedes it.
+        removeSetLog(workout.id, setId)
+      } catch {
+        // Offline or server unreachable — persist so it's retried on reconnect
+        // instead of being lost. The optimistic UI already reflects the change.
+        enqueueSetLog(workout.id, setId, data)
       }
     }, 300)
 
@@ -398,6 +413,9 @@ function ActiveWorkout({
     setPhase({ phase: 'completing' })
 
     try {
+      // Make sure any set-logs queued during an offline stretch reach the server
+      // before progression is computed from them.
+      await flushSetLogQueue()
       const result = await completeWorkout(workout.id)
       const progressionArray =
         result.progressions || (result.progression ? [result.progression] : [])
