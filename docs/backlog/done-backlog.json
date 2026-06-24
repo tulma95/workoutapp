@@ -435,5 +435,11 @@
     "title": "Harden production Dockerfile: non-root USER, HEALTHCHECK, .dockerignore",
     "status": "done",
     "description": "Container runs as root (Dockerfile stage 3 never sets USER). Add the built-in node user + chown + USER node, a HEALTHCHECK hitting /api/health, and a .dockerignore (excludes node_modules, dist, .git, logs, playwright-report). Container-escape hardening and faster builds for Coolify."
+  },
+  {
+    "id": "132",
+    "title": "Fix vulnerable production dependencies + add npm audit CI gate",
+    "status": "done",
+    "description": "npm audit --omit=dev reports 14 vulns (9 high), incl. path-to-regexp ReDoS and qs DoS (transitive via Express 5). No audit step in CI. Run npm audit fix and add an audit gate to the deploy workflow."
   }
 ]

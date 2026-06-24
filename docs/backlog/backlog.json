@@ -2,7 +2,7 @@
   {
     "id": "135",
     "title": "Precache app shell via vite-plugin-pwa for offline reliability",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "public/sw.js only cache.add('/') on install; hashed assets are cached opportunistically only. A cold load or reload on flaky gym wifi fails to boot. Adopt vite-plugin-pwa (Workbox) to precache the built asset manifest with an offline fallback."
   },
   {
@@ -10,12 +10,6 @@
     "title": "Persist/queue active-workout set logging for offline resilience",
     "status": "backlog",
     "description": "sw.js passes all api requests through with no caching and there is no React Query persistence. If wifi drops mid-set, logged reps fail silently and data is lost. Add a write queue / background-sync or localStorage-backed mutation retry for set logging."
-  },
-  {
-    "id": "132",
-    "title": "Fix vulnerable production dependencies + add npm audit CI gate",
-    "status": "in-progress",
-    "description": "npm audit --omit=dev reports 14 vulns (9 high), incl. path-to-regexp ReDoS and qs DoS (transitive via Express 5). No audit step in CI. Run npm audit fix and add an audit gate to the deploy workflow."
   },
   {
     "id": "070",

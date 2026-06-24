@@ -60,14 +60,9 @@ build_image() {
   echo "=== Step 2: Building Docker image ==="
   cd "$PROJECT_ROOT"
 
-  # Stamp git hash into service worker cache name for cache busting
-  node -e "
-    const fs = require('fs');
-    const f = 'frontend/public/sw.js';
-    const s = fs.readFileSync(f, 'utf8');
-    fs.writeFileSync(f, s.replace(/const CACHE_NAME = 'setforge-v[^']*'/, \"const CACHE_NAME = 'setforge-v$IMAGE_TAG'\"));
-  "
-
+  # The service worker is built by vite-plugin-pwa (injectManifest); its Workbox
+  # precache is keyed on per-asset content revisions, so no manual cache-busting
+  # stamp is needed.
   APP_IMAGE="$FULL_TAG" test_compose -f "$COMPOSE_FILE" --profile e2e build setforge
 
   echo "Docker image built: $FULL_TAG"

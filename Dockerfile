@@ -13,7 +13,7 @@ COPY backend/tsconfig.json backend/
 COPY backend/src/ backend/src/
 COPY backend/prisma/ backend/prisma/
 COPY backend/prisma.config.ts backend/
-COPY frontend/tsconfig.json frontend/tsconfig.app.json frontend/tsconfig.node.json frontend/
+COPY frontend/tsconfig.json frontend/tsconfig.app.json frontend/tsconfig.node.json frontend/tsconfig.worker.json frontend/
 COPY frontend/src/ frontend/src/
 COPY frontend/public/ frontend/public/
 COPY frontend/index.html frontend/vite.config.ts frontend/
