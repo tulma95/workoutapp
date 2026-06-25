@@ -2,6 +2,8 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
 import { randomUUID } from 'crypto';
 import app from '../../app';
+import prisma from '../../lib/db';
+import { createTestUser, getExercisesBySlug } from '../helpers';
 
 const uid = randomUUID().slice(0, 8);
 let accessToken: string;
@@ -111,6 +113,79 @@ describe('User routes', () => {
       const res = await request(app)
         .patch('/api/users/me/password')
         .send({ currentPassword: 'original123', newPassword: 'brandnew456' });
+      expect(res.status).toBe(401);
+    });
+  });
+
+  describe('DELETE /api/users/me', () => {
+    it('deletes the account and all owned data (incl. non-cascading rows), other users untouched', async () => {
+      const { user, token } = await createTestUser({ password: 'todelete123' });
+      const exercises = await getExercisesBySlug(['bench-press']);
+      const benchId = exercises['bench-press']!.id;
+
+      // Give the user rows whose User FK does NOT cascade, including a training
+      // max that references a workout (the FK-ordering-sensitive case).
+      const workout = await prisma.workout.create({
+        data: {
+          userId: user.id,
+          dayNumber: 1,
+          status: 'completed',
+          completedAt: new Date(),
+          sets: {
+            create: {
+              exerciseId: benchId,
+              exerciseOrder: 1,
+              setOrder: 1,
+              prescribedWeight: 100,
+              prescribedReps: 5,
+              actualReps: 5,
+              completed: true,
+            },
+          },
+        },
+      });
+      await prisma.trainingMax.create({
+        data: { userId: user.id, exerciseId: benchId, weight: 90, workoutId: workout.id },
+      });
+
+      const friend = await createTestUser();
+      await prisma.friendship.create({
+        data: { requesterId: user.id, addresseeId: friend.user.id, status: 'accepted' },
+      });
+
+      const res = await request(app)
+        .delete('/api/users/me')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ password: 'todelete123' });
+      expect(res.status).toBe(204);
+
+      expect(await prisma.user.findUnique({ where: { id: user.id } })).toBeNull();
+      expect(await prisma.trainingMax.count({ where: { userId: user.id } })).toBe(0);
+      expect(await prisma.workout.count({ where: { userId: user.id } })).toBe(0);
+      expect(await prisma.workoutSet.count({ where: { workoutId: workout.id } })).toBe(0);
+      expect(
+        await prisma.friendship.count({
+          where: { OR: [{ requesterId: user.id }, { addresseeId: user.id }] },
+        }),
+      ).toBe(0);
+      // The other user is untouched.
+      expect(await prisma.user.findUnique({ where: { id: friend.user.id } })).not.toBeNull();
+    });
+
+    it('rejects deletion with a wrong password (400) and keeps the account', async () => {
+      const { user, token } = await createTestUser({ password: 'correct123' });
+
+      const res = await request(app)
+        .delete('/api/users/me')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ password: 'wrongpass' });
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('INVALID_PASSWORD');
+      expect(await prisma.user.findUnique({ where: { id: user.id } })).not.toBeNull();
+    });
+
+    it('returns 401 without a token', async () => {
+      const res = await request(app).delete('/api/users/me').send({ password: 'x' });
       expect(res.status).toBe(401);
     });
   });

@@ -4,6 +4,7 @@ import { ScheduleEditor } from './ScheduleEditor'
 import { PushNotificationSettings } from './PushNotificationSettings'
 import { InstallAppSettings } from './InstallAppSettings'
 import { ChangePasswordSettings } from './ChangePasswordSettings'
+import { DeleteAccountSettings } from './DeleteAccountSettings'
 import { formatExerciseName, formatWeight } from '../utils/weight'
 import styles from '../styles/SettingsPage.module.css'
 import type { RefObject } from 'react'
@@ -228,6 +229,8 @@ export function SettingsContent({
       >
         Log Out
       </Button>
+
+      <DeleteAccountSettings />
 
       <dialog
         ref={dialogRef}

@@ -80,6 +80,39 @@ export async function changePassword(
   logger.info('Password changed', { userId });
 }
 
+export async function deleteAccount(userId: number, password: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const valid = await bcrypt.compare(password, user.passwordHash);
+  if (!valid) {
+    logger.warn('Account deletion failed: incorrect password', { userId });
+    throw new Error('Incorrect password');
+  }
+
+  // Delete owned rows in FK-safe order inside one transaction. Most User
+  // relations don't cascade, and TrainingMax references Workout, so order
+  // matters: clear feed interactions and training maxes before workouts, and
+  // the user last (which cascades push subscriptions).
+  await prisma.$transaction([
+    prisma.feedEventReaction.deleteMany({ where: { userId } }),
+    prisma.feedEventComment.deleteMany({ where: { userId } }),
+    prisma.feedEvent.deleteMany({ where: { userId } }),
+    prisma.userAchievement.deleteMany({ where: { userId } }),
+    prisma.trainingMax.deleteMany({ where: { userId } }),
+    prisma.workout.deleteMany({ where: { userId } }),
+    prisma.userPlan.deleteMany({ where: { userId } }),
+    prisma.friendship.deleteMany({
+      where: { OR: [{ requesterId: userId }, { addresseeId: userId }] },
+    }),
+    prisma.user.delete({ where: { id: userId } }),
+  ]);
+
+  logger.info('Account deleted', { userId });
+}
+
 export async function login(email: string, password: string) {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {

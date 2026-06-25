@@ -324,7 +324,7 @@
   {
     "id": "144",
     "title": "Delete account (GDPR + app-store requirement)",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "No DELETE /users/me and no UI. Users cannot remove their account or data, a legal and app-store-review requirement. Add account deletion with data cleanup."
   },
   {

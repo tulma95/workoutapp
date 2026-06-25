@@ -4,7 +4,7 @@ import { validate } from '../middleware/validate';
 import { authenticate } from '../middleware/auth';
 import { AuthRequest } from '../types';
 import prisma from '../lib/db';
-import { changePassword } from '../services/auth.service';
+import { changePassword, deleteAccount } from '../services/auth.service';
 import { usernameSchema, isP2002UsernameViolation } from '../lib/routeHelpers';
 
 const router = Router();
@@ -60,6 +60,29 @@ router.patch(
       if (err instanceof Error && err.message === 'Current password is incorrect') {
         res.status(400).json({
           error: { code: 'INVALID_PASSWORD', message: 'Current password is incorrect' },
+        });
+        return;
+      }
+      throw err;
+    }
+  },
+);
+
+const deleteAccountSchema = z.object({
+  password: z.string().min(1),
+});
+
+router.delete(
+  '/me',
+  validate(deleteAccountSchema),
+  async (req: AuthRequest, res: Response) => {
+    try {
+      await deleteAccount(req.userId!, req.body.password);
+      res.status(204).end();
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message === 'Incorrect password') {
+        res.status(400).json({
+          error: { code: 'INVALID_PASSWORD', message: 'Incorrect password' },
         });
         return;
       }

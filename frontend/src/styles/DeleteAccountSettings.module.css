@@ -1,0 +1,59 @@
+.card {
+  margin-bottom: var(--space-lg);
+  background: var(--bg-card);
+  border: 1px solid var(--danger);
+  border-radius: var(--space-sm);
+  padding: var(--space-md);
+}
+
+.label {
+  margin: 0 0 var(--space-sm);
+  font-weight: 500;
+  color: var(--danger);
+}
+
+.text {
+  margin: 0 0 var(--space-md);
+  font-size: 0.9375rem;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.error {
+  margin: 0 0 var(--space-md);
+  font-size: 0.875rem;
+  color: var(--danger);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.dangerBtn {
+  min-height: 3rem;
+  padding: 0 var(--space-lg);
+  border: none;
+  border-radius: var(--space-sm);
+  background: var(--danger);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dangerBtn:disabled {
+  opacity: 0.6;
+}
+
+.cancelBtn {
+  min-height: 3rem;
+  padding: 0 var(--space-lg);
+  border: 1px solid var(--border);
+  border-radius: var(--space-sm);
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
