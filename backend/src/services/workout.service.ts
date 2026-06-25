@@ -72,6 +72,7 @@ function formatWorkout(
     dayNumber: number;
     planDayId: number | null;
     status: string;
+    notes: string | null;
     completedAt: Date | null;
     createdAt: Date;
     sets: Array<{
@@ -101,6 +102,22 @@ function formatWorkout(
       prescribedWeight: s.prescribedWeight.toNumber(),
     })),
   };
+}
+
+// Set or clear a workout's note (empty string clears it). Ownership-checked;
+// returns null when the workout isn't found / not owned.
+export async function updateWorkoutNotes(
+  workoutId: number,
+  userId: number,
+  notes: string,
+) {
+  const trimmed = notes.trim();
+  const result = await prisma.workout.updateMany({
+    where: { id: workoutId, userId },
+    data: { notes: trimmed.length > 0 ? trimmed : null },
+  });
+  if (result.count === 0) return null;
+  return { notes: trimmed.length > 0 ? trimmed : null };
 }
 
 export async function startWorkout(userId: number, dayNumber: number) {

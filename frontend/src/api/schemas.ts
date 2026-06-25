@@ -28,6 +28,7 @@ export const WorkoutSchema = z.object({
   userId: z.number(),
   dayNumber: z.number(),
   status: z.enum(['in_progress', 'completed', 'discarded']),
+  notes: z.string().nullable().optional().default(null),
   completedAt: z.string().nullable(),
   createdAt: z.string(),
   sets: z.array(WorkoutSetSchema),

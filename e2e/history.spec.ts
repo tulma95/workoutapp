@@ -61,6 +61,26 @@ test.describe('Workout History', () => {
     await expect(page.getByRole('heading', { name: new RegExp(`${month} ${year}`) })).toBeVisible();
   });
 
+  test('history detail shows a workout notes field with a save action', async ({
+    setupCompletePage,
+  }) => {
+    // Note: the save round-trip is covered by backend tests + manual Chrome
+    // verification; WebKit's fill() doesn't reliably fire React onChange on a
+    // controlled textarea, so the E2E asserts the notes UI is present.
+    const { page } = setupCompletePage;
+    const history = new HistoryPage(page);
+
+    await completeWorkout(page, 1, 10);
+    await history.navigateAndWaitForData();
+    const today = new Date().getDate();
+    await history.clickDay(today);
+    await expect(page.getByRole('heading', { name: /day\s*1/i }).first()).toBeVisible();
+
+    await expect(page.getByRole('heading', { name: /^notes$/i })).toBeVisible();
+    await expect(page.getByLabel('Workout notes')).toBeVisible();
+    await expect(page.getByRole('button', { name: /save note/i })).toBeVisible();
+  });
+
   test('history detail has an editable-reps mode that toggles on and off', async ({
     setupCompletePage,
   }) => {

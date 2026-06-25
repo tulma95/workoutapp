@@ -20,6 +20,7 @@ type Props = {
   onSelectWorkout: (workoutId: number) => void
   onDeleteWorkout?: () => void
   onEditSet?: (setId: number, actualReps: number) => void
+  onSaveNotes?: (notes: string) => void
   onRetry: () => void
   onAddCustomWorkout?: (dateKey: string) => void
   selectedDateKey?: string
@@ -41,6 +42,7 @@ export function HistoryContent({
   onSelectWorkout,
   onDeleteWorkout,
   onEditSet,
+  onSaveNotes,
   onRetry,
   onAddCustomWorkout,
   selectedDateKey,
@@ -127,6 +129,7 @@ export function HistoryContent({
                 workout={selectedWorkout}
                 onDelete={onDeleteWorkout}
                 onEditSet={onEditSet}
+                onSaveNotes={onSaveNotes}
               />
             ) : hasAnyWorkouts ? (
               <div className={styles.prompt}>

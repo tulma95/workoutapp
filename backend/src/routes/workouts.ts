@@ -124,6 +124,22 @@ router.patch('/:id/sets/:setId', validate(logSetSchema), async (req: AuthRequest
   res.json(result);
 });
 
+const notesSchema = z.object({
+  notes: z.string().max(2000),
+});
+
+router.patch('/:id/notes', validate(notesSchema), async (req: AuthRequest, res: Response) => {
+  const id = parseIntParam(res, req.params.id as string, 'workout ID');
+  if (id === null) return;
+  const { notes } = req.body as { notes: string };
+  const result = await workoutService.updateWorkoutNotes(id, getUserId(req), notes);
+  if (!result) {
+    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Workout not found' } });
+    return;
+  }
+  res.json(result);
+});
+
 router.post('/:id/complete', async (req: AuthRequest, res: Response) => {
   const id = parseIntParam(res, req.params.id as string, 'workout ID');
   if (id === null) return;

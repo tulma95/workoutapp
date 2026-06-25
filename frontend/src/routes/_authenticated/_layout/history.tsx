@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query'
-import { getWorkoutCalendar, getWorkout, cancelWorkout, logSet, type Workout, type CalendarWorkout } from '../../../api/workouts'
+import { getWorkoutCalendar, getWorkout, cancelWorkout, logSet, updateWorkoutNotes, type Workout, type CalendarWorkout } from '../../../api/workouts'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { HistoryContent } from '../../../components/HistoryContent'
 import { CustomWorkoutModal } from '../../../components/CustomWorkoutModal'
@@ -106,6 +106,22 @@ function HistoryPage() {
     }
   }
 
+  const handleSaveNotes = async (notes: string) => {
+    if (!selectedWorkout) return
+    const workoutId = selectedWorkout.id
+    const trimmed = notes.trim()
+    const next = trimmed.length > 0 ? trimmed : null
+    setSelectedWorkout((prev) => (prev ? { ...prev, notes: next } : prev))
+    try {
+      await updateWorkoutNotes(workoutId, notes)
+    } catch (error) {
+      console.error('Failed to save notes:', error)
+      toast.error('Could not save the note')
+      const fresh = await getWorkout(workoutId).catch(() => null)
+      if (fresh) setSelectedWorkout(fresh)
+    }
+  }
+
   const handleAddCustomWorkout = (dateKey: string) => {
     setCustomWorkoutDate(dateKey)
   }
@@ -152,6 +168,7 @@ function HistoryPage() {
         onSelectWorkout={handleSelectWorkout}
         onDeleteWorkout={handleDeleteWorkout}
         onEditSet={handleEditSet}
+        onSaveNotes={handleSaveNotes}
         onRetry={() => refetchCalendar()}
         onAddCustomWorkout={handleAddCustomWorkout}
         selectedDateKey={selectedDateKey ?? undefined}

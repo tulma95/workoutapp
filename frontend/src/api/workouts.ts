@@ -57,6 +57,13 @@ export async function logSet(
   });
 }
 
+export async function updateWorkoutNotes(id: number, notes: string): Promise<void> {
+  await apiFetch(`/workouts/${id}/notes`, {
+    method: 'PATCH',
+    body: JSON.stringify({ notes }),
+  });
+}
+
 export async function completeWorkout(id: number): Promise<typeof CompleteWorkoutResponseSchema._output> {
   return apiFetchParsed(`/workouts/${id}/complete`, CompleteWorkoutResponseSchema, {
     method: 'POST',

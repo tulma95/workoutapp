@@ -12,6 +12,7 @@ interface WorkoutDetailProps {
   // When provided, the detail can edit a set's logged reps (record correction;
   // does not recompute training maxes).
   onEditSet?: (setId: number, actualReps: number) => void;
+  onSaveNotes?: (notes: string) => void;
 }
 
 type WorkoutSet = Workout['sets'][number];
@@ -100,13 +101,17 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
   isLoading = false,
   onDelete,
   onEditSet,
+  onSaveNotes,
 }) => {
   const [editing, setEditing] = useState(false);
+  const [noteText, setNoteText] = useState(workout?.notes ?? '');
 
-  // Leave edit mode when a different workout is opened.
+  // Reset transient UI when a different workout is opened.
   const workoutId = workout?.id;
   useEffect(() => {
     setEditing(false);
+    setNoteText(workout?.notes ?? '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workoutId]);
 
   if (isLoading || !workout) {
@@ -205,6 +210,29 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
           </section>
         );
       })}
+
+      {onSaveNotes && (
+        <section className={styles.notes}>
+          <h3 className={styles.notesTitle}>Notes</h3>
+          <textarea
+            className={styles.notesInput}
+            placeholder="How did the session feel? Energy, injuries, form cues…"
+            aria-label="Workout notes"
+            value={noteText}
+            maxLength={2000}
+            rows={3}
+            onChange={(e) => setNoteText(e.target.value)}
+          />
+          <button
+            type="button"
+            className={styles.notesSave}
+            disabled={noteText === (workout.notes ?? '')}
+            onClick={() => onSaveNotes(noteText)}
+          >
+            Save note
+          </button>
+        </section>
+      )}
 
       {onDelete && (
         <button className={styles.deleteButton} onClick={onDelete}>

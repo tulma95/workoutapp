@@ -152,6 +152,7 @@ model Workout {
   dayNumber   Int       @map("day_number")
   planDayId   Int?      @map("plan_day_id")
   status      String    @default("in_progress")
+  notes       String?   @db.Text
   completedAt DateTime? @map("completed_at") @db.Timestamptz(3)
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
 

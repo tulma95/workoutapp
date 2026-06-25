@@ -133,6 +133,47 @@
   margin-top: var(--space-xs);
 }
 
+.notes {
+  margin-top: var(--space-lg);
+}
+
+.notesTitle {
+  margin: 0 0 var(--space-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.notesInput {
+  width: 100%;
+  min-height: 4.5rem;
+  padding: var(--space-sm);
+  border: 1px solid var(--border);
+  border-radius: var(--space-sm);
+  background: var(--bg-card);
+  color: var(--text);
+  font: inherit;
+  resize: vertical;
+}
+
+.notesSave {
+  margin-top: var(--space-sm);
+  min-height: 2.75rem;
+  padding: 0 var(--space-lg);
+  border: none;
+  border-radius: var(--space-sm);
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.notesSave:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .deleteButton {
   width: 100%;
   padding: var(--space-md);
