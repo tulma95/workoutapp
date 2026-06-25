@@ -242,18 +242,6 @@
     "description": "Ticket 127 changed the progress endpoint from TM history to e1RM but react-query-cache.md still references TMs. Update key description and invalidation rule comments."
   },
   {
-    "id": "130",
-    "title": "Repoint CI/CD from Railway to Coolify deploy",
-    "status": "in-progress",
-    "description": "deploy.yml and deploy.sh trigger a Railway redeploy via Railway GraphQL API. Production target is Coolify, which deploys via webhook or registry/git polling. Repoint the pipeline at Coolify (deploy webhook + token) or configure Coolify to pull the ghcr.io image."
-  },
-  {
-    "id": "133",
-    "title": "Document required production env vars for Coolify",
-    "status": "in-progress",
-    "description": "Backend requires JWT_SECRET, DATABASE_URL, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY (optional LOG_LEVEL/PORT) via requireEnv. No .env.example or doc lists them, so a Coolify deployer cannot know what secrets to inject. Add a documented required-vars list."
-  },
-  {
     "id": "150",
     "title": "Exercise library detail (instructions, muscles, video)",
     "status": "backlog",

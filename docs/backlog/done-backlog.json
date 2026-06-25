@@ -629,5 +629,17 @@
     "title": "Dashboard stats: workouts-this-week + streak",
     "status": "done",
     "description": "Surface the user's own training momentum on the dashboard: GET /api/workouts/stats returns currentStreak (consecutive-day, reusing calculateStreak) and workoutsLast7Days; a DashboardStats component shows 'N this week' and a '🔥 N day streak' when >=2. The day-streak was previously only computed for achievements and shown for friends, never to the user themselves."
+  },
+  {
+    "id": "130",
+    "title": "Repoint CI/CD from Railway to Coolify deploy",
+    "status": "done",
+    "description": "deploy.yml and deploy.sh trigger a Railway redeploy via Railway GraphQL API. Production target is Coolify, which deploys via webhook or registry/git polling. Repoint the pipeline at Coolify (deploy webhook + token) or configure Coolify to pull the ghcr.io image."
+  },
+  {
+    "id": "133",
+    "title": "Document required production env vars for Coolify",
+    "status": "done",
+    "description": "Backend requires JWT_SECRET, DATABASE_URL, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY (optional LOG_LEVEL/PORT) via requireEnv. No .env.example or doc lists them, so a Coolify deployer cannot know what secrets to inject. Add a documented required-vars list."
   }
 ]

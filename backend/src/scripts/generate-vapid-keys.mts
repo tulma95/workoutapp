@@ -1,7 +1,7 @@
 /**
  * Generate VAPID key pair for Web Push notifications.
  *
- * Usage: npx tsx src/scripts/generate-vapid-keys.ts
+ * Usage (from backend/): node --experimental-strip-types src/scripts/generate-vapid-keys.mts
  *
  * Outputs base64url-encoded public and private keys to stdout.
  * Copy the values into start_local_env.sh and any production secrets manager.

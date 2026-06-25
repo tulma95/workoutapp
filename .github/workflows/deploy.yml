@@ -38,9 +38,11 @@ jobs:
       #   COOLIFY_RESOURCE_UUID  the application's UUID in Coolify
       #   COOLIFY_API_TOKEN      a Coolify API token with deploy permission
       - name: Redeploy on Coolify
+        # force=true so Coolify actually re-pulls the moved :latest tag rather
+        # than restarting the old image (a known Coolify gotcha with mutable tags).
         run: |
           curl --fail --silent --show-error --request GET \
-            "${COOLIFY_URL}/api/v1/deploy?uuid=${COOLIFY_RESOURCE_UUID}&force=false" \
+            "${COOLIFY_URL}/api/v1/deploy?uuid=${COOLIFY_RESOURCE_UUID}&force=true" \
             --header "Authorization: Bearer ${COOLIFY_API_TOKEN}"
         env:
           COOLIFY_URL: ${{ secrets.COOLIFY_URL }}

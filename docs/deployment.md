@@ -11,6 +11,9 @@ The app ships as a **single Docker image** (`Dockerfile`) that serves the Expres
    - **Step 2/3** — build the production image and run the Playwright E2E suite against it.
    - On success, push the image to `ghcr.io/<owner>/treenisofta`.
 3. The **Redeploy on Coolify** step calls Coolify's API so it pulls the new image and redeploys.
+   - `deploy.sh` pushes two tags: `:<short-sha>` (immutable) and `:latest` (moving). Configure the Coolify application to deploy `ghcr.io/<owner>/treenisofta:latest`.
+   - The redeploy call uses **`force=true`** so Coolify re-pulls the moved `:latest` digest. With `force=false`, Coolify may restart the *existing* image without pulling, leaving production on the old code while CI reports green. (For deterministic rollouts, deploy the immutable `:<short-sha>` tag instead and update it in Coolify per release.)
+   - CI does **not** pass the tag to Coolify — the deployed tag is whatever the Coolify application is configured with.
 4. On container start, `docker-entrypoint.sh` runs `npx prisma migrate deploy` (migrations auto-apply), then boots the server.
 5. Coolify gates the rollout on the image `HEALTHCHECK` (`GET /api/health`, DB-backed).
 
@@ -38,7 +41,7 @@ The Web Push VAPID *subject* is hardcoded (`mailto:admin@setforge.app`) and is *
 | `COOLIFY_RESOURCE_UUID` | The application's UUID in Coolify (Application → General). |
 | `COOLIFY_API_TOKEN` | A Coolify API token with deploy permission (Keys & Tokens → API tokens). |
 
-`GITHUB_TOKEN` (auto-provided) is used to push the image to ghcr.io; ensure Coolify can pull from ghcr (public image, or a registry credential in Coolify).
+`GITHUB_TOKEN` (auto-provided) is used by CI to **push** to ghcr.io. Coolify **cannot** use that ephemeral token to pull. ghcr packages are **private by default**, so either make the package public, or add a ghcr registry credential in Coolify (a GitHub PAT with `read:packages`) so it can pull the private image.
 
 ## Generating VAPID keys
 
