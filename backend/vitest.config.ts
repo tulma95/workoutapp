@@ -8,6 +8,9 @@ export default defineConfig({
     fileParallelism: true,
     env: {
       LOG_LEVEL: 'warn',
+      // Each parallel, isolated test file opens its own Prisma pool; cap it small
+      // so many files don't exhaust the test Postgres connection limit.
+      DATABASE_POOL_MAX: '5',
     },
   },
 });
