@@ -146,6 +146,18 @@ describe('User routes', () => {
         },
       });
 
+      // Social data the user authored — must be in a GDPR export.
+      const friend = await createTestUser();
+      await prisma.friendship.create({
+        data: { requesterId: user.id, addresseeId: friend.user.id, status: 'accepted' },
+      });
+      const event = await prisma.feedEvent.create({
+        data: { userId: user.id, eventType: 'workout_completed', payload: { day: 1 } },
+      });
+      await prisma.feedEventComment.create({
+        data: { feedEventId: event.id, userId: user.id, text: 'great session' },
+      });
+
       const res = await request(app)
         .get('/api/users/me/export')
         .set('Authorization', `Bearer ${token}`);
@@ -163,6 +175,14 @@ describe('User routes', () => {
         prescribedWeight: 100,
         actualReps: 6,
       });
+      // Authored social data is included.
+      expect(res.body.friendships).toContainEqual(
+        expect.objectContaining({ status: 'accepted' }),
+      );
+      expect(res.body.feedComments).toContainEqual(
+        expect.objectContaining({ text: 'great session' }),
+      );
+      expect(res.body.feedEvents.length).toBeGreaterThanOrEqual(1);
       expect(typeof res.body.exportedAt).toBe('string');
     });
 

@@ -46,9 +46,17 @@ router.patch('/me', validate(updateSchema), async (req: AuthRequest, res: Respon
 });
 
 router.get('/me/export', async (req: AuthRequest, res: Response) => {
-  const data = await exportUserData(req.userId!);
-  res.setHeader('Content-Disposition', 'attachment; filename="setforge-export.json"');
-  res.json(data);
+  try {
+    const data = await exportUserData(req.userId!);
+    res.setHeader('Content-Disposition', 'attachment; filename="setforge-export.json"');
+    res.json(data);
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message === 'User not found') {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'User not found' } });
+      return;
+    }
+    throw err;
+  }
 });
 
 const changePasswordSchema = z.object({

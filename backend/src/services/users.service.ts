@@ -12,32 +12,47 @@ export async function exportUserData(userId: number) {
     throw new Error('User not found');
   }
 
-  const [trainingMaxes, workouts, plans, achievements] = await Promise.all([
-    prisma.trainingMax.findMany({
-      where: { userId },
-      include: { exercise: { select: { slug: true, name: true } } },
-      orderBy: { effectiveDate: 'asc' },
-    }),
-    prisma.workout.findMany({
-      where: { userId },
-      include: {
-        sets: {
-          include: { exercise: { select: { slug: true, name: true } } },
-          orderBy: [{ exerciseOrder: 'asc' }, { setOrder: 'asc' }],
+  const [trainingMaxes, workouts, plans, achievements, friendships, feedEvents, feedComments, feedReactions] =
+    await Promise.all([
+      prisma.trainingMax.findMany({
+        where: { userId },
+        include: { exercise: { select: { slug: true, name: true } } },
+        orderBy: { effectiveDate: 'asc' },
+      }),
+      prisma.workout.findMany({
+        where: { userId },
+        include: {
+          sets: {
+            include: { exercise: { select: { slug: true, name: true } } },
+            orderBy: [{ exerciseOrder: 'asc' }, { setOrder: 'asc' }],
+          },
         },
-      },
-      orderBy: { createdAt: 'asc' },
-    }),
-    prisma.userPlan.findMany({
-      where: { userId },
-      include: { plan: { select: { name: true } } },
-      orderBy: { startedAt: 'asc' },
-    }),
-    prisma.userAchievement.findMany({
-      where: { userId },
-      orderBy: { unlockedAt: 'asc' },
-    }),
-  ]);
+        orderBy: { createdAt: 'asc' },
+      }),
+      prisma.userPlan.findMany({
+        where: { userId },
+        include: {
+          plan: { select: { name: true } },
+          schedule: { select: { dayNumber: true, weekday: true }, orderBy: { dayNumber: 'asc' } },
+        },
+        orderBy: { startedAt: 'asc' },
+      }),
+      prisma.userAchievement.findMany({
+        where: { userId },
+        orderBy: { unlockedAt: 'asc' },
+      }),
+      prisma.friendship.findMany({
+        where: { OR: [{ requesterId: userId }, { addresseeId: userId }] },
+        include: {
+          requester: { select: { username: true } },
+          addressee: { select: { username: true } },
+        },
+        orderBy: { createdAt: 'asc' },
+      }),
+      prisma.feedEvent.findMany({ where: { userId }, orderBy: { createdAt: 'asc' } }),
+      prisma.feedEventComment.findMany({ where: { userId }, orderBy: { createdAt: 'asc' } }),
+      prisma.feedEventReaction.findMany({ where: { userId }, orderBy: { createdAt: 'asc' } }),
+    ]);
 
   return {
     exportedAt: new Date().toISOString(),
@@ -46,6 +61,7 @@ export async function exportUserData(userId: number) {
       exercise: tm.exercise.slug,
       exerciseName: tm.exercise.name,
       weight: Number(tm.weight),
+      previousWeight: tm.previousWeight === null ? null : Number(tm.previousWeight),
       effectiveDate: tm.effectiveDate,
       reason: tm.reason,
     })),
@@ -70,7 +86,21 @@ export async function exportUserData(userId: number) {
       isActive: p.isActive,
       startedAt: p.startedAt,
       endedAt: p.endedAt,
+      schedule: p.schedule.map((s) => ({ dayNumber: s.dayNumber, weekday: s.weekday })),
     })),
     achievements: achievements.map((a) => ({ slug: a.slug, unlockedAt: a.unlockedAt })),
+    friendships: friendships.map((f) => ({
+      requester: f.requester.username,
+      addressee: f.addressee.username,
+      status: f.status,
+      createdAt: f.createdAt,
+    })),
+    feedEvents: feedEvents.map((e) => ({
+      eventType: e.eventType,
+      payload: e.payload,
+      createdAt: e.createdAt,
+    })),
+    feedComments: feedComments.map((c) => ({ text: c.text, createdAt: c.createdAt })),
+    feedReactions: feedReactions.map((r) => ({ emoji: r.emoji, createdAt: r.createdAt })),
   };
 }
