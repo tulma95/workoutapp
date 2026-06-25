@@ -1,0 +1,61 @@
+.estimator {
+  margin-top: var(--space-sm);
+  border: 1px solid var(--border);
+  border-radius: var(--space-sm);
+  background: var(--bg);
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 var(--space-md);
+  font-size: 0.875rem;
+  color: var(--primary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: 0 var(--space-md) var(--space-md);
+}
+
+.inputs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.inputs input {
+  flex: 1;
+}
+
+.times {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.result {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--text);
+}
+
+.apply {
+  min-height: 2.75rem;
+  padding: 0 var(--space-lg);
+  border: none;
+  border-radius: var(--space-sm);
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.apply:disabled {
+  opacity: 0.5;
+}

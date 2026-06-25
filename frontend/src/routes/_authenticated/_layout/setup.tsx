@@ -77,6 +77,11 @@ function SetupPage() {
     setError('')
   }
 
+  const handleSetValue = (exerciseId: number, value: string) => {
+    setFormData((prev) => ({ ...prev, [exerciseId.toString()]: value }))
+    setError('')
+  }
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
@@ -121,6 +126,7 @@ function SetupPage() {
       error={error}
       isSubmitting={isSubmitting}
       onInputChange={handleInputChange}
+      onSetValue={handleSetValue}
       onSubmit={handleSubmit}
     />
   )

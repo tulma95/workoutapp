@@ -14,6 +14,27 @@ test.describe('Training Max Setup', () => {
     await expect(page.getByRole('spinbutton', { name: /deadlift/i })).toBeVisible();
   });
 
+  test('1RM estimator computes from a recent set and fills the field', async ({
+    authenticatedPage,
+  }) => {
+    const { page } = authenticatedPage;
+    await expect(page).toHaveURL(/\/setup/);
+
+    const benchInput = page.getByRole('spinbutton', { name: 'Bench Press (kg)' });
+    await expect(benchInput).toHaveValue('');
+
+    // Open the Bench Press estimator and compute its 1RM from 100 kg × 5.
+    const estimator = page.getByTestId('1rm-estimator-Bench Press');
+    await estimator.getByText(/estimate from a recent set/i).click();
+    await estimator.getByLabel('Weight').fill('100');
+    await estimator.getByLabel('Reps').fill('5');
+    await expect(estimator.getByText(/estimated 1rm/i)).toBeVisible();
+    await estimator.getByRole('button', { name: /use estimate/i }).click();
+
+    // Epley: 100 × (1 + 5/30) = 116.67, rounded to the 2.5 kg increment → 117.5.
+    await expect(benchInput).toHaveValue('117.5');
+  });
+
   test('entering 1RMs and submitting redirects to dashboard with correct TMs', async ({ authenticatedPage }) => {
     const { page } = authenticatedPage;
     const setup = new SetupPage(page);

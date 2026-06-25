@@ -13,6 +13,14 @@ export function formatWeight(weight: number): string {
   return `${rounded} kg`;
 }
 
+/**
+ * Estimate a 1 rep max from a weight × reps set using the Epley formula,
+ * rounded to the gym's 2.5 kg increment. reps = 1 returns the weight.
+ */
+export function estimateOneRepMax(weight: number, reps: number): number {
+  return roundWeight(weight * (1 + reps / 30));
+}
+
 // Slugs whose canonical display name isn't just a title-cased version of the
 // slug (e.g. abbreviations). Everything else is derived from the slug below.
 const EXERCISE_NAMES: Record<string, string> = {
