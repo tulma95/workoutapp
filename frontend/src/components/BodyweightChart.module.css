@@ -1,0 +1,28 @@
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: var(--space-sm) 0;
+  overflow: visible;
+}
+
+.line {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.area {
+  fill: var(--primary);
+  opacity: 0.1;
+}
+
+.dot {
+  fill: var(--primary);
+  stroke: var(--bg-card);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}

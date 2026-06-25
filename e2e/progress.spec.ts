@@ -77,6 +77,9 @@ test.describe('Progress Page', () => {
     await post2;
 
     await expect(page.getByText(/↓ 1\.3 kg/)).toBeVisible();
+
+    // With two entries, the trend sparkline appears.
+    await expect(page.getByTestId('bodyweight-chart')).toBeVisible();
   });
 
   test('shows a Personal Records board after completing a workout', async ({

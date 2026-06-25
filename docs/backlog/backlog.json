@@ -406,7 +406,7 @@
   {
     "id": "178",
     "title": "Bodyweight improvements: per-day dedup + trend chart",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "Follow-ups from ticket 011 (bodyweight tracking, shipped). (1) No per-day uniqueness: a user can log multiple times a day and the '↓ x kg' delta is since the previous ENTRY not the previous DAY — consider upsert-per-day or a latest-per-day trend view. (2) The card shows a numeric recent-entries list only; add a small trend chart/sparkline (reuse ProgressChart pattern) to visualize bodyweight over time alongside the e1RM charts."
   },
   {

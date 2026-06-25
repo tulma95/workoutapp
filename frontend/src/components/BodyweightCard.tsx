@@ -6,6 +6,7 @@ import {
   logBodyweight,
   deleteBodyweightEntry,
 } from '../api/bodyweight'
+import { BodyweightChart } from './BodyweightChart'
 import styles from './BodyweightCard.module.css'
 
 function formatDate(iso: string): string {
@@ -64,6 +65,8 @@ export function BodyweightCard() {
       ) : (
         <p className={styles.empty}>Log your weight to track it over time.</p>
       )}
+
+      <BodyweightChart entries={entries} />
 
       <form className={styles.form} onSubmit={submit}>
         <input
