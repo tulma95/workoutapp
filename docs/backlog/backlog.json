@@ -451,5 +451,11 @@
     "title": "WorkoutDetail edit: per-set aria-labels + guard resync while focused (a11y/UX polish)",
     "status": "backlog",
     "description": "From ticket 148 review (minor): all editable reps inputs share aria-label 'Reps performed' (screen readers can't distinguish set 1 vs 3) — label per set (e.g. 'Reps for set N'). Also the value-resync useEffect can briefly clobber the field while focused/typing under an in-flight optimistic update; guard it so it doesn't overwrite during active editing. Both minor."
+  },
+  {
+    "id": "176",
+    "title": "Durable test-isolation: make test-created plans non-public + self-contained stateful social tests",
+    "status": "backlog",
+    "description": "Follow-up from the 090/173/174 stabilization review. Two durable fixes so retry isn't load-bearing: (1) Root hazard not fixed at source — admin-plan-editor E2E tests and e2e/helpers/create-second-plan.ts create plans with isPublic defaulting true (admin/plans.ts:59) with no cleanup, polluting the public-plans list any 'select a plan' path sees. The selectFirstPlan->nSuns change routes the fixture around it, but pass isPublic:false from admin/helper-created test plans to kill it at the source. (2) The stateful, order-dependent social tests (social.test.ts Feed reactions toggle-chain ~442-630, friend-request flow ~66-186) share one feedEventId/token across sequential its with exact-count assertions; vitest retry re-runs only the failing it (re-toggling against mutated state), so it can spuriously fail or mask an intermittent regression. Make each assertion self-contained (per-test event/reactions) so retry is unnecessary for them."
   }
 ]
