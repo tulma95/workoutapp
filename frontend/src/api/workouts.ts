@@ -5,6 +5,7 @@ import {
   CompleteWorkoutResponseSchema,
   WorkoutHistoryItemSchema,
   WorkoutCalendarResponseSchema,
+  WorkoutStatsSchema,
 } from './schemas';
 
 export interface CreateCustomWorkoutPayload {
@@ -55,6 +56,10 @@ export async function logSet(
     method: 'PATCH',
     body: JSON.stringify(data),
   });
+}
+
+export async function getWorkoutStats(): Promise<typeof WorkoutStatsSchema._output> {
+  return apiFetchParsed('/workouts/stats', WorkoutStatsSchema);
 }
 
 export async function updateWorkoutNotes(id: number, notes: string): Promise<void> {

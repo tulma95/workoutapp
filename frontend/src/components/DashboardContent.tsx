@@ -1,4 +1,5 @@
 import WorkoutCard from './WorkoutCard'
+import { DashboardStats } from './DashboardStats'
 import styles from '../styles/DashboardPage.module.css'
 import type { WorkoutPlan } from '../api/plans'
 import type { Workout } from '../api/workouts'
@@ -22,6 +23,8 @@ export function DashboardContent({ plan, currentWorkout }: Props) {
   return (
     <div className={styles.page}>
       <h1>Dashboard</h1>
+
+      <DashboardStats />
 
       <section className={styles.planSection}>
         <h2>Current Plan</h2>

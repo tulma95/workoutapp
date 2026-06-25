@@ -268,6 +268,33 @@ test.describe('Workout Session', () => {
     expect(actualIncrease).toBeCloseTo(expectedIncrease, 0);
   });
 
+  test('dashboard shows a weekly workout count after completing a workout', async ({
+    setupCompletePage,
+  }) => {
+    const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const workout = new WorkoutPage(page);
+
+    await dashboard.expectLoaded();
+    // A fresh user has no completed workouts, so the stats are hidden.
+    await expect(page.getByTestId('dashboard-stats')).toBeHidden();
+
+    await dashboard.startWorkout();
+    await workout.expectLoaded(1);
+    await workout.fillAmrap('5');
+    await page.waitForResponse(
+      (r) => r.url().includes('/api/workouts/') && r.request().method() === 'PATCH' && r.ok(),
+    );
+    await workout.completeWithDialog();
+    await workout.goBackToDashboard();
+
+    await dashboard.expectLoaded();
+    const stats = page.getByTestId('dashboard-stats');
+    await expect(stats).toBeVisible();
+    await expect(stats.getByText('this week')).toBeVisible();
+    await expect(stats.getByText('1', { exact: true })).toBeVisible();
+  });
+
   test('shows a workout progress bar that advances as sets are logged', async ({
     setupCompletePage,
   }) => {

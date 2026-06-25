@@ -120,6 +120,28 @@ export async function updateWorkoutNotes(
   return { notes: trimmed.length > 0 ? trimmed : null };
 }
 
+// Dashboard stats: the user's current consecutive-day streak and how many
+// workouts they've completed in the last 7 days.
+export async function getWorkoutStats(
+  userId: number,
+): Promise<{ currentStreak: number; workoutsLast7Days: number }> {
+  const workouts = await prisma.workout.findMany({
+    where: { userId, status: 'completed', completedAt: { not: null } },
+    select: { completedAt: true },
+  });
+
+  const dates = workouts.map((w) => (w.completedAt as Date).toISOString().slice(0, 10));
+  const currentStreak = calculateStreak(dates);
+
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 7);
+  const workoutsLast7Days = workouts.filter(
+    (w) => (w.completedAt as Date) >= sevenDaysAgo,
+  ).length;
+
+  return { currentStreak, workoutsLast7Days };
+}
+
 export async function startWorkout(userId: number, dayNumber: number) {
   // Check for existing in-progress workout
   const existing = await prisma.workout.findFirst({

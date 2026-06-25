@@ -414,5 +414,11 @@
     "title": "Normalize email casing across register/login/changeEmail",
     "status": "backlog",
     "description": "From ticket 147 review (pre-existing, out of scope there). The email @unique column is case-sensitive Postgres text, and register/login/changeEmail store & match email as-is (no lowercase). So 'User@x.com' and 'user@x.com' can coexist as separate accounts and login is case-sensitive. Normalize email to trimmed-lowercase consistently in register, login lookup, and changeEmail (and consider a one-off data migration / case-insensitive unique index) so accounts are unambiguous."
+  },
+  {
+    "id": "180",
+    "title": "Dashboard stats: workouts-this-week + streak",
+    "status": "in-progress",
+    "description": "Surface the user's own training momentum on the dashboard: GET /api/workouts/stats returns currentStreak (consecutive-day, reusing calculateStreak) and workoutsLast7Days; a DashboardStats component shows 'N this week' and a '🔥 N day streak' when >=2. The day-streak was previously only computed for achievements and shown for friends, never to the user themselves."
   }
 ]

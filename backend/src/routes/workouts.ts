@@ -52,6 +52,11 @@ router.get('/history', async (req: AuthRequest, res: Response) => {
   res.json(result);
 });
 
+router.get('/stats', async (req: AuthRequest, res: Response) => {
+  const stats = await workoutService.getWorkoutStats(getUserId(req));
+  res.json(stats);
+});
+
 router.get('/calendar', async (req: AuthRequest, res: Response) => {
   const year = parseInt(req.query.year as string, 10);
   const month = parseInt(req.query.month as string, 10);
