@@ -3,6 +3,7 @@ import request from 'supertest';
 import { randomUUID } from 'crypto';
 import app from '../app';
 import prisma from '../lib/db';
+import { createTestUser, getExercisesBySlug } from './helpers';
 
 const uid = randomUUID().slice(0, 8);
 
@@ -105,5 +106,81 @@ describe('Log Set - actualReps nullable', () => {
 
     expect(res.body.actualReps).toBeNull();
     expect(res.body.completed).toBe(false);
+  });
+});
+
+describe('Edit a completed workout set (history correction)', () => {
+  it('updates actualReps on a COMPLETED workout via PATCH and persists', async () => {
+    const { user, token } = await createTestUser();
+    const exercises = await getExercisesBySlug(['bench-press']);
+    const benchId = exercises['bench-press']!.id;
+
+    const workout = await prisma.workout.create({
+      data: {
+        userId: user.id,
+        dayNumber: 1,
+        status: 'completed',
+        completedAt: new Date(),
+        sets: {
+          create: {
+            exerciseId: benchId,
+            exerciseOrder: 1,
+            setOrder: 1,
+            prescribedWeight: 100,
+            prescribedReps: 5,
+            actualReps: 5,
+            completed: true,
+          },
+        },
+      },
+      include: { sets: true },
+    });
+    const setIdToEdit = workout.sets[0]!.id;
+
+    const res = await request(app)
+      .patch(`/api/workouts/${workout.id}/sets/${setIdToEdit}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ actualReps: 8 });
+
+    expect(res.status).toBe(200);
+    expect(res.body.actualReps).toBe(8);
+
+    const fresh = await prisma.workoutSet.findUnique({ where: { id: setIdToEdit } });
+    expect(fresh?.actualReps).toBe(8);
+  });
+
+  it("rejects editing another user's completed set with 404", async () => {
+    const owner = await createTestUser();
+    const other = await createTestUser();
+    const exercises = await getExercisesBySlug(['bench-press']);
+    const benchId = exercises['bench-press']!.id;
+
+    const workout = await prisma.workout.create({
+      data: {
+        userId: owner.user.id,
+        dayNumber: 1,
+        status: 'completed',
+        completedAt: new Date(),
+        sets: {
+          create: {
+            exerciseId: benchId,
+            exerciseOrder: 1,
+            setOrder: 1,
+            prescribedWeight: 100,
+            prescribedReps: 5,
+            actualReps: 5,
+            completed: true,
+          },
+        },
+      },
+      include: { sets: true },
+    });
+
+    const res = await request(app)
+      .patch(`/api/workouts/${workout.id}/sets/${workout.sets[0]!.id}`)
+      .set('Authorization', `Bearer ${other.token}`)
+      .send({ actualReps: 8 });
+
+    expect(res.status).toBe(404);
   });
 });

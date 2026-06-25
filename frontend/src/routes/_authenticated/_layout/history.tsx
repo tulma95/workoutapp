@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query'
-import { getWorkoutCalendar, getWorkout, cancelWorkout, type Workout, type CalendarWorkout } from '../../../api/workouts'
+import { getWorkoutCalendar, getWorkout, cancelWorkout, logSet, type Workout, type CalendarWorkout } from '../../../api/workouts'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { HistoryContent } from '../../../components/HistoryContent'
 import { CustomWorkoutModal } from '../../../components/CustomWorkoutModal'
@@ -79,6 +79,28 @@ function HistoryPage() {
     }
   }
 
+  const handleEditSet = async (setId: number, actualReps: number) => {
+    if (!selectedWorkout) return
+    const workoutId = selectedWorkout.id
+    // Optimistically reflect the correction in the open detail view.
+    setSelectedWorkout((prev) =>
+      prev
+        ? { ...prev, sets: prev.sets.map((s) => (s.id === setId ? { ...s, actualReps } : s)) }
+        : prev,
+    )
+    try {
+      await logSet(workoutId, setId, { actualReps })
+      // Recompute derived views (calendar badges, e1RM progress); TMs are
+      // append-only and intentionally not recomputed.
+      queryClient.invalidateQueries({ queryKey: queryKeys.workout.calendarAll() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.progress.all() })
+    } catch (error) {
+      console.error('Failed to edit set:', error)
+      const fresh = await getWorkout(workoutId).catch(() => null)
+      if (fresh) setSelectedWorkout(fresh)
+    }
+  }
+
   const handleAddCustomWorkout = (dateKey: string) => {
     setCustomWorkoutDate(dateKey)
   }
@@ -124,6 +146,7 @@ function HistoryPage() {
         onDayClick={handleDayClick}
         onSelectWorkout={handleSelectWorkout}
         onDeleteWorkout={handleDeleteWorkout}
+        onEditSet={handleEditSet}
         onRetry={() => refetchCalendar()}
         onAddCustomWorkout={handleAddCustomWorkout}
         selectedDateKey={selectedDateKey ?? undefined}

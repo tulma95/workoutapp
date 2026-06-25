@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Workout } from '../api/workouts';
 import { ProgressionBanner } from './ProgressionBanner';
 import { formatWeight } from '../utils/weight';
@@ -8,6 +8,62 @@ interface WorkoutDetailProps {
   workout?: Workout;
   isLoading?: boolean;
   onDelete?: () => void;
+  // When provided, the detail can edit a set's logged reps (record correction;
+  // does not recompute training maxes).
+  onEditSet?: (setId: number, actualReps: number) => void;
+}
+
+type WorkoutSet = Workout['sets'][number];
+
+// Editable reps field that persists a corrected value a short debounce after
+// the user stops typing. Committing on change (rather than blur/Enter) is
+// reliable across browsers including WebKit.
+const COMMIT_DELAY_MS = 400;
+
+function EditableReps({
+  set,
+  onEditSet,
+}: {
+  set: WorkoutSet;
+  onEditSet: (setId: number, actualReps: number) => void;
+}) {
+  const [value, setValue] = useState(String(set.actualReps ?? set.prescribedReps));
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setValue(String(set.actualReps ?? set.prescribedReps));
+  }, [set.actualReps, set.prescribedReps]);
+
+  useEffect(
+    () => () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    },
+    [],
+  );
+
+  function handleChange(next: string) {
+    setValue(next);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      const reps = parseInt(next, 10);
+      if (!Number.isNaN(reps) && reps >= 0 && reps !== set.actualReps) {
+        onEditSet(set.id, reps);
+      }
+    }, COMMIT_DELAY_MS);
+  }
+
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      pattern="[0-9]*"
+      maxLength={3}
+      className={styles.editInput}
+      aria-label="Reps performed"
+      value={value}
+      onChange={(e) => handleChange(e.target.value.replace(/[^0-9]/g, ''))}
+    />
+  );
 }
 
 function formatDate(dateString: string): string {
@@ -25,7 +81,16 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
   workout,
   isLoading = false,
   onDelete,
+  onEditSet,
 }) => {
+  const [editing, setEditing] = useState(false);
+
+  // Leave edit mode when a different workout is opened.
+  const workoutId = workout?.id;
+  useEffect(() => {
+    setEditing(false);
+  }, [workoutId]);
+
   if (isLoading || !workout) {
     return (
       <div className={styles.root}>
@@ -58,6 +123,15 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
         </h2>
         <p className={styles.date}>{formatDate(workoutDate)}</p>
         <p className={styles.summary}>{completedSets}/{totalSets} sets</p>
+        {onEditSet && (
+          <button
+            type="button"
+            className={styles.editToggle}
+            onClick={() => setEditing((e) => !e)}
+          >
+            {editing ? 'Done' : 'Edit reps'}
+          </button>
+        )}
       </div>
 
       {exerciseGroups.map((group) => {
@@ -85,10 +159,13 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
                       {set.prescribedReps}
                       {set.isAmrap ? '+' : ''}
                     </span>
-                    {set.actualReps !== null && set.actualReps !== set.prescribedReps && (
-                      <span className={styles.setActual}>
-                        {set.actualReps}
-                      </span>
+                    {editing && onEditSet ? (
+                      <EditableReps set={set} onEditSet={onEditSet} />
+                    ) : (
+                      set.actualReps !== null &&
+                      set.actualReps !== set.prescribedReps && (
+                        <span className={styles.setActual}>{set.actualReps}</span>
+                      )
                     )}
                   </div>
                 );

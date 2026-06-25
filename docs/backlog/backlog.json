@@ -316,12 +316,6 @@
     "description": "Backend requires JWT_SECRET, DATABASE_URL, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY (optional LOG_LEVEL/PORT) via requireEnv. No .env.example or doc lists them, so a Coolify deployer cannot know what secrets to inject. Add a documented required-vars list."
   },
   {
-    "id": "134",
-    "title": "Configure Prisma connection pool limit",
-    "status": "in-progress",
-    "description": "backend/src/lib/db.ts builds PrismaPg with only a connection string, no pool size. Under Coolify shared Postgres an unbounded pool can exhaust connections. Set an explicit connection_limit sized to the deployment."
-  },
-  {
     "id": "147",
     "title": "Change account email",
     "status": "backlog",
@@ -330,7 +324,7 @@
   {
     "id": "148",
     "title": "Edit past/completed workout sets",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "Set logging and PATCH sets only work on in-progress workouts; history detail is read-only. Users need to fix a mistyped rep/weight after finishing, otherwise bad data corrupts e1RM/progression analytics. Allow editing completed workouts."
   },
   {

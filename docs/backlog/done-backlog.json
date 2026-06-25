@@ -525,5 +525,11 @@
     "title": "New-user onboarding flow",
     "status": "done",
     "description": "After register the user is dropped into a bare TM-entry form with no welcome, plan-selection guidance, or explanation of what a 1RM is. Add a guided first-run onboarding flow."
+  },
+  {
+    "id": "134",
+    "title": "Configure Prisma connection pool limit",
+    "status": "done",
+    "description": "backend/src/lib/db.ts builds PrismaPg with only a connection string, no pool size. Under Coolify shared Postgres an unbounded pool can exhaust connections. Set an explicit connection_limit sized to the deployment."
   }
 ]

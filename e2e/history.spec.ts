@@ -61,6 +61,30 @@ test.describe('Workout History', () => {
     await expect(page.getByRole('heading', { name: new RegExp(`${month} ${year}`) })).toBeVisible();
   });
 
+  test('history detail has an editable-reps mode that toggles on and off', async ({
+    setupCompletePage,
+  }) => {
+    const { page } = setupCompletePage;
+    const history = new HistoryPage(page);
+
+    await completeWorkout(page, 1, 10);
+    await history.navigateAndWaitForData();
+    const today = new Date().getDate();
+    await history.clickDay(today);
+    await expect(page.getByRole('heading', { name: /day\s*1/i }).first()).toBeVisible();
+
+    // Read-only by default: no editable reps fields.
+    await expect(page.getByLabel('Reps performed').first()).toBeHidden();
+
+    // Entering edit mode reveals per-set editable reps fields.
+    await page.getByRole('button', { name: /edit reps/i }).click();
+    await expect(page.getByLabel('Reps performed').first()).toBeVisible();
+
+    // Leaving edit mode hides them again.
+    await page.getByRole('button', { name: /^done$/i }).click();
+    await expect(page.getByLabel('Reps performed').first()).toBeHidden();
+  });
+
   test('tap highlighted day, verify workout detail appears with Day 1, exercises, and set data', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
     const history = new HistoryPage(page);
