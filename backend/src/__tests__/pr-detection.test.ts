@@ -72,6 +72,23 @@ describe('PR detection on workout completion', () => {
     expect(res.body.newPRs).toEqual([]);
   });
 
+  it('does not re-report a PR when an already-completed workout is completed again', async () => {
+    const { user, token } = await createTestUser();
+    const ex = await getExercisesBySlug(['bench-press']);
+    const benchId = ex['bench-press']!.id;
+
+    // A single completed workout that was itself a PR-worthy lift. Re-completing
+    // it must not celebrate (its own sets are now the prior best -> a tie).
+    const w = await makeWorkout(user.id, benchId, 90, 5, 'completed', new Date('2025-06-01T10:00:00Z'));
+
+    const res = await request(app)
+      .post(`/api/workouts/${w.id}/complete`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.newPRs).toEqual([]);
+  });
+
   it('does not report a PR when this workout falls short of the prior best', async () => {
     const { user, token } = await createTestUser();
     const ex = await getExercisesBySlug(['deadlift']);

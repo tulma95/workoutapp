@@ -408,6 +408,10 @@ async function detectNewPRs(userId: number, workoutSets: SetForPR[]): Promise<Ne
   const prs: NewPersonalRecord[] = [];
   for (const [exerciseId, best] of thisBest) {
     const prior = priorBest.get(exerciseId);
+    // Gate on the 2.5 kg-rounded value so a celebrated PR always displays a
+    // higher kg than the previous best. This relies on prescribedWeight being
+    // 2.5 kg-rounded (true for plan-generated sets, which are the only ones that
+    // reach completion via this path); revisit if free-weight entry is added.
     if (prior !== undefined && roundWeight(best.e1rm) > roundWeight(prior)) {
       prs.push({
         slug: best.slug,
