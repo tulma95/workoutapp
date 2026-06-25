@@ -16,6 +16,7 @@
 | `['admin-plans']` | All plans (admin) | PlanListPage |
 | `['progress']` | e1RM progression per exercise from completed sets (Epley formula); includes `inCurrentPlan` flag | ProgressPage |
 | `['progress', 'records']` | Personal records: best e1RM set per exercise (all-time) | ProgressPage (PersonalRecords) |
+| `['bodyweight']` | Bodyweight entries (oldest first); invalidated on log/delete (BodyweightCard mutations) | ProgressPage (BodyweightCard) |
 | `['achievements']` | All achievement badges with locked/unlocked state for the current user | AchievementsPage |
 | `['social', 'feed']` | Last 20 feed events from confirmed friends (includes `streak` per event owner, and `latestComments`: last 2 comments per event) | SocialPage (FeedTab) |
 | `['social', 'friends']` | Accepted friends list (includes `streak` per friend) | SocialPage (FriendsTab) |

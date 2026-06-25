@@ -139,12 +139,6 @@
     "description": "When a user skips a planned workout day, prompt them: skip it and move on, or do it today? Removes guesswork about what to do after missing a session."
   },
   {
-    "id": "011",
-    "title": "Bodyweight Tracking",
-    "status": "in-progress",
-    "description": "Log bodyweight (daily or per-session) with a trend line chart. Casual users want weekly weigh-ins to see if training is working. Power users want daily logging, strength-to-bodyweight ratios, and correlation with TM progression."
-  },
-  {
     "id": "022",
     "title": "Volume Load History",
     "status": "backlog",
@@ -433,5 +427,11 @@
     "title": "Plate calculator: clearer message when target weight < bar weight",
     "status": "backlog",
     "description": "From ticket 004 review (minor). computePlatesPerSide returns empty groups for both weight==bar and weight<bar, so a target lighter than the selected bar shows 'Just the bar — no plates needed', which is misleading (that bar can't make the lighter weight). Distinguish perSide<0 from perSide===0 and show a message like 'Lighter than the selected bar'. Low frequency (main-lift prescribed weights rarely dip below 20kg)."
+  },
+  {
+    "id": "178",
+    "title": "Bodyweight improvements: per-day dedup + trend chart",
+    "status": "backlog",
+    "description": "Follow-ups from ticket 011 (bodyweight tracking, shipped). (1) No per-day uniqueness: a user can log multiple times a day and the '↓ x kg' delta is since the previous ENTRY not the previous DAY — consider upsert-per-day or a latest-per-day trend view. (2) The card shows a numeric recent-entries list only; add a small trend chart/sparkline (reuse ProgressChart pattern) to visualize bodyweight over time alongside the e1RM charts."
   }
 ]

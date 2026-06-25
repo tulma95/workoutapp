@@ -592,5 +592,11 @@
     "title": "Workout Duration",
     "status": "done",
     "description": "Track and display how long each workout took. Show duration badge on history calendar entries. Helps users plan gym visits around their schedule."
+  },
+  {
+    "id": "011",
+    "title": "Bodyweight Tracking",
+    "status": "done",
+    "description": "Log bodyweight (daily or per-session) with a trend line chart. Casual users want weekly weigh-ins to see if training is working. Power users want daily logging, strength-to-bodyweight ratios, and correlation with TM progression."
   }
 ]

@@ -32,3 +32,4 @@
 ## Notification Tables
 
 - **push_subscriptions**: `id, user_id (FK users CASCADE), endpoint (TEXT), p256dh (TEXT), auth (TEXT), created_at` — Unique: (user_id, endpoint). Stores Web Push subscription objects per user device. `endpoint` is the push service URL; `p256dh` and `auth` are the subscriber's public key and auth secret (base64url-encoded). Cascade delete removes subscriptions when the user is deleted. Upsert by (user_id, endpoint) handles re-subscription after key rotation.
+- **bodyweight_entries**: `id, user_id (FK users), weight (Decimal(5,2), kg), recorded_at, created_at` — Index: (user_id, recorded_at). One row per logged bodyweight measurement (no per-day uniqueness; multiple entries per day allowed). Deleted explicitly in the account-deletion transaction (FK is RESTRICT).
