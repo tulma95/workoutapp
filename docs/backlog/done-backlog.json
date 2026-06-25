@@ -537,5 +537,24 @@
     "title": "Edit past/completed workout sets",
     "status": "done",
     "description": "Set logging and PATCH sets only work on in-progress workouts; history detail is read-only. Users need to fix a mistyped rep/weight after finishing, otherwise bad data corrupts e1RM/progression analytics. Allow editing completed workouts."
+  },
+  {
+    "id": "090",
+    "title": "Flaky tests: workout-feed-events 404 and admin-plan-editor timeout",
+    "status": "done",
+    "priority": "medium",
+    "description": "Two flaky tests to investigate:\n\n1. workout-feed-events.test.ts: occasionally fails with 404 on POST /api/workouts during parallel test execution (likely a race condition in test setup). Second run passes.\n\n2. admin-plan-editor E2E: unsaved changes warning test times out on Create Account button click in admin setup phase (webkit, intermittent)."
+  },
+  {
+    "id": "173",
+    "title": "Flaky: plans.test.ts 'GET /api/plans/:id requires authentication' intermittently 404 instead of 401",
+    "status": "done",
+    "description": "Backend test src/__tests__/routes/plans.test.ts > 'GET /api/plans/:id requires authentication' intermittently asserts 'expected 404 to be 401' (passed on re-run). Likely test isolation/route-ordering: an unauthenticated GET /api/plans/:id should hit the authenticate middleware (401) but occasionally returns 404. Investigate whether a route or middleware ordering lets some requests reach a 404 path before auth, or whether parallel-test state causes it. Related to flaky-tests ticket 090."
+  },
+  {
+    "id": "174",
+    "title": "Flaky backend tests: recurring training_maxes_exercise_id_fkey FK violation + social leaderboard undefined.id",
+    "status": "done",
+    "description": "Several backend test runs this session intermittently fail with a Prisma FK violation on training_maxes_exercise_id_fkey (POST /api/training-maxes/setup referencing an exerciseId not present), and social.test.ts > Leaderboard 'Cannot read properties of undefined (reading id)'. Both point to test-isolation/DB-state issues — exercises or expected setup data sometimes missing when a test runs (possibly parallel test files sharing the DB, or a test deleting/relying on seed data). Investigate test isolation for the exercises table and the leaderboard test's setup. Related to flaky-tests tickets 090, and the plans-auth flake."
   }
 ]

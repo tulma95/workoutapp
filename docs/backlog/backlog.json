@@ -243,13 +243,6 @@
     "description": "getStreaksForUsers in social.ts fetches every completed workout for the given user IDs with no date bound. A user with years of history causes a large scan on every GET /api/social/friends and GET /api/social/feed call. The streak only needs the most recent contiguous block; a WHERE completedAt >= NOW() - INTERVAL '365 days' (or similar) would cap the scan with no correctness impact."
   },
   {
-    "id": "090",
-    "title": "Flaky tests: workout-feed-events 404 and admin-plan-editor timeout",
-    "status": "backlog",
-    "priority": "medium",
-    "description": "Two flaky tests to investigate:\n\n1. workout-feed-events.test.ts: occasionally fails with 404 on POST /api/workouts during parallel test execution (likely a race condition in test setup). Second run passes.\n\n2. admin-plan-editor E2E: unsaved changes warning test times out on Create Account button click in admin setup phase (webkit, intermittent)."
-  },
-  {
     "id": "093",
     "title": "Fix push notifications: VAPID key format, subscribe schema mismatch, and button touch targets",
     "status": "backlog",
@@ -452,18 +445,6 @@
     "title": "Clear React Query cache (queryClient.clear) on logout/account-delete",
     "status": "backlog",
     "description": "logout() clears tokens + the offline set-log queue but not the React Query cache, so on a shared device stale cached workout/feed data could linger in memory until consumers unmount. Call queryClient.clear() on logout (and account deletion) for a clean teardown. Low severity (memory only, cleared on reload). From ticket 144 review (Minor #4)."
-  },
-  {
-    "id": "173",
-    "title": "Flaky: plans.test.ts 'GET /api/plans/:id requires authentication' intermittently 404 instead of 401",
-    "status": "backlog",
-    "description": "Backend test src/__tests__/routes/plans.test.ts > 'GET /api/plans/:id requires authentication' intermittently asserts 'expected 404 to be 401' (passed on re-run). Likely test isolation/route-ordering: an unauthenticated GET /api/plans/:id should hit the authenticate middleware (401) but occasionally returns 404. Investigate whether a route or middleware ordering lets some requests reach a 404 path before auth, or whether parallel-test state causes it. Related to flaky-tests ticket 090."
-  },
-  {
-    "id": "174",
-    "title": "Flaky backend tests: recurring training_maxes_exercise_id_fkey FK violation + social leaderboard undefined.id",
-    "status": "backlog",
-    "description": "Several backend test runs this session intermittently fail with a Prisma FK violation on training_maxes_exercise_id_fkey (POST /api/training-maxes/setup referencing an exerciseId not present), and social.test.ts > Leaderboard 'Cannot read properties of undefined (reading id)'. Both point to test-isolation/DB-state issues — exercises or expected setup data sometimes missing when a test runs (possibly parallel test files sharing the DB, or a test deleting/relying on seed data). Investigate test isolation for the exercises table and the leaderboard test's setup. Related to flaky-tests tickets 090, and the plans-auth flake."
   },
   {
     "id": "175",
