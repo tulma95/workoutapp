@@ -23,6 +23,7 @@
 - `DELETE /api/bodyweight/:id` - delete one of the caller's entries (204; 404 if not found / not owned).
 - `POST /api/workouts` - `{ dayNumber }` -> generates sets from active plan + TMs
 - `POST /api/workouts/custom` - `{ date: "YYYY-MM-DD", exercises: [{ exerciseId, sets: [{ weight, reps }] }] }` -> creates a custom completed workout; returns workout with `isCustom: true`. **Must be registered before `/:id` routes in Express.**
+- `GET /api/workouts/stats` - dashboard momentum: `{ currentStreak, workoutsLast7Days }` (consecutive-day streak via `calculateStreak`; count of completed workouts in the rolling last 7 days). Registered before `/:id`.
 - `GET /api/workouts/current` - in-progress workout (or null)
 - `GET /api/workouts/:id` - includes `progressions` array (TM changes linked to this workout)
 - `PATCH /api/workouts/:id/sets/:setId` - `{ actualReps, completed }`

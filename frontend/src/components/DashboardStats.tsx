@@ -20,7 +20,10 @@ export function DashboardStats() {
       </div>
       {data.currentStreak >= 2 && (
         <div className={styles.stat}>
-          <span className={styles.value}>🔥 {data.currentStreak}</span>
+          <span className={styles.value}>
+            <span aria-hidden="true">🔥 </span>
+            {data.currentStreak}
+          </span>
           <span className={styles.label}>day streak</span>
         </div>
       )}
