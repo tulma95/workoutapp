@@ -334,12 +334,6 @@
     "description": "Set logging and PATCH sets only work on in-progress workouts; history detail is read-only. Users need to fix a mistyped rep/weight after finishing, otherwise bad data corrupts e1RM/progression analytics. Allow editing completed workouts."
   },
   {
-    "id": "149",
-    "title": "Warm-up set calculation",
-    "status": "in-progress",
-    "description": "No warm-up logic anywhere; generated workouts jump straight to working sets at high percentages. Mature percentage-based apps auto-generate a warm-up ramp (e.g. 40/50/60% of working weight). Core to safe execution."
-  },
-  {
     "id": "150",
     "title": "Exercise library detail (instructions, muscles, video)",
     "status": "backlog",
@@ -476,5 +470,11 @@
     "title": "Clear React Query cache (queryClient.clear) on logout/account-delete",
     "status": "backlog",
     "description": "logout() clears tokens + the offline set-log queue but not the React Query cache, so on a shared device stale cached workout/feed data could linger in memory until consumers unmount. Call queryClient.clear() on logout (and account deletion) for a clean teardown. Low severity (memory only, cleared on reload). From ticket 144 review (Minor #4)."
+  },
+  {
+    "id": "173",
+    "title": "Flaky: plans.test.ts 'GET /api/plans/:id requires authentication' intermittently 404 instead of 401",
+    "status": "backlog",
+    "description": "Backend test src/__tests__/routes/plans.test.ts > 'GET /api/plans/:id requires authentication' intermittently asserts 'expected 404 to be 401' (passed on re-run). Likely test isolation/route-ordering: an unauthenticated GET /api/plans/:id should hit the authenticate middleware (401) but occasionally returns 404. Investigate whether a route or middleware ordering lets some requests reach a 404 path before auth, or whether parallel-test state causes it. Related to flaky-tests ticket 090."
   }
 ]

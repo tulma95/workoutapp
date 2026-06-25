@@ -513,5 +513,11 @@
     "title": "Personal data export (GDPR portability)",
     "status": "done",
     "description": "No export endpoint. Serious lifters expect to download training history (CSV/JSON) and portability is a GDPR right. Add an export of workouts, TMs, and progress."
+  },
+  {
+    "id": "149",
+    "title": "Warm-up set calculation",
+    "status": "done",
+    "description": "No warm-up logic anywhere; generated workouts jump straight to working sets at high percentages. Mature percentage-based apps auto-generate a warm-up ramp (e.g. 40/50/60% of working weight). Core to safe execution."
   }
 ]
