@@ -16,6 +16,43 @@ test.describe('Settings Page', () => {
     await expect(page.getByText(new RegExp(user.email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))).toBeVisible();
   });
 
+  test('change password -> success, and new password works on next login', async ({
+    setupCompletePage,
+  }) => {
+    const { page, user } = setupCompletePage;
+    const settings = new SettingsPage(page);
+    await settings.navigate();
+
+    await page.getByLabel('Current password', { exact: true }).fill('ValidPassword123');
+    await page.getByLabel('New password', { exact: true }).fill('NewPassword456');
+    await page.getByLabel('Confirm new password', { exact: true }).fill('NewPassword456');
+    await page.getByRole('button', { name: /update password/i }).click();
+
+    await expect(page.getByText(/password changed/i)).toBeVisible();
+
+    // The new password must actually work; the old one must not.
+    await settings.logout();
+    await page.getByLabel(/email/i).fill(user.email);
+    await page.getByLabel(/password/i).fill('NewPassword456');
+    await page.getByRole('button', { name: /log in/i }).click();
+    await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
+  });
+
+  test('change password with wrong current password -> inline error', async ({
+    setupCompletePage,
+  }) => {
+    const { page } = setupCompletePage;
+    const settings = new SettingsPage(page);
+    await settings.navigate();
+
+    await page.getByLabel('Current password', { exact: true }).fill('WrongPassword999');
+    await page.getByLabel('New password', { exact: true }).fill('NewPassword456');
+    await page.getByLabel('Confirm new password', { exact: true }).fill('NewPassword456');
+    await page.getByRole('button', { name: /update password/i }).click();
+
+    await expect(page.getByText(/current password is incorrect/i)).toBeVisible();
+  });
+
   test('logout from settings page -> redirected to login page', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
     const settings = new SettingsPage(page);
