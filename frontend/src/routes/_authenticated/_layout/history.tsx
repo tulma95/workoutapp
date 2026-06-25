@@ -5,6 +5,7 @@ import { getWorkoutCalendar, getWorkout, cancelWorkout, logSet, type Workout, ty
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
 import { HistoryContent } from '../../../components/HistoryContent'
 import { CustomWorkoutModal } from '../../../components/CustomWorkoutModal'
+import { useToast } from '../../../components/Toast'
 import { queryKeys } from '../../../api/queryKeys'
 import styles from '../../../styles/HistoryPage.module.css'
 
@@ -15,6 +16,7 @@ export const Route = createFileRoute('/_authenticated/_layout/history')({
 
 function HistoryPage() {
   const queryClient = useQueryClient()
+  const toast = useToast()
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null)
   const [isLoadingWorkout, setIsLoadingWorkout] = useState(false)
   const [dayWorkouts, setDayWorkouts] = useState<CalendarWorkout[] | null>(null)
@@ -96,6 +98,8 @@ function HistoryPage() {
       queryClient.invalidateQueries({ queryKey: queryKeys.progress.all() })
     } catch (error) {
       console.error('Failed to edit set:', error)
+      toast.error('Could not save the change')
+      // Revert the optimistic value to server truth.
       const fresh = await getWorkout(workoutId).catch(() => null)
       if (fresh) setSelectedWorkout(fresh)
     }

@@ -99,6 +99,12 @@
   cursor: pointer;
 }
 
+.editNote {
+  margin: var(--space-xs) 0 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
 .editInput {
   width: 3.5rem;
   min-height: 2.75rem;

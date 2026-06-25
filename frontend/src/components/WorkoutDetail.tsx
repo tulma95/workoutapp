@@ -41,15 +41,31 @@ function EditableReps({
     [],
   );
 
+  function persist(raw: string) {
+    const reps = parseInt(raw, 10);
+    // Only persist a genuine change from what was displayed (the logged reps, or
+    // the prescribed reps when nothing was logged) — so merely opening edit mode
+    // and tapping Done doesn't silently "confirm" untouched sets.
+    const baseline = set.actualReps ?? set.prescribedReps;
+    if (!Number.isNaN(reps) && reps >= 0 && reps !== baseline) {
+      onEditSet(set.id, reps);
+    }
+  }
+
   function handleChange(next: string) {
     setValue(next);
     if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      const reps = parseInt(next, 10);
-      if (!Number.isNaN(reps) && reps >= 0 && reps !== set.actualReps) {
-        onEditSet(set.id, reps);
-      }
-    }, COMMIT_DELAY_MS);
+    timerRef.current = setTimeout(() => persist(next), COMMIT_DELAY_MS);
+  }
+
+  // Commit immediately on blur — e.g. when the user taps "Done" before the
+  // debounce fires the input loses focus first, so the edit isn't dropped.
+  function flush() {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    persist(value);
   }
 
   return (
@@ -62,6 +78,7 @@ function EditableReps({
       aria-label="Reps performed"
       value={value}
       onChange={(e) => handleChange(e.target.value.replace(/[^0-9]/g, ''))}
+      onBlur={flush}
     />
   );
 }
@@ -131,6 +148,11 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
           >
             {editing ? 'Done' : 'Edit reps'}
           </button>
+        )}
+        {editing && (
+          <p className={styles.editNote}>
+            Corrects your logged reps. Training maxes aren&apos;t changed.
+          </p>
         )}
       </div>
 
