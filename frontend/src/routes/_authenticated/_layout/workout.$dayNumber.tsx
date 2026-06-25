@@ -12,6 +12,7 @@ import {
   type ProgressionResult,
   type NewPersonalRecord,
 } from '../../../api/workouts'
+import { computeWorkoutSummary, type WorkoutSummary } from '../../../utils/workoutSummary'
 import { invalidateAfterWorkoutComplete, invalidateAfterWorkoutCancel } from '../../../api/invalidation'
 import { extractErrorMessage } from '../../../api/errors'
 import { LoadingSpinner } from '../../../components/LoadingSpinner'
@@ -46,7 +47,12 @@ type WorkoutPhase =
 type ActivePhase =
   | { phase: 'active' }
   | { phase: 'completing' }
-  | { phase: 'completed'; progressions: ProgressionResult[]; newPRs: NewPersonalRecord[] }
+  | {
+      phase: 'completed'
+      progressions: ProgressionResult[]
+      newPRs: NewPersonalRecord[]
+      summary: WorkoutSummary
+    }
   | { phase: 'canceling' }
   | { phase: 'error'; message: string }
 
@@ -435,7 +441,12 @@ function ActiveWorkout({
       const progressionArray =
         result.progressions || (result.progression ? [result.progression] : [])
       await invalidateAfterWorkoutComplete(queryClient)
-      setPhase({ phase: 'completed', progressions: progressionArray, newPRs: result.newPRs ?? [] })
+      setPhase({
+        phase: 'completed',
+        progressions: progressionArray,
+        newPRs: result.newPRs ?? [],
+        summary: computeWorkoutSummary(result.workout),
+      })
       if (result.newAchievements && result.newAchievements.length > 0) {
         setNewAchievements(result.newAchievements)
         setAchievementDialogOpen(true)

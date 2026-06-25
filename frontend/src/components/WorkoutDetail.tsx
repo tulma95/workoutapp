@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Workout } from '../api/workouts';
 import { ProgressionBanner } from './ProgressionBanner';
 import { formatWeight } from '../utils/weight';
+import { computeWorkoutSummary, formatDuration, formatVolume } from '../utils/workoutSummary';
 import styles from './WorkoutDetail.module.css';
 
 interface WorkoutDetailProps {
@@ -131,6 +132,7 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
   const totalSets = workout.sets.length;
   const completedSets = workout.sets.filter(s => s.completed || s.actualReps !== null).length;
   const progressions = workout.progressions ?? [];
+  const summary = computeWorkoutSummary(workout);
 
   return (
     <div className={styles.root}>
@@ -139,7 +141,11 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
           {workout.isCustom ? 'Custom Workout' : `Day ${workout.dayNumber}`}{exerciseGroups.length > 0 ? ` - ${exerciseGroups.at(0)?.exercise}` : ''}
         </h2>
         <p className={styles.date}>{formatDate(workoutDate)}</p>
-        <p className={styles.summary}>{completedSets}/{totalSets} sets</p>
+        <p className={styles.summary}>
+          {completedSets}/{totalSets} sets
+          {summary.durationMin !== null && <> · {formatDuration(summary.durationMin)}</>}
+          {summary.totalVolumeKg > 0 && <> · {formatVolume(summary.totalVolumeKg)}</>}
+        </p>
         {onEditSet && (
           <button
             type="button"

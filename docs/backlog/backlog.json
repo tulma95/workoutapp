@@ -111,7 +111,7 @@
   {
     "id": "016",
     "title": "Workout Duration",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "Track and display how long each workout took. Show duration badge on history calendar entries. Helps users plan gym visits around their schedule."
   },
   {

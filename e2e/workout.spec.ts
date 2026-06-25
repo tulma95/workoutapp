@@ -268,6 +268,32 @@ test.describe('Workout Session', () => {
     expect(actualIncrease).toBeCloseTo(expectedIncrease, 0);
   });
 
+  test('completion screen shows a workout summary (sets and volume)', async ({
+    setupCompletePage,
+  }) => {
+    const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const workout = new WorkoutPage(page);
+
+    await dashboard.expectLoaded();
+    await dashboard.startWorkout();
+    await workout.expectLoaded(1);
+
+    await workout.fillAmrap('5');
+    await page.waitForResponse(
+      (r) => r.url().includes('/api/workouts/') && r.request().method() === 'PATCH' && r.ok(),
+    );
+    await workout.completeWithDialog();
+    await workout.dismissAchievementDialogIfPresent();
+
+    await expect(page.getByText('Workout Complete!')).toBeVisible();
+    const summary = page.getByTestId('workout-summary');
+    await expect(summary).toBeVisible();
+    await expect(summary.getByText('Sets')).toBeVisible();
+    await expect(summary.getByText('Volume')).toBeVisible();
+    await expect(summary.getByText(/kg/)).toBeVisible();
+  });
+
   test('tapping a set weight opens the plate calculator with the load per side', async ({
     setupCompletePage,
   }) => {
