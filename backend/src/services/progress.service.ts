@@ -184,3 +184,52 @@ export async function getProgress(
 
   return { exercises, planSwitches };
 }
+
+export interface PersonalRecord {
+  slug: string;
+  name: string;
+  e1rm: number;
+  weight: number;
+  reps: number;
+  date: string;
+}
+
+// Best estimated-1RM set per exercise across all completed sets (one PR per lift,
+// strongest first). e1RM lets a heavy triple and a lighter set-of-ten be compared
+// on one scale. Ties resolve to the earliest date it was first achieved.
+export async function getPersonalRecords(userId: number): Promise<PersonalRecord[]> {
+  const completedSets = await prisma.workoutSet.findMany({
+    where: {
+      workout: { userId, status: 'completed', completedAt: { not: null } },
+      completed: true,
+      actualReps: { not: null, gt: 0 },
+    },
+    select: {
+      prescribedWeight: true,
+      actualReps: true,
+      workout: { select: { completedAt: true } },
+      exercise: { select: { id: true, slug: true, name: true } },
+    },
+    orderBy: { workout: { completedAt: 'asc' } },
+  });
+
+  const best = new Map<number, PersonalRecord>();
+  for (const set of completedSets) {
+    const weight = set.prescribedWeight.toNumber();
+    const reps = set.actualReps as number;
+    const e1rm = computeE1rm(weight, reps);
+    const existing = best.get(set.exercise.id);
+    if (!existing || e1rm > existing.e1rm) {
+      best.set(set.exercise.id, {
+        slug: set.exercise.slug,
+        name: set.exercise.name,
+        e1rm: Math.round(e1rm * 100) / 100,
+        weight,
+        reps,
+        date: (set.workout.completedAt as Date).toISOString(),
+      });
+    }
+  }
+
+  return [...best.values()].sort((a, b) => b.e1rm - a.e1rm);
+}

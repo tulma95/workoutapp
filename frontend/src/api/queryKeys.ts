@@ -17,6 +17,7 @@ export const queryKeys = {
   },
   progress: {
     all: () => ['progress', 'all'] as const,
+    records: () => ['progress', 'records'] as const,
   },
   schedule: {
     all: () => ['schedule', 'all'] as const,

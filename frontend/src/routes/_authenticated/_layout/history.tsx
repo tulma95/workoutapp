@@ -96,6 +96,7 @@ function HistoryPage() {
       // append-only and intentionally not recomputed.
       queryClient.invalidateQueries({ queryKey: queryKeys.workout.calendarAll() })
       queryClient.invalidateQueries({ queryKey: queryKeys.progress.all() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.progress.records() })
     } catch (error) {
       console.error('Failed to edit set:', error)
       toast.error('Could not save the change')

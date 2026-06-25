@@ -7,6 +7,7 @@ export async function invalidateAfterWorkoutComplete(queryClient: QueryClient): 
     queryClient.invalidateQueries({ queryKey: queryKeys.workout.calendarAll() }),
     queryClient.invalidateQueries({ queryKey: queryKeys.trainingMaxes.all() }),
     queryClient.invalidateQueries({ queryKey: queryKeys.progress.all() }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.progress.records() }),
     queryClient.invalidateQueries({ queryKey: queryKeys.social.feed() }),
     queryClient.invalidateQueries({ queryKey: queryKeys.social.friends() }),
     queryClient.invalidateQueries({ queryKey: queryKeys.achievements.all() }),

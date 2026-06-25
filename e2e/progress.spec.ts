@@ -51,6 +51,25 @@ test.describe('Progress Page', () => {
     await expect(page.getByText(/kg/).first()).toBeVisible();
   });
 
+  test('shows a Personal Records board after completing a workout', async ({
+    setupCompletePage,
+  }) => {
+    const { page } = setupCompletePage;
+
+    await completeWorkout(page, 1, 5);
+
+    const progress = new ProgressPage(page);
+    await progress.navigate();
+    await progress.expectLoaded();
+
+    await expect(page.getByRole('heading', { name: /personal records/i })).toBeVisible();
+    const records = page.getByTestId('personal-records');
+    await expect(records).toBeVisible();
+    // Each record card shows an est. 1RM with a kg value.
+    await expect(records.getByText(/est\. 1rm/i).first()).toBeVisible();
+    await expect(records.getByText(/kg/).first()).toBeVisible();
+  });
+
   test('shows empty state before any workouts', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
     const progress = new ProgressPage(page);

@@ -11,6 +11,7 @@ import { ExerciseLegend } from './ExerciseLegend'
 import { getProgress } from '../api/progress'
 import { LoadingSpinner } from './LoadingSpinner'
 import { ProgressChart, type HistoryEntry } from './ProgressChart'
+import { PersonalRecords } from './PersonalRecords'
 
 const PALETTE = ['#2563eb', '#d97706', '#7c3aed', '#059669', '#dc2626', '#0891b2']
 
@@ -110,6 +111,7 @@ export function ProgressContent() {
       <div aria-live="polite" aria-atomic="true" className={styles.srOnly}>
         {announcement}
       </div>
+      <PersonalRecords />
       <TimeRangeSelector value={timeRange} onChange={handleRangeChange} />
       {exerciseConfigs.some(ex => !ex.inCurrentPlan) && (
         <label className={styles.allExercisesToggle}>

@@ -12,4 +12,9 @@ router.get('/', async (req: AuthRequest, res: Response) => {
   res.json(result);
 });
 
+router.get('/records', async (req: AuthRequest, res: Response) => {
+  const records = await progressService.getPersonalRecords(getUserId(req));
+  res.json({ records });
+});
+
 export default router;

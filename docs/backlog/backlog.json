@@ -141,7 +141,7 @@
   {
     "id": "008",
     "title": "PR Detection",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "Detect personal records in real-time during workouts. PR = more weight at same or higher rep count than ever before for that exercise. Show animated celebration banner on AMRAP completion. New backend endpoint for per-exercise records by rep count."
   },
   {

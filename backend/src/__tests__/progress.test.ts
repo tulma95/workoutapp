@@ -225,3 +225,51 @@ describe('GET /api/progress', () => {
     expect(bench.currentTM).toBeUndefined();
   });
 });
+
+describe('GET /api/progress/records', () => {
+  it('returns the best e1RM set per exercise, strongest first', async () => {
+    const { user, token } = await createTestUser();
+    const ex = await getExercisesBySlug(['bench-press', 'squat']);
+    const benchId = ex['bench-press']!.id;
+    const squatId = ex['squat']!.id;
+
+    const workout = await prisma.workout.create({
+      data: {
+        userId: user.id,
+        dayNumber: 1,
+        status: 'completed',
+        completedAt: new Date('2025-06-15T10:00:00Z'),
+      },
+    });
+    await prisma.workoutSet.createMany({
+      data: [
+        // Bench: 80x5 (e1RM 93.3) and 80x8 (e1RM 101.3) -> best is the 8-rep set.
+        { workoutId: workout.id, exerciseId: benchId, exerciseOrder: 1, setOrder: 1, prescribedWeight: 80, prescribedReps: 5, actualReps: 5, completed: true, isAmrap: false, isProgression: false },
+        { workoutId: workout.id, exerciseId: benchId, exerciseOrder: 1, setOrder: 2, prescribedWeight: 80, prescribedReps: 5, actualReps: 8, completed: true, isAmrap: true, isProgression: true },
+        // Squat: 120x3 (e1RM 132) -> overall strongest lift.
+        { workoutId: workout.id, exerciseId: squatId, exerciseOrder: 2, setOrder: 1, prescribedWeight: 120, prescribedReps: 3, actualReps: 3, completed: true, isAmrap: false, isProgression: false },
+      ],
+    });
+
+    const res = await request(app)
+      .get('/api/progress/records')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    const records = res.body.records as Array<{ slug: string; e1rm: number; weight: number; reps: number }>;
+    expect(records).toHaveLength(2);
+    // Strongest first by e1RM.
+    expect(records[0]!.slug).toBe('squat');
+    expect(records[1]!.slug).toBe('bench-press');
+
+    const bench = records.find((r) => r.slug === 'bench-press')!;
+    expect(bench.weight).toBe(80);
+    expect(bench.reps).toBe(8);
+    expect(bench.e1rm).toBeCloseTo(101.33, 1);
+  });
+
+  it('requires authentication', async () => {
+    const res = await request(app).get('/api/progress/records');
+    expect(res.status).toBe(401);
+  });
+});
