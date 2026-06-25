@@ -11,6 +11,7 @@ interface SetRowProps {
   actualReps: number | null;
   onConfirm: () => void;
   onRepsChange: (reps: number) => void;
+  onWeightClick?: (weight: number) => void;
 }
 
 export default function SetRow({
@@ -22,6 +23,7 @@ export default function SetRow({
   actualReps,
   onConfirm,
   onRepsChange,
+  onWeightClick,
 }: SetRowProps) {
   const isPending = !isAmrap && !completed;
   const isUnder = completed && actualReps !== null && actualReps < reps;
@@ -43,7 +45,19 @@ export default function SetRow({
     >
       <div className={styles.info}>
         <span className={styles.number}>{setNumber}</span>
-        <span className={styles.weight} data-testid="set-weight">{formatWeight(weight)}</span>
+        {onWeightClick ? (
+          <button
+            type="button"
+            className={styles.weightButton}
+            data-testid="set-weight"
+            onClick={() => onWeightClick(weight)}
+            aria-label={`Show plates for ${formatWeight(weight)}`}
+          >
+            {formatWeight(weight)}
+          </button>
+        ) : (
+          <span className={styles.weight} data-testid="set-weight">{formatWeight(weight)}</span>
+        )}
         {isAmrap && (
           <span className={styles.reps}>x{reps}+</span>
         )}

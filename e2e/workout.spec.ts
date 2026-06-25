@@ -267,4 +267,30 @@ test.describe('Workout Session', () => {
     const actualIncrease = newBenchTM - initialBenchTM;
     expect(actualIncrease).toBeCloseTo(expectedIncrease, 0);
   });
+
+  test('tapping a set weight opens the plate calculator with the load per side', async ({
+    setupCompletePage,
+  }) => {
+    const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const workout = new WorkoutPage(page);
+
+    await dashboard.expectLoaded();
+    await dashboard.startWorkout();
+    await workout.expectLoaded(1);
+
+    await page.getByTestId('set-weight').first().click();
+
+    const dialog = page.getByRole('dialog', { name: /plate calculator/i });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText(/plates per side/i)).toBeVisible();
+    await expect(dialog.getByTestId('plate-list')).toBeVisible();
+
+    // Switching the bar weight recomputes the breakdown.
+    await dialog.getByRole('button', { name: '15 kg' }).click();
+    await expect(dialog.getByTestId('plate-list')).toBeVisible();
+
+    await dialog.getByRole('button', { name: /^close$/i }).click();
+    await expect(dialog).toBeHidden();
+  });
 });

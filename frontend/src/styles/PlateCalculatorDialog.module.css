@@ -1,0 +1,118 @@
+.dialog {
+  margin: auto;
+  border: none;
+  background: transparent;
+  max-width: 100vw;
+  max-height: 100dvh;
+  padding: var(--space-md);
+}
+
+.dialog::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.content {
+  width: min(20rem, 90vw);
+  background: var(--bg-card);
+  border-radius: var(--space-md);
+  padding: var(--space-lg);
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.75rem;
+  color: var(--text);
+}
+
+.sub {
+  margin: var(--space-xs) 0 var(--space-md);
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.plates {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin: 0 0 var(--space-md);
+  padding: 0;
+  list-style: none;
+}
+
+.plate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg);
+  border-radius: var(--space-sm);
+}
+
+.count {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.plateWeight {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.empty {
+  margin: 0 0 var(--space-md);
+  color: var(--text-muted);
+}
+
+.leftover {
+  margin: 0 0 var(--space-md);
+  font-size: 0.8125rem;
+  color: var(--danger);
+}
+
+.barRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.barLabel {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.barOptions {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.barOption {
+  min-height: 2.75rem;
+  padding: 0 var(--space-md);
+  border: 1px solid var(--border);
+  border-radius: var(--space-sm);
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.barOptionActive {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+
+.close {
+  width: 100%;
+  min-height: 3rem;
+  border: none;
+  border-radius: var(--space-sm);
+  background: var(--primary);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}

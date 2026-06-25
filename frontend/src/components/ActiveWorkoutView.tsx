@@ -1,6 +1,8 @@
 import { type Workout, type ProgressionResult } from '../api/workouts'
+import { useState } from 'react'
 import SetRow from './SetRow'
 import { WarmupSets } from './WarmupSets'
+import { PlateCalculatorDialog } from './PlateCalculatorDialog'
 import { ProgressionBanner } from './ProgressionBanner'
 import { RestTimerBanner } from './RestTimerBanner'
 import { Button } from './Button'
@@ -54,6 +56,9 @@ export function ActiveWorkoutView({
   onDismissCancelConfirm,
   restTimer,
 }: Props) {
+  // Weight whose plate breakdown is shown (null = dialog closed).
+  const [plateWeight, setPlateWeight] = useState<number | null>(null)
+
   if (phase.phase === 'error') {
     return (
       <div className={styles.page}>
@@ -114,6 +119,7 @@ export function ActiveWorkoutView({
                 actualReps={set.actualReps}
                 onConfirm={() => onConfirmSet(set.id)}
                 onRepsChange={(reps) => onRepsChange(set.id, reps)}
+                onWeightClick={setPlateWeight}
               />
             ))}
           </div>
@@ -156,6 +162,12 @@ export function ActiveWorkoutView({
         variant="danger"
         onConfirm={onDoCancelWorkout}
         onCancel={onDismissCancelConfirm}
+      />
+
+      <PlateCalculatorDialog
+        open={plateWeight !== null}
+        weight={plateWeight ?? 0}
+        onClose={() => setPlateWeight(null)}
       />
     </div>
   )

@@ -165,7 +165,7 @@
   {
     "id": "004",
     "title": "Plate Calculator",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "Tap weight on any set to see plate breakdown per side. Greedy algorithm from heaviest plate down. Configurable bar weight and available plates in Settings. Frontend-only, no backend changes."
   },
   {

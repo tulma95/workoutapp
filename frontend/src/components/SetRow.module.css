@@ -39,6 +39,22 @@
   min-width: 4rem;
 }
 
+/* Tappable weight (opens the plate calculator). Keeps the same look as .weight
+   but signals interactivity with a dotted underline. */
+.weightButton {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 1rem;
+  min-width: 4rem;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  text-decoration: underline dotted var(--text-muted);
+  text-underline-offset: 0.25rem;
+  cursor: pointer;
+}
+
 .reps {
   font-weight: 600;
   color: var(--text);
