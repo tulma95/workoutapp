@@ -52,5 +52,5 @@
 .lockedLabel {
   margin: 0;
   font-size: 0.75rem;
-  color: var(--muted);
+  color: var(--text-muted);
 }

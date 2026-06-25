@@ -34,7 +34,6 @@ a {
   --text-primary: #1e293b;
   --text-muted: #64748b;
   --border: #e2e8f0;
-  --overlay: rgba(0, 0, 0, 0.5);
   color-scheme: light;
 
   /* Spacing tokens (8-point grid) */
@@ -61,7 +60,6 @@ a {
   --text-primary: #f1f5f9;
   --text-muted: #94a3b8;
   --border: #2c3a4f;
-  --overlay: rgba(0, 0, 0, 0.65);
   color-scheme: dark;
 }
 
