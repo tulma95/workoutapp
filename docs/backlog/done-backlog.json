@@ -586,5 +586,11 @@
     "title": "Gym Crew / Groups",
     "status": "done",
     "description": "Create a named group of friends (a 'crew') that shares its own leaderboard and activity feed. Good for real-life gym groups or online communities running the same plan. Crew has a name, members, shared leaderboard, and crew feed."
+  },
+  {
+    "id": "016",
+    "title": "Workout Duration",
+    "status": "done",
+    "description": "Track and display how long each workout took. Show duration badge on history calendar entries. Helps users plan gym visits around their schedule."
   }
 ]

@@ -109,12 +109,6 @@
     "description": "Override auto-calculated weight for individual sets during a workout. For when plates don't work out cleanly at your gym, or you want to be conservative on a bad day. Avoids having to change the TM for one-off adjustments."
   },
   {
-    "id": "016",
-    "title": "Workout Duration",
-    "status": "in-progress",
-    "description": "Track and display how long each workout took. Show duration badge on history calendar entries. Helps users plan gym visits around their schedule."
-  },
-  {
     "id": "010",
     "title": "Workout Notes",
     "status": "backlog",
