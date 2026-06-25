@@ -9,7 +9,7 @@ if (!process.env.DATABASE_URL) {
 // managed instance), or — under vitest's parallel, per-file-isolated test runs —
 // the test database's connection limit (each isolated file opens its own pool).
 // Configurable via DATABASE_POOL_MAX; pg's default applies when unset.
-const parsedPoolMax = Number(process.env.DATABASE_POOL_MAX);
+const parsedPoolMax = Math.floor(Number(process.env.DATABASE_POOL_MAX));
 const poolMax = Number.isFinite(parsedPoolMax) && parsedPoolMax > 0 ? parsedPoolMax : undefined;
 
 const adapter = new PrismaPg({
