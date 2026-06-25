@@ -322,12 +322,6 @@
     "description": "backend/src/lib/db.ts builds PrismaPg with only a connection string, no pool size. Under Coolify shared Postgres an unbounded pool can exhaust connections. Set an explicit connection_limit sized to the deployment."
   },
   {
-    "id": "141",
-    "title": "PWA install prompt (Add to Home Screen affordance)",
-    "status": "in-progress",
-    "description": "Manifest is installable but there is no beforeinstallprompt capture or UI nudging install. The offline + wake-lock benefits only apply once installed, and most users will not discover it. Add a dismissible install prompt."
-  },
-  {
     "id": "142",
     "title": "Change password",
     "status": "backlog",

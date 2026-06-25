@@ -489,5 +489,11 @@
     "title": "Route-based code splitting (autoCodeSplitting)",
     "status": "done",
     "description": "vite.config.ts tanstackRouter() lacks autoCodeSplitting and there are no lazy routes, so all ~27 route components (admin, social, charts) ship in one bundle. The login screen downloads everything. Enable autoCodeSplitting and/or manualChunks."
+  },
+  {
+    "id": "141",
+    "title": "PWA install prompt (Add to Home Screen affordance)",
+    "status": "done",
+    "description": "Manifest is installable but there is no beforeinstallprompt capture or UI nudging install. The offline + wake-lock benefits only apply once installed, and most users will not discover it. Add a dismissible install prompt."
   }
 ]
