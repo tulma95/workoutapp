@@ -5,10 +5,13 @@ import { formatWeight } from '../utils/weight'
 import styles from './PersonalRecords.module.css'
 
 function formatDate(iso: string): string {
+  // Render the UTC calendar day to match how the Progress page buckets dates
+  // (avoids an off-by-one for users ahead of UTC).
   return new Date(iso).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
+    timeZone: 'UTC',
   })
 }
 

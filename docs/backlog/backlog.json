@@ -139,12 +139,6 @@
     "description": "Swap a plan exercise for an alternative per-session or permanently. Casual users need it when equipment is taken or they have minor soreness. Power users want same TM reference and set scheme preserved, with approved alternatives per exercise."
   },
   {
-    "id": "008",
-    "title": "PR Detection",
-    "status": "in-progress",
-    "description": "Detect personal records in real-time during workouts. PR = more weight at same or higher rep count than ever before for that exercise. Show animated celebration banner on AMRAP completion. New backend endpoint for per-exercise records by rep count."
-  },
-  {
     "id": "013",
     "title": "Effort / RPE Logging",
     "status": "backlog",

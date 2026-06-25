@@ -568,5 +568,17 @@
     "title": "Dark Mode",
     "status": "done",
     "description": "System-aware dark mode following device preference, with manual toggle in Settings (System/Light/Dark). Redefine existing CSS custom properties under data-theme attribute. Store preference in localStorage. Instant switch, no reload."
+  },
+  {
+    "id": "008",
+    "title": "PR Detection",
+    "status": "done",
+    "description": "Detect personal records in real-time during workouts. PR = more weight at same or higher rep count than ever before for that exercise. Show animated celebration banner on AMRAP completion. New backend endpoint for per-exercise records by rep count."
+  },
+  {
+    "id": "178",
+    "title": "Personal Records board on Progress (best e1RM per lift)",
+    "status": "done",
+    "description": "DONE (shipped). GET /api/progress/records returns the single best estimated-1RM set per exercise (strongest first; earliest date on ties); a 'Personal Records' section at the top of the Progress page shows each lift's est. 1RM with the producing weight x reps and date (UTC). This is the read-only foundation extracted from ticket 008 (PR Detection). 008 remains for the richer real-time scope: detecting a new PR mid-workout, an animated celebration banner on AMRAP completion, and per-rep-count records."
   }
 ]
