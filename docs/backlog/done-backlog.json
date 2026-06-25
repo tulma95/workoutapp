@@ -507,5 +507,11 @@
     "title": "Delete account (GDPR + app-store requirement)",
     "status": "done",
     "description": "No DELETE /users/me and no UI. Users cannot remove their account or data, a legal and app-store-review requirement. Add account deletion with data cleanup."
+  },
+  {
+    "id": "145",
+    "title": "Personal data export (GDPR portability)",
+    "status": "done",
+    "description": "No export endpoint. Serious lifters expect to download training history (CSV/JSON) and portability is a GDPR right. Add an export of workouts, TMs, and progress."
   }
 ]

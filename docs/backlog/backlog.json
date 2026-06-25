@@ -322,12 +322,6 @@
     "description": "backend/src/lib/db.ts builds PrismaPg with only a connection string, no pool size. Under Coolify shared Postgres an unbounded pool can exhaust connections. Set an explicit connection_limit sized to the deployment."
   },
   {
-    "id": "145",
-    "title": "Personal data export (GDPR portability)",
-    "status": "in-progress",
-    "description": "No export endpoint. Serious lifters expect to download training history (CSV/JSON) and portability is a GDPR right. Add an export of workouts, TMs, and progress."
-  },
-  {
     "id": "147",
     "title": "Change account email",
     "status": "backlog",
