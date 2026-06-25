@@ -495,5 +495,11 @@
     "title": "PWA install prompt (Add to Home Screen affordance)",
     "status": "done",
     "description": "Manifest is installable but there is no beforeinstallprompt capture or UI nudging install. The offline + wake-lock benefits only apply once installed, and most users will not discover it. Add a dismissible install prompt."
+  },
+  {
+    "id": "142",
+    "title": "Change password",
+    "status": "done",
+    "description": "No endpoint or UI to change a password (auth.service.ts has only register/login/refresh). A logged-in user can never rotate their password. Table-stakes account security."
   }
 ]

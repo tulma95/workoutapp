@@ -322,12 +322,6 @@
     "description": "backend/src/lib/db.ts builds PrismaPg with only a connection string, no pool size. Under Coolify shared Postgres an unbounded pool can exhaust connections. Set an explicit connection_limit sized to the deployment."
   },
   {
-    "id": "142",
-    "title": "Change password",
-    "status": "in-progress",
-    "description": "No endpoint or UI to change a password (auth.service.ts has only register/login/refresh). A logged-in user can never rotate their password. Table-stakes account security."
-  },
-  {
     "id": "144",
     "title": "Delete account (GDPR + app-store requirement)",
     "status": "backlog",
@@ -476,5 +470,17 @@
     "title": "Handle post-deploy chunk-load 404 for long-lived tabs (reload on dynamic-import failure)",
     "status": "backlog",
     "description": "With route code-splitting (156) + the SW skipWaiting/clientsClaim precache purge (135), an already-open tab running an old index-*.js that lazy-navigates to a not-yet-visited route requests an old hashed chunk the new precache purged -> 404 -> unhandled chunk-load rejection. The SW navigation fallback only covers navigations, not script assets. Add a global handler that catches dynamic-import/chunk-load failures and triggers a full reload (or a 'new version available, reload' prompt instead of skipWaiting). Surfaced in 156 review; same caveat noted in 135 review."
+  },
+  {
+    "id": "170",
+    "title": "Invalidate existing sessions on password change (tokenVersion in JWT)",
+    "status": "backlog",
+    "description": "Password change (142) re-hashes the password but does NOT revoke already-issued tokens: this is stateless JWT with a 24h access + 30d refresh token and no token version/denylist, so an attacker's or lost-device's tokens stay valid up to 30 days after the user changes their password. Add a tokenVersion (or passwordChangedAt) column to User, embed it in access+refresh tokens, verify it in the auth/refresh middleware, and bump it on password change (and ideally on logout-all). This is what makes 'change password' actually able to revoke compromised sessions. Surfaced in ticket 142 review (Important #1)."
+  },
+  {
+    "id": "171",
+    "title": "Rate-limit PATCH /users/me/password (current-password check is unthrottled)",
+    "status": "backlog",
+    "description": "The auth rate limiter (131) covers /api/auth/* but not /api/users/me/password. An attacker needs a valid victim JWT to reach the bcrypt current-password check, so exposure is low, but if a token leaks the current-password guess is unthrottled. Apply a rate limiter to this endpoint. Minor; from ticket 142 review."
   }
 ]
