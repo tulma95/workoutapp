@@ -121,12 +121,6 @@
     "description": "Track and display how long each workout took. Show duration badge on history calendar entries. Helps users plan gym visits around their schedule."
   },
   {
-    "id": "005",
-    "title": "Dark Mode",
-    "status": "in-progress",
-    "description": "System-aware dark mode following device preference, with manual toggle in Settings (System/Light/Dark). Redefine existing CSS custom properties under data-theme attribute. Store preference in localStorage. Instant switch, no reload."
-  },
-  {
     "id": "010",
     "title": "Workout Notes",
     "status": "backlog",

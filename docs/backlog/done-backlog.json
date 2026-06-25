@@ -562,5 +562,11 @@
     "title": "Plate Calculator",
     "status": "done",
     "description": "Tap weight on any set to see plate breakdown per side. Greedy algorithm from heaviest plate down. Configurable bar weight and available plates in Settings. Frontend-only, no backend changes."
+  },
+  {
+    "id": "005",
+    "title": "Dark Mode",
+    "status": "done",
+    "description": "System-aware dark mode following device preference, with manual toggle in Settings (System/Light/Dark). Redefine existing CSS custom properties under data-theme attribute. Store preference in localStorage. Instant switch, no reload."
   }
 ]
