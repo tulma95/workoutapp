@@ -7,7 +7,7 @@ interface Entry {
 
 const W = 300
 const H = 96
-const PAD_X = 6
+const PAD_X = 8
 const PAD_Y = 10
 
 // A small responsive sparkline of bodyweight over time. Needs at least two
@@ -18,12 +18,15 @@ export function BodyweightChart({ entries }: { entries: Entry[] }) {
   const weights = entries.map((e) => e.weight)
   const minW = Math.min(...weights)
   const maxW = Math.max(...weights)
+  const flat = maxW === minW
   const rangeW = maxW - minW || 1
 
   // Evenly spaced by measurement order (not absolute time) so the trend reads
-  // cleanly whether entries are minutes or weeks apart.
+  // cleanly whether entries are minutes or weeks apart. A flat series (no change)
+  // is centred rather than pinned to the baseline.
   const sx = (i: number) => PAD_X + (i / (entries.length - 1)) * (W - 2 * PAD_X)
-  const sy = (w: number) => PAD_Y + (1 - (w - minW) / rangeW) * (H - 2 * PAD_Y)
+  const sy = (w: number) =>
+    flat ? H / 2 : PAD_Y + (1 - (w - minW) / rangeW) * (H - 2 * PAD_Y)
 
   const pts = entries.map((e, i) => `${sx(i).toFixed(1)},${sy(e.weight).toFixed(1)}`)
   const linePoints = pts.join(' ')
@@ -37,7 +40,7 @@ export function BodyweightChart({ entries }: { entries: Entry[] }) {
       viewBox={`0 0 ${W} ${H}`}
       className={styles.chart}
       role="img"
-      aria-label={`Bodyweight trend, ${entries.length} entries from ${minW} to ${maxW} kg`}
+      aria-label={`Bodyweight trend, ${entries.length} entries from ${minW.toFixed(1)} to ${maxW.toFixed(1)} kg`}
       data-testid="bodyweight-chart"
     >
       <path d={areaPath} className={styles.area} />
