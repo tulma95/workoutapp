@@ -7,6 +7,7 @@ import { logger } from '../lib/logger';
 import { checkAndUnlockAchievements, type PrismaTransactionClient } from './achievement.service';
 import { calculateStreak } from '../lib/streak';
 import { pushService } from './push.service';
+import { computeE1rm } from './progress.service';
 
 const STREAK_MILESTONES = [7, 14, 30, 60, 90];
 
@@ -357,6 +358,68 @@ export async function logSet(
   };
 }
 
+export interface NewPersonalRecord {
+  slug: string;
+  name: string;
+  e1rm: number;
+  previousE1rm: number;
+}
+
+type SetForPR = {
+  exerciseId: number;
+  prescribedWeight: Decimal;
+  actualReps: number | null;
+  completed: boolean;
+  exercise: { slug: string; name: string };
+};
+
+// Detect exercises in the just-finished workout that beat the user's previous
+// all-time best estimated-1RM. Called BEFORE the workout is marked complete, so
+// the prior-best query (status:'completed') naturally excludes it. Compares on
+// the displayed (2.5 kg-rounded) value so a celebrated PR always reads higher
+// than the previous best, and only fires when a prior best exists (a first-ever
+// lift has nothing to beat).
+async function detectNewPRs(userId: number, workoutSets: SetForPR[]): Promise<NewPersonalRecord[]> {
+  const priorSets = await prisma.workoutSet.findMany({
+    where: {
+      workout: { userId, status: 'completed', completedAt: { not: null } },
+      completed: true,
+      actualReps: { not: null, gt: 0 },
+    },
+    select: { exerciseId: true, prescribedWeight: true, actualReps: true },
+  });
+
+  const priorBest = new Map<number, number>();
+  for (const s of priorSets) {
+    const e = computeE1rm(s.prescribedWeight.toNumber(), s.actualReps as number);
+    if (e > (priorBest.get(s.exerciseId) ?? 0)) priorBest.set(s.exerciseId, e);
+  }
+
+  const thisBest = new Map<number, { e1rm: number; slug: string; name: string }>();
+  for (const s of workoutSets) {
+    if (!s.completed || s.actualReps == null || s.actualReps <= 0) continue;
+    const e = computeE1rm(s.prescribedWeight.toNumber(), s.actualReps);
+    const cur = thisBest.get(s.exerciseId);
+    if (!cur || e > cur.e1rm) {
+      thisBest.set(s.exerciseId, { e1rm: e, slug: s.exercise.slug, name: s.exercise.name });
+    }
+  }
+
+  const prs: NewPersonalRecord[] = [];
+  for (const [exerciseId, best] of thisBest) {
+    const prior = priorBest.get(exerciseId);
+    if (prior !== undefined && roundWeight(best.e1rm) > roundWeight(prior)) {
+      prs.push({
+        slug: best.slug,
+        name: best.name,
+        e1rm: Math.round(best.e1rm * 100) / 100,
+        previousE1rm: Math.round(prior * 100) / 100,
+      });
+    }
+  }
+  return prs.sort((a, b) => b.e1rm - a.e1rm);
+}
+
 export async function completeWorkout(workoutId: number, userId: number) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {
@@ -376,6 +439,10 @@ export async function completeWorkout(workoutId: number, userId: number) {
   if (!workout) {
     return null;
   }
+
+  // Detect new estimated-1RM PRs before marking complete (so the prior-best
+  // query excludes this workout). Path-independent: applies to plan & custom.
+  const newPRs = await detectNewPRs(userId, workout.sets);
 
   // Check if workout is plan-driven (has planDayId)
   if (workout.planDayId) {
@@ -595,7 +662,7 @@ export async function completeWorkout(workoutId: number, userId: number) {
       }));
     }
 
-    return { workout: formatWorkout(completed), progressions, newAchievements };
+    return { workout: formatWorkout(completed), progressions, newAchievements, newPRs };
   }
 
   // No plan day ID - this workout was created without a plan (legacy data)
@@ -645,7 +712,7 @@ export async function completeWorkout(workoutId: number, userId: number) {
     }));
   }
 
-  return { workout: formatWorkout(noPlanCompleted), progressions: [], newAchievements: noPlanAchievements };
+  return { workout: formatWorkout(noPlanCompleted), progressions: [], newAchievements: noPlanAchievements, newPRs };
 }
 
 export async function getHistory(userId: number, page: number, limit: number) {

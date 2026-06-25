@@ -27,6 +27,7 @@ export type {
   CompleteWorkoutResponse,
   WorkoutCalendarResponse,
   ScheduledDay,
+  NewPersonalRecord,
 } from './schemas';
 
 export async function startWorkout(dayNumber: number): Promise<typeof WorkoutSchema._output> {

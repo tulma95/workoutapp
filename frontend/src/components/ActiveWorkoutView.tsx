@@ -1,4 +1,5 @@
-import { type Workout, type ProgressionResult } from '../api/workouts'
+import { type Workout, type ProgressionResult, type NewPersonalRecord } from '../api/workouts'
+import { PersonalRecordCelebration } from './PersonalRecordCelebration'
 import { useState } from 'react'
 import SetRow from './SetRow'
 import { WarmupSets } from './WarmupSets'
@@ -14,7 +15,7 @@ import styles from '../styles/WorkoutPage.module.css'
 type ActivePhase =
   | { phase: 'active' }
   | { phase: 'completing' }
-  | { phase: 'completed'; progressions: ProgressionResult[] }
+  | { phase: 'completed'; progressions: ProgressionResult[]; newPRs: NewPersonalRecord[] }
   | { phase: 'canceling' }
   | { phase: 'error'; message: string }
 
@@ -74,6 +75,7 @@ export function ActiveWorkoutView({
     return (
       <div className={styles.page}>
         <h1>Workout Complete!</h1>
+        <PersonalRecordCelebration prs={phase.newPRs} />
         <ProgressionBanner progressions={phase.progressions} />
         <ButtonLink to="/">Back to Dashboard</ButtonLink>
       </div>

@@ -53,12 +53,21 @@ export const CalendarWorkoutSchema = z.object({
   isCustom: z.boolean().optional().default(false),
 });
 
+export const NewPersonalRecordSchema = z.object({
+  slug: z.string(),
+  name: z.string(),
+  e1rm: z.number(),
+  previousE1rm: z.number(),
+});
+export type NewPersonalRecord = z.infer<typeof NewPersonalRecordSchema>;
+
 export const CompleteWorkoutResponseSchema = z.object({
   workout: WorkoutSchema,
   // Support both old (fallback) and new (plan-driven) formats
   progression: ProgressionResultSchema.nullable().optional(),
   progressions: z.array(ProgressionResultSchema).optional(),
   newAchievements: z.array(z.object({ slug: z.string(), name: z.string(), description: z.string() })).optional().default([]),
+  newPRs: z.array(NewPersonalRecordSchema).optional().default([]),
 });
 
 export const AchievementSchema = z.object({
