@@ -6,8 +6,9 @@ const BAR_KG = 20
 // (not logged, doesn't affect progression). Standard percentage ramp off the
 // top working set, rounded to the gym's 2.5 kg increment.
 export function computeWarmupSets(topWeight: number): Array<{ weight: number; reps: number }> {
-  // Too light to warrant a ramp (working weight at/near the empty bar).
-  if (topWeight < BAR_KG + 20) return []
+  // Bail on bad input (NaN/Infinity from an empty Math.max) or weights too
+  // light to warrant a ramp (working weight at/near the empty bar).
+  if (!Number.isFinite(topWeight) || topWeight < BAR_KG + 20) return []
 
   const ramp = [
     { weight: BAR_KG, reps: 5 },
