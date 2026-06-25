@@ -33,6 +33,7 @@ A workout tracking application supporting configurable training plans. Users reg
 ## Frontend Patterns
 
 - **CSS Modules**: `.module.css` files, rem units on 8-point grid, shared custom properties in `global.css`, border widths stay as px
+- **Theming (light/dark)**: Always use the colour tokens (`--bg`, `--bg-card`, `--bg-subtle`, `--text`, `--text-muted`, `--border`, `--primary`, `--success`, `--danger`) — never hardcode light-assuming colours. Dark mode = `:root[data-theme='dark']` overrides in `global.css`; `data-theme` is set pre-paint by an inline script in `index.html` from `localStorage['setforge:theme']` (System/Light/Dark, managed in `utils/theme.ts`). For status badges use a transparent-accent bg + accent token text (works in both themes). `color: #fff` on a coloured button is fine.
 - **Touch targets**: All interactive elements min 44px (3rem)
 - **No view transitions**: Removed due to Safari/iOS issues
 - **Loading states**: Calendar uses thin animated progress bar (not opacity fade). Skeleton loading for initial page loads. Never unmount components during loading.
