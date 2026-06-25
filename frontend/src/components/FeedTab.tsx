@@ -37,6 +37,9 @@ function renderEventText(event: FeedEvent): string | null {
   if (payload.eventType === 'plan_switched') {
     return `${event.username} switched to ${payload.planName}`;
   }
+  if (payload.eventType === 'pr_achieved') {
+    return `${event.username} set a new ${payload.exerciseName} PR: ${formatWeight(payload.e1rm)} 💪`;
+  }
   return null;
 }
 

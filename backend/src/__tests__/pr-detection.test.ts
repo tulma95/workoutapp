@@ -104,4 +104,39 @@ describe('PR detection on workout completion', () => {
     expect(res.status).toBe(200);
     expect(res.body.newPRs).toEqual([]);
   });
+
+  it('posts a pr_achieved feed event when a workout sets a PR', async () => {
+    const { user, token } = await createTestUser();
+    const ex = await getExercisesBySlug(['bench-press']);
+    const benchId = ex['bench-press']!.id;
+    await makeWorkout(user.id, benchId, 80, 5, 'completed', new Date('2025-06-01T10:00:00Z'));
+    const w2 = await makeWorkout(user.id, benchId, 80, 8, 'in_progress', null);
+
+    await request(app)
+      .post(`/api/workouts/${w2.id}/complete`)
+      .set('Authorization', `Bearer ${token}`);
+
+    const events = await prisma.feedEvent.findMany({
+      where: { userId: user.id, eventType: 'pr_achieved' },
+    });
+    expect(events).toHaveLength(1);
+    const payload = events[0]!.payload as { exerciseName: string; e1rm: number };
+    expect(payload.exerciseName).toBe('Bench Press');
+    expect(payload.e1rm).toBeCloseTo(101.33, 1);
+  });
+
+  it('does not post a pr_achieved feed event for a first-ever lift', async () => {
+    const { user, token } = await createTestUser();
+    const ex = await getExercisesBySlug(['squat']);
+    const w = await makeWorkout(user.id, ex['squat']!.id, 100, 5, 'in_progress', null);
+
+    await request(app)
+      .post(`/api/workouts/${w.id}/complete`)
+      .set('Authorization', `Bearer ${token}`);
+
+    const events = await prisma.feedEvent.findMany({
+      where: { userId: user.id, eventType: 'pr_achieved' },
+    });
+    expect(events).toHaveLength(0);
+  });
 });

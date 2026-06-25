@@ -367,6 +367,13 @@ export const FeedEventPayloadSchema = z.discriminatedUnion('eventType', [
     planName: z.string(),
     planSlug: z.string(),
   }),
+  z.object({
+    eventType: z.literal('pr_achieved'),
+    exerciseSlug: z.string(),
+    exerciseName: z.string(),
+    e1rm: z.number(),
+    previousE1rm: z.number(),
+  }),
 ]);
 
 export const FeedReactionSchema = z.object({

@@ -463,6 +463,27 @@ async function detectNewPRs(userId: number, workoutSets: SetForPR[]): Promise<Ne
   return prs.sort((a, b) => b.e1rm - a.e1rm);
 }
 
+// Post a feed event per new PR so friends see it (PR celebration).
+async function emitPrFeedEvents(
+  tx: PrismaTransactionClient,
+  userId: number,
+  newPRs: NewPersonalRecord[],
+): Promise<void> {
+  if (newPRs.length === 0) return;
+  await tx.feedEvent.createMany({
+    data: newPRs.map((pr) => ({
+      userId,
+      eventType: 'pr_achieved',
+      payload: {
+        exerciseSlug: pr.slug,
+        exerciseName: pr.name,
+        e1rm: pr.e1rm,
+        previousE1rm: pr.previousE1rm,
+      },
+    })),
+  });
+}
+
 export async function completeWorkout(workoutId: number, userId: number) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {
@@ -673,6 +694,8 @@ export async function completeWorkout(workoutId: number, userId: number) {
         });
       }
 
+      await emitPrFeedEvents(tx, userId, newPRs);
+
       const newAchievements = await emitStreakAndBadgeEvents(tx, userId, workoutId, setsForAchievements);
 
       return { completed, progressions, newAchievements };
@@ -728,6 +751,8 @@ export async function completeWorkout(workoutId: number, userId: number) {
         }
       },
     });
+
+    await emitPrFeedEvents(tx, userId, newPRs);
 
     const newAchievements = await emitStreakAndBadgeEvents(tx, userId, workoutId, noPlansetsForAchievements);
 

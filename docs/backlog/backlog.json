@@ -39,7 +39,7 @@
   {
     "id": "064",
     "title": "PR Celebration Post",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "When a user hits a personal record (requires PR Detection #008), auto-generate a celebratory feed event with confetti animation. Shows the lift, weight, reps, and how it compares to previous best. Friends see it prominently in their feed."
   },
   {
