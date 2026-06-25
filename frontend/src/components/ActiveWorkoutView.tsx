@@ -1,6 +1,7 @@
 import { type Workout, type ProgressionResult, type NewPersonalRecord } from '../api/workouts'
 import { PersonalRecordCelebration } from './PersonalRecordCelebration'
 import { WorkoutSummaryStats } from './WorkoutSummaryStats'
+import { WorkoutProgressBar } from './WorkoutProgressBar'
 import { type WorkoutSummary } from '../utils/workoutSummary'
 import { useState } from 'react'
 import SetRow from './SetRow'
@@ -100,9 +101,14 @@ export function ActiveWorkoutView({
     }
   }
 
+  const totalSets = workout.sets.length
+  const completedSets = workout.sets.filter((s) => s.completed || s.actualReps !== null).length
+
   return (
     <div className={styles.page}>
       <h1>Day {dayNumber}</h1>
+
+      <WorkoutProgressBar completed={completedSets} total={totalSets} />
 
       {restTimer && (
         <RestTimerBanner

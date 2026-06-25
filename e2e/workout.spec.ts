@@ -268,6 +268,31 @@ test.describe('Workout Session', () => {
     expect(actualIncrease).toBeCloseTo(expectedIncrease, 0);
   });
 
+  test('shows a workout progress bar that advances as sets are logged', async ({
+    setupCompletePage,
+  }) => {
+    const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const workout = new WorkoutPage(page);
+
+    await dashboard.expectLoaded();
+    await dashboard.startWorkout();
+    await workout.expectLoaded(1);
+
+    const progress = page.getByTestId('workout-progress');
+    await expect(progress).toBeVisible();
+    await expect(progress).toHaveAttribute('aria-valuenow', '0');
+    const total = await progress.getAttribute('aria-valuemax');
+    expect(Number(total)).toBeGreaterThan(0);
+
+    await workout.fillAmrap('5');
+    await page.waitForResponse(
+      (r) => r.url().includes('/api/workouts/') && r.request().method() === 'PATCH' && r.ok(),
+    );
+
+    await expect(progress).toHaveAttribute('aria-valuenow', '1');
+  });
+
   test('completion screen shows a workout summary (sets and volume)', async ({
     setupCompletePage,
   }) => {
