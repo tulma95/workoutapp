@@ -103,12 +103,6 @@
     "description": "Override auto-calculated weight for individual sets during a workout. For when plates don't work out cleanly at your gym, or you want to be conservative on a bad day. Avoids having to change the TM for one-off adjustments."
   },
   {
-    "id": "010",
-    "title": "Workout Notes",
-    "status": "in-progress",
-    "description": "Optional free-text notes on workouts. 'Add note' link on workout page opens textarea (max 500 chars), auto-saves on blur. Notes shown in history detail view. Requires new DB column and API update."
-  },
-  {
     "id": "023",
     "title": "Failed Set Tracking",
     "status": "backlog",

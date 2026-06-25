@@ -26,6 +26,7 @@
 - `GET /api/workouts/current` - in-progress workout (or null)
 - `GET /api/workouts/:id` - includes `progressions` array (TM changes linked to this workout)
 - `PATCH /api/workouts/:id/sets/:setId` - `{ actualReps, completed }`
+- `PATCH /api/workouts/:id/notes` - `{ notes }` (trimmed, max 2000 chars; blank clears to null); ownership-checked (404 if not owned). Workout DTOs include a `notes` field.
 - `POST /api/workouts/:id/complete` - applies progression, returns `{ progressions: [...], newAchievements: [{ slug, name, description }], newPRs: [{ slug, name, e1rm, previousE1rm }] }`; `newPRs` lists exercises whose best estimated-1RM in this workout beat the prior all-time best (2.5 kg-rounded comparison; empty for first-ever lifts); emits `badge_unlocked` feed events for each new achievement and `streak_milestone` feed events at thresholds [7, 14, 30, 60, 90] days (each threshold emitted at most once per user)
 - `DELETE /api/workouts/:id` - soft-delete (sets status to 'discarded'), works on both in_progress and completed workouts
 - `GET /api/workouts/history?page=1&limit=10`

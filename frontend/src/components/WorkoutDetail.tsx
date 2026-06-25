@@ -226,7 +226,7 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
           <button
             type="button"
             className={styles.notesSave}
-            disabled={noteText === (workout.notes ?? '')}
+            disabled={noteText.trim() === (workout.notes ?? '')}
             onClick={() => onSaveNotes(noteText)}
           >
             Save note
