@@ -519,5 +519,11 @@
     "title": "Warm-up set calculation",
     "status": "done",
     "description": "No warm-up logic anywhere; generated workouts jump straight to working sets at high percentages. Mature percentage-based apps auto-generate a warm-up ramp (e.g. 40/50/60% of working weight). Core to safe execution."
+  },
+  {
+    "id": "151",
+    "title": "New-user onboarding flow",
+    "status": "done",
+    "description": "After register the user is dropped into a bare TM-entry form with no welcome, plan-selection guidance, or explanation of what a 1RM is. Add a guided first-run onboarding flow."
   }
 ]

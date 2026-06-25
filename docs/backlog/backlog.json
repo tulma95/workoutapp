@@ -340,12 +340,6 @@
     "description": "Exercise model has only name/slug/category/muscleGroup; no description, instructions, cues, equipment, or video, and no exercise-detail route. New users cannot learn unfamiliar lifts. Add exercise reference content + detail view."
   },
   {
-    "id": "151",
-    "title": "New-user onboarding flow",
-    "status": "in-progress",
-    "description": "After register the user is dropped into a bare TM-entry form with no welcome, plan-selection guidance, or explanation of what a 1RM is. Add a guided first-run onboarding flow."
-  },
-  {
     "id": "152",
     "title": "Unit preference (kg/lbs)",
     "status": "backlog",
@@ -476,5 +470,11 @@
     "title": "Flaky: plans.test.ts 'GET /api/plans/:id requires authentication' intermittently 404 instead of 401",
     "status": "backlog",
     "description": "Backend test src/__tests__/routes/plans.test.ts > 'GET /api/plans/:id requires authentication' intermittently asserts 'expected 404 to be 401' (passed on re-run). Likely test isolation/route-ordering: an unauthenticated GET /api/plans/:id should hit the authenticate middleware (401) but occasionally returns 404. Investigate whether a route or middleware ordering lets some requests reach a 404 path before auth, or whether parallel-test state causes it. Related to flaky-tests ticket 090."
+  },
+  {
+    "id": "174",
+    "title": "Flaky backend tests: recurring training_maxes_exercise_id_fkey FK violation + social leaderboard undefined.id",
+    "status": "backlog",
+    "description": "Several backend test runs this session intermittently fail with a Prisma FK violation on training_maxes_exercise_id_fkey (POST /api/training-maxes/setup referencing an exerciseId not present), and social.test.ts > Leaderboard 'Cannot read properties of undefined (reading id)'. Both point to test-isolation/DB-state issues — exercises or expected setup data sometimes missing when a test runs (possibly parallel test files sharing the DB, or a test deleting/relying on seed data). Investigate test isolation for the exercises table and the leaderboard test's setup. Related to flaky-tests tickets 090, and the plans-auth flake."
   }
 ]
