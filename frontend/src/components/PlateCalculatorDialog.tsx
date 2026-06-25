@@ -11,8 +11,12 @@ import styles from '../styles/PlateCalculatorDialog.module.css'
 const BAR_KEY = 'setforge:barWeight'
 
 function loadBar(): number {
-  const v = Number(localStorage.getItem(BAR_KEY))
-  return BAR_OPTIONS_KG.includes(v) ? v : DEFAULT_BAR_KG
+  try {
+    const v = Number(localStorage.getItem(BAR_KEY))
+    return BAR_OPTIONS_KG.includes(v) ? v : DEFAULT_BAR_KG
+  } catch {
+    return DEFAULT_BAR_KG
+  }
 }
 
 export function PlateCalculatorDialog({

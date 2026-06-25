@@ -163,12 +163,6 @@
     "description": "When a user skips a planned workout day, prompt them: skip it and move on, or do it today? Removes guesswork about what to do after missing a session."
   },
   {
-    "id": "004",
-    "title": "Plate Calculator",
-    "status": "in-progress",
-    "description": "Tap weight on any set to see plate breakdown per side. Greedy algorithm from heaviest plate down. Configurable bar weight and available plates in Settings. Frontend-only, no backend changes."
-  },
-  {
     "id": "011",
     "title": "Bodyweight Tracking",
     "status": "backlog",
@@ -457,5 +451,11 @@
     "title": "Durable test-isolation: make test-created plans non-public + self-contained stateful social tests",
     "status": "backlog",
     "description": "Follow-up from the 090/173/174 stabilization review. Two durable fixes so retry isn't load-bearing: (1) Root hazard not fixed at source — admin-plan-editor E2E tests and e2e/helpers/create-second-plan.ts create plans with isPublic defaulting true (admin/plans.ts:59) with no cleanup, polluting the public-plans list any 'select a plan' path sees. The selectFirstPlan->nSuns change routes the fixture around it, but pass isPublic:false from admin/helper-created test plans to kill it at the source. (2) The stateful, order-dependent social tests (social.test.ts Feed reactions toggle-chain ~442-630, friend-request flow ~66-186) share one feedEventId/token across sequential its with exact-count assertions; vitest retry re-runs only the failing it (re-toggling against mutated state), so it can spuriously fail or mask an intermittent regression. Make each assertion self-contained (per-test event/reactions) so retry is unnecessary for them."
+  },
+  {
+    "id": "177",
+    "title": "Plate calculator: clearer message when target weight < bar weight",
+    "status": "backlog",
+    "description": "From ticket 004 review (minor). computePlatesPerSide returns empty groups for both weight==bar and weight<bar, so a target lighter than the selected bar shows 'Just the bar — no plates needed', which is misleading (that bar can't make the lighter weight). Distinguish perSide<0 from perSide===0 and show a message like 'Lighter than the selected bar'. Low frequency (main-lift prescribed weights rarely dip below 20kg)."
   }
 ]

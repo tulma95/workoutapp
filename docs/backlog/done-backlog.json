@@ -556,5 +556,11 @@
     "title": "Flaky backend tests: recurring training_maxes_exercise_id_fkey FK violation + social leaderboard undefined.id",
     "status": "done",
     "description": "Several backend test runs this session intermittently fail with a Prisma FK violation on training_maxes_exercise_id_fkey (POST /api/training-maxes/setup referencing an exerciseId not present), and social.test.ts > Leaderboard 'Cannot read properties of undefined (reading id)'. Both point to test-isolation/DB-state issues — exercises or expected setup data sometimes missing when a test runs (possibly parallel test files sharing the DB, or a test deleting/relying on seed data). Investigate test isolation for the exercises table and the leaderboard test's setup. Related to flaky-tests tickets 090, and the plans-auth flake."
+  },
+  {
+    "id": "004",
+    "title": "Plate Calculator",
+    "status": "done",
+    "description": "Tap weight on any set to see plate breakdown per side. Greedy algorithm from heaviest plate down. Configurable bar weight and available plates in Settings. Frontend-only, no backend changes."
   }
 ]
