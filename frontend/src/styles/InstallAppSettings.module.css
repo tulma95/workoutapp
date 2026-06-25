@@ -1,4 +1,6 @@
 .card {
+  /* Match the other Settings cards (SettingsPage.module.css .card). */
+  margin-bottom: var(--space-lg);
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--space-sm);
@@ -6,12 +8,9 @@
 }
 
 .label {
+  /* Match the sentence-case, weight-500 heading of sibling Settings cards. */
   margin: 0 0 var(--space-sm);
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
+  font-weight: 500;
 }
 
 .text {
