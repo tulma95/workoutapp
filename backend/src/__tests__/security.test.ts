@@ -30,13 +30,17 @@ describe('security middleware', () => {
     config.nodeEnv = 'production';
     try {
       // Invalid body -> fast 400, but the limiter counts before the route runs.
+      // Fire well past the limit so a 429 is guaranteed even if supertest splits
+      // requests across IPv4/IPv6 buckets (the cause of earlier flakiness), and
+      // assert both that some get through (400) and that the limiter engages (429).
       const limit = 30;
-      let lastStatus = 0;
-      for (let i = 0; i < limit + 1; i++) {
+      const statuses: number[] = [];
+      for (let i = 0; i < limit * 2 + 5; i++) {
         const res = await request(app).post('/api/auth/login').send({});
-        lastStatus = res.status;
+        statuses.push(res.status);
       }
-      expect(lastStatus).toBe(429);
+      expect(statuses).toContain(400);
+      expect(statuses).toContain(429);
     } finally {
       config.nodeEnv = original;
     }
