@@ -32,16 +32,20 @@ jobs:
         env:
           GHCR_USER: ${{ github.repository_owner }}
 
-      - name: Redeploy on Railway
+      # deploy.sh has already built + pushed the image to ghcr.io; tell Coolify to
+      # pull it and redeploy. Uses Coolify's API deploy endpoint:
+      #   COOLIFY_URL            e.g. https://coolify.example.com
+      #   COOLIFY_RESOURCE_UUID  the application's UUID in Coolify
+      #   COOLIFY_API_TOKEN      a Coolify API token with deploy permission
+      - name: Redeploy on Coolify
         run: |
-          curl -s -X POST "https://backboard.railway.com/graphql/v2" \
-            -H "Authorization: Bearer $RAILWAY_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"query":"mutation { serviceInstanceRedeploy(serviceId: \"'"$RAILWAY_SERVICE_ID"'\", environmentId: \"'"$RAILWAY_ENVIRONMENT_ID"'\") }"}'
+          curl --fail --silent --show-error --request GET \
+            "${COOLIFY_URL}/api/v1/deploy?uuid=${COOLIFY_RESOURCE_UUID}&force=false" \
+            --header "Authorization: Bearer ${COOLIFY_API_TOKEN}"
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
-          RAILWAY_ENVIRONMENT_ID: ${{ secrets.RAILWAY_ENVIRONMENT_ID }}
+          COOLIFY_URL: ${{ secrets.COOLIFY_URL }}
+          COOLIFY_RESOURCE_UUID: ${{ secrets.COOLIFY_RESOURCE_UUID }}
+          COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
 
       - name: Upload Playwright report
         if: always()

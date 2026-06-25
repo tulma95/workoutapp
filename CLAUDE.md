@@ -29,6 +29,7 @@ A workout tracking application supporting configurable training plans. Users reg
 - **Database schema**: `docs/db-schema.md`
 - **API endpoints**: `docs/api-endpoints.md`
 - **React Query cache map & invalidation rules**: `docs/react-query-cache.md`
+- **Deployment (Coolify) & production env vars**: `docs/deployment.md`
 
 ## Frontend Patterns
 
