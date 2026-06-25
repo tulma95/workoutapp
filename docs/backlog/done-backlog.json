@@ -623,5 +623,11 @@
     "title": "Change account email",
     "status": "done",
     "description": "PATCH /users/me accepts only username; the email login identifier can never be changed. Add email change with re-verification once email infra exists."
+  },
+  {
+    "id": "180",
+    "title": "Dashboard stats: workouts-this-week + streak",
+    "status": "done",
+    "description": "Surface the user's own training momentum on the dashboard: GET /api/workouts/stats returns currentStreak (consecutive-day, reusing calculateStreak) and workoutsLast7Days; a DashboardStats component shows 'N this week' and a '🔥 N day streak' when >=2. The day-streak was previously only computed for achievements and shown for friends, never to the user themselves."
   }
 ]
