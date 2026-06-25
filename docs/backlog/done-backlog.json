@@ -501,5 +501,11 @@
     "title": "Change password",
     "status": "done",
     "description": "No endpoint or UI to change a password (auth.service.ts has only register/login/refresh). A logged-in user can never rotate their password. Table-stakes account security."
+  },
+  {
+    "id": "144",
+    "title": "Delete account (GDPR + app-store requirement)",
+    "status": "done",
+    "description": "No DELETE /users/me and no UI. Users cannot remove their account or data, a legal and app-store-review requirement. Add account deletion with data cleanup."
   }
 ]

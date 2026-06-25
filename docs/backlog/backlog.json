@@ -322,12 +322,6 @@
     "description": "backend/src/lib/db.ts builds PrismaPg with only a connection string, no pool size. Under Coolify shared Postgres an unbounded pool can exhaust connections. Set an explicit connection_limit sized to the deployment."
   },
   {
-    "id": "144",
-    "title": "Delete account (GDPR + app-store requirement)",
-    "status": "in-progress",
-    "description": "No DELETE /users/me and no UI. Users cannot remove their account or data, a legal and app-store-review requirement. Add account deletion with data cleanup."
-  },
-  {
     "id": "145",
     "title": "Personal data export (GDPR portability)",
     "status": "backlog",

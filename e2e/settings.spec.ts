@@ -53,6 +53,26 @@ test.describe('Settings Page', () => {
     await expect(page.getByText(/current password is incorrect/i)).toBeVisible();
   });
 
+  test('delete account -> redirected to login, and the account no longer works', async ({
+    setupCompletePage,
+  }) => {
+    const { page, user } = setupCompletePage;
+    const settings = new SettingsPage(page);
+    await settings.navigate();
+
+    await page.getByRole('button', { name: /^delete account$/i }).click();
+    await page.getByLabel('Password', { exact: true }).fill('ValidPassword123');
+    await page.getByRole('button', { name: /permanently delete/i }).click();
+
+    await expect(page).toHaveURL(/\/login/);
+
+    // The deleted account can no longer log in.
+    await page.getByLabel(/email/i).fill(user.email);
+    await page.getByLabel(/password/i).fill('ValidPassword123');
+    await page.getByRole('button', { name: /log in/i }).click();
+    await expect(page.getByText(/invalid email or password/i)).toBeVisible();
+  });
+
   test('logout from settings page -> redirected to login page', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
     const settings = new SettingsPage(page);
