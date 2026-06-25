@@ -7,6 +7,7 @@
 
 .stat {
   flex: 1;
+  min-width: 0; /* allow shrink so a large volume doesn't overflow the row */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -30,5 +31,5 @@
   font-size: 1.125rem;
   font-weight: 700;
   color: var(--text);
-  white-space: nowrap;
+  text-align: center;
 }

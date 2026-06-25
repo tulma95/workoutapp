@@ -33,7 +33,10 @@ export function computeWorkoutSummary(workout: {
   if (workout.completedAt) {
     const ms = new Date(workout.completedAt).getTime() - new Date(workout.createdAt).getTime()
     const min = Math.round(ms / 60000)
-    if (min >= 0 && min <= MAX_PLAUSIBLE_DURATION_MIN) durationMin = min
+    // Require strictly positive elapsed time: backfilled custom workouts set
+    // createdAt === completedAt (ms === 0) and never had a tracked duration, so
+    // they report no duration rather than a misleading "<1 min".
+    if (ms > 0 && min <= MAX_PLAUSIBLE_DURATION_MIN) durationMin = min
   }
 
   return { durationMin, setsCompleted, totalVolumeKg: Math.round(totalVolumeKg) }
