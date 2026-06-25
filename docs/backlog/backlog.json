@@ -123,7 +123,7 @@
   {
     "id": "005",
     "title": "Dark Mode",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "System-aware dark mode following device preference, with manual toggle in Settings (System/Light/Dark). Redefine existing CSS custom properties under data-theme attribute. Store preference in localStorage. Instant switch, no reload."
   },
   {

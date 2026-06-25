@@ -4,6 +4,7 @@ import { ScheduleEditor } from './ScheduleEditor'
 import { PushNotificationSettings } from './PushNotificationSettings'
 import { InstallAppSettings } from './InstallAppSettings'
 import { ChangePasswordSettings } from './ChangePasswordSettings'
+import { ThemeSettings } from './ThemeSettings'
 import { ExportDataSettings } from './ExportDataSettings'
 import { DeleteAccountSettings } from './DeleteAccountSettings'
 import { formatExerciseName, formatWeight } from '../utils/weight'
@@ -78,6 +79,8 @@ export function SettingsContent({
   return (
     <div>
       <h2>Settings</h2>
+
+      <ThemeSettings />
 
       <div className={styles.card}>
         <p className={styles.cardLabel}>Current Plan</p>

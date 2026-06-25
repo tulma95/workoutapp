@@ -26,11 +26,11 @@
 }
 
 .button:hover {
-  background-color: #f5f5f5;
+  background-color: var(--bg-subtle);
 }
 
 .button:active {
-  background-color: #eee;
+  background-color: var(--bg-subtle);
 }
 
 .button:disabled {
@@ -68,5 +68,5 @@ button.field {
 }
 
 button.field:active {
-  background-color: #eee;
+  background-color: var(--bg-subtle);
 }

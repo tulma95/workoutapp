@@ -29,10 +29,13 @@ a {
   --muted: #94a3b8;
   --bg: #f8fafc;
   --bg-card: #ffffff;
+  --bg-subtle: #f1f5f9;
   --text: #1e293b;
   --text-primary: #1e293b;
   --text-muted: #64748b;
   --border: #e2e8f0;
+  --overlay: rgba(0, 0, 0, 0.5);
+  color-scheme: light;
 
   /* Spacing tokens (8-point grid) */
   --space-xs: 0.25rem;
@@ -40,6 +43,26 @@ a {
   --space-md: 1rem;
   --space-lg: 1.5rem;
   --space-xl: 2rem;
+}
+
+/* Dark theme — applied by setting data-theme="dark" on <html> (resolved from
+   the user's System/Light/Dark preference). Only the colour tokens change, so
+   any component built on the tokens themes automatically. */
+:root[data-theme='dark'] {
+  --primary: #3b82f6;
+  --primary-dark: #2563eb;
+  --success: #22c55e;
+  --danger: #f87171;
+  --muted: #64748b;
+  --bg: #0b1220;
+  --bg-card: #1a2536;
+  --bg-subtle: #0f1a2b;
+  --text: #f1f5f9;
+  --text-primary: #f1f5f9;
+  --text-muted: #94a3b8;
+  --border: #2c3a4f;
+  --overlay: rgba(0, 0, 0, 0.65);
+  color-scheme: dark;
 }
 
 body {

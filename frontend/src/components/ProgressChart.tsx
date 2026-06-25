@@ -242,7 +242,6 @@ export function ProgressChart({ history, color, exerciseName, timeRange, planSwi
                   cy={y}
                   r={isActive ? 5.5 : 3}
                   fill={color}
-                  stroke="white"
                   strokeWidth={isActive ? 2 : 1.5}
                   className={styles.dot}
                   onClick={() => handleDotClick(point, x, y)}

@@ -46,8 +46,8 @@
 }
 
 .error {
-  background: #fee2e2;
-  color: #991b1b;
+  background: rgba(248, 113, 113, 0.15);
+  color: var(--danger);
   border-radius: 8px;
   margin-bottom: 1rem;
 }
@@ -308,11 +308,11 @@
 }
 
 .exerciseRowHasSets {
-  border-left-color: #16a34a;
+  border-left-color: var(--success);
 }
 
 .exerciseRowNoSets {
-  border-left-color: #ea580c;
+  border-left-color: #fb923c;
 }
 
 .exerciseRowHeader {
@@ -357,12 +357,12 @@
 }
 
 .removeBtn {
-  border-color: #dc2626;
-  color: #dc2626;
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 .removeBtn:hover {
-  background: #fef2f2;
+  background: rgba(248, 113, 113, 0.15);
 }
 
 .exerciseRowFields {
@@ -409,13 +409,13 @@
 .setsWarningBadge {
   display: inline-flex;
   align-items: center;
-  background: #fff7ed;
-  color: #ea580c;
+  background: rgba(234, 88, 12, 0.15);
+  color: #fb923c;
   font-weight: 600;
   font-size: 0.8125rem;
   padding: 0.25rem 0.625rem;
   border-radius: 4px;
-  border: 1px solid #fed7aa;
+  border: 1px solid rgba(234, 88, 12, 0.3);
 }
 
 .exerciseSetsActions {
@@ -548,12 +548,12 @@
 
 /* Validation errors */
 .validationErrors {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: rgba(248, 113, 113, 0.15);
+  border: 1px solid rgba(248, 113, 113, 0.3);
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 1rem;
-  color: #991b1b;
+  color: var(--danger);
 }
 
 .validationErrors ul {
@@ -572,7 +572,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #16a34a;
+  background: var(--success);
   margin-left: 0.5rem;
 }
 
@@ -582,7 +582,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #ea580c;
+  background: #fb923c;
   margin-left: 0.5rem;
 }
 

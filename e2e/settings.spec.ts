@@ -17,6 +17,25 @@ test.describe('Settings Page', () => {
     await expect(page.getByText(new RegExp(user.email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))).toBeVisible();
   });
 
+  test('appearance toggle switches the theme and persists across reload', async ({
+    setupCompletePage,
+  }) => {
+    const { page } = setupCompletePage;
+    const settings = new SettingsPage(page);
+    await settings.navigate();
+    await settings.expectLoaded();
+
+    await page.getByRole('radio', { name: 'Dark' }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+    // The pre-paint inline script restores the choice on reload.
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+    await page.getByRole('radio', { name: 'Light' }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  });
+
   test('change password -> success, and new password works on next login', async ({
     setupCompletePage,
   }) => {
