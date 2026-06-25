@@ -641,5 +641,11 @@
     "title": "Document required production env vars for Coolify",
     "status": "done",
     "description": "Backend requires JWT_SECRET, DATABASE_URL, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY (optional LOG_LEVEL/PORT) via requireEnv. No .env.example or doc lists them, so a Coolify deployer cannot know what secrets to inject. Add a documented required-vars list."
+  },
+  {
+    "id": "064",
+    "title": "PR Celebration Post",
+    "status": "done",
+    "description": "When a user hits a personal record (requires PR Detection #008), auto-generate a celebratory feed event with confetti animation. Shows the lift, weight, reps, and how it compares to previous best. Friends see it prominently in their feed."
   }
 ]

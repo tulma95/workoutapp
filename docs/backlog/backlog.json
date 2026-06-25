@@ -37,12 +37,6 @@
     "description": "Generate a unique invite link (e.g. setforge.app/invite/abc123) that auto-sends a friend request when the invitee registers. Easier than sharing email addresses. Link expires after 7 days or first use. Shareable via native share API."
   },
   {
-    "id": "064",
-    "title": "PR Celebration Post",
-    "status": "in-progress",
-    "description": "When a user hits a personal record (requires PR Detection #008), auto-generate a celebratory feed event with confetti animation. Shows the lift, weight, reps, and how it compares to previous best. Friends see it prominently in their feed."
-  },
-  {
     "id": "059",
     "title": "Accountability Partner",
     "status": "backlog",
@@ -402,5 +396,11 @@
     "title": "Normalize email casing across register/login/changeEmail",
     "status": "backlog",
     "description": "From ticket 147 review (pre-existing, out of scope there). The email @unique column is case-sensitive Postgres text, and register/login/changeEmail store & match email as-is (no lowercase). So 'User@x.com' and 'user@x.com' can coexist as separate accounts and login is case-sensitive. Normalize email to trimmed-lowercase consistently in register, login lookup, and changeEmail (and consider a one-off data migration / case-insensitive unique index) so accounts are unambiguous."
+  },
+  {
+    "id": "180",
+    "title": "Consolidate a completion's feed events into one card",
+    "status": "backlog",
+    "description": "From ticket 064 review (minor). A single workout completion can emit workout_completed + N tm_increased + N pr_achieved events, a 4+ event burst in friends' feeds. Consider consolidating one completion's events into a single feed card (e.g. a workout_completed card that lists the TM increases and PRs) to reduce feed noise. Also note: there's no per-user opt-out for feed auto-posts (pre-existing) — a privacy toggle could be part of this."
   }
 ]
