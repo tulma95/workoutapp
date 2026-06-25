@@ -8,6 +8,7 @@
 ## Protected (JWT required)
 
 - `GET /api/users/me` | `PATCH /api/users/me` — PATCH accepts `{ username? }` to update username; 409 `USERNAME_EXISTS` if taken
+- `PATCH /api/users/me/password` — body `{ currentPassword, newPassword }` (newPassword min 8). Returns 204 on success; 400 `INVALID_PASSWORD` if the current password is wrong
 - `GET /api/exercises` - all exercises sorted by name: `[{ id, slug, name, category, isUpperBody }]`
 - `GET /api/training-maxes` - current TMs (plan-aware: returns TMs for active plan exercises)
 - `POST /api/training-maxes/setup` - accepts both `{ oneRepMaxes }` and `{ exerciseTMs: [{ exerciseId, oneRepMax }] }`

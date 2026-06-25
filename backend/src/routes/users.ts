@@ -4,6 +4,7 @@ import { validate } from '../middleware/validate';
 import { authenticate } from '../middleware/auth';
 import { AuthRequest } from '../types';
 import prisma from '../lib/db';
+import { changePassword } from '../services/auth.service';
 import { usernameSchema, isP2002UsernameViolation } from '../lib/routeHelpers';
 
 const router = Router();
@@ -42,5 +43,29 @@ router.patch('/me', validate(updateSchema), async (req: AuthRequest, res: Respon
     throw err;
   }
 });
+
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(8),
+});
+
+router.patch(
+  '/me/password',
+  validate(changePasswordSchema),
+  async (req: AuthRequest, res: Response) => {
+    try {
+      await changePassword(req.userId!, req.body.currentPassword, req.body.newPassword);
+      res.status(204).end();
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message === 'Current password is incorrect') {
+        res.status(400).json({
+          error: { code: 'INVALID_PASSWORD', message: 'Current password is incorrect' },
+        });
+        return;
+      }
+      throw err;
+    }
+  },
+);
 
 export default router;

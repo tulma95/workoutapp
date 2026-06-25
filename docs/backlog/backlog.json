@@ -324,7 +324,7 @@
   {
     "id": "142",
     "title": "Change password",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "No endpoint or UI to change a password (auth.service.ts has only register/login/refresh). A logged-in user can never rotate their password. Table-stakes account security."
   },
   {

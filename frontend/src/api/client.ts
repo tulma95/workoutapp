@@ -64,6 +64,9 @@ export async function apiFetch(path: string, options?: RequestInit): Promise<unk
     throw new ApiError(body.error?.message || res.statusText, res.status, body.error?.code);
   }
 
+  // No Content — nothing to parse.
+  if (res.status === 204) return null;
+
   return res.json();
 }
 
