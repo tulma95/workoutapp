@@ -188,5 +188,23 @@ describe('User routes', () => {
       const res = await request(app).delete('/api/users/me').send({ password: 'x' });
       expect(res.status).toBe(401);
     });
+
+    it('is idempotent: a repeated delete with the (still-valid) token returns 204', async () => {
+      const { token } = await createTestUser({ password: 'todelete123' });
+
+      const first = await request(app)
+        .delete('/api/users/me')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ password: 'todelete123' });
+      expect(first.status).toBe(204);
+
+      // The JWT is stateless, so a replay still authenticates; the account is
+      // already gone, which we treat as success rather than a 500.
+      const second = await request(app)
+        .delete('/api/users/me')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ password: 'todelete123' });
+      expect(second.status).toBe(204);
+    });
   });
 });

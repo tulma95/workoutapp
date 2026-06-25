@@ -63,6 +63,10 @@ router.patch(
         });
         return;
       }
+      if (err instanceof Error && err.message === 'User not found') {
+        res.status(404).json({ error: { code: 'NOT_FOUND', message: 'User not found' } });
+        return;
+      }
       throw err;
     }
   },
@@ -84,6 +88,12 @@ router.delete(
         res.status(400).json({
           error: { code: 'INVALID_PASSWORD', message: 'Incorrect password' },
         });
+        return;
+      }
+      // Already gone (e.g. a retried/double-submitted delete) — treat as success
+      // rather than a 500; the account is in the desired state.
+      if (err instanceof Error && err.message === 'User not found') {
+        res.status(204).end();
         return;
       }
       throw err;
