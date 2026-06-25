@@ -17,6 +17,7 @@
 - `PATCH /api/training-maxes/:exercise` - manual TM override; accepts `{ weight, reason? }` where `reason` is an optional string (max 500 chars) describing why the TM was changed (e.g. "deload reset", "injury setback")
 - `GET /api/training-maxes/:exercise/history`
 - `GET /api/progress` - e1RM progression from completed workout sets (Epley formula: `weight × (1 + reps/30)`); returns `{ exercises: [{ slug, name, currentE1rm, history: [{ e1rm, date }], inCurrentPlan }], planSwitches: [{ date, planName }] }`. Current plan exercises listed first (in plan order), then other exercises alphabetically. Only exercises with completed sets appear. `planSwitches` contains one entry per plan subscription after the first.
+- `GET /api/progress/records` - personal records: best estimated-1RM set per exercise across all completed sets; returns `{ records: [{ slug, name, e1rm, weight, reps, date }] }` sorted by `e1rm` desc (ties resolve to the earliest date). `date` is the workout's `completedAt` ISO timestamp.
 - `POST /api/workouts` - `{ dayNumber }` -> generates sets from active plan + TMs
 - `POST /api/workouts/custom` - `{ date: "YYYY-MM-DD", exercises: [{ exerciseId, sets: [{ weight, reps }] }] }` -> creates a custom completed workout; returns workout with `isCustom: true`. **Must be registered before `/:id` routes in Express.**
 - `GET /api/workouts/current` - in-progress workout (or null)

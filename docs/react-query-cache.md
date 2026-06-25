@@ -15,6 +15,7 @@
 | `['admin-exercises']` | All exercises (admin) | ExerciseListPage |
 | `['admin-plans']` | All plans (admin) | PlanListPage |
 | `['progress']` | e1RM progression per exercise from completed sets (Epley formula); includes `inCurrentPlan` flag | ProgressPage |
+| `['progress', 'records']` | Personal records: best e1RM set per exercise (all-time) | ProgressPage (PersonalRecords) |
 | `['achievements']` | All achievement badges with locked/unlocked state for the current user | AchievementsPage |
 | `['social', 'feed']` | Last 20 feed events from confirmed friends (includes `streak` per event owner, and `latestComments`: last 2 comments per event) | SocialPage (FeedTab) |
 | `['social', 'friends']` | Accepted friends list (includes `streak` per friend) | SocialPage (FriendsTab) |
@@ -31,7 +32,7 @@
 | **Plan subscription** | select-plan.tsx | remove `['plan', 'current']`, remove `['training-maxes']`, remove `['progress']`, remove `['schedule']`, invalidate `['workout', 'current']` |
 | **TM setup** | setup.tsx | `['training-maxes']` |
 | **TM manual update** | settings.tsx | `['training-maxes']` |
-| **Workout complete** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']`, `['training-maxes']`, `['progress']`, `['social', 'feed']`, `['social', 'friends']`, `['achievements']` |
+| **Workout complete** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']`, `['training-maxes']`, `['progress']`, `['progress', 'records']`, `['social', 'feed']`, `['social', 'friends']`, `['achievements']` |
 | **Workout cancel** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']` |
 | **Workout delete (history)** | history.tsx | `['workoutCalendar']` |
 | **Custom workout save** | CustomWorkoutModal.tsx | `['workoutCalendar']` |
