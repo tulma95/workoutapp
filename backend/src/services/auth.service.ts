@@ -101,6 +101,7 @@ export async function deleteAccount(userId: number, password: string) {
     prisma.feedEventComment.deleteMany({ where: { userId } }),
     prisma.feedEvent.deleteMany({ where: { userId } }),
     prisma.userAchievement.deleteMany({ where: { userId } }),
+    prisma.bodyweightEntry.deleteMany({ where: { userId } }),
     prisma.trainingMax.deleteMany({ where: { userId } }),
     prisma.workout.deleteMany({ where: { userId } }),
     prisma.userPlan.deleteMany({ where: { userId } }),

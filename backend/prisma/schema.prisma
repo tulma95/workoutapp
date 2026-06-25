@@ -109,8 +109,22 @@ model User {
   feedComments      FeedEventComment[]
   achievements      UserAchievement[]
   pushSubscriptions PushSubscription[]
+  bodyweightEntries BodyweightEntry[]
 
   @@map("users")
+}
+
+model BodyweightEntry {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  weight     Decimal  @db.Decimal(5, 2)
+  recordedAt DateTime @default(now()) @map("recorded_at") @db.Timestamptz(3)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, recordedAt])
+  @@map("bodyweight_entries")
 }
 
 model TrainingMax {

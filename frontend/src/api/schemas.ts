@@ -271,6 +271,16 @@ export const PersonalRecordsResponseSchema = z.object({
 
 export type PersonalRecord = z.infer<typeof PersonalRecordSchema>;
 
+export const BodyweightEntrySchema = z.object({
+  id: z.number(),
+  weight: z.number(),
+  recordedAt: z.string(),
+});
+export const BodyweightHistoryResponseSchema = z.object({
+  entries: z.array(BodyweightEntrySchema),
+});
+export type BodyweightEntry = z.infer<typeof BodyweightEntrySchema>;
+
 // Infer TypeScript types from schemas
 export type WorkoutSet = z.infer<typeof WorkoutSetSchema>;
 export type Workout = z.infer<typeof WorkoutSchema>;

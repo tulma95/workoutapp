@@ -141,7 +141,7 @@
   {
     "id": "011",
     "title": "Bodyweight Tracking",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "Log bodyweight (daily or per-session) with a trend line chart. Casual users want weekly weigh-ins to see if training is working. Power users want daily logging, strength-to-bodyweight ratios, and correlation with TM progression."
   },
   {

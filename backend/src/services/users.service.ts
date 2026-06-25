@@ -12,7 +12,7 @@ export async function exportUserData(userId: number) {
     throw new Error('User not found');
   }
 
-  const [trainingMaxes, workouts, plans, achievements, friendships, feedEvents, feedComments, feedReactions] =
+  const [trainingMaxes, workouts, plans, achievements, friendships, feedEvents, feedComments, feedReactions, bodyweightEntries] =
     await Promise.all([
       prisma.trainingMax.findMany({
         where: { userId },
@@ -52,6 +52,7 @@ export async function exportUserData(userId: number) {
       prisma.feedEvent.findMany({ where: { userId }, orderBy: { createdAt: 'asc' } }),
       prisma.feedEventComment.findMany({ where: { userId }, orderBy: { createdAt: 'asc' } }),
       prisma.feedEventReaction.findMany({ where: { userId }, orderBy: { createdAt: 'asc' } }),
+      prisma.bodyweightEntry.findMany({ where: { userId }, orderBy: { recordedAt: 'asc' } }),
     ]);
 
   return {
@@ -102,5 +103,9 @@ export async function exportUserData(userId: number) {
     })),
     feedComments: feedComments.map((c) => ({ text: c.text, createdAt: c.createdAt })),
     feedReactions: feedReactions.map((r) => ({ emoji: r.emoji, createdAt: r.createdAt })),
+    bodyweightEntries: bodyweightEntries.map((b) => ({
+      weight: b.weight.toNumber(),
+      recordedAt: b.recordedAt,
+    })),
   };
 }

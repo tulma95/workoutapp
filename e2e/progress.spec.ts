@@ -51,6 +51,34 @@ test.describe('Progress Page', () => {
     await expect(page.getByText(/kg/).first()).toBeVisible();
   });
 
+  test('log bodyweight and see it in the history', async ({ setupCompletePage }) => {
+    const { page } = setupCompletePage;
+    const progress = new ProgressPage(page);
+    await progress.navigate();
+    await progress.expectLoaded();
+
+    await page.getByLabel('Bodyweight (kg)').fill('82.5');
+    const post = page.waitForResponse(
+      (r) => r.url().includes('/api/bodyweight') && r.request().method() === 'POST' && r.ok(),
+    );
+    await page.getByRole('button', { name: 'Log' }).click();
+    await post;
+
+    const history = page.getByTestId('bodyweight-history');
+    await expect(history).toBeVisible();
+    await expect(history.getByText('82.5 kg')).toBeVisible();
+
+    // A second, lighter entry shows a downward trend.
+    await page.getByLabel('Bodyweight (kg)').fill('81.2');
+    const post2 = page.waitForResponse(
+      (r) => r.url().includes('/api/bodyweight') && r.request().method() === 'POST' && r.ok(),
+    );
+    await page.getByRole('button', { name: 'Log' }).click();
+    await post2;
+
+    await expect(page.getByText(/↓ 1\.3 kg/)).toBeVisible();
+  });
+
   test('shows a Personal Records board after completing a workout', async ({
     setupCompletePage,
   }) => {
