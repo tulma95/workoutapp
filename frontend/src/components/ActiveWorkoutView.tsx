@@ -1,5 +1,6 @@
 import { type Workout, type ProgressionResult } from '../api/workouts'
 import SetRow from './SetRow'
+import { WarmupSets } from './WarmupSets'
 import { ProgressionBanner } from './ProgressionBanner'
 import { RestTimerBanner } from './RestTimerBanner'
 import { Button } from './Button'
@@ -100,6 +101,7 @@ export function ActiveWorkoutView({
       {exerciseGroups.map((group) => (
         <section key={group.exercise} className={styles.section}>
           <h2 className={styles.sectionTitle}>{group.exercise}</h2>
+          <WarmupSets topWeight={Math.max(...group.sets.map((s) => s.prescribedWeight))} />
           <div className={styles.sectionSets} data-set-list>
             {group.sets.map((set, index) => (
               <SetRow

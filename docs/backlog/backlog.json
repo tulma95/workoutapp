@@ -336,7 +336,7 @@
   {
     "id": "149",
     "title": "Warm-up set calculation",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "No warm-up logic anywhere; generated workouts jump straight to working sets at high percentages. Mature percentage-based apps auto-generate a warm-up ramp (e.g. 40/50/60% of working weight). Core to safe execution."
   },
   {

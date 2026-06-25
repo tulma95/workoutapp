@@ -5,6 +5,30 @@ import { SettingsPage } from './pages/settings.page';
 import { NavigationBar } from './pages/navigation.page';
 
 test.describe('Workout Session', () => {
+  test('shows a collapsible warm-up ramp for heavy lifts (guidance only)', async ({
+    setupCompletePage,
+  }) => {
+    const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const workout = new WorkoutPage(page);
+
+    await dashboard.expectLoaded();
+    await dashboard.startWorkout();
+    await workout.expectLoaded(1);
+
+    // Bench Press working weight is heavy enough to warrant a warm-up ramp.
+    const summary = page.getByText(/warm-up/i).first();
+    await expect(summary).toBeVisible();
+
+    const list = page.getByTestId('warmup-list').first();
+    await expect(list).toBeHidden(); // collapsed by default
+    await summary.click();
+    await expect(list).toBeVisible();
+    await expect(list).toContainText('kg');
+    await expect(page.getByText(/not tracked/i).first()).toBeVisible();
+  });
+
+
   test('starting a workout from the dashboard shows exercise sections with correct set counts', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
     const dashboard = new DashboardPage(page);
