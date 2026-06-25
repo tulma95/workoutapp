@@ -91,12 +91,6 @@
     "description": "Vibration or sound feedback when a set is logged. Confirms the tap registered, especially useful with sweaty/chalky hands or dim screens."
   },
   {
-    "id": "006",
-    "title": "Workout Progress Indicator",
-    "status": "in-progress",
-    "description": "Progress bar and set counter at top of workout page showing 'X / 17 sets completed'. Bar fills as sets complete, color transitions gray to blue to green. Frontend-only, derived from existing set data."
-  },
-  {
     "id": "018",
     "title": "Recent Workout Peek",
     "status": "backlog",

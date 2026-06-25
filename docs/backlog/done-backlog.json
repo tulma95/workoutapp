@@ -598,5 +598,11 @@
     "title": "Bodyweight Tracking",
     "status": "done",
     "description": "Log bodyweight (daily or per-session) with a trend line chart. Casual users want weekly weigh-ins to see if training is working. Power users want daily logging, strength-to-bodyweight ratios, and correlation with TM progression."
+  },
+  {
+    "id": "006",
+    "title": "Workout Progress Indicator",
+    "status": "done",
+    "description": "Progress bar and set counter at top of workout page showing 'X / 17 sets completed'. Bar fills as sets complete, color transitions gray to blue to green. Frontend-only, derived from existing set data."
   }
 ]

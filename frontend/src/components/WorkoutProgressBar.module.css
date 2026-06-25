@@ -1,6 +1,7 @@
 .bar {
-  /* Pinned to the top while scrolling through a long workout. The rest-timer
-     banner (also sticky, z-index 10) cleanly covers this during rest. */
+  /* Pinned to the top while scrolling through a long workout. Stays in the DOM
+     during rest but the rest-timer banner (also sticky top:0, z-index 10, taller
+     and opaque) covers it — so only one occupies the top slot at a time. */
   position: sticky;
   top: 0;
   z-index: 5;
