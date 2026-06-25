@@ -89,7 +89,7 @@ router.patch(
 
 const changeEmailSchema = z.object({
   currentPassword: z.string().min(1),
-  newEmail: z.string().email(),
+  newEmail: z.string().email().max(254),
 });
 
 router.patch(

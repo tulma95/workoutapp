@@ -254,12 +254,6 @@
     "description": "Backend requires JWT_SECRET, DATABASE_URL, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY (optional LOG_LEVEL/PORT) via requireEnv. No .env.example or doc lists them, so a Coolify deployer cannot know what secrets to inject. Add a documented required-vars list."
   },
   {
-    "id": "147",
-    "title": "Change account email",
-    "status": "in-progress",
-    "description": "PATCH /users/me accepts only username; the email login identifier can never be changed. Add email change with re-verification once email infra exists."
-  },
-  {
     "id": "150",
     "title": "Exercise library detail (instructions, muscles, video)",
     "status": "backlog",
@@ -414,5 +408,11 @@
     "title": "Bodyweight improvements: per-day dedup + trend chart",
     "status": "backlog",
     "description": "Follow-ups from ticket 011 (bodyweight tracking, shipped). (1) No per-day uniqueness: a user can log multiple times a day and the '↓ x kg' delta is since the previous ENTRY not the previous DAY — consider upsert-per-day or a latest-per-day trend view. (2) The card shows a numeric recent-entries list only; add a small trend chart/sparkline (reuse ProgressChart pattern) to visualize bodyweight over time alongside the e1RM charts."
+  },
+  {
+    "id": "179",
+    "title": "Normalize email casing across register/login/changeEmail",
+    "status": "backlog",
+    "description": "From ticket 147 review (pre-existing, out of scope there). The email @unique column is case-sensitive Postgres text, and register/login/changeEmail store & match email as-is (no lowercase). So 'User@x.com' and 'user@x.com' can coexist as separate accounts and login is case-sensitive. Normalize email to trimmed-lowercase consistently in register, login lookup, and changeEmail (and consider a one-off data migration / case-insensitive unique index) so accounts are unambiguous."
   }
 ]
