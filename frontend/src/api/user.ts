@@ -25,3 +25,7 @@ export async function deleteAccount(password: string) {
     body: JSON.stringify({ password }),
   })
 }
+
+export async function exportData() {
+  return apiFetch('/users/me/export')
+}

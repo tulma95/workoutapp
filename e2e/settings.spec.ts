@@ -1,3 +1,4 @@
+import { readFile } from 'fs/promises';
 import { test, expect } from './fixtures';
 import { test as baseTest } from '@playwright/test';
 import { SettingsPage } from './pages/settings.page';
@@ -36,6 +37,26 @@ test.describe('Settings Page', () => {
     await page.getByLabel(/password/i).fill('NewPassword456');
     await page.getByRole('button', { name: /log in/i }).click();
     await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
+  });
+
+  test('export my data -> downloads a JSON file containing the user data', async ({
+    setupCompletePage,
+  }) => {
+    const { page, user } = setupCompletePage;
+    const settings = new SettingsPage(page);
+    await settings.navigate();
+
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: /export my data/i }).click();
+    const download = await downloadPromise;
+
+    expect(download.suggestedFilename()).toMatch(/^setforge-export-\d{4}-\d{2}-\d{2}\.json$/);
+
+    const json = JSON.parse(await readFile(await download.path(), 'utf8'));
+    expect(json.profile.email).toBe(user.email);
+    expect(json.profile).not.toHaveProperty('passwordHash');
+    expect(json).toHaveProperty('workouts');
+    expect(json).toHaveProperty('trainingMaxes');
   });
 
   test('change password with wrong current password -> inline error', async ({

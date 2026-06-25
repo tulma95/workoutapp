@@ -5,6 +5,7 @@ import { authenticate } from '../middleware/auth';
 import { AuthRequest } from '../types';
 import prisma from '../lib/db';
 import { changePassword, deleteAccount } from '../services/auth.service';
+import { exportUserData } from '../services/users.service';
 import { usernameSchema, isP2002UsernameViolation } from '../lib/routeHelpers';
 
 const router = Router();
@@ -42,6 +43,12 @@ router.patch('/me', validate(updateSchema), async (req: AuthRequest, res: Respon
     }
     throw err;
   }
+});
+
+router.get('/me/export', async (req: AuthRequest, res: Response) => {
+  const data = await exportUserData(req.userId!);
+  res.setHeader('Content-Disposition', 'attachment; filename="setforge-export.json"');
+  res.json(data);
 });
 
 const changePasswordSchema = z.object({

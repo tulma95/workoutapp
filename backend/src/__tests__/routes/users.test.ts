@@ -117,6 +117,61 @@ describe('User routes', () => {
     });
   });
 
+  describe('GET /api/users/me/export', () => {
+    it('returns the user profile and owned data as JSON', async () => {
+      const { user, token } = await createTestUser();
+      const exercises = await getExercisesBySlug(['bench-press']);
+      const benchId = exercises['bench-press']!.id;
+
+      await prisma.trainingMax.create({
+        data: { userId: user.id, exerciseId: benchId, weight: 90 },
+      });
+      await prisma.workout.create({
+        data: {
+          userId: user.id,
+          dayNumber: 1,
+          status: 'completed',
+          completedAt: new Date(),
+          sets: {
+            create: {
+              exerciseId: benchId,
+              exerciseOrder: 1,
+              setOrder: 1,
+              prescribedWeight: 100,
+              prescribedReps: 5,
+              actualReps: 6,
+              completed: true,
+            },
+          },
+        },
+      });
+
+      const res = await request(app)
+        .get('/api/users/me/export')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.headers['content-disposition']).toContain('setforge-export.json');
+      expect(res.body.profile.email).toBe(user.email);
+      expect(res.body.profile).not.toHaveProperty('passwordHash');
+      expect(res.body.trainingMaxes).toContainEqual(
+        expect.objectContaining({ exercise: 'bench-press', weight: 90 }),
+      );
+      expect(res.body.workouts).toHaveLength(1);
+      expect(res.body.workouts[0].sets[0]).toMatchObject({
+        exercise: 'bench-press',
+        prescribedWeight: 100,
+        actualReps: 6,
+      });
+      expect(typeof res.body.exportedAt).toBe('string');
+    });
+
+    it('returns 401 without a token', async () => {
+      const res = await request(app).get('/api/users/me/export');
+      expect(res.status).toBe(401);
+    });
+  });
+
   describe('DELETE /api/users/me', () => {
     it('deletes the account and all owned data (incl. non-cascading rows), other users untouched', async () => {
       const { user, token } = await createTestUser({ password: 'todelete123' });

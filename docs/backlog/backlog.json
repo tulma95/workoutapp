@@ -324,7 +324,7 @@
   {
     "id": "145",
     "title": "Personal data export (GDPR portability)",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "No export endpoint. Serious lifters expect to download training history (CSV/JSON) and portability is a GDPR right. Add an export of workouts, TMs, and progress."
   },
   {

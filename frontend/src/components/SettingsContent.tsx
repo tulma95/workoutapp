@@ -4,6 +4,7 @@ import { ScheduleEditor } from './ScheduleEditor'
 import { PushNotificationSettings } from './PushNotificationSettings'
 import { InstallAppSettings } from './InstallAppSettings'
 import { ChangePasswordSettings } from './ChangePasswordSettings'
+import { ExportDataSettings } from './ExportDataSettings'
 import { DeleteAccountSettings } from './DeleteAccountSettings'
 import { formatExerciseName, formatWeight } from '../utils/weight'
 import styles from '../styles/SettingsPage.module.css'
@@ -174,6 +175,8 @@ export function SettingsContent({
       )}
 
       <ChangePasswordSettings />
+
+      <ExportDataSettings />
 
       <PushNotificationSettings />
 
