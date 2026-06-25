@@ -59,6 +59,33 @@ export async function refreshTokens(refreshToken: string) {
   };
 }
 
+// Change the account email after confirming the current password. Throws
+// 'Current password is incorrect' / 'User not found'; a duplicate email surfaces
+// as a Prisma P2002 for the route to map to 409.
+export async function changeEmail(
+  userId: number,
+  currentPassword: string,
+  newEmail: string,
+) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!valid) {
+    logger.warn('Email change failed: incorrect password', { userId });
+    throw new Error('Current password is incorrect');
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { email: newEmail.trim() },
+  });
+  logger.info('Email changed', { userId });
+  return { email: updated.email };
+}
+
 export async function changePassword(
   userId: number,
   currentPassword: string,

@@ -4,6 +4,7 @@ import { ScheduleEditor } from './ScheduleEditor'
 import { PushNotificationSettings } from './PushNotificationSettings'
 import { InstallAppSettings } from './InstallAppSettings'
 import { ChangePasswordSettings } from './ChangePasswordSettings'
+import { ChangeEmailSettings } from './ChangeEmailSettings'
 import { ThemeSettings } from './ThemeSettings'
 import { ExportDataSettings } from './ExportDataSettings'
 import { DeleteAccountSettings } from './DeleteAccountSettings'
@@ -176,6 +177,8 @@ export function SettingsContent({
           saveError={scheduleError}
         />
       )}
+
+      <ChangeEmailSettings />
 
       <ChangePasswordSettings />
 

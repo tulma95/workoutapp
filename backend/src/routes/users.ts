@@ -4,7 +4,7 @@ import { validate } from '../middleware/validate';
 import { authenticate } from '../middleware/auth';
 import { AuthRequest } from '../types';
 import prisma from '../lib/db';
-import { changePassword, deleteAccount } from '../services/auth.service';
+import { changeEmail, changePassword, deleteAccount } from '../services/auth.service';
 import { exportUserData } from '../services/users.service';
 import { usernameSchema, isP2002UsernameViolation } from '../lib/routeHelpers';
 
@@ -80,6 +80,40 @@ router.patch(
       }
       if (err instanceof Error && err.message === 'User not found') {
         res.status(404).json({ error: { code: 'NOT_FOUND', message: 'User not found' } });
+        return;
+      }
+      throw err;
+    }
+  },
+);
+
+const changeEmailSchema = z.object({
+  currentPassword: z.string().min(1),
+  newEmail: z.string().email(),
+});
+
+router.patch(
+  '/me/email',
+  validate(changeEmailSchema),
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const result = await changeEmail(req.userId!, req.body.currentPassword, req.body.newEmail);
+      res.json(result);
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message === 'Current password is incorrect') {
+        res.status(400).json({
+          error: { code: 'INVALID_PASSWORD', message: 'Current password is incorrect' },
+        });
+        return;
+      }
+      if (err instanceof Error && err.message === 'User not found') {
+        res.status(404).json({ error: { code: 'NOT_FOUND', message: 'User not found' } });
+        return;
+      }
+      if (err && typeof err === 'object' && 'code' in err && err.code === 'P2002') {
+        res.status(409).json({
+          error: { code: 'EMAIL_EXISTS', message: 'This email is already in use' },
+        });
         return;
       }
       throw err;

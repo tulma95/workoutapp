@@ -93,6 +93,24 @@ test.describe('Settings Page', () => {
     await expect(page.getByText(/current password is incorrect/i)).toBeVisible();
   });
 
+  test('change account email -> the displayed email updates', async ({ setupCompletePage }) => {
+    const { page } = setupCompletePage;
+    const settings = new SettingsPage(page);
+    await settings.navigate();
+    await settings.expectLoaded();
+
+    const newEmail = `changed-${crypto.randomUUID().slice(0, 8)}@example.com`;
+    await page.getByLabel('New email').fill(newEmail);
+    await page.getByLabel('Current password for email change').fill('ValidPassword123');
+    const patch = page.waitForResponse(
+      (r) => r.url().includes('/me/email') && r.request().method() === 'PATCH' && r.ok(),
+    );
+    await page.getByRole('button', { name: 'Update email' }).click();
+    await patch;
+
+    await expect(page.getByText(newEmail)).toBeVisible();
+  });
+
   test('delete account -> redirected to login, and the account no longer works', async ({
     setupCompletePage,
   }) => {

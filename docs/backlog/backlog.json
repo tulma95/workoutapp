@@ -195,13 +195,6 @@
     "description": "getStreaksForUsers in social.ts fetches every completed workout for the given user IDs with no date bound. A user with years of history causes a large scan on every GET /api/social/friends and GET /api/social/feed call. The streak only needs the most recent contiguous block; a WHERE completedAt >= NOW() - INTERVAL '365 days' (or similar) would cap the scan with no correctness impact."
   },
   {
-    "id": "093",
-    "title": "Fix push notifications: VAPID key format, subscribe schema mismatch, and button touch targets",
-    "status": "backlog",
-    "priority": "high",
-    "description": "Push subscribe is broken in real browsers due to multiple issues. Fix all together:\n\n1. VAPID public key format: GET /api/notifications/public-key returns SPKI DER base64url (91 bytes) but PushManager.subscribe() requires raw EC point (65 bytes, 04||x||y). Real browsers throw InvalidAccessError. Fix: return raw EC point from the endpoint, or convert in frontend.\n\n2. Subscribe response schema mismatch: pushSubscribeResponseSchema expects { id, userId, endpoint, createdAt } but backend POST /subscribe returns { ok: true }. Causes ZodError on successful 201, showing 'Failed to enable notifications'. Fix: align schema to match actual API response.\n\n3. Button touch targets: PushNotificationSettings.module.css .actionBtn and .actionBtnSecondary use min-height 2.75rem instead of project-standard 3rem. Update to 3rem."
-  },
-  {
     "id": "103",
     "title": "Improve logging coverage across backend services",
     "status": "backlog",
@@ -263,7 +256,7 @@
   {
     "id": "147",
     "title": "Change account email",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "PATCH /users/me accepts only username; the email login identifier can never be changed. Add email change with re-verification once email infra exists."
   },
   {

@@ -19,6 +19,13 @@ export async function changePassword(currentPassword: string, newPassword: strin
   })
 }
 
+export async function changeEmail(currentPassword: string, newEmail: string) {
+  await apiFetch('/users/me/email', {
+    method: 'PATCH',
+    body: JSON.stringify({ currentPassword, newEmail }),
+  })
+}
+
 export async function deleteAccount(password: string) {
   await apiFetch('/users/me', {
     method: 'DELETE',

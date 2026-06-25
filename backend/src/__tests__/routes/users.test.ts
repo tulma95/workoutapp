@@ -117,6 +117,71 @@ describe('User routes', () => {
     });
   });
 
+  describe('PATCH /api/users/me/email', () => {
+    async function newUser() {
+      const id = randomUUID().slice(0, 8);
+      const email = `em-${id}@example.com`;
+      const res = await request(app)
+        .post('/api/auth/register')
+        .send({ email, password: 'original123', username: `em${id}` });
+      return { id, email, token: res.body.accessToken as string };
+    }
+
+    it('changes the email when the password is correct', async () => {
+      const { id, token } = await newUser();
+      const newEmail = `em-new-${id}@example.com`;
+
+      const res = await request(app)
+        .patch('/api/users/me/email')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ currentPassword: 'original123', newEmail });
+      expect(res.status).toBe(200);
+      expect(res.body.email).toBe(newEmail);
+
+      const login = await request(app)
+        .post('/api/auth/login')
+        .send({ email: newEmail, password: 'original123' });
+      expect(login.status).toBe(200);
+    });
+
+    it('rejects an incorrect password with 400', async () => {
+      const { id, token } = await newUser();
+      const res = await request(app)
+        .patch('/api/users/me/email')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ currentPassword: 'wrongpassword', newEmail: `em-x-${id}@example.com` });
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('INVALID_PASSWORD');
+    });
+
+    it('rejects an email already in use with 409', async () => {
+      const a = await newUser();
+      const b = await newUser();
+      const res = await request(app)
+        .patch('/api/users/me/email')
+        .set('Authorization', `Bearer ${b.token}`)
+        .send({ currentPassword: 'original123', newEmail: a.email });
+      expect(res.status).toBe(409);
+      expect(res.body.error.code).toBe('EMAIL_EXISTS');
+    });
+
+    it('rejects an invalid email format with 400', async () => {
+      const { token } = await newUser();
+      const res = await request(app)
+        .patch('/api/users/me/email')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ currentPassword: 'original123', newEmail: 'not-an-email' });
+      expect(res.status).toBe(400);
+    });
+
+    it('returns 401 without a token', async () => {
+      const res = await request(app)
+        .patch('/api/users/me/email')
+        .send({ currentPassword: 'original123', newEmail: 'x@example.com' });
+      expect(res.status).toBe(401);
+    });
+  });
+
   describe('GET /api/users/me/export', () => {
     it('returns the user profile and owned data as JSON', async () => {
       const { user, token } = await createTestUser();
