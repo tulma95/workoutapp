@@ -689,5 +689,11 @@
     "title": "Normalize email casing across register/login/changeEmail",
     "status": "done",
     "description": "From ticket 147 review (pre-existing, out of scope there). The email @unique column is case-sensitive Postgres text, and register/login/changeEmail store & match email as-is (no lowercase). So 'User@x.com' and 'user@x.com' can coexist as separate accounts and login is case-sensitive. Normalize email to trimmed-lowercase consistently in register, login lookup, and changeEmail (and consider a one-off data migration / case-insensitive unique index) so accounts are unambiguous."
+  },
+  {
+    "id": "185",
+    "title": "Stabilize timing-sensitive E2E tests under machine load",
+    "status": "done",
+    "description": "Observed today: under heavy machine load the E2E suite intermittently flakes (different unrelated test each run) on 10s timeouts — page.goto, page.waitForURL (admin fixture), page.waitForResponse (workout.spec previous-performance, flaked twice). retry:2 doesn't always save them. Backend + auth flows always pass. Consider: longer/explicit timeouts on the waitForResponse-based tests, more robust waits (waitForResponse before the action via Promise.all), or reducing parallelism. Relates to the run sometimes taking 16m vs ~1m."
   }
 ]
