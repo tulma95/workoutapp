@@ -22,10 +22,35 @@ function stripPasswordHash(user: { id: number; email: string; username: string |
   return safe;
 }
 
+// Thrown when an email collides case-insensitively (catches legacy mixed-case
+// rows that the case-sensitive unique constraint would miss). Routes map this
+// to 409 EMAIL_EXISTS, same as a P2002 on the email unique constraint.
+export class EmailTakenError extends Error {
+  constructor() {
+    super('An account with this email already exists');
+    this.name = 'EmailTakenError';
+  }
+}
+
+async function assertEmailAvailable(normalizedEmail: string, excludeUserId?: number): Promise<void> {
+  const existing = await prisma.user.findFirst({
+    where: {
+      email: { equals: normalizedEmail, mode: 'insensitive' },
+      ...(excludeUserId !== undefined ? { id: { not: excludeUserId } } : {}),
+    },
+    select: { id: true },
+  });
+  if (existing) {
+    throw new EmailTakenError();
+  }
+}
+
 export async function register(email: string, password: string, username: string) {
+  const normalizedEmail = normalizeEmail(email);
+  await assertEmailAvailable(normalizedEmail);
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
   const user = await prisma.user.create({
-    data: { email: normalizeEmail(email), passwordHash, username },
+    data: { email: normalizedEmail, passwordHash, username },
   });
 
   logger.info('User registered', { email: user.email, userId: user.id });
@@ -79,9 +104,11 @@ export async function changeEmail(
     throw new Error('Current password is incorrect');
   }
 
+  const normalizedEmail = normalizeEmail(newEmail);
+  await assertEmailAvailable(normalizedEmail, userId);
   const updated = await prisma.user.update({
     where: { id: userId },
-    data: { email: normalizeEmail(newEmail) },
+    data: { email: normalizedEmail },
   });
   logger.info('Email changed', { userId });
   return { email: updated.email };

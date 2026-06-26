@@ -26,6 +26,12 @@ router.post('/register', validate(registerSchema), async (req: Request, res: Res
     const result = await authService.register(email, password, username);
     res.status(201).json(result);
   } catch (err: unknown) {
+    if (err instanceof authService.EmailTakenError) {
+      res.status(409).json({
+        error: { code: 'EMAIL_EXISTS', message: 'An account with this email already exists' },
+      });
+      return;
+    }
     if (isP2002UsernameViolation(err)) {
       res.status(409).json({
         error: { code: 'USERNAME_EXISTS', message: 'This username is already taken' },

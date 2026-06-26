@@ -4,7 +4,7 @@ import { validate } from '../middleware/validate';
 import { authenticate } from '../middleware/auth';
 import { AuthRequest } from '../types';
 import prisma from '../lib/db';
-import { changeEmail, changePassword, deleteAccount } from '../services/auth.service';
+import { changeEmail, changePassword, deleteAccount, EmailTakenError } from '../services/auth.service';
 import { exportUserData } from '../services/users.service';
 import { usernameSchema, isP2002UsernameViolation } from '../lib/routeHelpers';
 
@@ -110,7 +110,10 @@ router.patch(
         res.status(404).json({ error: { code: 'NOT_FOUND', message: 'User not found' } });
         return;
       }
-      if (err && typeof err === 'object' && 'code' in err && err.code === 'P2002') {
+      if (
+        err instanceof EmailTakenError ||
+        (err && typeof err === 'object' && 'code' in err && err.code === 'P2002')
+      ) {
         res.status(409).json({
           error: { code: 'EMAIL_EXISTS', message: 'This email is already in use' },
         });
