@@ -345,6 +345,16 @@ export const FriendRequestsResponseSchema = z.object({
   requests: z.array(FriendRequestSchema),
 });
 
+export const UserProfileSchema = z.object({
+  username: z.string(),
+  isSelf: z.boolean(),
+  currentStreak: z.number(),
+  totalWorkouts: z.number(),
+  achievementCount: z.number(),
+  topPRs: z.array(z.object({ exercise: z.string(), e1rm: z.number() })),
+});
+export type UserProfile = z.infer<typeof UserProfileSchema>;
+
 export const FeedEventPayloadSchema = z.discriminatedUnion('eventType', [
   z.object({
     eventType: z.literal('workout_completed'),

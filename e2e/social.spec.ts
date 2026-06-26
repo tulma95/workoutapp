@@ -188,6 +188,18 @@ test.describe('Social features', () => {
       // userA should now appear in userB's confirmed friends list
       await expect(pageB.getByRole('list', { name: /friends list/i }).getByText(new RegExp(usernameA))).toBeVisible();
 
+      // --- userB taps userA to view their profile ---
+      await pageB
+        .getByRole('list', { name: /friends list/i })
+        .getByRole('button', { name: usernameA, exact: true })
+        .click();
+      const profile = pageB.getByTestId('profile-modal');
+      await expect(profile).toBeVisible();
+      await expect(profile.getByRole('heading', { name: new RegExp(usernameA) })).toBeVisible();
+      await expect(profile.getByText('workouts')).toBeVisible();
+      await profile.getByRole('button', { name: /close/i }).click();
+      await expect(profile).toBeHidden();
+
       // --- userA completes a workout ---
       await pageA.getByRole('link', { name: /home/i }).click();
       await expect(pageA.getByText('Workout Days')).toBeVisible();

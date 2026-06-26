@@ -43,6 +43,7 @@ export const queryKeys = {
     leaderboardE1rm: () => ['social', 'leaderboard', 'e1rm'] as const,
     search: (query: string) => ['social', 'search', query] as const,
     searchAll: () => ['social', 'search'] as const,
+    profile: (username: string) => ['social', 'profile', username] as const,
   },
   admin: {
     plans: () => ['admin', 'plans'] as const,

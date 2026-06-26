@@ -263,6 +263,22 @@
   white-space: nowrap;
 }
 
+.displayNameButton {
+  flex: 1;
+  min-height: 3rem;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 500;
+  color: var(--primary-accent);
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
 /* Action buttons shared base */
 
 .actions {

@@ -8,6 +8,7 @@ import {
   UserSearchResponseSchema,
   CommentsResponseSchema,
   CreateCommentResponseSchema,
+  UserProfileSchema,
 } from './schemas';
 export type {
   Friend,
@@ -46,6 +47,10 @@ export async function searchUsers(q: string): Promise<typeof UserSearchResponseS
 
 export async function getFriends(): Promise<typeof FriendsResponseSchema._output> {
   return apiFetchParsed('/social/friends', FriendsResponseSchema);
+}
+
+export async function getUserProfile(username: string): Promise<typeof UserProfileSchema._output> {
+  return apiFetchParsed(`/social/users/${encodeURIComponent(username)}`, UserProfileSchema);
 }
 
 export async function getFriendRequests(): Promise<typeof FriendRequestsResponseSchema._output> {

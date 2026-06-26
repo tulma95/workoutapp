@@ -8,6 +8,7 @@ import prisma from '../lib/db';
 import { calculateStreak } from '../lib/streak';
 import { parseIntParam, usernameSchema } from '../lib/routeHelpers';
 import { notifyWithPush } from '../lib/notificationHelpers';
+import { getUserProfile } from '../services/profile.service';
 
 const router = Router();
 
@@ -173,6 +174,31 @@ router.get('/friends', async (req: AuthRequest, res: Response) => {
   }));
 
   res.json({ friends: friendsWithStreak });
+});
+
+// Profile stats for a user — viewable for yourself and accepted friends only.
+router.get('/users/:username', async (req: AuthRequest, res: Response) => {
+  const callerId = getUserId(req);
+  const target = await prisma.user.findUnique({
+    where: { username: req.params.username as string },
+    select: { id: true, username: true },
+  });
+  if (!target) {
+    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'User not found' } });
+    return;
+  }
+
+  const isSelf = target.id === callerId;
+  if (!isSelf) {
+    const friendIds = await getAcceptedFriendIds(callerId);
+    if (!friendIds.includes(target.id)) {
+      res.status(403).json({ error: { code: 'FORBIDDEN', message: "You can only view friends' profiles" } });
+      return;
+    }
+  }
+
+  const profile = await getUserProfile(target.id);
+  res.json({ username: target.username, isSelf, ...profile });
 });
 
 // GET /search must be registered BEFORE any dynamic /:id route

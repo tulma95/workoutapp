@@ -12,6 +12,7 @@ import {
 } from '../api/social'
 import type { Friend, FriendRequest, UserSearchResult } from '../api/social'
 import { SkeletonLine, SkeletonCard } from './Skeleton'
+import { ProfileModal } from './ProfileModal'
 import { queryKeys } from '../api/queryKeys'
 import { extractErrorMessage } from '../api/errors'
 import styles from './FriendsTab.module.css'
@@ -21,6 +22,7 @@ type SendMode = 'search' | 'email'
 export function FriendsTab() {
   const queryClient = useQueryClient()
 
+  const [profileUsername, setProfileUsername] = useState<string | null>(null)
   const [sendMode, setSendMode] = useState<SendMode>('search')
   const [email, setEmail] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -365,7 +367,13 @@ export function FriendsTab() {
           <ul className={styles.list} aria-label="Friends list">
             {friends.map((friend) => (
               <li key={friend.id} className={styles.listItem}>
-                <span className={styles.displayName}>{friend.username}</span>
+                <button
+                  type="button"
+                  className={styles.displayNameButton}
+                  onClick={() => setProfileUsername(friend.username)}
+                >
+                  {friend.username}
+                </button>
                 {friend.streak >= 2 && (
                   <span className={styles.streakBadge}>{friend.streak} day streak</span>
                 )}
@@ -385,6 +393,8 @@ export function FriendsTab() {
           </ul>
         )}
       </section>
+
+      <ProfileModal username={profileUsername} onClose={() => setProfileUsername(null)} />
     </div>
   )
 }
