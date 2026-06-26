@@ -109,12 +109,6 @@
     "description": "Track total volume load (sets x reps x weight) per exercise per session and chart it over time. Volume load is the best proxy for training stress and hypertrophy stimulus. Surfaces plateaus that raw TM numbers miss."
   },
   {
-    "id": "009",
-    "title": "Deload Detection",
-    "status": "in-progress",
-    "description": "Track AMRAP trends and suggest deload when user hits 0-1 reps on progression AMRAP for 3 consecutive workouts. Suggest 10% TM reduction with one-tap apply. New backend stall-check endpoint, no new DB tables needed."
-  },
-  {
     "id": "029",
     "title": "Lift Personality Quiz",
     "status": "backlog",

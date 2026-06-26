@@ -13,6 +13,7 @@
 - `DELETE /api/users/me` — body `{ password }`. Permanently deletes the account and all owned data (training maxes, workouts/sets, plans, friendships, feed events/comments/reactions, achievements, push subscriptions) in a FK-safe transaction. Returns 204; 400 `INVALID_PASSWORD` if the password is wrong
 - `GET /api/exercises` - all exercises sorted by name: `[{ id, slug, name, category, isUpperBody }]`
 - `GET /api/training-maxes` - current TMs (plan-aware: returns TMs for active plan exercises)
+- `GET /api/training-maxes/stalls` - lifts that have stalled: `{ stalls: [{ exerciseSlug, exerciseName, currentTM, suggestedTM }] }`. A lift stalls when its last 3 completed AMRAP (progression) sets all earn no TM increase AND the TM hasn't been adjusted on/after the most recent failing session. `suggestedTM` is a 10% deload (rounded). Registered before `/:exercise`.
 - `POST /api/training-maxes/setup` - accepts both `{ oneRepMaxes }` and `{ exerciseTMs: [{ exerciseId, oneRepMax }] }`
 - `PATCH /api/training-maxes/:exercise` - manual TM override; accepts `{ weight, reason? }` where `reason` is an optional string (max 500 chars) describing why the TM was changed (e.g. "deload reset", "injury setback")
 - `GET /api/training-maxes/:exercise/history`

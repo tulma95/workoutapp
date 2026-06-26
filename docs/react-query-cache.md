@@ -7,6 +7,7 @@
 | `['user', 'me']` | Current authenticated user | Layout, SettingsPage |
 | `['plan', 'current']` | User's active plan (or null) | DashboardPage, SettingsPage, PlanSelectionPage |
 | `['training-maxes']` | Current TMs for active plan | DashboardPage, SettingsPage |
+| `['trainingMaxes', 'stalls']` | Stalled lifts + deload suggestions | DashboardPage (DeloadSuggestion) — invalidated with `['trainingMaxes', 'all']` after a deload |
 | `['workout', 'current']` | In-progress workout (or null) | DashboardPage |
 | `['workout', 'stats']` | Dashboard momentum: current streak + workouts in last 7 days | DashboardStats |
 | `['workout', 'latest']` | Most recently completed workout (for the last-workout peek) | RecentWorkoutPeek |

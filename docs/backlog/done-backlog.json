@@ -701,5 +701,11 @@
     "title": "Surface today's scheduled workout on the dashboard",
     "status": "done",
     "description": "Users assign training days to weekdays (schedule, in settings) but the dashboard ignores it. Add a prominent 'Today' card at the top of the dashboard that, when today's weekday is scheduled, shows that day's number + exercises + a Start/Continue button. Renders nothing if no schedule or today isn't scheduled (avoids false rest-day claims on partial schedules)."
+  },
+  {
+    "id": "009",
+    "title": "Deload Detection",
+    "status": "done",
+    "description": "Track AMRAP trends and suggest deload when user hits 0-1 reps on progression AMRAP for 3 consecutive workouts. Suggest 10% TM reduction with one-tap apply. New backend stall-check endpoint, no new DB tables needed."
   }
 ]
