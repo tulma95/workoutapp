@@ -743,5 +743,11 @@
     "title": "Plan editor: slug generation mangles apostrophes",
     "status": "done",
     "description": "generateSlug() in usePlanEditorState.ts turns 'Arnold's Golden Six' into 'arnold-s-golden-six' because the apostrophe is replaced by a dash along with spaces. Strip apostrophes (straight and curly) before the non-alphanumeric replacement so it becomes 'arnolds-golden-six'."
+  },
+  {
+    "id": "168",
+    "title": "Offline set-log queue: also flush on visibilitychange (iOS Safari online event is unreliable)",
+    "status": "done",
+    "description": "iOS Safari fires the 'online' event on interface changes, not real reachability, so flush-on-reconnect can lag. Also flush the set-log queue on document visibilitychange->visible. Minor; from ticket 136 review (M4)."
   }
 ]

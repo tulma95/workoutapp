@@ -308,12 +308,6 @@
     "description": "A set confirmed within ~300ms of tapping Complete may have a debounce timer that hasn't fired, so its log is neither delivered nor queued when doCompleteWorkout flushes. Flush/await pending debounce timers before completion so progression is computed from fully-delivered data. Surfaced in ticket 136 review (I3)."
   },
   {
-    "id": "168",
-    "title": "Offline set-log queue: also flush on visibilitychange (iOS Safari online event is unreliable)",
-    "status": "backlog",
-    "description": "iOS Safari fires the 'online' event on interface changes, not real reachability, so flush-on-reconnect can lag. Also flush the set-log queue on document visibilitychange->visible. Minor; from ticket 136 review (M4)."
-  },
-  {
     "id": "169",
     "title": "Handle post-deploy chunk-load 404 for long-lived tabs (reload on dynamic-import failure)",
     "status": "backlog",
@@ -390,5 +384,11 @@
     "title": "Bound the stall-detection query (getStalls loads all progression sets)",
     "status": "backlog",
     "description": "From ticket 009 review (minor, deferred). getStalls fetches every completed isProgression set for the user, then keeps only the newest 3 per exercise in JS. For a multi-year user that's hundreds of rows to use ~12. Bound it with a per-exercise window/limit or a smarter query. Acceptable for now (bounded by user history)."
+  },
+  {
+    "id": "189",
+    "title": "Investigate optimistic set-log reps reverting under route-loader revalidation; fillAmrap does not verify reps reached target",
+    "status": "backlog",
+    "description": "While fixing the AMRAP stepper, a stricter fillAmrap (asserting each +1 step) surfaced online-only failures where the displayed reps stayed at the confirmed value: the workout route loader revalidates (getCurrentWorkout) and the loaderData useEffect calls setWorkout(server), which can overwrite an optimistic reps edit before the debounced PATCH lands. Harmless to current assertions because tests don't check exact AMRAP reps and the offline test is immune (revalidation fails offline), but it is a latent correctness bug. Also: e2e fillAmrap tracks a local counter and never verifies the displayed value reached the target, which masked the stepper bug for a long time. Investigate making set edits survive revalidation and add a final assertion to fillAmrap once the revert is fixed."
   }
 ]

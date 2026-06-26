@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import styles from './RepsInput.module.css';
 
 interface RepsInputProps {
@@ -9,27 +10,45 @@ interface RepsInputProps {
 }
 
 export default function RepsInput({ value, targetReps, isAmrap, onChange, onFocus }: RepsInputProps) {
+  // Steps are computed from a ref updated synchronously on every tap, not from
+  // the `value` prop. `value` only reflects a tap once the parent's optimistic
+  // update has round-tripped and React has re-rendered; a second tap fired before
+  // that commit (rapid taps, or just a slow WebKit re-render) would otherwise read
+  // a stale value of null and reset to targetReps — silently dropping reps. This
+  // bit AMRAP logging: confirm-then-increment collapsed back to the target.
+  const liveValue = useRef<number | null>(value);
+  useEffect(() => {
+    liveValue.current = value;
+  }, [value]);
+
+  function emit(next: number) {
+    liveValue.current = next;
+    onChange(next);
+  }
+
   function handleDecrement() {
-    if (value === null) {
-      onChange(targetReps - 1);
-    } else if (value > 0) {
-      onChange(value - 1);
+    const current = liveValue.current;
+    if (current === null) {
+      emit(targetReps - 1);
+    } else if (current > 0) {
+      emit(current - 1);
     }
   }
 
   function handleIncrement() {
-    if (value === null) {
-      onChange(targetReps);
-    } else if (!isAmrap && value >= targetReps) {
+    const current = liveValue.current;
+    if (current === null) {
+      emit(targetReps);
+    } else if (!isAmrap && current >= targetReps) {
       return;
     } else {
-      onChange(value + 1);
+      emit(current + 1);
     }
   }
 
   function handleTapConfirm() {
     onFocus?.();
-    onChange(targetReps);
+    emit(targetReps);
   }
 
   const isDecrementDisabled = value !== null && value <= 0;
