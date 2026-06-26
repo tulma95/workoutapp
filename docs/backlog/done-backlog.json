@@ -659,5 +659,11 @@
     "title": "Validate URL params and query strings with Zod",
     "status": "done",
     "description": "Body validation is solid but params/query have gaps: (1) PATCH/DELETE /api/admin/exercises/:id have no isNaN check causing 500s, (2) All :id params allow 0 or negative values, (3) GET /api/workouts/history limit has no upper bound, (4) GET /api/workouts/calendar year has no range bounds, (5) PATCH /api/workouts/:id/sets/:setId never validates :id param. Fix: extend validate middleware or add Zod schemas for params/query on all routes."
+  },
+  {
+    "id": "183",
+    "title": "Accessibility: fix color-contrast (primary), add meta description + robots.txt",
+    "status": "done",
+    "description": "Lighthouse mobile audit (dashboard): Accessibility 94, Best Practices 100, SEO 82. Failures: (1) color-contrast — white text on --primary #3b82f6 = 3.67 (need 4.5) on all primary buttons; active bottom-nav link (primary on dark) = 4.19. (2) SEO meta-description missing. (3) robots.txt invalid. Fix primary contrast (darken for button bg + lighter accent for nav-text-on-dark), add meta description + robots.txt."
   }
 ]
