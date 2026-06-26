@@ -707,5 +707,17 @@
     "title": "Deload Detection",
     "status": "done",
     "description": "Track AMRAP trends and suggest deload when user hits 0-1 reps on progression AMRAP for 3 consecutive workouts. Suggest 10% TM reduction with one-tap apply. New backend stall-check endpoint, no new DB tables needed."
+  },
+  {
+    "id": "181",
+    "title": "Remove dead/broken getWorkoutHistory frontend client",
+    "status": "done",
+    "description": "From ticket 037 review. frontend/src/api/workouts.ts getWorkoutHistory has ZERO callers and is already broken independent of 037: it treats the response as an array ((data as unknown[]).map) but GET /workouts/history returns { workouts, total, page, limit }. It would throw if ever called. Remove it (or fix its response handling) — the history page uses the calendar endpoints, not this."
+  },
+  {
+    "id": "182",
+    "title": "Migrate calendar query validation to parseQuery (consistency)",
+    "status": "done",
+    "description": "From ticket 037 review. GET /workouts/calendar still validates year/month with manual parseInt+isNaN+range (code INVALID_PARAMS). Now that parseQuery(schema, req, res) exists, migrate calendar to it for a single consistent query-validation idiom (currently three: VALIDATION_ERROR via parseQuery, INVALID_PARAMS manual on calendar, QUERY_TOO_LONG manual on search). Low priority consistency cleanup."
   }
 ]

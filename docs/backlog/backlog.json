@@ -368,24 +368,6 @@
     "description": "From ticket 064 review (minor). A single workout completion can emit workout_completed + N tm_increased + N pr_achieved events, a 4+ event burst in friends' feeds. Consider consolidating one completion's events into a single feed card (e.g. a workout_completed card that lists the TM increases and PRs) to reduce feed noise. Also note: there's no per-user opt-out for feed auto-posts (pre-existing) — a privacy toggle could be part of this."
   },
   {
-    "id": "181",
-    "title": "Remove dead/broken getWorkoutHistory frontend client",
-    "status": "backlog",
-    "description": "From ticket 037 review. frontend/src/api/workouts.ts getWorkoutHistory has ZERO callers and is already broken independent of 037: it treats the response as an array ((data as unknown[]).map) but GET /workouts/history returns { workouts, total, page, limit }. It would throw if ever called. Remove it (or fix its response handling) — the history page uses the calendar endpoints, not this."
-  },
-  {
-    "id": "182",
-    "title": "Migrate calendar query validation to parseQuery (consistency)",
-    "status": "backlog",
-    "description": "From ticket 037 review. GET /workouts/calendar still validates year/month with manual parseInt+isNaN+range (code INVALID_PARAMS). Now that parseQuery(schema, req, res) exists, migrate calendar to it for a single consistent query-validation idiom (currently three: VALIDATION_ERROR via parseQuery, INVALID_PARAMS manual on calendar, QUERY_TOO_LONG manual on search). Low priority consistency cleanup."
-  },
-  {
-    "id": "183",
-    "title": "Unify calendar .dayBadge vs .scheduledBadge color schemes",
-    "status": "backlog",
-    "description": "From ticket 183 review (minor, pre-existing). WorkoutCalendar's .dayBadge (white bg + blue text) and .scheduledBadge (blue bg + white text) use opposite color schemes for visually adjacent calendar badges. Unify them for visual consistency."
-  },
-  {
     "id": "184",
     "title": "Enforce case-insensitive email uniqueness at the DB level",
     "status": "backlog",
