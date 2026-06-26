@@ -37,15 +37,6 @@ export const WorkoutSchema = z.object({
   isCustom: z.boolean().optional().default(false),
 });
 
-export const WorkoutHistoryItemSchema = z.object({
-  id: z.number(),
-  dayNumber: z.number(),
-  status: z.enum(['in_progress', 'completed', 'discarded']),
-  completedAt: z.string().nullable(),
-  createdAt: z.string(),
-  isCustom: z.boolean().optional().default(false),
-});
-
 export const CalendarWorkoutSchema = z.object({
   id: z.number(),
   dayNumber: z.number(),
@@ -307,7 +298,6 @@ export type PreviousPerformance = z.infer<typeof PreviousPerformanceSchema>;
 // Infer TypeScript types from schemas
 export type WorkoutSet = z.infer<typeof WorkoutSetSchema>;
 export type Workout = z.infer<typeof WorkoutSchema>;
-export type WorkoutHistoryItem = z.infer<typeof WorkoutHistoryItemSchema>;
 export type CalendarWorkout = z.infer<typeof CalendarWorkoutSchema>;
 export type ProgressionResult = z.infer<typeof ProgressionResultSchema>;
 export type CompleteWorkoutResponse = z.infer<typeof CompleteWorkoutResponseSchema>;

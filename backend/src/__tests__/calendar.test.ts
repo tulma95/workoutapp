@@ -85,6 +85,16 @@ describe('GET /api/workouts/calendar - scheduledDays', () => {
     userPlanId = userPlan.id;
   });
 
+  it('rejects an out-of-range or missing month with 400', async () => {
+    for (const qs of ['year=2026&month=13', 'year=2026', 'year=2026&month=abc']) {
+      const res = await request(app)
+        .get(`/api/workouts/calendar?${qs}`)
+        .set('Authorization', `Bearer ${token}`);
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    }
+  });
+
   it('returns empty scheduledDays when user has no active plan', async () => {
     const res = await request(app)
       .get(`/api/workouts/calendar?year=${TEST_YEAR}&month=${TEST_MONTH}`)

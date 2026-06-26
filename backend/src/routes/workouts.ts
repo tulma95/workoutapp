@@ -69,16 +69,15 @@ router.get('/latest', async (req: AuthRequest, res: Response) => {
   res.json(workout);
 });
 
+const calendarQuerySchema = z.object({
+  year: z.coerce.number().int().min(2000).max(2100),
+  month: z.coerce.number().int().min(1).max(12),
+});
+
 router.get('/calendar', async (req: AuthRequest, res: Response) => {
-  const year = parseInt(req.query.year as string, 10);
-  const month = parseInt(req.query.month as string, 10);
-
-  if (!year || isNaN(year) || !month || isNaN(month) || month < 1 || month > 12) {
-    res.status(400).json({ error: { code: 'INVALID_PARAMS', message: 'Valid year and month (1-12) are required' } });
-    return;
-  }
-
-  const result = await workoutService.getCalendar(getUserId(req), year, month);
+  const query = parseQuery(calendarQuerySchema, req, res);
+  if (!query) return;
+  const result = await workoutService.getCalendar(getUserId(req), query.year, query.month);
   res.json(result);
 });
 

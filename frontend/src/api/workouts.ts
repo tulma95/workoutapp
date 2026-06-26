@@ -3,7 +3,6 @@ import {
   WorkoutSchema,
   WorkoutSetSchema,
   CompleteWorkoutResponseSchema,
-  WorkoutHistoryItemSchema,
   WorkoutCalendarResponseSchema,
   WorkoutStatsSchema,
   PreviousPerformanceSchema,
@@ -23,7 +22,6 @@ export interface CreateCustomWorkoutPayload {
 export type {
   WorkoutSet,
   Workout,
-  WorkoutHistoryItem,
   CalendarWorkout,
   ProgressionResult,
   CompleteWorkoutResponse,
@@ -85,14 +83,6 @@ export async function completeWorkout(id: number): Promise<typeof CompleteWorkou
   return apiFetchParsed(`/workouts/${id}/complete`, CompleteWorkoutResponseSchema, {
     method: 'POST',
   });
-}
-
-export async function getWorkoutHistory(
-  page: number = 1,
-  limit: number = 10
-): Promise<typeof WorkoutHistoryItemSchema._output[]> {
-  const data = await apiFetch(`/workouts/history?page=${page}&limit=${limit}`);
-  return (data as unknown[]).map((item) => WorkoutHistoryItemSchema.parse(item));
 }
 
 export async function cancelWorkout(id: number): Promise<void> {
