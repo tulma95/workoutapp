@@ -276,8 +276,9 @@ test.describe('Workout Session', () => {
     const workout = new WorkoutPage(page);
 
     await dashboard.expectLoaded();
-    // A fresh user has no completed workouts, so the stats are hidden.
+    // A fresh user has no completed workouts, so the stats + last-workout peek are hidden.
     await expect(page.getByTestId('dashboard-stats')).toBeHidden();
+    await expect(page.getByTestId('recent-workout-peek')).toBeHidden();
 
     await dashboard.startWorkout();
     await workout.expectLoaded(1);
@@ -293,6 +294,12 @@ test.describe('Workout Session', () => {
     await expect(stats).toBeVisible();
     await expect(stats.getByText('this week')).toBeVisible();
     await expect(stats.getByText('1', { exact: true })).toBeVisible();
+
+    // The last-workout peek now shows the just-completed session.
+    const peek = page.getByTestId('recent-workout-peek');
+    await expect(peek).toBeVisible();
+    await expect(peek.getByText('Last workout')).toBeVisible();
+    await expect(peek.getByText(/day\s*1/i)).toBeVisible();
   });
 
   test('shows a workout progress bar that advances as sets are logged', async ({

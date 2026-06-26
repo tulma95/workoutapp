@@ -329,6 +329,21 @@ export async function getCurrentWorkout(userId: number) {
   return workout ? formatWorkout(workout) : null;
 }
 
+// Most recently completed workout (with sets), for the dashboard "last workout" peek.
+export async function getLatestWorkout(userId: number) {
+  const workout = await prisma.workout.findFirst({
+    where: { userId, status: 'completed', completedAt: { not: null } },
+    orderBy: { completedAt: 'desc' },
+    include: {
+      sets: {
+        orderBy: [{ exerciseOrder: 'asc' }, { setOrder: 'asc' }],
+        include: { exercise: true },
+      },
+    },
+  });
+  return workout ? formatWorkout(workout) : null;
+}
+
 export async function getWorkout(workoutId: number, userId: number) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {

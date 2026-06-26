@@ -12,6 +12,7 @@ export const queryKeys = {
     calendar: (year: number, month: number) => ['workout', 'calendar', year, month] as const,
     calendarAll: () => ['workout', 'calendar'] as const,
     stats: () => ['workout', 'stats'] as const,
+    latest: () => ['workout', 'latest'] as const,
   },
   trainingMaxes: {
     all: () => ['trainingMaxes', 'all'] as const,

@@ -62,6 +62,11 @@ export async function getWorkoutStats(): Promise<typeof WorkoutStatsSchema._outp
   return apiFetchParsed('/workouts/stats', WorkoutStatsSchema);
 }
 
+export async function getLatestWorkout(): Promise<typeof WorkoutSchema._output | null> {
+  const data = await apiFetch('/workouts/latest');
+  return data === null ? null : WorkoutSchema.parse(data);
+}
+
 export async function updateWorkoutNotes(id: number, notes: string): Promise<void> {
   await apiFetch(`/workouts/${id}/notes`, {
     method: 'PATCH',

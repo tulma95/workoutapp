@@ -1,0 +1,40 @@
+.peek {
+  display: block;
+  margin-bottom: var(--space-lg);
+  padding: var(--space-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--space-sm);
+  text-decoration: none;
+  color: inherit;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.label {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.when {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.title {
+  margin: var(--space-xs) 0 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.summary {
+  margin: var(--space-xs) 0 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}

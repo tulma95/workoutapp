@@ -140,8 +140,9 @@ function HistoryPage() {
     try {
       await cancelWorkout(selectedWorkout.id)
       queryClient.invalidateQueries({ queryKey: queryKeys.workout.calendarAll() })
-      // Deleting a completed workout changes the dashboard streak / weekly count.
+      // Deleting a completed workout changes the dashboard streak / weekly count / last-workout peek.
       queryClient.invalidateQueries({ queryKey: queryKeys.workout.stats() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.workout.latest() })
       queryClient.invalidateQueries({ queryKey: queryKeys.progress.all() })
       queryClient.invalidateQueries({ queryKey: queryKeys.progress.records() })
       setSelectedWorkout(null)
