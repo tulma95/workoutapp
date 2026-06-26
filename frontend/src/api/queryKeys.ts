@@ -13,6 +13,7 @@ export const queryKeys = {
     calendarAll: () => ['workout', 'calendar'] as const,
     stats: () => ['workout', 'stats'] as const,
     latest: () => ['workout', 'latest'] as const,
+    previous: (id: number) => ['workout', 'previous', id] as const,
   },
   trainingMaxes: {
     all: () => ['trainingMaxes', 'all'] as const,

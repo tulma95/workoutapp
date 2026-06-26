@@ -268,6 +268,30 @@ test.describe('Workout Session', () => {
     expect(actualIncrease).toBeCloseTo(expectedIncrease, 0);
   });
 
+  test('shows previous performance when repeating a workout', async ({ setupCompletePage }) => {
+    const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const workout = new WorkoutPage(page);
+
+    // First Day 1 (no prior history yet); log a known AMRAP and complete it.
+    await dashboard.startWorkout();
+    await workout.expectLoaded(1);
+    await workout.fillAmrap('8');
+    await page.waitForResponse(
+      (r) => r.url().includes('/api/workouts/') && r.request().method() === 'PATCH' && r.ok(),
+    );
+    await workout.completeWithDialog();
+    await workout.goBackToDashboard();
+
+    // Start Day 1 again — the previous AMRAP performance now appears.
+    await dashboard.startWorkout();
+    await workout.expectLoaded(1);
+    const prev = page.getByTestId('previous-performance').first();
+    await expect(prev).toBeVisible();
+    await expect(prev).toContainText('Last time:');
+    await expect(prev).toContainText('× 8');
+  });
+
   test('dashboard shows a weekly workout count after completing a workout', async ({
     setupCompletePage,
   }) => {

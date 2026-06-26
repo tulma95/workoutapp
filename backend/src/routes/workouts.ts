@@ -125,6 +125,13 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
   res.json(workout);
 });
 
+router.get('/:id/previous', async (req: AuthRequest, res: Response) => {
+  const id = parseIntParam(res, req.params.id as string, 'workout ID');
+  if (id === null) return;
+  const previous = await workoutService.getPreviousPerformance(id, getUserId(req));
+  res.json(previous);
+});
+
 const logSetSchema = z.object({
   actualReps: z.number().int().min(0).nullable().optional(),
   completed: z.boolean().optional(),

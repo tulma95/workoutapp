@@ -147,3 +147,53 @@ describe('GET /api/workouts/history pagination bounds', () => {
     expect(res.body.limit).toBe(25);
   });
 });
+
+describe('GET /api/workouts/:id/previous', () => {
+  it('requires authentication', async () => {
+    expect((await request(app).get('/api/workouts/1/previous')).status).toBe(401);
+  });
+
+  it('returns the last-time AMRAP performance per exercise', async () => {
+    const { user, token } = await createTestUser();
+    const ex = await getExercisesBySlug(['bench-press']);
+    const benchId = ex['bench-press']!.id;
+
+    await prisma.workout.create({
+      data: {
+        userId: user.id, dayNumber: 1, status: 'completed', completedAt: daysAgo(3),
+        sets: { create: { exerciseId: benchId, exerciseOrder: 1, setOrder: 1, prescribedWeight: 80, prescribedReps: 5, actualReps: 8, isAmrap: true, completed: true } },
+      },
+    });
+    const current = await prisma.workout.create({
+      data: {
+        userId: user.id, dayNumber: 1, status: 'in_progress',
+        sets: { create: { exerciseId: benchId, exerciseOrder: 1, setOrder: 1, prescribedWeight: 82.5, prescribedReps: 5, isAmrap: true } },
+      },
+    });
+
+    const res = await request(app)
+      .get(`/api/workouts/${current.id}/previous`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body['Bench Press']).toBeDefined();
+    expect(res.body['Bench Press'].weight).toBe(80);
+    expect(res.body['Bench Press'].reps).toBe(8);
+  });
+
+  it('returns empty when there is no prior workout for the exercise', async () => {
+    const { user, token } = await createTestUser();
+    const ex = await getExercisesBySlug(['squat']);
+    const current = await prisma.workout.create({
+      data: {
+        userId: user.id, dayNumber: 2, status: 'in_progress',
+        sets: { create: { exerciseId: ex['squat']!.id, exerciseOrder: 1, setOrder: 1, prescribedWeight: 100, prescribedReps: 5 } },
+      },
+    });
+
+    const res = await request(app)
+      .get(`/api/workouts/${current.id}/previous`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({});
+  });
+});

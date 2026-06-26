@@ -344,6 +344,48 @@ export async function getLatestWorkout(userId: number) {
   return workout ? formatWorkout(workout) : null;
 }
 
+// For each exercise in the given workout, the user's last-time performance from
+// the most recent OTHER completed workout containing that exercise: the AMRAP
+// (top) set's weight and actual reps. Keyed by exercise name (matches the DTO).
+export async function getPreviousPerformance(
+  workoutId: number,
+  userId: number,
+): Promise<Record<string, { weight: number; reps: number; completedAt: string }>> {
+  const current = await prisma.workout.findFirst({
+    where: { id: workoutId, userId },
+    include: { sets: { select: { exerciseId: true } } },
+  });
+  if (!current) return {};
+
+  const exerciseIds = [...new Set(current.sets.map((s) => s.exerciseId))];
+  const result: Record<string, { weight: number; reps: number; completedAt: string }> = {};
+
+  for (const exerciseId of exerciseIds) {
+    const set = await prisma.workoutSet.findFirst({
+      where: {
+        exerciseId,
+        actualReps: { not: null },
+        workout: { userId, status: 'completed', id: { not: workoutId } },
+      },
+      // Most recent completed workout first; within it, the AMRAP (top) set.
+      orderBy: [{ workout: { completedAt: 'desc' } }, { isAmrap: 'desc' }],
+      include: {
+        exercise: { select: { name: true } },
+        workout: { select: { completedAt: true } },
+      },
+    });
+    if (set && set.actualReps !== null && set.workout.completedAt) {
+      result[set.exercise.name] = {
+        weight: Number(set.prescribedWeight),
+        reps: set.actualReps,
+        completedAt: set.workout.completedAt.toISOString(),
+      };
+    }
+  }
+
+  return result;
+}
+
 export async function getWorkout(workoutId: number, userId: number) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {

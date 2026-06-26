@@ -6,6 +6,7 @@ import {
   WorkoutHistoryItemSchema,
   WorkoutCalendarResponseSchema,
   WorkoutStatsSchema,
+  PreviousPerformanceSchema,
 } from './schemas';
 
 export interface CreateCustomWorkoutPayload {
@@ -65,6 +66,12 @@ export async function getWorkoutStats(): Promise<typeof WorkoutStatsSchema._outp
 export async function getLatestWorkout(): Promise<typeof WorkoutSchema._output | null> {
   const data = await apiFetch('/workouts/latest');
   return data === null ? null : WorkoutSchema.parse(data);
+}
+
+export async function getPreviousPerformance(
+  workoutId: number,
+): Promise<typeof PreviousPerformanceSchema._output> {
+  return apiFetchParsed(`/workouts/${workoutId}/previous`, PreviousPerformanceSchema);
 }
 
 export async function updateWorkoutNotes(id: number, notes: string): Promise<void> {

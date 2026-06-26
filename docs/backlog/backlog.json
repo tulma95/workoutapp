@@ -408,5 +408,11 @@
     "title": "Unify calendar .dayBadge vs .scheduledBadge color schemes",
     "status": "backlog",
     "description": "From ticket 183 review (minor, pre-existing). WorkoutCalendar's .dayBadge (white bg + blue text) and .scheduledBadge (blue bg + white text) use opposite color schemes for visually adjacent calendar badges. Unify them for visual consistency."
+  },
+  {
+    "id": "184",
+    "title": "Previous performance reference during a workout",
+    "status": "in-progress",
+    "description": "On the active workout page, show each exercise's last-time performance ('Last time: 80 kg × 8') so the user knows what to beat (progressive overload). Backend GET /workouts/:id/previous returns a map exerciseName -> { weight, reps, completedAt } from the AMRAP/top set of the most recent OTHER completed workout containing that exercise. Frontend shows it under each exercise header in ActiveWorkoutView."
   }
 ]

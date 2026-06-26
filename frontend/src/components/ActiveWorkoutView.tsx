@@ -1,4 +1,7 @@
-import { type Workout, type ProgressionResult, type NewPersonalRecord } from '../api/workouts'
+import { useQuery } from '@tanstack/react-query'
+import { type Workout, type ProgressionResult, type NewPersonalRecord, getPreviousPerformance } from '../api/workouts'
+import { queryKeys } from '../api/queryKeys'
+import { formatWeight } from '../utils/weight'
 import { PersonalRecordCelebration } from './PersonalRecordCelebration'
 import { WorkoutSummaryStats } from './WorkoutSummaryStats'
 import { WorkoutProgressBar } from './WorkoutProgressBar'
@@ -68,6 +71,12 @@ export function ActiveWorkoutView({
   // Weight whose plate breakdown is shown (null = dialog closed).
   const [plateWeight, setPlateWeight] = useState<number | null>(null)
 
+  // Last-time performance per exercise, so the lifter knows what to beat.
+  const { data: previous } = useQuery({
+    queryKey: queryKeys.workout.previous(workout.id),
+    queryFn: () => getPreviousPerformance(workout.id),
+  })
+
   if (phase.phase === 'error') {
     return (
       <div className={styles.page}>
@@ -119,9 +128,16 @@ export function ActiveWorkoutView({
         />
       )}
 
-      {exerciseGroups.map((group) => (
+      {exerciseGroups.map((group) => {
+        const prev = previous?.[group.exercise]
+        return (
         <section key={group.exercise} className={styles.section}>
           <h2 className={styles.sectionTitle}>{group.exercise}</h2>
+          {prev && (
+            <p className={styles.previousPerf} data-testid="previous-performance">
+              Last time: {formatWeight(prev.weight)} × {prev.reps}
+            </p>
+          )}
           <WarmupSets topWeight={Math.max(...group.sets.map((s) => s.prescribedWeight))} />
           <div className={styles.sectionSets} data-set-list>
             {group.sets.map((set, index) => (
@@ -140,7 +156,8 @@ export function ActiveWorkoutView({
             ))}
           </div>
         </section>
-      ))}
+        )
+      })}
 
       <div className={styles.actions}>
         <Button
