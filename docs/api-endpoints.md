@@ -2,8 +2,8 @@
 
 ## Public
 
-- `POST /api/auth/register` - `{ email, password, username }` — `username` is required; 3–20 chars, alphanumeric + underscores only; 409 `USERNAME_EXISTS` if taken
-- `POST /api/auth/login` - `{ email, password }` -> `{ accessToken, refreshToken, user }`
+- `POST /api/auth/register` - `{ email, password, username }` — `username` is required; 3–20 chars, alphanumeric + underscores only; 409 `USERNAME_EXISTS` if taken. Email is stored trimmed-lowercased (`normalizeEmail`).
+- `POST /api/auth/login` - `{ email, password }` -> `{ accessToken, refreshToken, user }`. Email match is case-insensitive (exact indexed lookup first, then a case-insensitive fallback for legacy non-normalized rows).
 
 ## Protected (JWT required)
 

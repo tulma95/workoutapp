@@ -683,5 +683,11 @@
     "title": "User Profile Page",
     "status": "done",
     "description": "Public-ish profile page showing: display name, member since date, current plan, lift stats summary (current TMs or e1RMs), workout streak, badges earned, total workouts completed. Viewable by friends. Foundation for social identity in the app."
+  },
+  {
+    "id": "179",
+    "title": "Normalize email casing across register/login/changeEmail",
+    "status": "done",
+    "description": "From ticket 147 review (pre-existing, out of scope there). The email @unique column is case-sensitive Postgres text, and register/login/changeEmail store & match email as-is (no lowercase). So 'User@x.com' and 'user@x.com' can coexist as separate accounts and login is case-sensitive. Normalize email to trimmed-lowercase consistently in register, login lookup, and changeEmail (and consider a one-off data migration / case-insensitive unique index) so accounts are unambiguous."
   }
 ]
