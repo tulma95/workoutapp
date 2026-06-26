@@ -396,5 +396,17 @@
     "title": "Enforce case-insensitive email uniqueness at the DB level",
     "status": "backlog",
     "description": "From ticket 179 review. register/changeEmail now do an insensitive pre-check (assertEmailAvailable) + the case-sensitive unique constraint, which closes the cross-case duplicate gap for the non-concurrent case but leaves a TOCTOU race under concurrency. The robust fix is DB-level: either a citext email column (@db.Citext + CREATE EXTENSION citext) or a functional unique index on lower(email), plus a one-off data migration to lowercase existing rows (guarded for collisions). That also lets login drop the case-insensitive fallback. Verify no existing case-variant duplicates before the migration."
+  },
+  {
+    "id": "185",
+    "title": "Today card: show 'Completed' state when today's scheduled day is already done",
+    "status": "backlog",
+    "description": "From ticket 186 review (minor UX). If today's scheduled day was already completed today, the dashboard Today card still shows 'Start Workout' (would start a repeat). Show a 'Completed today ✓' state instead (check the latest/today's completed workout for that dayNumber)."
+  },
+  {
+    "id": "186",
+    "title": "Reject duplicate weekdays in schedule (backend)",
+    "status": "backlog",
+    "description": "From ticket 186 review (pre-existing). PUT /schedule rejects duplicate dayNumbers but not duplicate weekdays, so two plan days can be scheduled on the same weekday; the editor only warns, and TodaysWorkout.find() then picks an arbitrary first. Make duplicate weekdays a hard 400 (or have the editor block save)."
   }
 ]
