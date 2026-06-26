@@ -88,6 +88,14 @@ describe('GET /api/social/search', () => {
     expect(res.body.error.code).toBe('MISSING_QUERY');
   });
 
+  it('returns 400 when q exceeds the length limit', async () => {
+    const res = await request(app)
+      .get(`/api/social/search?q=${'a'.repeat(101)}`)
+      .set('Authorization', `Bearer ${callerToken}`);
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('QUERY_TOO_LONG');
+  });
+
   it('returns 400 when q is empty string', async () => {
     const res = await request(app)
       .get('/api/social/search?q=')

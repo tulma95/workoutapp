@@ -185,6 +185,11 @@ router.get('/search', async (req: AuthRequest, res: Response) => {
     return;
   }
 
+  if (q.length > 100) {
+    res.status(400).json({ error: { code: 'QUERY_TOO_LONG', message: 'Query parameter q is too long' } });
+    return;
+  }
+
   // Find all users with pending or accepted friendship with caller (both directions)
   const activeFriendships = await prisma.friendship.findMany({
     where: {

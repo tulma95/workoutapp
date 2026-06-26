@@ -108,3 +108,42 @@ describe('GET /api/workouts/latest', () => {
     expect(res.body).toBeNull();
   });
 });
+
+describe('GET /api/workouts/history pagination bounds', () => {
+  it('rejects an out-of-range limit with 400', async () => {
+    const { token } = await createTestUser();
+    const res = await request(app)
+      .get('/api/workouts/history?limit=99999')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('rejects a non-positive page with 400', async () => {
+    const { token } = await createTestUser();
+    const res = await request(app)
+      .get('/api/workouts/history?page=-3')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(400);
+  });
+
+  it('defaults page/limit when absent', async () => {
+    const { token } = await createTestUser();
+    const res = await request(app)
+      .get('/api/workouts/history')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.page).toBe(1);
+    expect(res.body.limit).toBe(10);
+  });
+
+  it('accepts valid in-range pagination', async () => {
+    const { token } = await createTestUser();
+    const res = await request(app)
+      .get('/api/workouts/history?page=2&limit=25')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.page).toBe(2);
+    expect(res.body.limit).toBe(25);
+  });
+});

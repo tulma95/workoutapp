@@ -7,7 +7,7 @@ import * as workoutService from '../services/workout.service';
 import prisma from '../lib/db';
 import { notificationManager } from '../services/notifications.service';
 import { pushService } from '../services/push.service';
-import { parseIntParam } from '../lib/routeHelpers';
+import { parseIntParam, parseQuery } from '../lib/routeHelpers';
 
 const router = Router();
 
@@ -15,6 +15,13 @@ router.use(authenticate);
 
 const startSchema = z.object({
   dayNumber: z.number().int().min(1),
+});
+
+// Bound pagination so a client can't request an unbounded page size. Absent →
+// defaults; present-but-invalid/out-of-range → 400.
+const historyQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).optional().default(1),
+  limit: z.coerce.number().int().min(1).max(50).optional().default(10),
 });
 
 router.post('/', validate(startSchema), async (req: AuthRequest, res: Response) => {
@@ -46,9 +53,9 @@ router.get('/current', async (req: AuthRequest, res: Response) => {
 });
 
 router.get('/history', async (req: AuthRequest, res: Response) => {
-  const page = parseInt(req.query.page as string, 10) || 1;
-  const limit = parseInt(req.query.limit as string, 10) || 10;
-  const result = await workoutService.getHistory(getUserId(req), page, limit);
+  const query = parseQuery(historyQuerySchema, req, res);
+  if (!query) return;
+  const result = await workoutService.getHistory(getUserId(req), query.page, query.limit);
   res.json(result);
 });
 

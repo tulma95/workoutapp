@@ -1,5 +1,26 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { z } from 'zod';
+
+// Validate a request's query string against a zod schema. Returns the parsed
+// (coerced) data, or sends a 400 and returns null. Express 5's req.query is
+// read-only, so callers use the returned value rather than mutating req.query.
+export function parseQuery<T>(schema: z.ZodType<T>, req: Request, res: Response): T | null {
+  const result = schema.safeParse(req.query);
+  if (!result.success) {
+    res.status(400).json({
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid query parameters',
+        details: result.error.issues.map((issue) => ({
+          path: issue.path.join('.'),
+          message: issue.message,
+        })),
+      },
+    });
+    return null;
+  }
+  return result.data;
+}
 
 export function parseIntParam(res: Response, raw: string | undefined, label: string): number | null {
   const n = parseInt(raw ?? '', 10);
