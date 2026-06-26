@@ -38,7 +38,7 @@
 | **Workout complete** | workout.$dayNumber.tsx (invalidateAfterWorkoutComplete) | `['workout']`, `['workoutCalendar']`, `['workout', 'stats']`, `['workout', 'latest']`, `['training-maxes']`, `['progress']`, `['progress', 'records']`, `['social', 'feed']`, `['social', 'friends']`, `['achievements']` |
 | **Workout cancel** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']` |
 | **Workout delete (history)** | history.tsx | `['workoutCalendar']`, `['workout', 'stats']`, `['workout', 'latest']`, `['progress']`, `['progress', 'records']` |
-| **Custom workout save** | CustomWorkoutModal.tsx | `['workoutCalendar']` |
+| **Custom workout save** | history.tsx (handleCustomWorkoutSaved) | `['workoutCalendar']`, `['workout', 'stats']`, `['workout', 'latest']`, `['progress']`, `['progress', 'records']` |
 | **Exercise CRUD** | admin/exercises.tsx | `['admin-exercises']`, `['exercises']` (admin adding an exercise should update the picker) |
 | **Plan archive** | admin/plans.index.tsx | `['admin-plans']` |
 | **Plan create** | PlanEditorPage.tsx | `['admin-plans']` |

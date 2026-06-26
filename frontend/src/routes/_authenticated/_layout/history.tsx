@@ -127,7 +127,13 @@ function HistoryPage() {
   }
 
   const handleCustomWorkoutSaved = () => {
+    // A custom workout is a completed workout with sets — it can become the
+    // latest, change the streak/weekly count, and affect progress + records.
     queryClient.invalidateQueries({ queryKey: queryKeys.workout.calendarAll() })
+    queryClient.invalidateQueries({ queryKey: queryKeys.workout.stats() })
+    queryClient.invalidateQueries({ queryKey: queryKeys.workout.latest() })
+    queryClient.invalidateQueries({ queryKey: queryKeys.progress.all() })
+    queryClient.invalidateQueries({ queryKey: queryKeys.progress.records() })
     setSelectedDateKey(null)
   }
 
