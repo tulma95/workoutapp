@@ -9,6 +9,7 @@ import { calculateStreak } from '../lib/streak';
 import { parseIntParam, usernameSchema } from '../lib/routeHelpers';
 import { notifyWithPush } from '../lib/notificationHelpers';
 import { getUserProfile } from '../services/profile.service';
+import { normalizeEmail } from '../lib/email';
 
 const router = Router();
 
@@ -91,7 +92,9 @@ router.post('/request', validate(requestSchema), async (req: AuthRequest, res: R
 
   const target = username
     ? await prisma.user.findUnique({ where: { username } })
-    : await prisma.user.findUnique({ where: { email } });
+    : await prisma.user.findFirst({
+        where: { email: { equals: normalizeEmail(email as string), mode: 'insensitive' } },
+      });
   if (!target) {
     res.status(404).json({ error: { code: 'NOT_FOUND', message: 'User not found' } });
     return;

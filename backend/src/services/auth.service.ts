@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../lib/db';
 import { config } from '../config';
 import { logger } from '../lib/logger';
+import { normalizeEmail } from '../lib/email';
 
 const SALT_ROUNDS = 10;
 const ACCESS_TOKEN_EXPIRY = '24h';
@@ -24,7 +25,7 @@ function stripPasswordHash(user: { id: number; email: string; username: string |
 export async function register(email: string, password: string, username: string) {
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
   const user = await prisma.user.create({
-    data: { email, passwordHash, username },
+    data: { email: normalizeEmail(email), passwordHash, username },
   });
 
   logger.info('User registered', { email: user.email, userId: user.id });
@@ -80,7 +81,7 @@ export async function changeEmail(
 
   const updated = await prisma.user.update({
     where: { id: userId },
-    data: { email: newEmail.trim() },
+    data: { email: normalizeEmail(newEmail) },
   });
   logger.info('Email changed', { userId });
   return { email: updated.email };
@@ -142,7 +143,16 @@ export async function deleteAccount(userId: number, password: string) {
 }
 
 export async function login(email: string, password: string) {
-  const user = await prisma.user.findUnique({ where: { email } });
+  // Common case: emails are stored normalized, so an exact (indexed) lookup
+  // hits. Fall back to a case-insensitive scan only for legacy rows stored with
+  // non-normalized casing (before normalize-on-write) — keeps login off a seq
+  // scan for the vast majority of logins.
+  const normalized = normalizeEmail(email);
+  const user =
+    (await prisma.user.findUnique({ where: { email: normalized } })) ??
+    (await prisma.user.findFirst({
+      where: { email: { equals: normalized, mode: 'insensitive' } },
+    }));
   if (!user) {
     logger.warn('Login failed: unknown email', { email });
     throw new Error('Invalid email or password');
