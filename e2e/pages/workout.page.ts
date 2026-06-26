@@ -87,6 +87,9 @@ export class WorkoutPage {
   async fillAmrapAndWait(value: string, index = 0) {
     const responsePromise = this.page.waitForResponse(
       resp => resp.url().includes('/api/workouts/') && resp.request().method() === 'PATCH' && resp.ok(),
+      // waitForResponse has its own (short) default timeout independent of the
+      // per-test timeout; give the debounced PATCH room to arrive under load.
+      { timeout: 15000 },
     );
     await this.fillAmrap(value, index);
     await responsePromise;
