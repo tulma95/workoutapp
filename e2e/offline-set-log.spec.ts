@@ -53,6 +53,47 @@ test.describe('Offline set logging', () => {
     await expect(amrapReps).toHaveText('10');
   });
 
+  test('queued set-logs still flush on reconnect when the online event is missed', async ({
+    setupCompletePage,
+  }) => {
+    const { page } = setupCompletePage;
+    const context = page.context();
+    const dashboard = new DashboardPage(page);
+    const workout = new WorkoutPage(page);
+
+    await dashboard.expectLoaded();
+    await dashboard.startWorkout();
+    await workout.expectLoaded(1);
+    await expect(workout.repsInputs.first()).toBeVisible();
+
+    // Simulate WebKit/iOS Safari dropping the `online` event: a capture-phase
+    // listener swallows it before the app's reconnect handler ever runs. Delivery
+    // must still happen via the interval fallback, not the event.
+    await page.evaluate(() => {
+      window.addEventListener('online', (e) => e.stopImmediatePropagation(), true);
+    });
+
+    await context.setOffline(true);
+    await workout.fillAmrap('10');
+
+    await expect
+      .poll(() => page.evaluate((k) => localStorage.getItem(k), QUEUE_KEY))
+      .not.toBeNull();
+
+    const patch = page.waitForResponse(
+      (r) =>
+        r.url().includes('/api/workouts/') &&
+        r.request().method() === 'PATCH' &&
+        r.ok(),
+    );
+    await context.setOffline(false);
+    await patch;
+
+    await expect
+      .poll(() => page.evaluate((k) => localStorage.getItem(k), QUEUE_KEY))
+      .toBeNull();
+  });
+
   test('logout clears any queued set-logs so they cannot flush under another user', async ({
     setupCompletePage,
   }) => {

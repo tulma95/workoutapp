@@ -335,12 +335,21 @@ function ActiveWorkout({
   }, [])
 
   // Deliver any set-logs that were queued while offline — on mount (e.g. after a
-  // reload during a wifi drop) and whenever the connection is restored.
+  // reload during a wifi drop) and whenever the connection is restored. The
+  // `online` event is unreliable on WebKit / iOS Safari (it's sometimes never
+  // dispatched on reconnect), so a short interval also retries while the queue
+  // has anything in it; flushSetLogQueue no-ops when empty and is re-entrant.
   useEffect(() => {
     void flushSetLogQueue()
     const onOnline = () => void flushSetLogQueue()
     window.addEventListener('online', onOnline)
-    return () => window.removeEventListener('online', onOnline)
+    const retry = setInterval(() => {
+      if (hasPendingSetLogs()) void flushSetLogQueue()
+    }, 3000)
+    return () => {
+      window.removeEventListener('online', onOnline)
+      clearInterval(retry)
+    }
   }, [])
 
   useDialog(achievementDialogRef, achievementDialogOpen, () => setAchievementDialogOpen(false))
