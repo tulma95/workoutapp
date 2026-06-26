@@ -96,7 +96,7 @@
 }
 
 .rankingRow:first-child .rank {
-  color: var(--primary);
+  color: var(--primary-accent);
 }
 
 .displayName {

@@ -51,7 +51,7 @@
 
 .count {
   font-weight: 700;
-  color: var(--primary);
+  color: var(--primary-accent);
 }
 
 .plateWeight {

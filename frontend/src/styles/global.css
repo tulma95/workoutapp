@@ -24,6 +24,8 @@ a {
 :root {
   --primary: #2563eb;
   --primary-dark: #1d4ed8;
+  /* Primary used as TEXT/accent on surfaces (WCAG AA: 4.72+ on light bg) */
+  --primary-accent: #2563eb;
   --success: #16a34a;
   --danger: #dc2626;
   --muted: #94a3b8;
@@ -48,8 +50,11 @@ a {
    the user's System/Light/Dark preference). Only the colour tokens change, so
    any component built on the tokens themes automatically. */
 :root[data-theme='dark'] {
-  --primary: #3b82f6;
-  --primary-dark: #2563eb;
+  /* Button bg (white text): #2563eb gives 5.17:1 with white (AA). */
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  /* Primary as TEXT/accent on dark surfaces: #60a5fa gives 6+:1 on cards. */
+  --primary-accent: #60a5fa;
   --success: #22c55e;
   --danger: #f87171;
   --muted: #64748b;

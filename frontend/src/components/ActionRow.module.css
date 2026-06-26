@@ -42,5 +42,5 @@
 }
 
 .actionButtonActive {
-  color: var(--primary);
+  color: var(--primary-accent);
 }

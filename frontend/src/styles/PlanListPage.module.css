@@ -114,7 +114,7 @@
 
 .badgeSystem {
   background: rgba(59, 130, 246, 0.15);
-  color: var(--primary);
+  color: var(--primary-accent);
 }
 
 .cardMeta {

@@ -29,6 +29,6 @@
 }
 
 .bottomNavLinkActive {
-  color: var(--primary);
+  color: var(--primary-accent);
   font-weight: 700;
 }

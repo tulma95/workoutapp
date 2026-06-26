@@ -402,5 +402,11 @@
     "title": "Migrate calendar query validation to parseQuery (consistency)",
     "status": "backlog",
     "description": "From ticket 037 review. GET /workouts/calendar still validates year/month with manual parseInt+isNaN+range (code INVALID_PARAMS). Now that parseQuery(schema, req, res) exists, migrate calendar to it for a single consistent query-validation idiom (currently three: VALIDATION_ERROR via parseQuery, INVALID_PARAMS manual on calendar, QUERY_TOO_LONG manual on search). Low priority consistency cleanup."
+  },
+  {
+    "id": "183",
+    "title": "Accessibility: fix color-contrast (primary), add meta description + robots.txt",
+    "status": "in-progress",
+    "description": "Lighthouse mobile audit (dashboard): Accessibility 94, Best Practices 100, SEO 82. Failures: (1) color-contrast — white text on --primary #3b82f6 = 3.67 (need 4.5) on all primary buttons; active bottom-nav link (primary on dark) = 4.19. (2) SEO meta-description missing. (3) robots.txt invalid. Fix primary contrast (darken for button bg + lighter accent for nav-text-on-dark), add meta description + robots.txt."
   }
 ]
