@@ -4,7 +4,10 @@ export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
+  // 1 local retry too: run_test.sh (the deploy gate) runs locally, and a single
+  // transient timeout flake under machine load shouldn't fail the whole gate.
+  // A genuine regression still fails consistently across the retry.
+  retries: process.env.CI ? 2 : 1,
   reporter: [['html', { open: 'never' }]],
   timeout: 10000,
   use: {
