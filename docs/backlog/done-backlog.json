@@ -671,5 +671,11 @@
     "title": "Previous performance reference during a workout",
     "status": "done",
     "description": "On the active workout page, show each exercise's last-time performance ('Last time: 80 kg × 8') so the user knows what to beat (progressive overload). Backend GET /workouts/:id/previous returns a map exerciseName -> { weight, reps, completedAt } from the AMRAP/top set of the most recent OTHER completed workout containing that exercise. Frontend shows it under each exercise header in ActiveWorkoutView."
+  },
+  {
+    "id": "013",
+    "title": "Effort / RPE Logging",
+    "status": "done",
+    "description": "Log perceived effort after workouts or per-set. Simple mode: post-workout Easy/Good/Hard rating. Advanced mode: per-set RPE 1-10 scale. Track trends over time to detect under-recovery or peaking."
   }
 ]

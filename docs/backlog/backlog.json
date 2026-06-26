@@ -103,12 +103,6 @@
     "description": "Swap a plan exercise for an alternative per-session or permanently. Casual users need it when equipment is taken or they have minor soreness. Power users want same TM reference and set scheme preserved, with approved alternatives per exercise."
   },
   {
-    "id": "013",
-    "title": "Effort / RPE Logging",
-    "status": "in-progress",
-    "description": "Log perceived effort after workouts or per-set. Simple mode: post-workout Easy/Good/Hard rating. Advanced mode: per-set RPE 1-10 scale. Track trends over time to detect under-recovery or peaking."
-  },
-  {
     "id": "015",
     "title": "Missed Workout Reschedule",
     "status": "backlog",
