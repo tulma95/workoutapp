@@ -9,7 +9,10 @@ export default defineConfig({
   // A genuine regression still fails consistently across the retry.
   retries: process.env.CI ? 2 : 1,
   reporter: [['html', { open: 'never' }]],
-  timeout: 10000,
+  // 20s per test: the heaviest tests run two full workout cycles + navigations,
+  // which legitimately exceed 10s under machine load (the recurring gate flake).
+  // Normal tests finish in <2s, so this only raises the ceiling, not the runtime.
+  timeout: 20000,
   use: {
     baseURL: process.env.BASE_URL || 'http://localhost:5173',
     trace: 'retain-on-first-failure',
