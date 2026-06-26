@@ -665,5 +665,11 @@
     "title": "Accessibility: fix color-contrast (primary), add meta description + robots.txt",
     "status": "done",
     "description": "Lighthouse mobile audit (dashboard): Accessibility 94, Best Practices 100, SEO 82. Failures: (1) color-contrast — white text on --primary #3b82f6 = 3.67 (need 4.5) on all primary buttons; active bottom-nav link (primary on dark) = 4.19. (2) SEO meta-description missing. (3) robots.txt invalid. Fix primary contrast (darken for button bg + lighter accent for nav-text-on-dark), add meta description + robots.txt."
+  },
+  {
+    "id": "184",
+    "title": "Previous performance reference during a workout",
+    "status": "done",
+    "description": "On the active workout page, show each exercise's last-time performance ('Last time: 80 kg × 8') so the user knows what to beat (progressive overload). Backend GET /workouts/:id/previous returns a map exerciseName -> { weight, reps, completedAt } from the AMRAP/top set of the most recent OTHER completed workout containing that exercise. Frontend shows it under each exercise header in ActiveWorkoutView."
   }
 ]

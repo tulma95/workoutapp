@@ -10,6 +10,7 @@
 | `['workout', 'current']` | In-progress workout (or null) | DashboardPage |
 | `['workout', 'stats']` | Dashboard momentum: current streak + workouts in last 7 days | DashboardStats |
 | `['workout', 'latest']` | Most recently completed workout (for the last-workout peek) | RecentWorkoutPeek |
+| `['workout', 'previous', id]` | Per-exercise last-time performance for workout `id` | ActiveWorkoutView ("Last time" line) |
 | `['workoutCalendar', year, month]` | Calendar workouts for month | HistoryPage (with `keepPreviousData`) |
 | `['schedule']` | User's current weekday schedule for active plan | SettingsPage |
 | `['plans']` | All public plans | PlanSelectionPage |

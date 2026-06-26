@@ -27,6 +27,7 @@
 - `GET /api/workouts/current` - in-progress workout (or null)
 - `GET /api/workouts/latest` - most recently completed workout with sets (full Workout DTO), or `null`. Registered before `/:id`. Powers the dashboard "last workout" peek.
 - `GET /api/workouts/:id` - includes `progressions` array (TM changes linked to this workout)
+- `GET /api/workouts/:id/previous` - per-exercise last-time performance: `{ [exerciseName]: { weight, reps, completedAt } }` from the AMRAP (top) set of the most recent OTHER completed workout containing that exercise (powers the active-workout "Last time" line)
 - `PATCH /api/workouts/:id/sets/:setId` - `{ actualReps, completed }`
 - `PATCH /api/workouts/:id/notes` - `{ notes }` (trimmed, max 2000 chars; blank clears to null); ownership-checked (404 if not owned). Workout DTOs include a `notes` field.
 - `PATCH /api/users/me/email` - `{ currentPassword, newEmail }` → `{ email }`. Confirms the current password (400 INVALID_PASSWORD on mismatch), validates email format (≤254 chars), 409 EMAIL_EXISTS on a duplicate. No verification email.
