@@ -149,10 +149,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Completed-workout badge: solid primary (white text = 5.17:1 in both
-     themes). The scheduled badge below shares this scheme but faded. */
-  background-color: var(--primary);
-  color: #fff;
+  /* White disc + primary text: the completed-day cell (.workout) is solid
+     --primary, and the scheduled-day cell (.scheduled) is a faint tint, so the
+     two badges intentionally use opposite schemes to contrast on their cells. */
+  background-color: rgba(255, 255, 255, 0.9);
+  color: var(--primary);
   border-radius: 50%;
   font-size: 0.5rem;
   font-weight: 700;
