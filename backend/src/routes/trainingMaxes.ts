@@ -5,6 +5,7 @@ import { authenticate } from '../middleware/auth';
 import { AuthRequest, getUserId } from '../types';
 import prisma from '../lib/db';
 import * as trainingMaxService from '../services/trainingMax.service';
+import { getStalls } from '../services/stall.service';
 
 const router = Router();
 
@@ -13,6 +14,13 @@ router.use(authenticate);
 router.get('/', async (req: AuthRequest, res: Response) => {
   const tms = await trainingMaxService.getCurrentTMs(getUserId(req));
   res.json(tms);
+});
+
+// Stalled lifts (no TM progression for the last 3 AMRAP sessions) + deload
+// suggestion. Registered before the dynamic /:exercise routes.
+router.get('/stalls', async (req: AuthRequest, res: Response) => {
+  const stalls = await getStalls(getUserId(req));
+  res.json({ stalls });
 });
 
 const setupSchema = z.object({

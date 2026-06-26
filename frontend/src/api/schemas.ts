@@ -140,6 +140,15 @@ export const OneRepMaxesSchema = z.object({
 
 export const SetupResponseSchema = z.array(TrainingMaxSchema);
 
+export const StallSchema = z.object({
+  exerciseSlug: z.string(),
+  exerciseName: z.string(),
+  currentTM: z.number(),
+  suggestedTM: z.number(),
+});
+export const StallsResponseSchema = z.object({ stalls: z.array(StallSchema) });
+export type Stall = z.infer<typeof StallSchema>;
+
 // Plan schemas
 export const ExerciseSchema = z.object({
   id: z.number(),

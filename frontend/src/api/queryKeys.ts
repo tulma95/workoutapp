@@ -17,6 +17,7 @@ export const queryKeys = {
   },
   trainingMaxes: {
     all: () => ['trainingMaxes', 'all'] as const,
+    stalls: () => ['trainingMaxes', 'stalls'] as const,
   },
   progress: {
     all: () => ['progress', 'all'] as const,

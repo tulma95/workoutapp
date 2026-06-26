@@ -2,6 +2,7 @@ import WorkoutCard from './WorkoutCard'
 import { DashboardStats } from './DashboardStats'
 import { RecentWorkoutPeek } from './RecentWorkoutPeek'
 import { TodaysWorkout } from './TodaysWorkout'
+import { DeloadSuggestion } from './DeloadSuggestion'
 import styles from '../styles/DashboardPage.module.css'
 import type { WorkoutPlan } from '../api/plans'
 import type { Workout } from '../api/workouts'
@@ -27,6 +28,8 @@ export function DashboardContent({ plan, currentWorkout }: Props) {
       <h1>Dashboard</h1>
 
       <TodaysWorkout plan={plan} currentWorkout={currentWorkout} />
+
+      <DeloadSuggestion />
 
       <DashboardStats />
 

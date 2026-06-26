@@ -1,6 +1,7 @@
 import { apiFetchParsed } from './client';
 import {
   TrainingMaxSchema,
+  StallsResponseSchema,
   SetupResponseSchema,
 } from './schemas';
 export type {
@@ -30,6 +31,11 @@ export async function setupTrainingMaxesFromExercises(exerciseTMs: ExerciseTM[])
     method: 'POST',
     body: JSON.stringify({ exerciseTMs }),
   });
+}
+
+export async function getStalls(): Promise<typeof StallsResponseSchema._output['stalls']> {
+  const parsed = await apiFetchParsed('/training-maxes/stalls', StallsResponseSchema);
+  return parsed.stalls;
 }
 
 export async function updateTrainingMax(exercise: string, weight: number, reason?: string): Promise<typeof TrainingMaxSchema._output> {
