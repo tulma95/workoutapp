@@ -340,7 +340,7 @@ function ActiveWorkout({
 
   const debouncedLogSet = (
     setId: number,
-    data: { actualReps?: number | null; completed?: boolean },
+    data: { actualReps?: number | null; rpe?: number | null; completed?: boolean },
   ) => {
     const existingTimer = debounceMap.current.get(setId)
     if (existingTimer) {
@@ -407,6 +407,14 @@ function ActiveWorkout({
     if (!wasCompleted) {
       triggerRestTimer(setId)
     }
+  }
+
+  const handleRpeChange = (setId: number, rpe: number | null) => {
+    onWorkoutChange({
+      ...workout,
+      sets: workout.sets.map((s) => (s.id === setId ? { ...s, rpe } : s)),
+    })
+    debouncedLogSet(setId, { rpe })
   }
 
   const handleCompleteWorkout = async () => {
@@ -489,6 +497,7 @@ function ActiveWorkout({
         showCancelConfirm={showCancelConfirm}
         onConfirmSet={handleConfirmSet}
         onRepsChange={handleRepsChange}
+        onRpeChange={handleRpeChange}
         onCompleteWorkout={handleCompleteWorkout}
         onDoCompleteWorkout={doCompleteWorkout}
         onCancelWorkout={handleCancelWorkout}

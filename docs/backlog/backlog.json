@@ -105,7 +105,7 @@
   {
     "id": "013",
     "title": "Effort / RPE Logging",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "Log perceived effort after workouts or per-set. Simple mode: post-workout Easy/Good/Hard rating. Advanced mode: per-set RPE 1-10 scale. Track trends over time to detect under-recovery or peaking."
   },
   {

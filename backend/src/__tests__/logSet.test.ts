@@ -107,6 +107,42 @@ describe('Log Set - actualReps nullable', () => {
     expect(res.body.actualReps).toBeNull();
     expect(res.body.completed).toBe(false);
   });
+
+  it('persists rpe on a set and returns it', async () => {
+    const res = await request(app)
+      .patch(`/api/workouts/${workoutId}/sets/${setId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ rpe: 8 })
+      .expect(200);
+    expect(res.body.rpe).toBe(8);
+  });
+
+  it('clears rpe when sent null', async () => {
+    await request(app)
+      .patch(`/api/workouts/${workoutId}/sets/${setId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ rpe: 9 })
+      .expect(200);
+    const res = await request(app)
+      .patch(`/api/workouts/${workoutId}/sets/${setId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ rpe: null })
+      .expect(200);
+    expect(res.body.rpe).toBeNull();
+  });
+
+  it('rejects an out-of-range rpe with 400', async () => {
+    await request(app)
+      .patch(`/api/workouts/${workoutId}/sets/${setId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ rpe: 11 })
+      .expect(400);
+    await request(app)
+      .patch(`/api/workouts/${workoutId}/sets/${setId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ rpe: 3 })
+      .expect(400);
+  });
 });
 
 describe('Edit a completed workout set (history correction)', () => {

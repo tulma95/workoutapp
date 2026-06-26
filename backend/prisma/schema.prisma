@@ -177,6 +177,7 @@ model WorkoutSet {
   isAmrap          Boolean  @default(false) @map("is_amrap")
   isProgression    Boolean  @default(false) @map("is_progression")
   actualReps       Int?     @map("actual_reps")
+  rpe              Int?     @map("rpe")
   completed        Boolean  @default(false)
   createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 

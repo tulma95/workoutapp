@@ -1,0 +1,39 @@
+.picker {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin: calc(-1 * var(--space-xs)) 0 var(--space-sm);
+  padding: 0 var(--space-xs);
+}
+
+.label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+.options {
+  display: flex;
+  gap: var(--space-xs);
+  flex: 1;
+}
+
+.option {
+  flex: 1;
+  min-height: 3rem;
+  min-width: 3rem;
+  border: 1px solid var(--border);
+  border-radius: var(--space-xs);
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.option.selected {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}

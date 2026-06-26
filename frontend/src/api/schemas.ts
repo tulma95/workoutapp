@@ -12,6 +12,7 @@ export const WorkoutSetSchema = z.object({
   isAmrap: z.boolean(),
   isProgression: z.boolean().optional(),
   actualReps: z.number().nullable(),
+  rpe: z.number().nullable(),
   completed: z.boolean(),
   createdAt: z.string(),
 });

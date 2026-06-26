@@ -6,8 +6,9 @@ import { PersonalRecordCelebration } from './PersonalRecordCelebration'
 import { WorkoutSummaryStats } from './WorkoutSummaryStats'
 import { WorkoutProgressBar } from './WorkoutProgressBar'
 import { type WorkoutSummary } from '../utils/workoutSummary'
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import SetRow from './SetRow'
+import { RpePicker } from './RpePicker'
 import { WarmupSets } from './WarmupSets'
 import { PlateCalculatorDialog } from './PlateCalculatorDialog'
 import { ProgressionBanner } from './ProgressionBanner'
@@ -38,6 +39,7 @@ type Props = {
   showCancelConfirm: boolean
   onConfirmSet: (setId: number) => void
   onRepsChange: (setId: number, reps: number) => void
+  onRpeChange: (setId: number, rpe: number | null) => void
   onCompleteWorkout: () => void
   onDoCompleteWorkout: () => void
   onCancelWorkout: () => void
@@ -60,6 +62,7 @@ export function ActiveWorkoutView({
   showCancelConfirm,
   onConfirmSet,
   onRepsChange,
+  onRpeChange,
   onCompleteWorkout,
   onDoCompleteWorkout,
   onCancelWorkout,
@@ -141,18 +144,25 @@ export function ActiveWorkoutView({
           <WarmupSets topWeight={Math.max(...group.sets.map((s) => s.prescribedWeight))} />
           <div className={styles.sectionSets} data-set-list>
             {group.sets.map((set, index) => (
-              <SetRow
-                key={set.id}
-                setNumber={index + 1}
-                weight={set.prescribedWeight}
-                reps={set.prescribedReps}
-                isAmrap={set.isAmrap}
-                completed={set.completed}
-                actualReps={set.actualReps}
-                onConfirm={() => onConfirmSet(set.id)}
-                onRepsChange={(reps) => onRepsChange(set.id, reps)}
-                onWeightClick={setPlateWeight}
-              />
+              <Fragment key={set.id}>
+                <SetRow
+                  setNumber={index + 1}
+                  weight={set.prescribedWeight}
+                  reps={set.prescribedReps}
+                  isAmrap={set.isAmrap}
+                  completed={set.completed}
+                  actualReps={set.actualReps}
+                  onConfirm={() => onConfirmSet(set.id)}
+                  onRepsChange={(reps) => onRepsChange(set.id, reps)}
+                  onWeightClick={setPlateWeight}
+                />
+                {set.isAmrap && (
+                  <RpePicker
+                    value={set.rpe}
+                    onChange={(rpe) => onRpeChange(set.id, rpe)}
+                  />
+                )}
+              </Fragment>
             ))}
           </div>
         </section>

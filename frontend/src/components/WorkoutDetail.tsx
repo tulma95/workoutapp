@@ -200,6 +200,9 @@ export const WorkoutDetail: React.FC<WorkoutDetailProps> = ({
                         <span className={styles.setActual}>{set.actualReps}</span>
                       )
                     )}
+                    {set.rpe !== null && (
+                      <span className={styles.setRpe} data-testid="set-rpe">RPE {set.rpe}</span>
+                    )}
                   </div>
                 );
               })}

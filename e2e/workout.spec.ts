@@ -268,6 +268,27 @@ test.describe('Workout Session', () => {
     expect(actualIncrease).toBeCloseTo(expectedIncrease, 0);
   });
 
+  test('logs RPE on the AMRAP set', async ({ setupCompletePage }) => {
+    const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const workout = new WorkoutPage(page);
+
+    await dashboard.startWorkout();
+    await workout.expectLoaded(1);
+
+    const rpe = page.getByTestId('rpe-picker').first();
+    await expect(rpe).toBeVisible();
+    const patch = page.waitForResponse(
+      (r) => r.url().includes('/sets/') && r.request().method() === 'PATCH' && r.ok(),
+    );
+    await rpe.getByRole('button', { name: '8', exact: true }).click();
+    await patch;
+    await expect(rpe.getByRole('button', { name: '8', exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+
   test('shows previous performance when repeating a workout', async ({ setupCompletePage }) => {
     const { page } = setupCompletePage;
     const dashboard = new DashboardPage(page);

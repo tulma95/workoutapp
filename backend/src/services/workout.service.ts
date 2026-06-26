@@ -87,6 +87,7 @@ function formatWorkout(
       isAmrap: boolean;
       isProgression?: boolean;
       actualReps: number | null;
+      rpe: number | null;
       completed: boolean;
       createdAt: Date;
     }>;
@@ -422,7 +423,7 @@ export async function getWorkout(workoutId: number, userId: number) {
 export async function logSet(
   setId: number,
   userId: number,
-  data: { actualReps?: number | null; completed?: boolean },
+  data: { actualReps?: number | null; rpe?: number | null; completed?: boolean },
 ) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {
@@ -437,8 +438,9 @@ export async function logSet(
     return null;
   }
 
-  const updateData: { actualReps?: number | null; completed?: boolean } = {};
+  const updateData: { actualReps?: number | null; rpe?: number | null; completed?: boolean } = {};
   if (data.actualReps !== undefined) updateData.actualReps = data.actualReps;
+  if (data.rpe !== undefined) updateData.rpe = data.rpe;
   if (data.completed !== undefined) updateData.completed = data.completed;
 
   const updated = await prisma.workoutSet.update({

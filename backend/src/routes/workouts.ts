@@ -134,6 +134,7 @@ router.get('/:id/previous', async (req: AuthRequest, res: Response) => {
 
 const logSetSchema = z.object({
   actualReps: z.number().int().min(0).nullable().optional(),
+  rpe: z.number().int().min(6).max(10).nullable().optional(),
   completed: z.boolean().optional(),
 });
 

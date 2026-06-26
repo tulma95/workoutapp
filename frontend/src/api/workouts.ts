@@ -51,7 +51,7 @@ export async function getWorkout(id: number): Promise<typeof WorkoutSchema._outp
 export async function logSet(
   workoutId: number,
   setId: number,
-  data: { actualReps?: number | null; completed?: boolean }
+  data: { actualReps?: number | null; rpe?: number | null; completed?: boolean }
 ): Promise<typeof WorkoutSetSchema._output> {
   return apiFetchParsed(`/workouts/${workoutId}/sets/${setId}`, WorkoutSetSchema, {
     method: 'PATCH',
