@@ -185,6 +185,7 @@ export function usePlanEditorState(planId?: string) {
   function generateSlug(text: string): string {
     return text
       .toLowerCase()
+      .replace(/['’]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
   }
@@ -268,6 +269,27 @@ export function usePlanEditorState(planId?: string) {
 
     setShowExercisePicker(false);
     setExerciseSearch('');
+    setIsDirty(true);
+  }
+
+  function copyDayFrom(sourceDayNumber: number) {
+    const source = days.find(d => d.dayNumber === sourceDayNumber);
+    const target = days.find(d => d.dayNumber === activeDay);
+    if (!source || source.dayNumber === activeDay) return;
+    // Copying replaces the active day's exercises; only allow it into an empty
+    // day so an existing day can never be silently overwritten.
+    if (target && target.exercises.length > 0) return;
+
+    const clonedExercises: EditorExercise[] = source.exercises.map((ex, idx) => ({
+      ...ex,
+      tempId: `ex-${Date.now()}-${idx}-${Math.random()}`,
+      sortOrder: idx + 1,
+      sets: ex.sets.map(set => ({ ...set })),
+    }));
+
+    setDays(days.map(day =>
+      day.dayNumber === activeDay ? { ...day, exercises: clonedExercises } : day
+    ));
     setIsDirty(true);
   }
 
@@ -533,6 +555,7 @@ export function usePlanEditorState(planId?: string) {
     moveExerciseUp,
     moveExerciseDown,
     copySetsFrom,
+    copyDayFrom,
 
     // Set scheme editor
     editingSets,

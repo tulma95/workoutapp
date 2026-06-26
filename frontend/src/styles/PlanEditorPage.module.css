@@ -1,5 +1,7 @@
 .page {
-  padding: 1rem;
+  /* Extra bottom padding gives scroll room so the sticky Save bar never
+     traps content (e.g. Edit Sets) against the fold. */
+  padding: 1rem 1rem 7rem;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -279,6 +281,29 @@
   color: var(--text-muted);
   background: var(--bg);
   border-radius: 8px;
+}
+
+.exercisesEmpty p {
+  margin: 0 0 1rem;
+}
+
+.copyDayLabel {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.copyDaySelect {
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  background: var(--bg-card);
+  color: var(--text);
+  min-height: 3rem;
 }
 
 /* Exercise cards with color-coded left border */

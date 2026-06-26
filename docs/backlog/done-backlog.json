@@ -719,5 +719,29 @@
     "title": "Migrate calendar query validation to parseQuery (consistency)",
     "status": "done",
     "description": "From ticket 037 review. GET /workouts/calendar still validates year/month with manual parseInt+isNaN+range (code INVALID_PARAMS). Now that parseQuery(schema, req, res) exists, migrate calendar to it for a single consistent query-validation idiom (currently three: VALIDATION_ERROR via parseQuery, INVALID_PARAMS manual on calendar, QUERY_TOO_LONG manual on search). Low priority consistency cleanup."
+  },
+  {
+    "id": "188",
+    "title": "Fix admin plan editor load for category-based progression rules",
+    "status": "done",
+    "description": "PlanWithDetailsSchema at frontend/src/api/schemas.ts:229 declares 'exercise: ExerciseSchema.optional()' which rejects null. Backend returns exercise:null for category (upper/lower) progression rules, so getAdminPlan's zod parse throws 'expected object, received null' and the edit page shows an error banner with 'No progression rules defined'. Data is unaffected (rules persist correctly). Fix: change to ExerciseSchema.nullable().optional(). Repro: open /admin/plans/<id> for any plan with a category-based progression rule (e.g. Arnold's Golden Six, plan id 4)."
+  },
+  {
+    "id": "189",
+    "title": "Plan editor: sticky Save bar overlaps Edit Sets button",
+    "status": "done",
+    "description": "The sticky 'Save Plan' bar (.stickySaveBar, position:sticky bottom:0) floats over page content. On short days (e.g. one exercise) the 'Edit Sets' button sits at the fold under the bar and can't be scrolled clear, making it hard/impossible to click. Fix: add bottom scroll buffer (padding-bottom) to .page so any element can be scrolled above the pinned bar."
+  },
+  {
+    "id": "190",
+    "title": "Plan editor: duplicate-day / copy exercises from another day",
+    "status": "done",
+    "description": "Plans with identical days (e.g. full-body 3x/week) require rebuilding every exercise+set scheme per day. There's 'Copy sets from...' within a day but no way to copy a whole day. Add a 'Copy exercises from Day X' control shown when the current day is empty and another day has exercises; deep-clones exercises (new tempIds, reset sortOrder) into the active day."
+  },
+  {
+    "id": "191",
+    "title": "Plan editor: slug generation mangles apostrophes",
+    "status": "done",
+    "description": "generateSlug() in usePlanEditorState.ts turns 'Arnold's Golden Six' into 'arnold-s-golden-six' because the apostrophe is replaced by a dash along with spaces. Strip apostrophes (straight and curly) before the non-alphanumeric replacement so it becomes 'arnolds-golden-six'."
   }
 ]

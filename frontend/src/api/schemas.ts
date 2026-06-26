@@ -226,7 +226,7 @@ export const ProgressionRuleSchema = z.object({
   minReps: z.number(),
   maxReps: z.number(),
   increase: z.coerce.number(),
-  exercise: ExerciseSchema.optional(),
+  exercise: ExerciseSchema.nullable().optional(),
 });
 
 export const PlanWithDetailsSchema = WorkoutPlanSchema.extend({

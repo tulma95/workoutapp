@@ -66,6 +66,7 @@ export default function PlanEditorPage({ planId }: { planId?: string }) {
         onUpdateExerciseField={state.updateExerciseField}
         onOpenSetSchemeEditor={state.openSetSchemeEditor}
         onCopySetsFrom={state.copySetsFrom}
+        onCopyDayFrom={state.copyDayFrom}
       />
 
       <ProgressionRulesEditor

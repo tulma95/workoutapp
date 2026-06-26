@@ -108,6 +108,14 @@ class AdminPlanEditor {
     return this.exerciseRows.nth(n - 1).locator('select').last();
   }
 
+  get copyDaySelect() {
+    return this.page.locator('[data-testid="copy-day-select"]');
+  }
+
+  ruleTarget(n: number) {
+    return this.page.locator('[data-testid="rule-row"]').nth(n - 1).locator('select');
+  }
+
   // Set scheme modal locators
   get addSetButton() {
     return this.setSchemeModal.getByRole('button', { name: /add set/i });
@@ -492,6 +500,74 @@ test.describe('Admin Plan Editor', () => {
 
     await expect(admin.saveButton).toBeVisible();
     await expect(admin.saveButton).toBeInViewport();
+  });
+
+  test('slug generation strips apostrophes', async ({ admin }) => {
+    await goToCreatePlan(admin);
+    await admin.nameInput.fill("Arnold's Golden Six");
+    await expect(admin.slugInput).toHaveValue('arnolds-golden-six');
+  });
+
+  test('copy exercises from another day into an empty day', async ({ admin }) => {
+    await goToCreatePlan(admin);
+    await admin.nameInput.fill(uniquePlanName());
+    await admin.daysPerWeekInput.fill('2');
+
+    await admin.addExercise('Bench');
+    await admin.addSets(1, 3, 65, 5);
+
+    await admin.dayTab(2).click();
+    await expect(admin.exerciseRows).toHaveCount(0);
+
+    // Copy control only appears on an empty day when another day has exercises
+    await expect(admin.copyDaySelect).toBeVisible();
+    await admin.copyDaySelect.selectOption({ index: 1 });
+
+    await expect(admin.exerciseRows).toHaveCount(1);
+    await expect(admin.exerciseRows.first()).toContainText('Bench');
+    // Sets are deep-copied, so the day tab is marked complete
+    await expect(admin.exerciseRows.first()).toContainText('3 sets');
+    await expect(admin.completeDayTabs()).toHaveCount(2);
+  });
+
+  test('plan with a category progression rule reloads without error', async ({ admin }) => {
+    await goToCreatePlan(admin);
+    await admin.nameInput.fill(uniquePlanName());
+    await admin.daysPerWeekInput.fill('1');
+
+    await admin.addExercise('Squat');
+    await admin.addSets(1, 3, 65, 5);
+
+    await admin.progressionRulesSection.scrollIntoViewIfNeeded();
+    await admin.addRuleButton.click();
+    await admin.ruleTarget(1).selectOption('lower');
+    await admin.ruleMinReps(1).fill('10');
+    await admin.ruleMaxReps(1).fill('99');
+    await admin.ruleIncrease(1).fill('5');
+
+    await admin.saveButton.click();
+    await expect(admin.successToast).toBeVisible();
+    await admin.page.waitForURL(/\/admin\/plans\/\d+/);
+
+    // Reloading the edit page must not throw on the null `exercise` of a
+    // category rule — the rule should load, not vanish behind an error.
+    await admin.page.reload();
+    await expect(admin.page.locator('[data-testid="rule-row"]')).toHaveCount(1);
+    await expect(admin.ruleTarget(1)).toHaveValue('lower');
+    await expect(admin.page.locator('[data-testid="progression-rules-empty"]')).not.toBeVisible();
+  });
+
+  test('edit sets button is reachable on a short plan (not hidden by sticky bar)', async ({ admin }) => {
+    await goToCreatePlan(admin);
+    await admin.nameInput.fill(uniquePlanName());
+    await admin.daysPerWeekInput.fill('1');
+
+    await admin.addExercise('Bench');
+    await admin.page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+
+    // If the sticky Save bar overlapped the button this click would time out.
+    await admin.editSetsButton(1).click();
+    await expect(admin.setSchemeModal).toBeVisible();
   });
 
   test('edit existing plan - loads data and saves changes', async ({ admin }) => {

@@ -21,6 +21,7 @@ interface PlanDayEditorProps {
   onUpdateExerciseField: (dayNumber: number, tempId: string, field: keyof EditorExercise, value: any) => void;
   onOpenSetSchemeEditor: (dayNumber: number, tempId: string) => void;
   onCopySetsFrom: (dayNumber: number, sourceTempId: string, targetTempId: string) => void;
+  onCopyDayFrom: (sourceDayNumber: number) => void;
 }
 
 function formatSetSummary(sets: PlanSet[]): string {
@@ -58,9 +59,13 @@ export default function PlanDayEditor({
   onUpdateExerciseField,
   onOpenSetSchemeEditor,
   onCopySetsFrom,
+  onCopyDayFrom,
 }: PlanDayEditorProps) {
   const exercisePickerRef = useRef<HTMLDialogElement>(null);
   const currentDayData = days.find(d => d.dayNumber === activeDay);
+  const copyableDays = days.filter(
+    d => d.dayNumber !== activeDay && d.exercises.length > 0
+  );
 
   const filteredExercises = exercises.filter(ex =>
     ex.name.toLowerCase().includes(exerciseSearch.toLowerCase())
@@ -144,7 +149,30 @@ export default function PlanDayEditor({
 
               {currentDayData.exercises.length === 0 && (
                 <div className={styles.exercisesEmpty}>
-                  No exercises yet. Click "Add Exercise" to get started.
+                  <p>No exercises yet. Click "Add Exercise" to get started.</p>
+                  {copyableDays.length > 0 && (
+                    <label className={styles.copyDayLabel}>
+                      Or copy exercises from another day:
+                      <select
+                        className={styles.copyDaySelect}
+                        data-testid="copy-day-select"
+                        value=""
+                        onChange={(e) => {
+                          if (e.target.value) onCopyDayFrom(parseInt(e.target.value, 10));
+                        }}
+                      >
+                        <option value="">Copy exercises from...</option>
+                        {copyableDays.map(d => (
+                          <option key={d.dayNumber} value={d.dayNumber}>
+                            {d.name && d.name !== `Day ${d.dayNumber}`
+                              ? `Day ${d.dayNumber}: ${d.name}`
+                              : `Day ${d.dayNumber}`}{' '}
+                            ({d.exercises.length} exercise{d.exercises.length === 1 ? '' : 's'})
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
                 </div>
               )}
 
