@@ -396,11 +396,5 @@
     "title": "Enforce case-insensitive email uniqueness at the DB level",
     "status": "backlog",
     "description": "From ticket 179 review. register/changeEmail now do an insensitive pre-check (assertEmailAvailable) + the case-sensitive unique constraint, which closes the cross-case duplicate gap for the non-concurrent case but leaves a TOCTOU race under concurrency. The robust fix is DB-level: either a citext email column (@db.Citext + CREATE EXTENSION citext) or a functional unique index on lower(email), plus a one-off data migration to lowercase existing rows (guarded for collisions). That also lets login drop the case-insensitive fallback. Verify no existing case-variant duplicates before the migration."
-  },
-  {
-    "id": "186",
-    "title": "Surface today's scheduled workout on the dashboard",
-    "status": "in-progress",
-    "description": "Users assign training days to weekdays (schedule, in settings) but the dashboard ignores it. Add a prominent 'Today' card at the top of the dashboard that, when today's weekday is scheduled, shows that day's number + exercises + a Start/Continue button. Renders nothing if no schedule or today isn't scheduled (avoids false rest-day claims on partial schedules)."
   }
 ]
