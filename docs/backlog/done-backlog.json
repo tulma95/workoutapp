@@ -653,5 +653,11 @@
     "title": "Recent Workout Peek",
     "status": "done",
     "description": "Before starting a workout, show a summary of last session for that day: key weights and reps. Helps users mentally prepare and know what to expect."
+  },
+  {
+    "id": "037",
+    "title": "Validate URL params and query strings with Zod",
+    "status": "done",
+    "description": "Body validation is solid but params/query have gaps: (1) PATCH/DELETE /api/admin/exercises/:id have no isNaN check causing 500s, (2) All :id params allow 0 or negative values, (3) GET /api/workouts/history limit has no upper bound, (4) GET /api/workouts/calendar year has no range bounds, (5) PATCH /api/workouts/:id/sets/:setId never validates :id param. Fix: extend validate middleware or add Zod schemas for params/query on all routes."
   }
 ]

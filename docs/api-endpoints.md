@@ -32,7 +32,7 @@
 - `PATCH /api/users/me/email` - `{ currentPassword, newEmail }` → `{ email }`. Confirms the current password (400 INVALID_PASSWORD on mismatch), validates email format (≤254 chars), 409 EMAIL_EXISTS on a duplicate. No verification email.
 - `POST /api/workouts/:id/complete` - applies progression, returns `{ progressions: [...], newAchievements: [{ slug, name, description }], newPRs: [{ slug, name, e1rm, previousE1rm }] }`; `newPRs` lists exercises whose best estimated-1RM in this workout beat the prior all-time best (2.5 kg-rounded comparison; empty for first-ever lifts); emits `badge_unlocked` feed events for each new achievement, `streak_milestone` feed events at thresholds [7, 14, 30, 60, 90] days (each threshold emitted at most once per user), and a `pr_achieved` feed event per exercise in `newPRs` (PR celebration post)
 - `DELETE /api/workouts/:id` - soft-delete (sets status to 'discarded'), works on both in_progress and completed workouts
-- `GET /api/workouts/history?page=1&limit=10`
+- `GET /api/workouts/history?page=1&limit=10` - paginated; `page` (≥1, default 1) and `limit` (1–50, default 10) are zod-validated (400 VALIDATION_ERROR if out of range)
 - `GET /api/workouts/calendar?year=2026&month=2` - calendar view (must be before /:id route); returns `{ workouts: [...], scheduledDays: [{ date: string, dayNumber: number, planDayName: string | null }] }` where `scheduledDays` contains projected dates for the active plan's schedule (dates already occupied by any workout record are excluded)
 
 ## Schedule Endpoints (JWT required)
