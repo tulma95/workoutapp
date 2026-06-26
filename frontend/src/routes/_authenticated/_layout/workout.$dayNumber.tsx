@@ -315,15 +315,22 @@ function ActiveWorkout({
   const debounceMap = useRef<Map<number, ReturnType<typeof setTimeout>>>(
     new Map(),
   )
+  // Accumulated pending payload per set, so a reps write and an RPE write on the
+  // same set within the debounce window merge instead of clobbering each other.
+  const pendingSetData = useRef<
+    Map<number, { actualReps?: number | null; rpe?: number | null; completed?: boolean }>
+  >(new Map())
   const restTimer = useRestTimer()
   const settingsRef = useRef(getRestTimerSettings())
   useWakeLock()
 
   // Cleanup debounce timers on unmount
   useEffect(() => {
+    const pending = pendingSetData.current
     return () => {
       debounceMap.current.forEach((timer) => clearTimeout(timer))
       debounceMap.current.clear()
+      pending.clear()
     }
   }, [])
 
@@ -347,9 +354,15 @@ function ActiveWorkout({
       clearTimeout(existingTimer)
     }
 
+    // Merge into any pending payload for this set rather than replacing it.
+    const merged = { ...pendingSetData.current.get(setId), ...data }
+    pendingSetData.current.set(setId, merged)
+
     const timer = setTimeout(async () => {
+      const payload = pendingSetData.current.get(setId) ?? merged
+      pendingSetData.current.delete(setId)
       try {
-        await logSet(workout.id, setId, data)
+        await logSet(workout.id, setId, payload)
         debounceMap.current.delete(setId)
         // A prior attempt for this set may have been queued while offline; the
         // successful write supersedes it.
@@ -357,7 +370,7 @@ function ActiveWorkout({
       } catch {
         // Offline or server unreachable — persist so it's retried on reconnect
         // instead of being lost. The optimistic UI already reflects the change.
-        enqueueSetLog(workout.id, setId, data)
+        enqueueSetLog(workout.id, setId, payload)
       }
     }, 300)
 
