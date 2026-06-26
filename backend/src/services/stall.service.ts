@@ -1,6 +1,5 @@
 import prisma from '../lib/db';
 import { roundWeight } from '../lib/weightRounding';
-import { getCurrentTMs } from './trainingMax.service';
 
 // Number of consecutive non-progressing sessions that counts as a stall.
 const STALL_SESSIONS = 3;
@@ -87,10 +86,21 @@ export async function getStalls(userId: number): Promise<Stall[]> {
     }
   }
 
-  const currentTMs = await getCurrentTMs(userId);
-  const tmByExerciseId = new Map(
-    currentTMs.map((t) => [t.exerciseId, { weight: t.weight, effectiveDate: t.effectiveDate }]),
-  );
+  // Latest TM per exercise, keyed by the *performed* exercise id (matching how
+  // completeWorkout writes TM rows). Queried directly rather than via
+  // getCurrentTMs, which filters by tmExerciseId and would miss lifts whose
+  // TM exercise differs from the performed exercise.
+  const tmRows = await prisma.trainingMax.findMany({
+    where: { userId },
+    orderBy: { effectiveDate: 'desc' },
+    select: { exerciseId: true, weight: true, effectiveDate: true },
+  });
+  const tmByExerciseId = new Map<number, { weight: number; effectiveDate: Date }>();
+  for (const t of tmRows) {
+    if (!tmByExerciseId.has(t.exerciseId)) {
+      tmByExerciseId.set(t.exerciseId, { weight: Number(t.weight), effectiveDate: t.effectiveDate });
+    }
+  }
 
   const stalls: Stall[] = [];
   for (const list of byExercise.values()) {
@@ -110,11 +120,15 @@ export async function getStalls(userId: number): Promise<Stall[]> {
     failureDayStart.setHours(0, 0, 0, 0);
     if (new Date(tm.effectiveDate) >= failureDayStart) continue;
 
+    const suggestedTM = roundWeight(tm.weight * DELOAD_FACTOR);
+    // Don't suggest a deload that wouldn't actually lower the TM (tiny TMs).
+    if (suggestedTM >= tm.weight) continue;
+
     stalls.push({
       exerciseSlug: ex.slug,
       exerciseName: ex.name,
       currentTM: tm.weight,
-      suggestedTM: roundWeight(tm.weight * DELOAD_FACTOR),
+      suggestedTM,
     });
   }
   return stalls;

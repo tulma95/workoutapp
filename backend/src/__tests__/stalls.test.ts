@@ -36,7 +36,9 @@ async function setupStallScenario(tmEffectiveDate: Date) {
       isSystem: false,
       progressionRules: {
         create: [
-          { category: 'upper', minReps: 0, maxReps: 1, increase: 0 },
+          // Exercise-specific rule (matched first) for the failure band, plus a
+          // category rule for the progressing band.
+          { exerciseId: benchId, minReps: 0, maxReps: 1, increase: 0 },
           { category: 'upper', minReps: 2, maxReps: 30, increase: 5 },
         ],
       },
@@ -123,6 +125,18 @@ describe('GET /api/training-maxes/stalls', () => {
   it('does not flag when the lift is still progressing', async () => {
     const { user, token, benchId } = await setupStallScenario(daysAgo(20));
     for (const d of [6, 4, 2]) await addSession(user.id, benchId, 5, daysAgo(d)); // +5 each
+
+    const res = await request(app)
+      .get('/api/training-maxes/stalls')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.body.stalls).toHaveLength(0);
+  });
+
+  it('does not flag when one of the last 3 sessions progressed', async () => {
+    const { user, token, benchId } = await setupStallScenario(daysAgo(20));
+    await addSession(user.id, benchId, 0, daysAgo(6)); // fail
+    await addSession(user.id, benchId, 5, daysAgo(4)); // progressed (+5)
+    await addSession(user.id, benchId, 0, daysAgo(2)); // fail
 
     const res = await request(app)
       .get('/api/training-maxes/stalls')
