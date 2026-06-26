@@ -35,6 +35,8 @@ The Web Push VAPID *subject* is hardcoded (`mailto:admin@setforge.app`) and is *
 
 ## GitHub Actions secrets (for the redeploy step)
 
+These live in the **`deploy` GitHub Environment** (Settings → Environments → `deploy` → Environment secrets), not as repo-level secrets. The deploy job declares `environment: deploy` so `secrets.COOLIFY_*` resolve; without that line they come back empty.
+
 | Secret | Notes |
 |--------|-------|
 | `COOLIFY_URL` | Base URL of the Coolify instance, e.g. `https://coolify.example.com`. |
