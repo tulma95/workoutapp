@@ -647,5 +647,11 @@
     "title": "PR Celebration Post",
     "status": "done",
     "description": "When a user hits a personal record (requires PR Detection #008), auto-generate a celebratory feed event with confetti animation. Shows the lift, weight, reps, and how it compares to previous best. Friends see it prominently in their feed."
+  },
+  {
+    "id": "018",
+    "title": "Recent Workout Peek",
+    "status": "done",
+    "description": "Before starting a workout, show a summary of last session for that day: key weights and reps. Helps users mentally prepare and know what to expect."
   }
 ]

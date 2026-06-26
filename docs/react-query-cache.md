@@ -8,6 +8,8 @@
 | `['plan', 'current']` | User's active plan (or null) | DashboardPage, SettingsPage, PlanSelectionPage |
 | `['training-maxes']` | Current TMs for active plan | DashboardPage, SettingsPage |
 | `['workout', 'current']` | In-progress workout (or null) | DashboardPage |
+| `['workout', 'stats']` | Dashboard momentum: current streak + workouts in last 7 days | DashboardStats |
+| `['workout', 'latest']` | Most recently completed workout (for the last-workout peek) | RecentWorkoutPeek |
 | `['workoutCalendar', year, month]` | Calendar workouts for month | HistoryPage (with `keepPreviousData`) |
 | `['schedule']` | User's current weekday schedule for active plan | SettingsPage |
 | `['plans']` | All public plans | PlanSelectionPage |
@@ -33,9 +35,9 @@
 | **Plan subscription** | select-plan.tsx | remove `['plan', 'current']`, remove `['training-maxes']`, remove `['progress']`, remove `['schedule']`, invalidate `['workout', 'current']` |
 | **TM setup** | setup.tsx | `['training-maxes']` |
 | **TM manual update** | settings.tsx | `['training-maxes']` |
-| **Workout complete** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']`, `['training-maxes']`, `['progress']`, `['progress', 'records']`, `['social', 'feed']`, `['social', 'friends']`, `['achievements']` |
+| **Workout complete** | workout.$dayNumber.tsx (invalidateAfterWorkoutComplete) | `['workout']`, `['workoutCalendar']`, `['workout', 'stats']`, `['workout', 'latest']`, `['training-maxes']`, `['progress']`, `['progress', 'records']`, `['social', 'feed']`, `['social', 'friends']`, `['achievements']` |
 | **Workout cancel** | workout.$dayNumber.tsx | `['workout']`, `['workoutCalendar']` |
-| **Workout delete (history)** | history.tsx | `['workoutCalendar']` |
+| **Workout delete (history)** | history.tsx | `['workoutCalendar']`, `['workout', 'stats']`, `['workout', 'latest']`, `['progress']`, `['progress', 'records']` |
 | **Custom workout save** | CustomWorkoutModal.tsx | `['workoutCalendar']` |
 | **Exercise CRUD** | admin/exercises.tsx | `['admin-exercises']`, `['exercises']` (admin adding an exercise should update the picker) |
 | **Plan archive** | admin/plans.index.tsx | `['admin-plans']` |

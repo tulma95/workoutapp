@@ -85,12 +85,6 @@
     "description": "Vibration or sound feedback when a set is logged. Confirms the tap registered, especially useful with sweaty/chalky hands or dim screens."
   },
   {
-    "id": "018",
-    "title": "Recent Workout Peek",
-    "status": "in-progress",
-    "description": "Before starting a workout, show a summary of last session for that day: key weights and reps. Helps users mentally prepare and know what to expect."
-  },
-  {
     "id": "020",
     "title": "Set Weight Override",
     "status": "backlog",
