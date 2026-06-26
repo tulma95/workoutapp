@@ -12,7 +12,7 @@
 | `['workout', 'latest']` | Most recently completed workout (for the last-workout peek) | RecentWorkoutPeek |
 | `['workout', 'previous', id]` | Per-exercise last-time performance for workout `id` | ActiveWorkoutView ("Last time" line) |
 | `['workoutCalendar', year, month]` | Calendar workouts for month | HistoryPage (with `keepPreviousData`) |
-| `['schedule']` | User's current weekday schedule for active plan | SettingsPage |
+| `['schedule']` | User's current weekday schedule for active plan | SettingsPage, DashboardPage (TodaysWorkout — highlights today's scheduled day) |
 | `['plans']` | All public plans | PlanSelectionPage |
 | `['exercises']` | All exercises (public, sorted by name) | CustomWorkoutModal (staleTime: 5min) |
 | `['admin-exercises']` | All exercises (admin) | ExerciseListPage |
