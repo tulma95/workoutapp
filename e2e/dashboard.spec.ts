@@ -48,4 +48,34 @@ test.describe('Dashboard', () => {
 
     await expect(page).toHaveURL('/workout/1');
   });
+
+  test("surfaces today's scheduled workout when a schedule is set", async ({
+    setupCompletePage,
+  }) => {
+    const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    await dashboard.expectLoaded();
+
+    // No schedule yet -> no Today card.
+    await expect(page.getByTestId('todays-workout')).toBeHidden();
+
+    // Schedule Day 1 for today's weekday via the API.
+    await page.evaluate(async () => {
+      const token = localStorage.getItem('accessToken');
+      const weekday = new Date().getDay();
+      await fetch('/api/schedule', {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ schedule: [{ dayNumber: 1, weekday }] }),
+      });
+    });
+    await page.reload();
+    await dashboard.expectLoaded();
+
+    const today = page.getByTestId('todays-workout');
+    await expect(today).toBeVisible();
+    await expect(today.getByText('Today', { exact: true })).toBeVisible();
+    await expect(today.getByRole('heading', { name: 'Day 1' })).toBeVisible();
+    await expect(today.getByRole('link', { name: /start workout/i })).toBeVisible();
+  });
 });
