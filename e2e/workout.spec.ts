@@ -312,10 +312,7 @@ test.describe('Workout Session', () => {
     // First Day 1 (no prior history yet); log a known AMRAP and complete it.
     await dashboard.startWorkout();
     await workout.expectLoaded(1);
-    await workout.fillAmrap('8');
-    await page.waitForResponse(
-      (r) => r.url().includes('/api/workouts/') && r.request().method() === 'PATCH' && r.ok(),
-    );
+    await workout.fillAmrapAndWait('8');
     await workout.completeWithDialog();
     await workout.goBackToDashboard();
 
@@ -342,10 +339,7 @@ test.describe('Workout Session', () => {
 
     await dashboard.startWorkout();
     await workout.expectLoaded(1);
-    await workout.fillAmrap('5');
-    await page.waitForResponse(
-      (r) => r.url().includes('/api/workouts/') && r.request().method() === 'PATCH' && r.ok(),
-    );
+    await workout.fillAmrapAndWait('5');
     await workout.completeWithDialog();
     await workout.goBackToDashboard();
 
@@ -379,10 +373,7 @@ test.describe('Workout Session', () => {
     const total = await progress.getAttribute('aria-valuemax');
     expect(Number(total)).toBeGreaterThan(0);
 
-    await workout.fillAmrap('5');
-    await page.waitForResponse(
-      (r) => r.url().includes('/api/workouts/') && r.request().method() === 'PATCH' && r.ok(),
-    );
+    await workout.fillAmrapAndWait('5');
 
     await expect(progress).toHaveAttribute('aria-valuenow', '1');
   });
@@ -398,10 +389,7 @@ test.describe('Workout Session', () => {
     await dashboard.startWorkout();
     await workout.expectLoaded(1);
 
-    await workout.fillAmrap('5');
-    await page.waitForResponse(
-      (r) => r.url().includes('/api/workouts/') && r.request().method() === 'PATCH' && r.ok(),
-    );
+    await workout.fillAmrapAndWait('5');
     await workout.completeWithDialog();
     await workout.dismissAchievementDialogIfPresent();
 

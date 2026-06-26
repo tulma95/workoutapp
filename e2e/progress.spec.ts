@@ -14,10 +14,7 @@ async function completeWorkout(page: Page, dayNumber: number, amrapReps: number)
   await dashboard.startWorkout(dayNumber);
   await workout.expectLoaded(dayNumber);
 
-  await workout.fillAmrap(amrapReps.toString());
-  await page.waitForResponse(
-    resp => resp.url().includes('/api/workouts/') && resp.request().method() === 'PATCH' && resp.ok(),
-  );
+  await workout.fillAmrapAndWait(amrapReps.toString());
 
   await workout.completeWithDialog();
   await workout.goBackToDashboard();

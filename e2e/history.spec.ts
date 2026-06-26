@@ -13,10 +13,7 @@ async function completeWorkout(page: Page, dayNumber: number, amrapReps: number)
   await workout.expectLoaded(dayNumber);
 
   // Fill AMRAP and wait for the API call to persist
-  await workout.fillAmrap(amrapReps.toString());
-  await page.waitForResponse(
-    resp => resp.url().includes('/api/workouts/') && resp.request().method() === 'PATCH' && resp.ok(),
-  );
+  await workout.fillAmrapAndWait(amrapReps.toString());
 
   await workout.completeWithDialog();
   await workout.goBackToDashboard();
@@ -301,10 +298,7 @@ test.describe('Calendar day selection', () => {
     await dashboard.expectLoaded();
     await dashboard.startWorkout(1);
     await workout.expectLoaded(1);
-    await workout.fillAmrap('10');
-    await page.waitForResponse(
-      resp => resp.url().includes('/api/workouts/') && resp.request().method() === 'PATCH' && resp.ok(),
-    );
+    await workout.fillAmrapAndWait('10');
     await workout.completeWithDialog();
     await workout.goBackToDashboard();
 
