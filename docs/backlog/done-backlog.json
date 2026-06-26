@@ -677,5 +677,11 @@
     "title": "Effort / RPE Logging",
     "status": "done",
     "description": "Log perceived effort after workouts or per-set. Simple mode: post-workout Easy/Good/Hard rating. Advanced mode: per-set RPE 1-10 scale. Track trends over time to detect under-recovery or peaking."
+  },
+  {
+    "id": "062",
+    "title": "User Profile Page",
+    "status": "done",
+    "description": "Public-ish profile page showing: display name, member since date, current plan, lift stats summary (current TMs or e1RMs), workout streak, badges earned, total workouts completed. Viewable by friends. Foundation for social identity in the app."
   }
 ]

@@ -53,6 +53,7 @@
 - `POST /api/social/request` - `{ email?, username? }` — exactly one of `email` or `username` required; send friend request; 404 if not found, 400 if self-friending or missing/ambiguous field, 409 if relationship already exists; inserts with canonical ordering (`requesterId = min(callerId, targetId)`)
 - `GET /api/social/search?q=<query>` — search users by username substring (case-insensitive); excludes caller and users with existing pending/accepted friendships; returns up to 10 results: `{ users: [{ id, username }] }`
 - `GET /api/social/friends` - list accepted friends: `{ friends: [{ id, userId, username, streak: number }] }` — `streak` is the number of consecutive calendar days (UTC) the friend has completed at least one workout; 0 if no recent activity
+- `GET /api/social/users/:username` - profile stats for yourself or an **accepted friend**: `{ username, isSelf, currentStreak, totalWorkouts, achievementCount, topPRs: [{ exercise, e1rm }] }` (top 3 PRs by e1RM). 403 for non-friends (incl. pending), 404 unknown username
 - `GET /api/social/requests` - list pending friend requests involving the caller: `{ requests: [{ id, requesterId, username }] }`
 - `PATCH /api/social/requests/:id/accept` - accept a pending request; returns `{ id, status }`
 - `PATCH /api/social/requests/:id/decline` - decline a pending request; returns `{ id, status }`

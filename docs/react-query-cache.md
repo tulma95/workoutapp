@@ -28,6 +28,7 @@
 | `['social', 'leaderboard', 'e1rm']` | e1RM rankings per exercise across user+friends (staleTime: 60s) | SocialPage (LeaderboardTab, e1RM mode) |
 | `['social', 'feed', eventId, 'comments']` | Comments for a specific feed event (ordered by createdAt ASC) | CommentSection (inline, fetched lazily when "View all" is clicked) |
 | `['social', 'search', query]` | User search results for friend discovery (by username/email) | SocialPage (FriendsTab) |
+| `['social', 'profile', username]` | Profile stats (streak, workouts, badges, top PRs) for self/a friend | ProfileModal (opened from FriendsTab) |
 
 ## Invalidation Rules
 

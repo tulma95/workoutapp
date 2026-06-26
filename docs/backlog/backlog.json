@@ -19,12 +19,6 @@
     "description": "Send a 'get to the gym' nudge to a friend who hasn't trained in X days. One-tap from the friends list. Recipient sees it as a feed event or in-app notification. Rate-limited to 1 nudge per friend per day to prevent spam."
   },
   {
-    "id": "062",
-    "title": "User Profile Page",
-    "status": "in-progress",
-    "description": "Public-ish profile page showing: display name, member since date, current plan, lift stats summary (current TMs or e1RMs), workout streak, badges earned, total workouts completed. Viewable by friends. Foundation for social identity in the app."
-  },
-  {
     "id": "051",
     "title": "Progression Race",
     "status": "backlog",
