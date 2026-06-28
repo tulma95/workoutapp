@@ -164,34 +164,6 @@
     "description": "validateDate is only called from the onChange handler, not on modal open. If initialDate is ever a future date the modal opens with no error and Save enabled. Fix: call validateDate(initialDate) inside the open useEffect."
   },
   {
-    "id": "124",
-    "title": "Add feed latestComments edge-case tests: exactly 1 comment and zero-event feed",
-    "status": "backlog",
-    "priority": "low",
-    "description": "The social.test.ts latestComments suite covers 0-comment and 3-comment (truncated to 2) cases but not: (a) exactly 1 comment on an event, (b) the eventIds-empty early-exit branch when the feed returns zero events. Both are handled correctly by the implementation but lack explicit test coverage."
-  },
-  {
-    "id": "125",
-    "title": "docs: DELETE /social/feed/:eventId/comments/:commentId returns 200 with body but docs say 204",
-    "status": "backlog",
-    "priority": "low",
-    "description": "social.ts line 769 returns res.json({ id: commentId }) with default 200, but api-endpoints.md line 52 documents the response as 204. Fix the doc to say 200 with body { id: number }."
-  },
-  {
-    "id": "126",
-    "title": "routeHelpers.ts: isP2002UsernameViolation uses weaker typeof check vs isPrismaError instanceof Error guard — align both helpers to the same standard",
-    "status": "backlog",
-    "priority": "low",
-    "description": "isP2002UsernameViolation checks typeof err === 'object' while isPrismaError checks instanceof Error. Both live in routeHelpers.ts. The inconsistency was surfaced by ticket 119 (the two helpers are now used side-by-side in auth.ts). Update isP2002UsernameViolation to use instanceof Error so both helpers apply the same type narrowing."
-  },
-  {
-    "id": "127",
-    "title": "Update react-query-cache.md: progress key returns e1RM not TM history",
-    "status": "backlog",
-    "priority": "low",
-    "description": "Ticket 127 changed the progress endpoint from TM history to e1RM but react-query-cache.md still references TMs. Update key description and invalidation rule comments."
-  },
-  {
     "id": "150",
     "title": "Exercise library detail (instructions, muscles, video)",
     "status": "backlog",
