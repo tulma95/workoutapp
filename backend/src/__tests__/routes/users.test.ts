@@ -4,6 +4,7 @@ import { randomUUID } from 'crypto';
 import app from '../../app';
 import prisma from '../../lib/db';
 import { createTestUser, getExercisesBySlug } from '../helpers';
+import { config } from '../../config';
 
 const uid = randomUUID().slice(0, 8);
 let accessToken: string;
@@ -118,6 +119,30 @@ describe('User routes', () => {
         .patch('/api/users/me/password')
         .send({ currentPassword: 'original123', newPassword: 'brandnew456' });
       expect(res.status).toBe(401);
+    });
+
+    it('returns 429 after exceeding the rate limit (production only)', async () => {
+      // The limiter skips outside production; flip env just for this assertion,
+      // mirroring the pattern in security.test.ts.
+      const { token } = await newUser();
+      const original = config.nodeEnv;
+      config.nodeEnv = 'production';
+      try {
+        const limit = 30;
+        const statuses: number[] = [];
+        for (let i = 0; i < limit * 2 + 5; i++) {
+          const res = await request(app)
+            .patch('/api/users/me/password')
+            .set('Authorization', `Bearer ${token}`)
+            .send({}); // invalid body → 400 from validate, but limiter counts first
+          statuses.push(res.status);
+        }
+        // Some requests get through (400 from body validation), then the limiter engages.
+        expect(statuses).toContain(400);
+        expect(statuses).toContain(429);
+      } finally {
+        config.nodeEnv = original;
+      }
     });
   });
 

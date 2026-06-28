@@ -7,6 +7,7 @@ import prisma from '../lib/db';
 import { changeEmail, changePassword, deleteAccount, EmailTakenError } from '../services/auth.service';
 import { exportUserData } from '../services/users.service';
 import { usernameSchema, isP2002UsernameViolation } from '../lib/routeHelpers';
+import { authRateLimiter } from '../middleware/security';
 
 const router = Router();
 
@@ -66,6 +67,7 @@ const changePasswordSchema = z.object({
 
 router.patch(
   '/me/password',
+  authRateLimiter,
   validate(changePasswordSchema),
   async (req: AuthRequest, res: Response) => {
     try {
