@@ -798,5 +798,23 @@
     "title": "Invalidate existing sessions on password change (tokenVersion in JWT)",
     "status": "done",
     "description": "Password change (142) re-hashes the password but does NOT revoke already-issued tokens: this is stateless JWT with a 24h access + 30d refresh token and no token version/denylist, so an attacker's or lost-device's tokens stay valid up to 30 days after the user changes their password. Add a tokenVersion (or passwordChangedAt) column to User, embed it in access+refresh tokens, verify it in the auth/refresh middleware, and bump it on password change (and ideally on logout-all). This is what makes 'change password' actually able to revoke compromised sessions. Surfaced in ticket 142 review (Important #1)."
+  },
+  {
+    "id": "159",
+    "title": "Add DB indexes on hot query columns (WorkoutSet.exerciseId)",
+    "status": "done",
+    "description": "WorkoutSet.exerciseId is unindexed but e1RM leaderboard and progress filter workout_sets by exerciseId IN (...). These are the heaviest read paths and will table-scan as data grows. Add targeted indexes."
+  },
+  {
+    "id": "171",
+    "title": "Rate-limit PATCH /users/me/password (current-password check is unthrottled)",
+    "status": "done",
+    "description": "The auth rate limiter (131) covers /api/auth/* but not /api/users/me/password. An attacker needs a valid victim JWT to reach the bcrypt current-password check, so exposure is low, but if a token leaks the current-password guess is unthrottled. Apply a rate limiter to this endpoint. Minor; from ticket 142 review."
+  },
+  {
+    "id": "172",
+    "title": "Clear React Query cache (queryClient.clear) on logout/account-delete",
+    "status": "done",
+    "description": "logout() clears tokens + the offline set-log queue but not the React Query cache, so on a shared device stale cached workout/feed data could linger in memory until consumers unmount. Call queryClient.clear() on logout (and account deletion) for a clean teardown. Low severity (memory only, cleared on reload). From ticket 144 review (Minor #4)."
   }
 ]
