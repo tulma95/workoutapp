@@ -34,19 +34,30 @@ const router = Router();
 
 // SSE endpoint: accept token via query param (EventSource can't set custom headers)
 // Falls back to standard Bearer auth middleware if no query token
-function authenticateSse(req: AuthRequest, res: Response, next: NextFunction) {
+async function authenticateSse(req: AuthRequest, res: Response, next: NextFunction) {
   const queryToken = req.query.token as string | undefined;
   if (queryToken) {
+    let decoded: JwtPayload;
     try {
-      const decoded = jwt.verify(queryToken, config.jwtSecret) as JwtPayload;
-      req.userId = decoded.userId;
-      req.isAdmin = decoded.isAdmin;
-      return next();
+      decoded = jwt.verify(queryToken, config.jwtSecret) as JwtPayload;
     } catch {
       logger.warn('SSE auth failed: invalid query token');
       res.status(401).json({ error: { code: 'TOKEN_INVALID', message: 'Invalid or expired token' } });
       return;
     }
+    // Verify tokenVersion against DB so that old tokens are rejected after password change.
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: { tokenVersion: true },
+    });
+    if (!user || user.tokenVersion !== decoded.tokenVersion) {
+      logger.warn('SSE auth failed: token version mismatch', { userId: decoded.userId });
+      res.status(401).json({ error: { code: 'TOKEN_INVALID', message: 'Invalid or expired token' } });
+      return;
+    }
+    req.userId = decoded.userId;
+    req.isAdmin = decoded.isAdmin;
+    return next();
   }
   authenticate(req, res, next);
 }

@@ -9,16 +9,16 @@ const SALT_ROUNDS = 10;
 const ACCESS_TOKEN_EXPIRY = '24h';
 const REFRESH_TOKEN_EXPIRY = '30d';
 
-function signAccessToken(userId: number, email: string, isAdmin: boolean): string {
-  return jwt.sign({ userId, email, isAdmin }, config.jwtSecret, { expiresIn: ACCESS_TOKEN_EXPIRY });
+function signAccessToken(userId: number, email: string, isAdmin: boolean, tokenVersion: number): string {
+  return jwt.sign({ userId, email, isAdmin, tokenVersion }, config.jwtSecret, { expiresIn: ACCESS_TOKEN_EXPIRY });
 }
 
-function signRefreshToken(userId: number): string {
-  return jwt.sign({ userId, type: 'refresh' }, config.jwtSecret, { expiresIn: REFRESH_TOKEN_EXPIRY });
+function signRefreshToken(userId: number, tokenVersion: number): string {
+  return jwt.sign({ userId, type: 'refresh', tokenVersion }, config.jwtSecret, { expiresIn: REFRESH_TOKEN_EXPIRY });
 }
 
-function stripPasswordHash(user: { id: number; email: string; username: string | null; isAdmin: boolean; createdAt: Date; updatedAt: Date; passwordHash?: string }) {
-  const { passwordHash: _, ...safe } = user;
+function stripPasswordHash(user: { id: number; email: string; username: string | null; isAdmin: boolean; tokenVersion: number; createdAt: Date; updatedAt: Date; passwordHash?: string }) {
+  const { passwordHash: _, tokenVersion: _tv, ...safe } = user;
   return safe;
 }
 
@@ -56,14 +56,14 @@ export async function register(email: string, password: string, username: string
   logger.info('User registered', { email: user.email, userId: user.id });
 
   return {
-    accessToken: signAccessToken(user.id, user.email, user.isAdmin),
-    refreshToken: signRefreshToken(user.id),
+    accessToken: signAccessToken(user.id, user.email, user.isAdmin, user.tokenVersion),
+    refreshToken: signRefreshToken(user.id, user.tokenVersion),
     user: stripPasswordHash(user),
   };
 }
 
 export async function refreshTokens(refreshToken: string) {
-  let decoded: { userId: number; type?: string };
+  let decoded: { userId: number; type?: string; tokenVersion?: number };
   try {
     decoded = jwt.verify(refreshToken, config.jwtSecret) as typeof decoded;
   } catch {
@@ -79,9 +79,13 @@ export async function refreshTokens(refreshToken: string) {
     throw new Error('Invalid or expired refresh token');
   }
 
+  if (decoded.tokenVersion !== user.tokenVersion) {
+    throw new Error('Invalid or expired refresh token');
+  }
+
   return {
-    accessToken: signAccessToken(user.id, user.email, user.isAdmin),
-    refreshToken: signRefreshToken(user.id),
+    accessToken: signAccessToken(user.id, user.email, user.isAdmin, user.tokenVersion),
+    refreshToken: signRefreshToken(user.id, user.tokenVersion),
   };
 }
 
@@ -131,8 +135,18 @@ export async function changePassword(
   }
 
   const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
-  await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+  const newVersion = user.tokenVersion + 1;
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { passwordHash, tokenVersion: newVersion },
+  });
   logger.info('Password changed', { userId });
+
+  // Return fresh tokens so the current session stays authenticated after invalidating old ones.
+  return {
+    accessToken: signAccessToken(updated.id, updated.email, updated.isAdmin, updated.tokenVersion),
+    refreshToken: signRefreshToken(updated.id, updated.tokenVersion),
+  };
 }
 
 export async function deleteAccount(userId: number, password: string) {
@@ -194,8 +208,8 @@ export async function login(email: string, password: string) {
   logger.info('User logged in', { email, userId: user.id });
 
   return {
-    accessToken: signAccessToken(user.id, user.email, user.isAdmin),
-    refreshToken: signRefreshToken(user.id),
+    accessToken: signAccessToken(user.id, user.email, user.isAdmin, user.tokenVersion),
+    refreshToken: signRefreshToken(user.id, user.tokenVersion),
     user: stripPasswordHash(user),
   };
 }

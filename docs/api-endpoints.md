@@ -8,7 +8,7 @@
 ## Protected (JWT required)
 
 - `GET /api/users/me` | `PATCH /api/users/me` — PATCH accepts `{ username? }` to update username; 409 `USERNAME_EXISTS` if taken
-- `PATCH /api/users/me/password` — body `{ currentPassword, newPassword }` (newPassword min 8). Returns 204 on success; 400 `INVALID_PASSWORD` if the current password is wrong
+- `PATCH /api/users/me/password` — body `{ currentPassword, newPassword }` (newPassword min 8). Returns 200 `{ accessToken, refreshToken }` on success — fresh tokens are issued because the tokenVersion is bumped (invalidating all previously issued tokens); 400 `INVALID_PASSWORD` if the current password is wrong
 - `GET /api/users/me/export` — returns all the user's data (profile, training maxes, workouts+sets, plans+schedule, achievements, friendships, feed events/comments/reactions) as JSON with a `Content-Disposition: attachment` header for download
 - `DELETE /api/users/me` — body `{ password }`. Permanently deletes the account and all owned data (training maxes, workouts/sets, plans, friendships, feed events/comments/reactions, achievements, push subscriptions) in a FK-safe transaction. Returns 204; 400 `INVALID_PASSWORD` if the password is wrong
 - `GET /api/exercises` - all exercises sorted by name: `[{ id, slug, name, category, isUpperBody }]`

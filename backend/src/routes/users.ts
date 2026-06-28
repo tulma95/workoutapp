@@ -18,7 +18,7 @@ router.get('/me', async (req: AuthRequest, res: Response) => {
     res.status(404).json({ error: { code: 'NOT_FOUND', message: 'User not found' } });
     return;
   }
-  const { passwordHash: _, ...safeUser } = user;
+  const { passwordHash: _, tokenVersion: _tv, ...safeUser } = user;
   res.json(safeUser);
 });
 
@@ -69,8 +69,9 @@ router.patch(
   validate(changePasswordSchema),
   async (req: AuthRequest, res: Response) => {
     try {
-      await changePassword(req.userId!, req.body.currentPassword, req.body.newPassword);
-      res.status(204).end();
+      const tokens = await changePassword(req.userId!, req.body.currentPassword, req.body.newPassword);
+      // Return fresh tokens so the current session stays logged in after old tokens are invalidated.
+      res.status(200).json(tokens);
     } catch (err: unknown) {
       if (err instanceof Error && err.message === 'Current password is incorrect') {
         res.status(400).json({

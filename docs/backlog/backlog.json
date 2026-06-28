@@ -1,12 +1,5 @@
 [
   {
-    "id": "070",
-    "title": "Missing negative test for century-club achievement (low TM should not unlock)",
-    "status": "backlog",
-    "priority": "low",
-    "description": "The achievements test suite has a positive test for century-club (bench TM=200) but no negative test confirming it does NOT trigger when all set weights are below 100 kg. The default benchTM=100 users (TM=90) could serve as a negative baseline."
-  },
-  {
     "id": "061",
     "title": "Shareable Workout Card",
     "status": "backlog",
@@ -229,18 +222,6 @@
     "description": "Plans are admin/system-defined only; regular users can only pick public plans. Serious users want to build/tweak their own programs. Add user plan creation/editing."
   },
   {
-    "id": "157",
-    "title": "Cap and validate history pagination limit",
-    "status": "backlog",
-    "description": "workouts.ts history: limit = parseInt(query.limit) || 10 passed straight to Prisma take with no max cap and no negative validation; limit=9999999 loads all workouts+sets (DoS), page=-1 yields negative skip. Cap at ~50 and validate page/limit."
-  },
-  {
-    "id": "158",
-    "title": "validateQuery middleware for query params",
-    "status": "backlog",
-    "description": "middleware/validate.ts only safeParses req.body, leaving query params unvalidated app-wide (leaderboard mode, history page/limit). Add a validateQuery variant and apply to query-driven endpoints."
-  },
-  {
     "id": "159",
     "title": "Add DB indexes on hot query columns (WorkoutSet.exerciseId)",
     "status": "backlog",
@@ -309,7 +290,7 @@
   {
     "id": "170",
     "title": "Invalidate existing sessions on password change (tokenVersion in JWT)",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "Password change (142) re-hashes the password but does NOT revoke already-issued tokens: this is stateless JWT with a 24h access + 30d refresh token and no token version/denylist, so an attacker's or lost-device's tokens stay valid up to 30 days after the user changes their password. Add a tokenVersion (or passwordChangedAt) column to User, embed it in access+refresh tokens, verify it in the auth/refresh middleware, and bump it on password change (and ideally on logout-all). This is what makes 'change password' actually able to revoke compromised sessions. Surfaced in ticket 142 review (Important #1)."
   },
   {
@@ -367,12 +348,6 @@
     "description": "From ticket 186 review (minor UX). If today's scheduled day was already completed today, the dashboard Today card still shows 'Start Workout' (would start a repeat). Show a 'Completed today ✓' state instead (check the latest/today's completed workout for that dayNumber)."
   },
   {
-    "id": "186",
-    "title": "Reject duplicate weekdays in schedule (backend)",
-    "status": "backlog",
-    "description": "From ticket 186 review (pre-existing). PUT /schedule rejects duplicate dayNumbers but not duplicate weekdays, so two plan days can be scheduled on the same weekday; the editor only warns, and TodaysWorkout.find() then picks an arbitrary first. Make duplicate weekdays a hard 400 (or have the editor block save)."
-  },
-  {
     "id": "187",
     "title": "Bound the stall-detection query (getStalls loads all progression sets)",
     "status": "backlog",
@@ -389,5 +364,11 @@
     "title": "Offline AMRAP increments are dropped: optimistic UI shows stepped value but only the confirmed value persists",
     "status": "backlog",
     "description": "Reproduced via the (now-removed) offline-set-log round-trip test. Steps: go offline, on an AMRAP set tap Confirm then + up to e.g. 10. The optimistic reps display reaches 10, but after reconnect+flush+reload the server has only 8 (the confirmed/prescribed value). So the increment edits update the UI (onWorkoutChange) but never reach the durable queue: each tap calls debouncedLogSet, yet only the confirm's value ends up enqueued. Likely causes to investigate: (a) the increment debounce timers are cleared before firing (re-render/cleanup, or loader revalidation resetting workout state — see #189), or (b) the queue is flushed on reconnect before the final 300ms debounce enqueues the latest value. Net effect is real data loss for reps logged offline. Once fixed, re-add an offline round-trip e2e test (assert the logged value survives reconnect)."
+  },
+  {
+    "id": "197",
+    "title": "Flaky WebKit E2E: 'shows previous performance when repeating a workout' times out in fillAmrapAndWait",
+    "status": "backlog",
+    "description": "workout.spec.ts:307 intermittently fails on WebKit only — page.waitForResponse for the debounced AMRAP PATCH times out at 15s under parallel load, then passes on retry/re-run. Matches the known WebKit controlled-input fill gotcha (memory: webkit-controlled-input-fill). Consider: assert on persisted backend state or visible UI rather than waiting on the network response, or trigger blur to flush the debounce deterministically before waiting."
   }
 ]

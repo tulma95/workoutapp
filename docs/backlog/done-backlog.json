@@ -773,5 +773,24 @@
     "title": "Select Plan page does not indicate the user's current/active plan",
     "status": "done",
     "description": "UX (low). On /select-plan when the user already has an active plan, both plan cards show an identical 'Select Plan' button with no marker of which plan is current. Add a 'Current plan' badge / disabled state for the active plan. Found via manual QA, mobile."
+  },
+  {
+    "id": "070",
+    "title": "Missing negative test for century-club achievement (low TM should not unlock)",
+    "status": "done",
+    "priority": "low",
+    "description": "The achievements test suite has a positive test for century-club (bench TM=200) but no negative test confirming it does NOT trigger when all set weights are below 100 kg. The default benchTM=100 users (TM=90) could serve as a negative baseline."
+  },
+  {
+    "id": "157",
+    "title": "Cap and validate history pagination limit",
+    "status": "done",
+    "description": "workouts.ts history: limit = parseInt(query.limit) || 10 passed straight to Prisma take with no max cap and no negative validation; limit=9999999 loads all workouts+sets (DoS), page=-1 yields negative skip. Cap at ~50 and validate page/limit."
+  },
+  {
+    "id": "158",
+    "title": "validateQuery middleware for query params",
+    "status": "done",
+    "description": "middleware/validate.ts only safeParses req.body, leaving query params unvalidated app-wide (leaderboard mode, history page/limit). Add a validateQuery variant and apply to query-driven endpoints."
   }
 ]

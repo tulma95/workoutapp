@@ -6,6 +6,7 @@ export interface JwtPayload {
   userId: number;
   email: string;
   isAdmin: boolean;
+  tokenVersion: number;
 }
 
 export interface AuthRequest extends Request {

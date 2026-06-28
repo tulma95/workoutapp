@@ -68,7 +68,11 @@ describe('User routes', () => {
         .patch('/api/users/me/password')
         .set('Authorization', `Bearer ${token}`)
         .send({ currentPassword: 'original123', newPassword: 'brandnew456' });
-      expect(res.status).toBe(204);
+      // Returns 200 with fresh tokens so the current session stays authenticated
+      // after old tokens are invalidated by the tokenVersion bump.
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('accessToken');
+      expect(res.body).toHaveProperty('refreshToken');
 
       // New password works, old one no longer does.
       const newLogin = await request(app)
@@ -329,7 +333,7 @@ describe('User routes', () => {
       expect(res.status).toBe(401);
     });
 
-    it('is idempotent: a repeated delete with the (still-valid) token returns 204', async () => {
+    it('is idempotent: a repeated delete with the same token returns 401 (user gone from DB)', async () => {
       const { token } = await createTestUser({ password: 'todelete123' });
 
       const first = await request(app)
@@ -338,13 +342,15 @@ describe('User routes', () => {
         .send({ password: 'todelete123' });
       expect(first.status).toBe(204);
 
-      // The JWT is stateless, so a replay still authenticates; the account is
-      // already gone, which we treat as success rather than a 500.
+      // With tokenVersion checking the auth middleware now looks up the user in
+      // DB on every request. Once the account is deleted there is no row to
+      // compare the tokenVersion against, so the middleware rejects the replay
+      // with 401 before the route handler is reached.
       const second = await request(app)
         .delete('/api/users/me')
         .set('Authorization', `Bearer ${token}`)
         .send({ password: 'todelete123' });
-      expect(second.status).toBe(204);
+      expect(second.status).toBe(401);
     });
   });
 });
