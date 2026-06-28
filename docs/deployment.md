@@ -57,3 +57,4 @@ cd backend && node --experimental-strip-types src/scripts/generate-vapid-keys.mt
 - **Migrations** run automatically on every deploy via the entrypoint — no manual step.
 - **Health check**: `GET /api/health` returns 200 only when the DB is reachable; Coolify uses it to gate redeploys.
 - **Postgres**: provision it as a Coolify resource (or external) and point `DATABASE_URL` at it. The repo's `docker-compose.yml` is for **local dev only**.
+- **One-time logout on the tokenVersion deploy**: the migration that added `users.token_version` (defaulting to 0) makes tokens issued before the deploy lack the `tokenVersion` claim, so they fail the version check and every currently logged-in user is bounced to `/login` once. This is expected for that release only.

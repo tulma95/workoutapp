@@ -288,12 +288,6 @@
     "description": "With route code-splitting (156) + the SW skipWaiting/clientsClaim precache purge (135), an already-open tab running an old index-*.js that lazy-navigates to a not-yet-visited route requests an old hashed chunk the new precache purged -> 404 -> unhandled chunk-load rejection. The SW navigation fallback only covers navigations, not script assets. Add a global handler that catches dynamic-import/chunk-load failures and triggers a full reload (or a 'new version available, reload' prompt instead of skipWaiting). Surfaced in 156 review; same caveat noted in 135 review."
   },
   {
-    "id": "170",
-    "title": "Invalidate existing sessions on password change (tokenVersion in JWT)",
-    "status": "in-progress",
-    "description": "Password change (142) re-hashes the password but does NOT revoke already-issued tokens: this is stateless JWT with a 24h access + 30d refresh token and no token version/denylist, so an attacker's or lost-device's tokens stay valid up to 30 days after the user changes their password. Add a tokenVersion (or passwordChangedAt) column to User, embed it in access+refresh tokens, verify it in the auth/refresh middleware, and bump it on password change (and ideally on logout-all). This is what makes 'change password' actually able to revoke compromised sessions. Surfaced in ticket 142 review (Important #1)."
-  },
-  {
     "id": "171",
     "title": "Rate-limit PATCH /users/me/password (current-password check is unthrottled)",
     "status": "backlog",
