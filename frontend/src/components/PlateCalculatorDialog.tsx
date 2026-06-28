@@ -65,6 +65,10 @@ export function PlateCalculatorDialog({
               </li>
             ))}
           </ul>
+        ) : weight < bar ? (
+          <p className={styles.lighter} data-testid="plate-list">
+            Lighter than the selected bar.
+          </p>
         ) : (
           <p className={styles.empty} data-testid="plate-list">
             Just the bar — no plates needed.

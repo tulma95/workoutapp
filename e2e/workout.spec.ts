@@ -426,4 +426,46 @@ test.describe('Workout Session', () => {
     await dialog.getByRole('button', { name: /^close$/i }).click();
     await expect(dialog).toBeHidden();
   });
+
+  test('plate calculator shows "lighter than the selected bar" when target weight is below the bar', async ({
+    setupCompletePage,
+  }) => {
+    const { page } = setupCompletePage;
+    const workout = new WorkoutPage(page);
+
+    // Lower the Bench Press TM to 5 kg so that every generated set comes out at
+    // 5 kg (rounded to the 2.5 kg grid). That is well below even the lightest bar
+    // option (10 kg), which lets us verify the distinct error message without
+    // requiring a manual plate-calc UI override.
+    await page.evaluate(async () => {
+      const token = localStorage.getItem('accessToken');
+      await fetch('/api/training-maxes/bench-press', {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ weight: 5 }),
+      });
+    });
+
+    // Navigate directly to Day 1 so the workout gets created with the updated TM.
+    await page.goto('/workout/1');
+    await workout.expectLoaded(1);
+
+    // Open the plate calculator on the first Bench Press set.
+    await page.getByTestId('set-weight').first().click();
+
+    const dialog = page.getByRole('dialog', { name: /plate calculator/i });
+    await expect(dialog).toBeVisible();
+
+    // Switch to the 10 kg bar — the 5 kg set is lighter than it.
+    await dialog.getByRole('button', { name: '10 kg' }).click();
+
+    await expect(dialog.getByText(/lighter than the selected bar/i)).toBeVisible();
+    await expect(dialog.getByText(/just the bar/i)).not.toBeVisible();
+
+    await dialog.getByRole('button', { name: /^close$/i }).click();
+    await expect(dialog).toBeHidden();
+  });
 });

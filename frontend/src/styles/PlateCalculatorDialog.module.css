@@ -64,6 +64,11 @@
   color: var(--text-muted);
 }
 
+.lighter {
+  margin: 0 0 var(--space-md);
+  color: var(--danger);
+}
+
 .leftover {
   margin: 0 0 var(--space-md);
   font-size: 0.8125rem;
