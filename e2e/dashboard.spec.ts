@@ -1,5 +1,6 @@
 import { test, expect } from './fixtures';
 import { DashboardPage } from './pages/dashboard.page';
+import { WorkoutPage } from './pages/workout.page';
 import { SettingsPage } from './pages/settings.page';
 
 test.describe('Dashboard', () => {
@@ -77,5 +78,47 @@ test.describe('Dashboard', () => {
     await expect(today.getByText('Today', { exact: true })).toBeVisible();
     await expect(today.getByRole('heading', { name: 'Day 1' })).toBeVisible();
     await expect(today.getByRole('link', { name: /start workout/i })).toBeVisible();
+  });
+
+  test("Today card shows 'Completed today' state after completing today's scheduled workout", async ({
+    setupCompletePage,
+  }) => {
+    const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    const workout = new WorkoutPage(page);
+
+    await dashboard.expectLoaded();
+
+    // Schedule Day 1 for the current weekday so the Today card is visible.
+    await page.evaluate(async () => {
+      const token = localStorage.getItem('accessToken');
+      const weekday = new Date().getDay();
+      await fetch('/api/schedule', {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ schedule: [{ dayNumber: 1, weekday }] }),
+      });
+    });
+    await page.reload();
+    await dashboard.expectLoaded();
+
+    const today = page.getByTestId('todays-workout');
+    await expect(today).toBeVisible();
+    await expect(today.getByRole('link', { name: /start workout/i })).toBeVisible();
+
+    // Complete the Day 1 workout.
+    await today.getByRole('link', { name: /start workout/i }).click();
+    await workout.expectLoaded(1);
+    await workout.fillAmrapAndWait('5');
+    await workout.completeWithDialog();
+    await workout.goBackToDashboard();
+
+    await dashboard.expectLoaded();
+
+    // Today card should now show the completed state, not the start button.
+    await expect(today).toBeVisible();
+    await expect(today.getByRole('status')).toBeVisible();
+    await expect(today.getByText(/completed today/i)).toBeVisible();
+    await expect(today.getByRole('link', { name: /start workout/i })).not.toBeVisible();
   });
 });

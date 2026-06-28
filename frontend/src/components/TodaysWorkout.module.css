@@ -28,3 +28,18 @@
   font-size: 0.9375rem;
   color: var(--text-muted);
 }
+
+.card[data-completed] {
+  border-color: var(--success);
+}
+
+.completedBadge {
+  margin: 0;
+  padding: 0.5rem 1rem;
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  color: var(--success);
+  border-radius: 1.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-align: center;
+}
