@@ -843,5 +843,11 @@
     "title": "Plate calculator: clearer message when target weight < bar weight",
     "status": "done",
     "description": "From ticket 004 review (minor). computePlatesPerSide returns empty groups for both weight==bar and weight<bar, so a target lighter than the selected bar shows 'Just the bar — no plates needed', which is misleading (that bar can't make the lighter weight). Distinguish perSide<0 from perSide===0 and show a message like 'Lighter than the selected bar'. Low frequency (main-lift prescribed weights rarely dip below 20kg)."
+  },
+  {
+    "id": "187",
+    "title": "Bound the stall-detection query (getStalls loads all progression sets)",
+    "status": "done",
+    "description": "From ticket 009 review (minor, deferred). getStalls fetches every completed isProgression set for the user, then keeps only the newest 3 per exercise in JS. For a multi-year user that's hundreds of rows to use ~12. Bound it with a per-exercise window/limit or a smarter query. Acceptable for now (bounded by user history)."
   }
 ]

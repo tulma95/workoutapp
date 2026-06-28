@@ -284,12 +284,6 @@
     "description": "From ticket 179 review. register/changeEmail now do an insensitive pre-check (assertEmailAvailable) + the case-sensitive unique constraint, which closes the cross-case duplicate gap for the non-concurrent case but leaves a TOCTOU race under concurrency. The robust fix is DB-level: either a citext email column (@db.Citext + CREATE EXTENSION citext) or a functional unique index on lower(email), plus a one-off data migration to lowercase existing rows (guarded for collisions). That also lets login drop the case-insensitive fallback. Verify no existing case-variant duplicates before the migration."
   },
   {
-    "id": "187",
-    "title": "Bound the stall-detection query (getStalls loads all progression sets)",
-    "status": "backlog",
-    "description": "From ticket 009 review (minor, deferred). getStalls fetches every completed isProgression set for the user, then keeps only the newest 3 per exercise in JS. For a multi-year user that's hundreds of rows to use ~12. Bound it with a per-exercise window/limit or a smarter query. Acceptable for now (bounded by user history)."
-  },
-  {
     "id": "189",
     "title": "Investigate optimistic set-log reps reverting under route-loader revalidation; fillAmrap does not verify reps reached target",
     "status": "backlog",
