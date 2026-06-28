@@ -224,7 +224,7 @@
   {
     "id": "159",
     "title": "Add DB indexes on hot query columns (WorkoutSet.exerciseId)",
-    "status": "backlog",
+    "status": "in-progress",
     "description": "WorkoutSet.exerciseId is unindexed but e1RM leaderboard and progress filter workout_sets by exerciseId IN (...). These are the heaviest read paths and will table-scan as data grows. Add targeted indexes."
   },
   {
