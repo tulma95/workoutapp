@@ -1435,6 +1435,83 @@ describe('Social API', () => {
       // Special case: actualReps === 1 => returns base weight exactly
       expect(rankOne.weight).toBe(120);
     });
+
+    it('counts non-AMRAP completed sets (matches Progress/Profile e1RM source)', async () => {
+      // The leaderboard e1RM must use the same source as Progress/Profile —
+      // best e1RM across ALL completed sets, not just AMRAP sets. A non-AMRAP
+      // set with the highest e1RM should drive the ranking.
+      const uidNon = randomUUID().slice(0, 8);
+      const resNonUser = await request(app).post('/api/auth/register').send({
+        email: `e1rm-nonamrap-${uidNon}@example.com`,
+        password: 'password123',
+        username: `e1rm_nonamrap_${uidNon}`,
+      });
+      const tokenNonUser = resNonUser.body.accessToken;
+      const userIdNonUser = resNonUser.body.user.id;
+
+      const nonPlan = await prisma.workoutPlan.create({
+        data: {
+          slug: `nonamrap-plan-${uidNon}`,
+          name: `Non-AMRAP Plan ${uidNon}`,
+          description: 'Non-AMRAP test',
+          daysPerWeek: 1,
+          isPublic: true,
+          isSystem: false,
+        },
+      });
+      const nonDay = await prisma.planDay.create({
+        data: { planId: nonPlan.id, dayNumber: 1, name: 'Day 1' },
+      });
+      await prisma.planDayExercise.create({
+        data: {
+          planDayId: nonDay.id,
+          exerciseId: e1rmBenchExerciseId,
+          tmExerciseId: e1rmBenchExerciseId,
+          sortOrder: 1,
+        },
+      });
+      await prisma.userPlan.create({
+        data: { userId: userIdNonUser, planId: nonPlan.id, isActive: true },
+      });
+
+      const nonWorkout = await prisma.workout.create({
+        data: {
+          userId: userIdNonUser,
+          dayNumber: 1,
+          status: 'completed',
+          completedAt: new Date(),
+        },
+      });
+      // A non-AMRAP working set: 100kg x 5 => 100 * (1 + 5/30) = 116.666...
+      await prisma.workoutSet.create({
+        data: {
+          workoutId: nonWorkout.id,
+          exerciseId: e1rmBenchExerciseId,
+          exerciseOrder: 1,
+          setOrder: 1,
+          prescribedReps: 5,
+          prescribedWeight: 100,
+          isAmrap: false,
+          actualReps: 5,
+          completed: true,
+        },
+      });
+
+      const res = await request(app)
+        .get('/api/social/leaderboard?mode=e1rm')
+        .set('Authorization', `Bearer ${tokenNonUser}`);
+      expect(res.status).toBe(200);
+
+      const benchExercise = res.body.exercises.find(
+        (e: { slug: string }) => e.slug === 'bench-press'
+      );
+      expect(benchExercise).toBeDefined();
+      const rankNon = benchExercise.rankings.find(
+        (r: { userId: number }) => r.userId === userIdNonUser
+      );
+      expect(rankNon).toBeDefined();
+      expect(rankNon.weight).toBeCloseTo(116.666, 2);
+    });
   });
 
   describe('Request by username', () => {

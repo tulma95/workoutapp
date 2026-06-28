@@ -9,6 +9,7 @@ import { calculateStreak } from '../lib/streak';
 import { parseIntParam, usernameSchema } from '../lib/routeHelpers';
 import { notifyWithPush } from '../lib/notificationHelpers';
 import { getUserProfile } from '../services/profile.service';
+import { computeE1rm } from '../services/progress.service';
 import { normalizeEmail } from '../lib/email';
 
 const router = Router();
@@ -584,14 +585,15 @@ router.get('/leaderboard', async (req: AuthRequest, res: Response) => {
   const participantMap = new Map(participants.map((p) => [p.id, p.username]));
 
   if (mode === 'e1rm') {
-    // Query completed AMRAP sets for all participants
-    const amrapSets = await prisma.workoutSet.findMany({
+    // Best e1RM across ALL completed sets per user (not just AMRAP sets), matching
+    // how Progress/Profile compute personal records — so a friend's leaderboard
+    // number is the same e1RM they see on their own profile.
+    const completedSets = await prisma.workoutSet.findMany({
       where: {
         workout: {
           userId: { in: participantIds },
           status: 'completed',
         },
-        isAmrap: true,
         completed: true,
         actualReps: { gt: 0 },
         exerciseId: { in: Array.from(tmExerciseMap.keys()) },
@@ -606,10 +608,10 @@ router.get('/leaderboard', async (req: AuthRequest, res: Response) => {
 
     // Group by exerciseId -> userId, keep max e1RM per user
     const e1rmByExercise = new Map<number, Map<number, number>>();
-    for (const set of amrapSets) {
+    for (const set of completedSets) {
       const reps = set.actualReps as number;
       const weight = set.prescribedWeight.toNumber();
-      const e1rm = reps === 1 ? weight : weight * (1 + reps / 30);
+      const e1rm = computeE1rm(weight, reps);
       const setUserId = set.workout.userId;
 
       if (!e1rmByExercise.has(set.exerciseId)) {
