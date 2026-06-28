@@ -217,7 +217,42 @@ const test = base.extend<AdminFixture>({
     await page.goto('/admin/plans');
     await expect(page.getByRole('heading', { name: /workout plans/i })).toBeVisible();
 
+    // Track any plan created during this test via the admin API so we can archive
+    // it in teardown — keeps created plans out of the public plan-selection list.
+    let createdPlanId: number | null = null;
+    const responseHandler = async (response: import('@playwright/test').Response) => {
+      if (
+        response.url().includes('/api/admin/plans') &&
+        response.request().method() === 'POST' &&
+        response.status() === 201
+      ) {
+        try {
+          const body = await response.json();
+          if (body?.id) createdPlanId = body.id;
+        } catch {
+          // ignore parse errors
+        }
+      }
+    };
+    page.on('response', responseHandler);
+
     await use(new AdminPlanEditor(page));
+
+    page.off('response', responseHandler);
+
+    // Archive the plan so it doesn't appear in GET /api/plans for other E2E workers
+    if (createdPlanId !== null) {
+      const adminToken = await page.evaluate(() => localStorage.getItem('accessToken') ?? '');
+      if (adminToken) {
+        await page.request
+          .delete(`/api/admin/plans/${createdPlanId}`, {
+            headers: { Authorization: `Bearer ${adminToken}` },
+          })
+          .catch(() => {
+            // best-effort; test already passed
+          });
+      }
+    }
   },
 });
 

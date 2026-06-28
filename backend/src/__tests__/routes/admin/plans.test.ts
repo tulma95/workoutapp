@@ -107,7 +107,7 @@ describe('Admin Plans routes', () => {
           name: 'Test Plan',
           description: 'A test workout plan',
           daysPerWeek: 2,
-          isPublic: true,
+          isPublic: false,
           days: [
             {
               dayNumber: 1,
