@@ -254,12 +254,6 @@
     "description": "From ticket 148 review (minor): all editable reps inputs share aria-label 'Reps performed' (screen readers can't distinguish set 1 vs 3) — label per set (e.g. 'Reps for set N'). Also the value-resync useEffect can briefly clobber the field while focused/typing under an in-flight optimistic update; guard it so it doesn't overwrite during active editing. Both minor."
   },
   {
-    "id": "176",
-    "title": "Durable test-isolation: make test-created plans non-public + self-contained stateful social tests",
-    "status": "backlog",
-    "description": "Follow-up from the 090/173/174 stabilization review. Two durable fixes so retry isn't load-bearing: (1) Root hazard not fixed at source — admin-plan-editor E2E tests and e2e/helpers/create-second-plan.ts create plans with isPublic defaulting true (admin/plans.ts:59) with no cleanup, polluting the public-plans list any 'select a plan' path sees. The selectFirstPlan->nSuns change routes the fixture around it, but pass isPublic:false from admin/helper-created test plans to kill it at the source. (2) The stateful, order-dependent social tests (social.test.ts Feed reactions toggle-chain ~442-630, friend-request flow ~66-186) share one feedEventId/token across sequential its with exact-count assertions; vitest retry re-runs only the failing it (re-toggling against mutated state), so it can spuriously fail or mask an intermittent regression. Make each assertion self-contained (per-test event/reactions) so retry is unnecessary for them."
-  },
-  {
     "id": "178",
     "title": "Bodyweight improvements: per-day dedup + trend chart",
     "status": "backlog",
@@ -300,5 +294,11 @@
     "title": "Deep-link does not auto-scroll when event is beyond page 1 of infinite feed",
     "status": "backlog",
     "description": "After adding cursor pagination, the deep-link feature (?event=<id>) only auto-scrolls to events visible on the initial page. Events on page 2+ are now reachable via Load More but won't be highlighted/scrolled-to automatically. Was not a regression (events 21+ were previously unreachable), but the gap is now visible."
+  },
+  {
+    "id": "199",
+    "title": "Flaky WebKit E2E: dashboard Completed today times out in fillAmrapAndWait same root as 197",
+    "status": "backlog",
+    "description": "dashboard.spec.ts:83 intermittently fails on WebKit only. fillAmrapAndWait waits for the debounced AMRAP PATCH network response which times out under parallel load. Same root cause as ticket 197 (webkit controlled-input fill / debounce timing). Fix both tests together."
   }
 ]
