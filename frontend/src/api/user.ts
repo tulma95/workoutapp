@@ -1,5 +1,5 @@
 import { apiFetch, apiFetchParsed } from './client'
-import { UserSchema } from './schemas'
+import { UserSchema, TokenPairSchema } from './schemas'
 
 export async function getMe() {
   return apiFetchParsed('/users/me', UserSchema)
@@ -13,10 +13,16 @@ export async function updateMe(updates: { username?: string | null }) {
 }
 
 export async function changePassword(currentPassword: string, newPassword: string) {
-  await apiFetch('/users/me/password', {
+  // Changing the password bumps the server-side tokenVersion, invalidating
+  // every previously issued token (ticket 170). The endpoint returns a fresh
+  // pair so the current session stays logged in — store it, otherwise the next
+  // request would 401 and bounce the user to /login.
+  const tokens = await apiFetchParsed('/users/me/password', TokenPairSchema, {
     method: 'PATCH',
     body: JSON.stringify({ currentPassword, newPassword }),
   })
+  localStorage.setItem('accessToken', tokens.accessToken)
+  localStorage.setItem('refreshToken', tokens.refreshToken)
 }
 
 export async function changeEmail(currentPassword: string, newEmail: string) {

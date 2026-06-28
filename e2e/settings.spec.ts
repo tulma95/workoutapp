@@ -50,6 +50,15 @@ test.describe('Settings Page', () => {
 
     await expect(page.getByText(/password changed/i)).toBeVisible();
 
+    // The session must survive the change. Changing the password bumps the
+    // server-side tokenVersion (170), killing the old tokens; the client must
+    // have stored the fresh pair the endpoint returned. A reload re-issues an
+    // authenticated request — if the stale token were kept it would 401 and
+    // bounce to /login.
+    await page.reload();
+    await settings.expectLoaded();
+    expect(page.url()).not.toContain('/login');
+
     // The new password must actually work; the old one must not.
     await settings.logout();
     await page.getByLabel(/email/i).fill(user.email);

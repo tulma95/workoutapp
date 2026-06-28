@@ -111,6 +111,11 @@ export const LoginResponseSchema = z.object({
   user: UserSchema,
 });
 
+export const TokenPairSchema = z.object({
+  accessToken: z.string(),
+  refreshToken: z.string(),
+});
+
 // Training Max schemas
 export const TrainingMaxSchema = z.object({
   id: z.number(),
