@@ -445,7 +445,9 @@ export const FeedEventSchema = z.object({
 
 export const FeedResponseSchema = z.object({
   events: z.array(FeedEventSchema),
+  nextCursor: z.number().nullable(),
 });
+export type FeedResponse = z.infer<typeof FeedResponseSchema>;
 
 export const LeaderboardRankingSchema = z.object({
   userId: z.number(),

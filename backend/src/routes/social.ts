@@ -373,14 +373,24 @@ router.delete('/friends/:id', async (req: AuthRequest, res: Response) => {
   res.json({ id: updated.id, status: updated.status });
 });
 
+const feedQuerySchema = z.object({
+  cursor: z.coerce.number().int().positive().optional(),
+  limit: z.coerce.number().int().min(1).max(50).optional().default(20),
+});
+
 router.get('/feed', async (req: AuthRequest, res: Response) => {
   const userId = getUserId(req);
+  const query = parseQuery(feedQuerySchema, req, res);
+  if (!query) return;
+  const { cursor, limit } = query;
+
   const friendIds = await getAcceptedFriendIds(userId);
 
   const events = await prisma.feedEvent.findMany({
     where: { userId: { in: [userId, ...friendIds] } },
-    orderBy: { createdAt: 'desc' },
-    take: 20,
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+    ...(cursor !== undefined ? { cursor: { id: cursor }, skip: 1 } : {}),
+    take: limit,
     include: {
       user: { select: { id: true, username: true } },
     },
@@ -485,7 +495,10 @@ router.get('/feed', async (req: AuthRequest, res: Response) => {
     };
   });
 
-  res.json({ events: result });
+  const lastEvent = events.length === limit ? events[events.length - 1] : undefined;
+  const nextCursor = lastEvent !== undefined ? lastEvent.id : null;
+
+  res.json({ events: result, nextCursor });
 });
 
 router.post('/feed/:eventId/react', validate(reactSchema), async (req: AuthRequest, res: Response) => {

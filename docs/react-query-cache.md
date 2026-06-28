@@ -22,7 +22,7 @@
 | `['progress', 'records']` | Personal records: best e1RM set per exercise (all-time) | ProgressPage (PersonalRecords) |
 | `['bodyweight']` | Bodyweight entries (oldest first); invalidated on log/delete (BodyweightCard mutations) | ProgressPage (BodyweightCard) |
 | `['achievements']` | All achievement badges with locked/unlocked state for the current user | AchievementsPage |
-| `['social', 'feed']` | Last 20 feed events from confirmed friends (includes `streak` per event owner, and `latestComments`: last 2 comments per event) | SocialPage (FeedTab) |
+| `['social', 'feed']` | **Infinite query** (`useInfiniteQuery`). Pages of feed events from the caller and confirmed friends (ordered `createdAt DESC, id DESC`; default 20 per page). Each page: `{ events: [...], nextCursor: number \| null }`. `getNextPageParam` returns `nextCursor` (or `undefined` when `null` = last page). Full enrichment per event: `streak`, `reactions`, `commentCount`, `latestComments` (last 2). | SocialPage (FeedTab) |
 | `['social', 'friends']` | Accepted friends list (includes `streak` per friend) | SocialPage (FriendsTab) |
 | `['social', 'friend-requests']` | Pending incoming friend requests | SocialPage (FriendsTab) |
 | `['social', 'leaderboard']` | TM rankings per exercise across friends | SocialPage (LeaderboardTab) |
@@ -80,3 +80,4 @@ Admin: PlanList --archive--> PlanList only
 - Pages use `useSuspenseQuery` for data guaranteed by route loaders
 - `removeQueries` = delete from cache (data no longer valid, e.g. plan switch); `invalidateQueries` = mark stale, refetch on next access
 - When adding new mutations that affect workout/calendar/TM data, update the invalidation rules above
+- **`['social', 'feed']` infinite query invalidation**: `invalidateQueries({ queryKey: ['social', 'feed'] })` marks the entire infinite query stale. On next access all currently loaded pages are refetched (TanStack Query v5 default). This also matches `['social', 'feed', eventId, 'comments']` via prefix — existing invalidation sites remain compatible without changes.

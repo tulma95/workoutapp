@@ -15,6 +15,7 @@ export type {
   FriendRequest,
   FeedEventPayload,
   FeedEvent,
+  FeedResponse,
   FeedReaction,
   ReactResponse,
   LeaderboardRanking,
@@ -69,8 +70,9 @@ export async function removeFriend(id: number): Promise<void> {
   await apiFetch(`/social/friends/${id}`, { method: 'DELETE' });
 }
 
-export async function getFeed(): Promise<typeof FeedResponseSchema._output> {
-  return apiFetchParsed('/social/feed', FeedResponseSchema);
+export async function getFeed(cursor?: number): Promise<typeof FeedResponseSchema._output> {
+  const qs = cursor !== undefined ? `?cursor=${cursor}` : '';
+  return apiFetchParsed(`/social/feed${qs}`, FeedResponseSchema);
 }
 
 export async function getLeaderboard(): Promise<typeof LeaderboardResponseSchema._output> {

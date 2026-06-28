@@ -1,5 +1,5 @@
 import { useRef, useCallback } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { getFeed } from '../api/social';
 import type { FeedEvent } from '../api/social';
 import { FeedEventPayloadSchema } from '../api/schemas';
@@ -112,9 +112,21 @@ export function FeedTab({ highlightEventId }: FeedTabProps = {}) {
   const queryClient = useQueryClient();
   const currentUser = queryClient.getQueryData<User>(queryKeys.user.me());
   const currentUserId = currentUser?.id ?? 0;
-  const { data, isLoading, isError, error, refetch } = useQuery({
+
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: queryKeys.social.feed(),
-    queryFn: getFeed,
+    queryFn: ({ pageParam }: { pageParam: number | undefined }) => getFeed(pageParam),
+    initialPageParam: undefined as number | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     refetchOnMount: 'always',
   });
 
@@ -152,7 +164,7 @@ export function FeedTab({ highlightEventId }: FeedTabProps = {}) {
     );
   }
 
-  const events = data?.events ?? [];
+  const events = data?.pages.flatMap((page) => page.events) ?? [];
 
   if (events.length === 0) {
     return (
@@ -173,6 +185,17 @@ export function FeedTab({ highlightEventId }: FeedTabProps = {}) {
           isHighlighted={event.id === highlightEventId}
         />
       ))}
+      {hasNextPage && (
+        <li className={styles.loadMoreContainer}>
+          <button
+            className={styles.loadMoreButton}
+            onClick={() => void fetchNextPage()}
+            disabled={isFetchingNextPage}
+          >
+            {isFetchingNextPage ? 'Loading...' : 'Load more'}
+          </button>
+        </li>
+      )}
     </ul>
   );
 }

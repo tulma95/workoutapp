@@ -112,3 +112,36 @@
   }
 }
 
+.loadMoreContainer {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-md) 0;
+  list-style: none;
+}
+
+.loadMoreButton {
+  min-height: 3rem;
+  padding: 0 var(--space-lg);
+  background-color: var(--bg-card);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: var(--space-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.loadMoreButton:hover:not(:disabled) {
+  background-color: var(--bg-subtle);
+}
+
+.loadMoreButton:focus-visible {
+  outline: 0.125rem solid var(--primary);
+  outline-offset: 2px;
+}
+
+.loadMoreButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+

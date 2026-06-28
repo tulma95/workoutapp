@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
+import type { InfiniteData } from '@tanstack/react-query';
 import { toggleReaction } from '../api/social';
 import type { FeedReaction } from '../api/social';
 import type { FeedResponseSchema } from '../api/schemas';
@@ -14,7 +15,27 @@ interface ActionRowProps {
   onCommentFocus: () => void;
 }
 
-type FeedResponse = typeof FeedResponseSchema._output;
+type FeedPage = typeof FeedResponseSchema._output;
+// The feed uses useInfiniteQuery, so the cache stores InfiniteData<FeedPage>.
+type InfiniteFeedData = InfiniteData<FeedPage>;
+
+/** Apply an event-level update function to every page in the infinite feed cache. */
+function updateFeedEvent(
+  old: InfiniteFeedData | undefined,
+  eventId: number,
+  updater: (event: FeedPage['events'][number]) => FeedPage['events'][number],
+): InfiniteFeedData | undefined {
+  if (!old) return old;
+  return {
+    ...old,
+    pages: old.pages.map((page) => ({
+      ...page,
+      events: page.events.map((event) =>
+        event.id === eventId ? updater(event) : event,
+      ),
+    })),
+  };
+}
 
 export function ActionRow({ eventId, reactions, currentUserId: _currentUserId, onCommentFocus }: ActionRowProps) {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
@@ -28,63 +49,57 @@ export function ActionRow({ eventId, reactions, currentUserId: _currentUserId, o
     mutationFn: (emoji: string) => toggleReaction(eventId, emoji),
     onMutate: async (emoji: string) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.social.feed() });
-      const snapshot = queryClient.getQueryData<FeedResponse>(queryKeys.social.feed());
+      const snapshot = queryClient.getQueryData<InfiniteFeedData>(queryKeys.social.feed());
 
-      queryClient.setQueryData<FeedResponse>(queryKeys.social.feed(), (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          events: old.events.map((event) => {
-            if (event.id !== eventId) return event;
+      queryClient.setQueryData<InfiniteFeedData>(queryKeys.social.feed(), (old) =>
+        updateFeedEvent(old, eventId, (event) => {
+          const existing = event.reactions.find((r) => r.emoji === emoji);
+          const reactedByMe = existing?.reactedByMe ?? false;
 
-            const existing = event.reactions.find((r) => r.emoji === emoji);
-            const reactedByMe = existing?.reactedByMe ?? false;
-
-            if (reactedByMe) {
-              // Toggle off the same emoji
-              return {
-                ...event,
-                reactions: event.reactions
-                  .map((r) =>
-                    r.emoji === emoji
-                      ? { ...r, count: r.count - 1, reactedByMe: false }
-                      : r
-                  )
-                  .filter((r) => r.count > 0),
-              };
-            } else {
-              // Remove any previous reaction by this user (different emoji) and add/increment new one
-              const withoutPrevious = event.reactions
+          if (reactedByMe) {
+            // Toggle off the same emoji
+            return {
+              ...event,
+              reactions: event.reactions
                 .map((r) =>
-                  r.reactedByMe && r.emoji !== emoji
+                  r.emoji === emoji
                     ? { ...r, count: r.count - 1, reactedByMe: false }
-                    : r
+                    : r,
                 )
-                .filter((r) => r.count > 0);
+                .filter((r) => r.count > 0),
+            };
+          }
 
-              const hasEntry = withoutPrevious.some((r) => r.emoji === emoji);
-              if (hasEntry) {
-                return {
-                  ...event,
-                  reactions: withoutPrevious.map((r) =>
-                    r.emoji === emoji
-                      ? { ...r, count: r.count + 1, reactedByMe: true }
-                      : r
-                  ),
-                };
-              } else {
-                return {
-                  ...event,
-                  reactions: [
-                    ...withoutPrevious,
-                    { emoji, count: 1, reactedByMe: true },
-                  ],
-                };
-              }
-            }
-          }),
-        };
-      });
+          // Remove any previous reaction by this user (different emoji) and add/increment new one
+          const withoutPrevious = event.reactions
+            .map((r) =>
+              r.reactedByMe && r.emoji !== emoji
+                ? { ...r, count: r.count - 1, reactedByMe: false }
+                : r,
+            )
+            .filter((r) => r.count > 0);
+
+          const hasEntry = withoutPrevious.some((r) => r.emoji === emoji);
+          if (hasEntry) {
+            return {
+              ...event,
+              reactions: withoutPrevious.map((r) =>
+                r.emoji === emoji
+                  ? { ...r, count: r.count + 1, reactedByMe: true }
+                  : r,
+              ),
+            };
+          }
+
+          return {
+            ...event,
+            reactions: [
+              ...withoutPrevious,
+              { emoji, count: 1, reactedByMe: true },
+            ],
+          };
+        }),
+      );
 
       return { snapshot };
     },
