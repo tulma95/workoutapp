@@ -1,4 +1,5 @@
 import prisma from '../lib/db';
+import { Prisma } from '../generated/prisma/client';
 import { roundWeight } from '../lib/weightRounding';
 
 // Number of consecutive non-progressing sessions that counts as a stall.
@@ -46,9 +47,24 @@ export interface Stall {
   suggestedTM: number;
 }
 
+// Raw row returned by the bounded window query.
+interface BoundedSetRow {
+  actualReps: number;
+  exerciseId: number;
+  completedAt: Date;
+  exerciseSlug: string;
+  exerciseName: string;
+  exerciseIsUpperBody: boolean;
+}
+
 // A lift is "stalling" when its last STALL_SESSIONS completed progression (AMRAP)
 // sets all earned no TM increase. Suggests a 10% deload (one-tap apply via the
 // existing manual TM update). Conservative: needs >= STALL_SESSIONS data points.
+//
+// Optimization (ticket 187): instead of fetching ALL progression sets for the
+// user (which grows unboundedly over the years), a window query partitioned by
+// exercise_id limits the result to at most STALL_SESSIONS rows per exercise —
+// the only rows that can ever affect the stall verdict.
 export async function getStalls(userId: number): Promise<Stall[]> {
   const activePlan = await prisma.userPlan.findFirst({
     where: { userId, isActive: true },
@@ -57,33 +73,53 @@ export async function getStalls(userId: number): Promise<Stall[]> {
   if (!activePlan) return [];
   const rules = activePlan.plan.progressionRules as unknown as ProgressionRule[];
 
-  const sets = await prisma.workoutSet.findMany({
-    where: {
-      isProgression: true,
-      actualReps: { not: null },
-      workout: { userId, status: 'completed', completedAt: { not: null } },
-    },
-    select: {
-      actualReps: true,
-      exercise: { select: { id: true, slug: true, name: true, isUpperBody: true } },
-      workout: { select: { completedAt: true } },
-    },
-    orderBy: { workout: { completedAt: 'desc' } },
-  });
+  // Fetch at most STALL_SESSIONS rows per exercise (the newest by completedAt).
+  // The CTE computes ROW_NUMBER() partitioned by exercise_id and ordered by
+  // completed_at DESC — the outer WHERE rn <= STALL_SESSIONS makes the DB
+  // materialise only those rows, identical to what the old JS grouping kept.
+  const sets = await prisma.$queryRaw<BoundedSetRow[]>(Prisma.sql`
+    WITH ranked AS (
+      SELECT
+        ws.actual_reps                AS "actualReps",
+        ws.exercise_id                AS "exerciseId",
+        w.completed_at                AS "completedAt",
+        e.slug                        AS "exerciseSlug",
+        e.name                        AS "exerciseName",
+        e.is_upper_body               AS "exerciseIsUpperBody",
+        ROW_NUMBER() OVER (
+          PARTITION BY ws.exercise_id
+          ORDER BY w.completed_at DESC
+        )                             AS rn
+      FROM workout_sets ws
+      JOIN workouts w ON ws.workout_id = w.id
+      JOIN exercises e ON ws.exercise_id = e.id
+      WHERE ws.is_progression = true
+        AND ws.actual_reps IS NOT NULL
+        AND w.user_id = ${userId}
+        AND w.status = 'completed'
+        AND w.completed_at IS NOT NULL
+    )
+    SELECT "actualReps", "exerciseId", "completedAt",
+           "exerciseSlug", "exerciseName", "exerciseIsUpperBody"
+    FROM ranked
+    WHERE rn <= ${STALL_SESSIONS}
+    ORDER BY "exerciseId", rn
+  `);
 
-  // Most recent STALL_SESSIONS progression sets per exercise.
+  // Group rows by exercise (at most STALL_SESSIONS per group, already ordered
+  // newest-first by the window partition so push order is correct).
   type Recent = { actualReps: number; exercise: ProgExercise; completedAt: Date };
   const byExercise = new Map<number, Recent[]>();
   for (const s of sets) {
-    const list = byExercise.get(s.exercise.id) ?? [];
-    if (list.length < STALL_SESSIONS) {
-      list.push({
-        actualReps: s.actualReps as number,
-        exercise: s.exercise,
-        completedAt: s.workout.completedAt as Date,
-      });
-      byExercise.set(s.exercise.id, list);
-    }
+    const exercise: ProgExercise = {
+      id: s.exerciseId,
+      slug: s.exerciseSlug,
+      name: s.exerciseName,
+      isUpperBody: s.exerciseIsUpperBody,
+    };
+    const list = byExercise.get(s.exerciseId) ?? [];
+    list.push({ actualReps: Number(s.actualReps), exercise, completedAt: s.completedAt });
+    byExercise.set(s.exerciseId, list);
   }
 
   // Latest TM per exercise, keyed by the *performed* exercise id (matching how
