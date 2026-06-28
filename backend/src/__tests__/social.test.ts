@@ -437,6 +437,78 @@ describe('Social API', () => {
       expect(Array.isArray(event.latestComments)).toBe(true);
       expect(event.latestComments).toHaveLength(0);
     });
+
+    it('latestComments contains exactly 1 item when event has exactly 1 comment', async () => {
+      // Fresh isolated users so no other comments bleed in
+      const uidOne = randomUUID().slice(0, 8);
+      const resOne = await request(app).post('/api/auth/register').send({
+        email: `lc-one-a-${uidOne}@example.com`,
+        password: 'password123',
+        username: `lc_one_a_${uidOne}`,
+      });
+      const tokenOneA = resOne.body.accessToken;
+      const userIdOneA = resOne.body.user.id;
+
+      const resOneB = await request(app).post('/api/auth/register').send({
+        email: `lc-one-b-${uidOne}@example.com`,
+        password: 'password123',
+        username: `lc_one_b_${uidOne}`,
+      });
+      const tokenOneB = resOneB.body.accessToken;
+
+      // Make them friends
+      const reqRes = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenOneA}`)
+        .send({ email: `lc-one-b-${uidOne}@example.com` });
+      await request(app)
+        .patch(`/api/social/requests/${reqRes.body.id}/accept`)
+        .set('Authorization', `Bearer ${tokenOneB}`);
+
+      // Feed event owned by A with exactly 1 comment from B
+      const feedEvent = await prisma.feedEvent.create({
+        data: {
+          userId: userIdOneA,
+          eventType: 'workout_completed',
+          payload: { workoutId: 7001, dayNumber: 1 },
+        },
+      });
+      await request(app)
+        .post(`/api/social/feed/${feedEvent.id}/comments`)
+        .set('Authorization', `Bearer ${tokenOneB}`)
+        .send({ text: 'only comment' });
+
+      const res = await request(app)
+        .get('/api/social/feed')
+        .set('Authorization', `Bearer ${tokenOneA}`);
+      expect(res.status).toBe(200);
+
+      const event = res.body.events.find((e: { id: number }) => e.id === feedEvent.id);
+      expect(event).toBeDefined();
+      expect(event.commentCount).toBe(1);
+      expect(Array.isArray(event.latestComments)).toBe(true);
+      expect(event.latestComments).toHaveLength(1);
+      expect(event.latestComments[0].text).toBe('only comment');
+    });
+
+    it('feed returns empty events array and no error when user has no friends and no events', async () => {
+      // A user with zero friends and zero feed events causes eventIds to be empty,
+      // exercising the early-exit branch in the latestComments query.
+      const uidEmpty = randomUUID().slice(0, 8);
+      const resEmpty = await request(app).post('/api/auth/register').send({
+        email: `lc-empty-${uidEmpty}@example.com`,
+        password: 'password123',
+        username: `lc_empty_${uidEmpty}`,
+      });
+      const tokenEmpty = resEmpty.body.accessToken;
+
+      const res = await request(app)
+        .get('/api/social/feed')
+        .set('Authorization', `Bearer ${tokenEmpty}`);
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body.events)).toBe(true);
+      expect(res.body.events).toHaveLength(0);
+    });
   });
 
   describe('Feed reactions', () => {
