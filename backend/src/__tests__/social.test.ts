@@ -905,6 +905,14 @@ describe('Social API', () => {
       expect(res.status).toBe(401);
     });
 
+    it('returns 400 for an unrecognized mode value', async () => {
+      const res = await request(app)
+        .get('/api/social/leaderboard?mode=bogus')
+        .set('Authorization', `Bearer ${tokenE1rmA}`);
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    });
+
     it('returns { exercises: [] } when user has no active plan', async () => {
       const noPlanUid = randomUUID().slice(0, 8);
       const resNoPlan = await request(app).post('/api/auth/register').send({

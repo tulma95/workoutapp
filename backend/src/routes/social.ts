@@ -6,7 +6,7 @@ import { authenticate } from '../middleware/auth';
 import { AuthRequest, getUserId } from '../types';
 import prisma from '../lib/db';
 import { calculateStreak } from '../lib/streak';
-import { parseIntParam, usernameSchema } from '../lib/routeHelpers';
+import { parseIntParam, parseQuery, usernameSchema } from '../lib/routeHelpers';
 import { notifyWithPush } from '../lib/notificationHelpers';
 import { getUserProfile } from '../services/profile.service';
 import { computeE1rm } from '../services/progress.service';
@@ -529,9 +529,17 @@ router.post('/feed/:eventId/react', validate(reactSchema), async (req: AuthReque
   res.json({ reacted, count });
 });
 
+// Leaderboard ranks friends by TM (default) or best e1RM (mode=e1rm). Validate
+// the mode so an unexpected value fails loudly instead of silently falling back.
+const leaderboardQuerySchema = z.object({
+  mode: z.enum(['tm', 'e1rm']).optional().default('tm'),
+});
+
 router.get('/leaderboard', async (req: AuthRequest, res: Response) => {
   const userId = getUserId(req);
-  const mode = req.query.mode as string | undefined;
+  const query = parseQuery(leaderboardQuerySchema, req, res);
+  if (!query) return;
+  const { mode } = query;
 
   const activePlan = await prisma.userPlan.findFirst({
     where: { userId, isActive: true },

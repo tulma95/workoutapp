@@ -65,6 +65,7 @@
 - `POST /api/social/feed/:eventId/comments` - `{ text }` (1–500 chars, whitespace trimmed) — add a comment; friend-only access (event owner also permitted); returns `201 { id, feedEventId, userId, text, createdAt }`; notifies event owner via SSE + push unless commenter is the event owner; 403 if not a friend, 404 if event not found, 400 if text is invalid
 - `DELETE /api/social/feed/:eventId/comments/:commentId` - delete a comment; permitted for the comment author OR the event owner; returns `204`; 403 if neither, 404 if comment or event not found
 - `GET /api/social/leaderboard` - TM rankings across caller and accepted friends for each exercise in active plan; returns `{ exercises: [{ slug, name, rankings: [{ userId, username, weight }] }] }`; returns `{ exercises: [] }` if no active plan
+  - `?mode` — optional; `tm` (default) or `e1rm`. Any other value → 400 VALIDATION_ERROR.
   - `?mode=e1rm` — returns estimated 1RM rankings instead of TM rankings; e1RMs are computed from completed AMRAP sets using the Epley formula (`weight * (1 + reps / 30)`); same response shape: `{ exercises: [{ slug, name, rankings: [{ userId, value, rank }] }] }`; only sets with `actual_reps >= 1` and `is_amrap = true` are considered
 
 ## Notification Endpoints
