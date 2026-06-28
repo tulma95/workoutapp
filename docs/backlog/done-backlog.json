@@ -837,5 +837,11 @@
     "status": "done",
     "priority": "low",
     "description": "isP2002UsernameViolation checks typeof err === 'object' while isPrismaError checks instanceof Error. Both live in routeHelpers.ts. The inconsistency was surfaced by ticket 119 (the two helpers are now used side-by-side in auth.ts). Update isP2002UsernameViolation to use instanceof Error so both helpers apply the same type narrowing."
+  },
+  {
+    "id": "177",
+    "title": "Plate calculator: clearer message when target weight < bar weight",
+    "status": "done",
+    "description": "From ticket 004 review (minor). computePlatesPerSide returns empty groups for both weight==bar and weight<bar, so a target lighter than the selected bar shows 'Just the bar — no plates needed', which is misleading (that bar can't make the lighter weight). Distinguish perSide<0 from perSide===0 and show a message like 'Lighter than the selected bar'. Low frequency (main-lift prescribed weights rarely dip below 20kg)."
   }
 ]

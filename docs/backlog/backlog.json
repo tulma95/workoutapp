@@ -266,12 +266,6 @@
     "description": "Follow-up from the 090/173/174 stabilization review. Two durable fixes so retry isn't load-bearing: (1) Root hazard not fixed at source — admin-plan-editor E2E tests and e2e/helpers/create-second-plan.ts create plans with isPublic defaulting true (admin/plans.ts:59) with no cleanup, polluting the public-plans list any 'select a plan' path sees. The selectFirstPlan->nSuns change routes the fixture around it, but pass isPublic:false from admin/helper-created test plans to kill it at the source. (2) The stateful, order-dependent social tests (social.test.ts Feed reactions toggle-chain ~442-630, friend-request flow ~66-186) share one feedEventId/token across sequential its with exact-count assertions; vitest retry re-runs only the failing it (re-toggling against mutated state), so it can spuriously fail or mask an intermittent regression. Make each assertion self-contained (per-test event/reactions) so retry is unnecessary for them."
   },
   {
-    "id": "177",
-    "title": "Plate calculator: clearer message when target weight < bar weight",
-    "status": "backlog",
-    "description": "From ticket 004 review (minor). computePlatesPerSide returns empty groups for both weight==bar and weight<bar, so a target lighter than the selected bar shows 'Just the bar — no plates needed', which is misleading (that bar can't make the lighter weight). Distinguish perSide<0 from perSide===0 and show a message like 'Lighter than the selected bar'. Low frequency (main-lift prescribed weights rarely dip below 20kg)."
-  },
-  {
     "id": "178",
     "title": "Bodyweight improvements: per-day dedup + trend chart",
     "status": "backlog",
@@ -288,12 +282,6 @@
     "title": "Enforce case-insensitive email uniqueness at the DB level",
     "status": "backlog",
     "description": "From ticket 179 review. register/changeEmail now do an insensitive pre-check (assertEmailAvailable) + the case-sensitive unique constraint, which closes the cross-case duplicate gap for the non-concurrent case but leaves a TOCTOU race under concurrency. The robust fix is DB-level: either a citext email column (@db.Citext + CREATE EXTENSION citext) or a functional unique index on lower(email), plus a one-off data migration to lowercase existing rows (guarded for collisions). That also lets login drop the case-insensitive fallback. Verify no existing case-variant duplicates before the migration."
-  },
-  {
-    "id": "185",
-    "title": "Today card: show 'Completed' state when today's scheduled day is already done",
-    "status": "backlog",
-    "description": "From ticket 186 review (minor UX). If today's scheduled day was already completed today, the dashboard Today card still shows 'Start Workout' (would start a repeat). Show a 'Completed today ✓' state instead (check the latest/today's completed workout for that dayNumber)."
   },
   {
     "id": "187",
