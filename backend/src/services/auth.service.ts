@@ -135,10 +135,11 @@ export async function changePassword(
   }
 
   const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
-  const newVersion = user.tokenVersion + 1;
+  // Increment DB-side so concurrent password changes can't lose an update and
+  // leave an old token version valid.
   const updated = await prisma.user.update({
     where: { id: userId },
-    data: { passwordHash, tokenVersion: newVersion },
+    data: { passwordHash, tokenVersion: { increment: 1 } },
   });
   logger.info('Password changed', { userId });
 
