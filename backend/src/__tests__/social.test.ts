@@ -8,9 +8,7 @@ const uid = randomUUID().slice(0, 8);
 
 describe('Social API', () => {
   let tokenA: string;
-  let userIdA: number;
   let tokenB: string;
-  let userIdB: number;
   let emailB: string;
 
   beforeAll(async () => {
@@ -21,7 +19,6 @@ describe('Social API', () => {
       username: `social_a_${uid}`,
     });
     tokenA = resA.body.accessToken;
-    userIdA = resA.body.user.id;
 
     // Register user B
     emailB = `social-b-${uid}@example.com`;
@@ -31,7 +28,6 @@ describe('Social API', () => {
       username: `social_b_${uid}`,
     });
     tokenB = resB.body.accessToken;
-    userIdB = resB.body.user.id;
   });
 
   describe('Authentication required', () => {
@@ -109,24 +105,6 @@ describe('Social API', () => {
       expect(res.body.error.code).toBe('ALREADY_EXISTS');
     });
 
-    it('user B sees the pending request in GET /requests', async () => {
-      const res = await request(app)
-        .get('/api/social/requests')
-        .set('Authorization', `Bearer ${tokenB}`);
-      expect(res.status).toBe(200);
-      expect(res.body.requests).toHaveLength(1);
-      expect(res.body.requests[0].id).toBe(friendshipId);
-      expect(res.body.requests[0].username).toBe(`social_a_${uid}`);
-    });
-
-    it('friends list is empty before acceptance', async () => {
-      const res = await request(app)
-        .get('/api/social/friends')
-        .set('Authorization', `Bearer ${tokenA}`);
-      expect(res.status).toBe(200);
-      expect(res.body.friends).toHaveLength(0);
-    });
-
     it('user A (sender) cannot accept their own request', async () => {
       const res = await request(app)
         .patch(`/api/social/requests/${friendshipId}/accept`)
@@ -135,51 +113,235 @@ describe('Social API', () => {
       expect(res.body.error.code).toBe('FORBIDDEN');
     });
 
-    it('user B can accept the request', async () => {
+    // The following tests are each self-contained with their own fresh user pairs so
+    // that a vitest retry of any single `it` does not encounter state mutated by a
+    // previous test in the chain (the exact-count assertions would otherwise flip).
+
+    it('user B sees the pending request in GET /requests', async () => {
+      const uidFr = randomUUID().slice(0, 8);
+      const resFrX = await request(app).post('/api/auth/register').send({
+        email: `fr-x-${uidFr}@example.com`,
+        password: 'password123',
+        username: `fr_x_${uidFr}`,
+      });
+      const tokenFrX = resFrX.body.accessToken;
+      const emailFrY = `fr-y-${uidFr}@example.com`;
+      const resFrY = await request(app).post('/api/auth/register').send({
+        email: emailFrY,
+        password: 'password123',
+        username: `fr_y_${uidFr}`,
+      });
+      const tokenFrY = resFrY.body.accessToken;
+
+      const reqRes = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenFrX}`)
+        .send({ email: emailFrY });
+      const fid = reqRes.body.id;
+
       const res = await request(app)
-        .patch(`/api/social/requests/${friendshipId}/accept`)
-        .set('Authorization', `Bearer ${tokenB}`);
+        .get('/api/social/requests')
+        .set('Authorization', `Bearer ${tokenFrY}`);
+      expect(res.status).toBe(200);
+      expect(res.body.requests).toHaveLength(1);
+      expect(res.body.requests[0].id).toBe(fid);
+      expect(res.body.requests[0].username).toBe(`fr_x_${uidFr}`);
+    });
+
+    it('friends list is empty before acceptance', async () => {
+      const uidFl = randomUUID().slice(0, 8);
+      const resFlX = await request(app).post('/api/auth/register').send({
+        email: `fl-x-${uidFl}@example.com`,
+        password: 'password123',
+        username: `fl_x_${uidFl}`,
+      });
+      const tokenFlX = resFlX.body.accessToken;
+      const emailFlY = `fl-y-${uidFl}@example.com`;
+      await request(app).post('/api/auth/register').send({
+        email: emailFlY,
+        password: 'password123',
+        username: `fl_y_${uidFl}`,
+      });
+
+      await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenFlX}`)
+        .send({ email: emailFlY });
+
+      const res = await request(app)
+        .get('/api/social/friends')
+        .set('Authorization', `Bearer ${tokenFlX}`);
+      expect(res.status).toBe(200);
+      expect(res.body.friends).toHaveLength(0);
+    });
+
+    it('user B can accept the request', async () => {
+      const uidAc = randomUUID().slice(0, 8);
+      const resAcX = await request(app).post('/api/auth/register').send({
+        email: `ac-x-${uidAc}@example.com`,
+        password: 'password123',
+        username: `ac_x_${uidAc}`,
+      });
+      const tokenAcX = resAcX.body.accessToken;
+      const emailAcY = `ac-y-${uidAc}@example.com`;
+      const resAcY = await request(app).post('/api/auth/register').send({
+        email: emailAcY,
+        password: 'password123',
+        username: `ac_y_${uidAc}`,
+      });
+      const tokenAcY = resAcY.body.accessToken;
+
+      const reqRes = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenAcX}`)
+        .send({ email: emailAcY });
+      const fid = reqRes.body.id;
+
+      const res = await request(app)
+        .patch(`/api/social/requests/${fid}/accept`)
+        .set('Authorization', `Bearer ${tokenAcY}`);
       expect(res.status).toBe(200);
       expect(res.body.status).toBe('accepted');
     });
 
     it('friendship appears in friends list after acceptance', async () => {
-      const resA = await request(app)
-        .get('/api/social/friends')
-        .set('Authorization', `Bearer ${tokenA}`);
-      expect(resA.status).toBe(200);
-      expect(resA.body.friends).toHaveLength(1);
-      expect(resA.body.friends[0].username).toBe(`social_b_${uid}`);
-      expect(resA.body.friends[0].userId).toBe(userIdB);
+      const uidFa = randomUUID().slice(0, 8);
+      const resFaX = await request(app).post('/api/auth/register').send({
+        email: `fa-x-${uidFa}@example.com`,
+        password: 'password123',
+        username: `fa_x_${uidFa}`,
+      });
+      const tokenFaX = resFaX.body.accessToken;
+      const userIdFaX = resFaX.body.user.id;
+      const emailFaY = `fa-y-${uidFa}@example.com`;
+      const resFaY = await request(app).post('/api/auth/register').send({
+        email: emailFaY,
+        password: 'password123',
+        username: `fa_y_${uidFa}`,
+      });
+      const tokenFaY = resFaY.body.accessToken;
+      const userIdFaY = resFaY.body.user.id;
 
-      const resB = await request(app)
+      const reqRes = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenFaX}`)
+        .send({ email: emailFaY });
+      const fid = reqRes.body.id;
+      await request(app)
+        .patch(`/api/social/requests/${fid}/accept`)
+        .set('Authorization', `Bearer ${tokenFaY}`);
+
+      const resX = await request(app)
         .get('/api/social/friends')
-        .set('Authorization', `Bearer ${tokenB}`);
-      expect(resB.body.friends).toHaveLength(1);
-      expect(resB.body.friends[0].username).toBe(`social_a_${uid}`);
-      expect(resB.body.friends[0].userId).toBe(userIdA);
+        .set('Authorization', `Bearer ${tokenFaX}`);
+      expect(resX.status).toBe(200);
+      expect(resX.body.friends).toHaveLength(1);
+      expect(resX.body.friends[0].username).toBe(`fa_y_${uidFa}`);
+      expect(resX.body.friends[0].userId).toBe(userIdFaY);
+
+      const resY = await request(app)
+        .get('/api/social/friends')
+        .set('Authorization', `Bearer ${tokenFaY}`);
+      expect(resY.body.friends).toHaveLength(1);
+      expect(resY.body.friends[0].username).toBe(`fa_x_${uidFa}`);
+      expect(resY.body.friends[0].userId).toBe(userIdFaX);
     });
 
     it('no longer shows in pending requests after acceptance', async () => {
+      const uidNp = randomUUID().slice(0, 8);
+      const resNpX = await request(app).post('/api/auth/register').send({
+        email: `np-x-${uidNp}@example.com`,
+        password: 'password123',
+        username: `np_x_${uidNp}`,
+      });
+      const tokenNpX = resNpX.body.accessToken;
+      const emailNpY = `np-y-${uidNp}@example.com`;
+      const resNpY = await request(app).post('/api/auth/register').send({
+        email: emailNpY,
+        password: 'password123',
+        username: `np_y_${uidNp}`,
+      });
+      const tokenNpY = resNpY.body.accessToken;
+
+      const reqRes = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenNpX}`)
+        .send({ email: emailNpY });
+      const fid = reqRes.body.id;
+      await request(app)
+        .patch(`/api/social/requests/${fid}/accept`)
+        .set('Authorization', `Bearer ${tokenNpY}`);
+
       const res = await request(app)
         .get('/api/social/requests')
-        .set('Authorization', `Bearer ${tokenB}`);
+        .set('Authorization', `Bearer ${tokenNpY}`);
       expect(res.status).toBe(200);
       expect(res.body.requests).toHaveLength(0);
     });
 
     it('user A can remove the friend', async () => {
+      const uidRm = randomUUID().slice(0, 8);
+      const resRmX = await request(app).post('/api/auth/register').send({
+        email: `rm-x-${uidRm}@example.com`,
+        password: 'password123',
+        username: `rm_x_${uidRm}`,
+      });
+      const tokenRmX = resRmX.body.accessToken;
+      const emailRmY = `rm-y-${uidRm}@example.com`;
+      const resRmY = await request(app).post('/api/auth/register').send({
+        email: emailRmY,
+        password: 'password123',
+        username: `rm_y_${uidRm}`,
+      });
+      const tokenRmY = resRmY.body.accessToken;
+
+      const reqRes = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenRmX}`)
+        .send({ email: emailRmY });
+      const fid = reqRes.body.id;
+      await request(app)
+        .patch(`/api/social/requests/${fid}/accept`)
+        .set('Authorization', `Bearer ${tokenRmY}`);
+
       const res = await request(app)
-        .delete(`/api/social/friends/${friendshipId}`)
-        .set('Authorization', `Bearer ${tokenA}`);
+        .delete(`/api/social/friends/${fid}`)
+        .set('Authorization', `Bearer ${tokenRmX}`);
       expect(res.status).toBe(200);
       expect(res.body.status).toBe('removed');
     });
 
     it('friends list is empty after removal', async () => {
+      const uidFe = randomUUID().slice(0, 8);
+      const resFe1 = await request(app).post('/api/auth/register').send({
+        email: `fe-x-${uidFe}@example.com`,
+        password: 'password123',
+        username: `fe_x_${uidFe}`,
+      });
+      const tokenFe1 = resFe1.body.accessToken;
+      const emailFe2 = `fe-y-${uidFe}@example.com`;
+      const resFe2 = await request(app).post('/api/auth/register').send({
+        email: emailFe2,
+        password: 'password123',
+        username: `fe_y_${uidFe}`,
+      });
+      const tokenFe2 = resFe2.body.accessToken;
+
+      const reqRes = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenFe1}`)
+        .send({ email: emailFe2 });
+      const fid = reqRes.body.id;
+      await request(app)
+        .patch(`/api/social/requests/${fid}/accept`)
+        .set('Authorization', `Bearer ${tokenFe2}`);
+      await request(app)
+        .delete(`/api/social/friends/${fid}`)
+        .set('Authorization', `Bearer ${tokenFe1}`);
+
       const res = await request(app)
         .get('/api/social/friends')
-        .set('Authorization', `Bearer ${tokenA}`);
+        .set('Authorization', `Bearer ${tokenFe1}`);
       expect(res.status).toBe(200);
       expect(res.body.friends).toHaveLength(0);
     });
@@ -515,6 +677,7 @@ describe('Social API', () => {
     let tokenReactA: string;
     let tokenReactB: string;
     let tokenReactC: string;
+    let userIdReactB: number;
     let feedEventId: number;
 
     beforeAll(async () => {
@@ -533,7 +696,7 @@ describe('Social API', () => {
         username: `react_b_${uidReact}`,
       });
       tokenReactB = resB.body.accessToken;
-      const userIdReactB = resB.body.user.id;
+      userIdReactB = resB.body.user.id;
 
       const resC = await request(app).post('/api/auth/register').send({
         email: `react-c-${uidReact}@example.com`,
@@ -551,7 +714,8 @@ describe('Social API', () => {
         .patch(`/api/social/requests/${reqRes.body.id}/accept`)
         .set('Authorization', `Bearer ${tokenReactB}`);
 
-      // Create a feed event for B (friend of A)
+      // Create a feed event for B (friend of A) — used only by the auth/validation tests
+      // that do not assert exact reaction counts and are therefore safe to share.
       const feedEvent = await prisma.feedEvent.create({
         data: {
           userId: userIdReactB,
@@ -602,9 +766,21 @@ describe('Social API', () => {
       expect(res.body).toMatchObject({ reacted: expect.any(Boolean), count: expect.any(Number) });
     });
 
+    // The remaining tests each create a FRESH feedEvent so that a vitest retry of any
+    // single `it` never sees reaction state mutated by a previous test. The toggle
+    // endpoint is non-idempotent (ON→OFF→ON…), so exact-count assertions on a shared
+    // event would produce the opposite result on every retry.
+
     it('toggle on returns { reacted: true, count: 1 }', async () => {
+      const event = await prisma.feedEvent.create({
+        data: {
+          userId: userIdReactB,
+          eventType: 'workout_completed',
+          payload: { workoutId: 8001, dayNumber: 1 },
+        },
+      });
       const res = await request(app)
-        .post(`/api/social/feed/${feedEventId}/react`)
+        .post(`/api/social/feed/${event.id}/react`)
         .set('Authorization', `Bearer ${tokenReactA}`)
         .send({ emoji: '🔥' });
       expect(res.status).toBe(200);
@@ -612,8 +788,21 @@ describe('Social API', () => {
     });
 
     it('toggle off returns { reacted: false, count: 0 }', async () => {
+      const event = await prisma.feedEvent.create({
+        data: {
+          userId: userIdReactB,
+          eventType: 'workout_completed',
+          payload: { workoutId: 8002, dayNumber: 1 },
+        },
+      });
+      // First toggle: ON
+      await request(app)
+        .post(`/api/social/feed/${event.id}/react`)
+        .set('Authorization', `Bearer ${tokenReactA}`)
+        .send({ emoji: '🔥' });
+      // Second toggle: OFF — this is the assertion
       const res = await request(app)
-        .post(`/api/social/feed/${feedEventId}/react`)
+        .post(`/api/social/feed/${event.id}/react`)
         .set('Authorization', `Bearer ${tokenReactA}`)
         .send({ emoji: '🔥' });
       expect(res.status).toBe(200);
@@ -621,16 +810,21 @@ describe('Social API', () => {
     });
 
     it('two users reacting with same emoji gives count: 2', async () => {
-      // A reacts
+      const event = await prisma.feedEvent.create({
+        data: {
+          userId: userIdReactB,
+          eventType: 'workout_completed',
+          payload: { workoutId: 8003, dayNumber: 1 },
+        },
+      });
+
+      // A reacts with 💪
       await request(app)
-        .post(`/api/social/feed/${feedEventId}/react`)
+        .post(`/api/social/feed/${event.id}/react`)
         .set('Authorization', `Bearer ${tokenReactA}`)
         .send({ emoji: '💪' });
 
-      // Using a separate user D for the second reaction to keep emoji counts
-      // isolated from other test cases. B (the event owner) could also react,
-      // but that would require carefully coordinating emoji state across tests.
-      // tokenReactB's event — A is already a friend. Let's register user D as friend of B
+      // Register fresh user D, make B and D friends, D reacts with 💪
       const uidD = randomUUID().slice(0, 8);
       const resD = await request(app).post('/api/auth/register').send({
         email: `react-d-${uidD}@example.com`,
@@ -639,7 +833,6 @@ describe('Social API', () => {
       });
       const tokenD = resD.body.accessToken;
 
-      // Make B and D friends
       const reqRes2 = await request(app)
         .post('/api/social/request')
         .set('Authorization', `Bearer ${tokenReactB}`)
@@ -648,9 +841,8 @@ describe('Social API', () => {
         .patch(`/api/social/requests/${reqRes2.body.id}/accept`)
         .set('Authorization', `Bearer ${tokenD}`);
 
-      // D also reacts with same emoji
       const res = await request(app)
-        .post(`/api/social/feed/${feedEventId}/react`)
+        .post(`/api/social/feed/${event.id}/react`)
         .set('Authorization', `Bearer ${tokenD}`)
         .send({ emoji: '💪' });
       expect(res.status).toBe(200);
@@ -658,45 +850,111 @@ describe('Social API', () => {
     });
 
     it('reacting with a different emoji replaces the previous one', async () => {
-      // A currently has 💪 (from the "two users" test above). React with 🔥 instead.
+      const event = await prisma.feedEvent.create({
+        data: {
+          userId: userIdReactB,
+          eventType: 'workout_completed',
+          payload: { workoutId: 8004, dayNumber: 1 },
+        },
+      });
+
+      // Register user D and make B+D friends so D can react to B's event
+      const uidDr = randomUUID().slice(0, 8);
+      const resDr = await request(app).post('/api/auth/register').send({
+        email: `react-dr-${uidDr}@example.com`,
+        password: 'password123',
+        username: `react_dr_${uidDr}`,
+      });
+      const tokenDr = resDr.body.accessToken;
+      const reqResDr = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenReactB}`)
+        .send({ email: `react-dr-${uidDr}@example.com` });
+      await request(app)
+        .patch(`/api/social/requests/${reqResDr.body.id}/accept`)
+        .set('Authorization', `Bearer ${tokenDr}`);
+
+      // A reacts with 💪, D also reacts with 💪 (so D's 💪 persists after A switches)
+      await request(app)
+        .post(`/api/social/feed/${event.id}/react`)
+        .set('Authorization', `Bearer ${tokenReactA}`)
+        .send({ emoji: '💪' });
+      await request(app)
+        .post(`/api/social/feed/${event.id}/react`)
+        .set('Authorization', `Bearer ${tokenDr}`)
+        .send({ emoji: '💪' });
+
+      // A switches to 🔥 — replaces A's 💪
       const res = await request(app)
-        .post(`/api/social/feed/${feedEventId}/react`)
+        .post(`/api/social/feed/${event.id}/react`)
         .set('Authorization', `Bearer ${tokenReactA}`)
         .send({ emoji: '🔥' });
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ reacted: true, count: 1 });
 
-      // Verify A no longer has 💪 — count should now be 1 (only D's reaction remains)
+      // Verify A no longer has 💪 — only D's 💪 remains
       const feedRes = await request(app)
         .get('/api/social/feed')
         .set('Authorization', `Bearer ${tokenReactA}`);
-      const event = feedRes.body.events.find((e: { id: number }) => e.id === feedEventId);
-      const muscleReaction = event.reactions.find((r: { emoji: string }) => r.emoji === '💪');
-      // A's 💪 was replaced, only D's remains
+      const ev = feedRes.body.events.find((e: { id: number }) => e.id === event.id);
+      const muscleReaction = ev.reactions.find((r: { emoji: string }) => r.emoji === '💪');
       expect(muscleReaction).toBeDefined();
       expect(muscleReaction.count).toBe(1);
       expect(muscleReaction.reactedByMe).toBe(false);
     });
 
     it('GET /social/feed includes reactions array with correct reactedByMe', async () => {
-      // At this point A has 🔥 (from the replace test above), D has 💪
+      const event = await prisma.feedEvent.create({
+        data: {
+          userId: userIdReactB,
+          eventType: 'workout_completed',
+          payload: { workoutId: 8005, dayNumber: 1 },
+        },
+      });
+
+      // Register user D and make B+D friends
+      const uidDf = randomUUID().slice(0, 8);
+      const resDf = await request(app).post('/api/auth/register').send({
+        email: `react-df-${uidDf}@example.com`,
+        password: 'password123',
+        username: `react_df_${uidDf}`,
+      });
+      const tokenDf = resDf.body.accessToken;
+      const reqResDf = await request(app)
+        .post('/api/social/request')
+        .set('Authorization', `Bearer ${tokenReactB}`)
+        .send({ email: `react-df-${uidDf}@example.com` });
+      await request(app)
+        .patch(`/api/social/requests/${reqResDf.body.id}/accept`)
+        .set('Authorization', `Bearer ${tokenDf}`);
+
+      // A reacts with 🔥, D reacts with 💪
+      await request(app)
+        .post(`/api/social/feed/${event.id}/react`)
+        .set('Authorization', `Bearer ${tokenReactA}`)
+        .send({ emoji: '🔥' });
+      await request(app)
+        .post(`/api/social/feed/${event.id}/react`)
+        .set('Authorization', `Bearer ${tokenDf}`)
+        .send({ emoji: '💪' });
+
       const res = await request(app)
         .get('/api/social/feed')
         .set('Authorization', `Bearer ${tokenReactA}`);
       expect(res.status).toBe(200);
 
-      const event = res.body.events.find((e: { id: number }) => e.id === feedEventId);
-      expect(event).toBeDefined();
-      expect(Array.isArray(event.reactions)).toBe(true);
+      const ev = res.body.events.find((e: { id: number }) => e.id === event.id);
+      expect(ev).toBeDefined();
+      expect(Array.isArray(ev.reactions)).toBe(true);
 
       // 🔥 reaction: A reacted, count=1, reactedByMe=true
-      const fireReaction = event.reactions.find((r: { emoji: string }) => r.emoji === '🔥');
+      const fireReaction = ev.reactions.find((r: { emoji: string }) => r.emoji === '🔥');
       expect(fireReaction).toBeDefined();
       expect(fireReaction.count).toBe(1);
       expect(fireReaction.reactedByMe).toBe(true);
 
-      // 💪 reaction: only D remains (A's was replaced), reactedByMe=false for A
-      const muscleReaction = event.reactions.find((r: { emoji: string }) => r.emoji === '💪');
+      // 💪 reaction: only D, reactedByMe=false for A
+      const muscleReaction = ev.reactions.find((r: { emoji: string }) => r.emoji === '💪');
       expect(muscleReaction).toBeDefined();
       expect(muscleReaction.count).toBe(1);
       expect(muscleReaction.reactedByMe).toBe(false);
