@@ -1,4 +1,5 @@
 import type { Achievement } from '../api/schemas'
+import { formatDate } from '../utils/date'
 import styles from '../styles/AchievementsPage.module.css'
 
 interface Props {
@@ -27,7 +28,7 @@ export function AchievementsContent({ achievements }: Props) {
                 <p className={styles.cardDescription}>{achievement.description}</p>
                 {isUnlocked ? (
                   <p className={styles.unlockDate}>
-                    Unlocked {new Date(achievement.unlockedAt!).toLocaleDateString()}
+                    Unlocked {formatDate(achievement.unlockedAt!)}
                   </p>
                 ) : (
                   <p className={styles.lockedLabel}>Locked</p>
