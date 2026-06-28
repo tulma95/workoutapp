@@ -749,5 +749,29 @@
     "title": "Offline set-log queue: also flush on visibilitychange (iOS Safari online event is unreliable)",
     "status": "done",
     "description": "iOS Safari fires the 'online' event on interface changes, not real reachability, so flush-on-reconnect can lag. Also flush the set-log queue on document visibilitychange->visible. Minor; from ticket 136 review (M4)."
+  },
+  {
+    "id": "192",
+    "title": "Feed: custom workout shows 'completed Day 0'",
+    "status": "done",
+    "description": "BUG (low-medium, cosmetic but confusing). A workout logged via History 'Add Custom Workout' generates a feed event reading 'qa_alpha completed Day 0'. 'Day 0' is wrong/confusing for a non-plan-day custom workout. Expected: name the exercise(s) or say 'completed a custom workout'. Repro: History -> select empty past day -> Add Custom Workout -> save -> Social feed. Found via manual QA, mobile."
+  },
+  {
+    "id": "193",
+    "title": "Inconsistent estimated-1RM for same lift across Progress, Profile modal, and Leaderboard",
+    "status": "done",
+    "description": "BUG/inconsistency (medium, verify). The same user's same lift shows three different e1RM values across surfaces. Observed for Squat: Progress 'Personal Records' = 92.5 kg; Friend profile modal (Top lifts) = 117.5 kg; Leaderboard Est.1RM = 97.5 kg. Likely different source sets (custom workout incl/excl) and/or different formulas per surface. Decide a single source-of-truth/definition for e1RM and apply consistently, or clearly label what each surface measures. Found via manual QA, mobile."
+  },
+  {
+    "id": "194",
+    "title": "Achievements: unlocked date format (DD/MM/YYYY) inconsistent with rest of app",
+    "status": "done",
+    "description": "UX (low). Achievements page shows 'Unlocked 28/06/2026' (DD/MM/YYYY) while History/Progress use 'Jun 28, 2026'. Standardize date formatting across the app. Found via manual QA, mobile."
+  },
+  {
+    "id": "195",
+    "title": "Select Plan page does not indicate the user's current/active plan",
+    "status": "done",
+    "description": "UX (low). On /select-plan when the user already has an active plan, both plan cards show an identical 'Select Plan' button with no marker of which plan is current. Add a 'Current plan' badge / disabled state for the active plan. Found via manual QA, mobile."
   }
 ]

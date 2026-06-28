@@ -145,13 +145,6 @@
     "description": "Generate a personal QR code in the app that encodes your friend request link. Show it at the gym for someone to scan and instantly send a friend request. Uses invite link system (#063). No typing needed - just scan and connect."
   },
   {
-    "id": "075",
-    "title": "Add backend test: user cannot react to their own feed event via direct API call",
-    "status": "backlog",
-    "priority": "low",
-    "description": "The GET /feed endpoint only shows friends' events, so a user cannot see their own events in the UI. However the POST /feed/:eventId/react endpoint only checks friendIds, not event.userId \\!== callerId. A user who knows their own feedEventId can call the react endpoint on it. While the feed won't show their own event, it's an untested edge case. Add a backend test that verifies self-reaction returns 404."
-  },
-  {
     "id": "076",
     "title": "Add date range filter to streak query to avoid fetching all workout history",
     "status": "backlog",
@@ -390,42 +383,6 @@
     "title": "Investigate optimistic set-log reps reverting under route-loader revalidation; fillAmrap does not verify reps reached target",
     "status": "backlog",
     "description": "While fixing the AMRAP stepper, a stricter fillAmrap (asserting each +1 step) surfaced online-only failures where the displayed reps stayed at the confirmed value: the workout route loader revalidates (getCurrentWorkout) and the loaderData useEffect calls setWorkout(server), which can overwrite an optimistic reps edit before the debounced PATCH lands. Harmless to current assertions because tests don't check exact AMRAP reps and the offline test is immune (revalidation fails offline), but it is a latent correctness bug. Also: e2e fillAmrap tracks a local counter and never verifies the displayed value reached the target, which masked the stepper bug for a long time. Investigate making set edits survive revalidation and add a final assertion to fillAmrap once the revert is fixed."
-  },
-  {
-    "id": "190",
-    "title": "Select Plan switches without confirmation modal (PlanSwitchConfirmModal bypassed)",
-    "status": "backlog",
-    "description": "BUG (medium, data-safety). Repro: navigate to /select-plan (or reload it), then click 'Select Plan' on a plan different from the current one. Expected: PlanSwitchConfirmModal opens warning about in-progress workout + new/carried-over exercises; switch only on Confirm. Actual: plan switches immediately and navigates to / or /setup; modal never shown. Root cause: select-plan.tsx handleSelectPlan() reads current plan via queryClient.getQueryData(queryKeys.plan.current()) (cache-only); the route loader only ensures plan.list(), never plan.current(), and removeCacheAfterPlanSwitch() clears it after any switch, so currentPlan is undefined on the common path and the confirmation branch is skipped. Fix: fetch current plan (ensureQueryData/getCurrentPlan) before deciding, instead of getQueryData. File: frontend/src/routes/_authenticated/_layout/select-plan.tsx:90-98. Found via manual QA walkthrough, mobile 393x852."
-  },
-  {
-    "id": "191",
-    "title": "Backend allows reacting AND commenting on your own feed events (075 protection missing)",
-    "status": "backlog",
-    "description": "BUG (medium). Spec/ticket 075 say a user cannot react/comment to their own feed event (UI and API). Actual: both are allowed. Repro: Feed -> on one of your OWN events, React -> pick emoji; and type a comment -> Post. Observed: POST /api/social/feed/:id/react -> 200 (reaction persists, reactedByMe:true); POST /api/social/feed/:id/comments -> 201. UI also presents React/Comment controls on own events. Ticket 075 only covers a react test; self-comment is uncovered. Add server-side authorization to reject self-react and self-comment, hide/disable the controls on own events, plus tests. Found via manual QA, mobile."
-  },
-  {
-    "id": "192",
-    "title": "Feed: custom workout shows 'completed Day 0'",
-    "status": "backlog",
-    "description": "BUG (low-medium, cosmetic but confusing). A workout logged via History 'Add Custom Workout' generates a feed event reading 'qa_alpha completed Day 0'. 'Day 0' is wrong/confusing for a non-plan-day custom workout. Expected: name the exercise(s) or say 'completed a custom workout'. Repro: History -> select empty past day -> Add Custom Workout -> save -> Social feed. Found via manual QA, mobile."
-  },
-  {
-    "id": "193",
-    "title": "Inconsistent estimated-1RM for same lift across Progress, Profile modal, and Leaderboard",
-    "status": "backlog",
-    "description": "BUG/inconsistency (medium, verify). The same user's same lift shows three different e1RM values across surfaces. Observed for Squat: Progress 'Personal Records' = 92.5 kg; Friend profile modal (Top lifts) = 117.5 kg; Leaderboard Est.1RM = 97.5 kg. Likely different source sets (custom workout incl/excl) and/or different formulas per surface. Decide a single source-of-truth/definition for e1RM and apply consistently, or clearly label what each surface measures. Found via manual QA, mobile."
-  },
-  {
-    "id": "194",
-    "title": "Achievements: unlocked date format (DD/MM/YYYY) inconsistent with rest of app",
-    "status": "backlog",
-    "description": "UX (low). Achievements page shows 'Unlocked 28/06/2026' (DD/MM/YYYY) while History/Progress use 'Jun 28, 2026'. Standardize date formatting across the app. Found via manual QA, mobile."
-  },
-  {
-    "id": "195",
-    "title": "Select Plan page does not indicate the user's current/active plan",
-    "status": "backlog",
-    "description": "UX (low). On /select-plan when the user already has an active plan, both plan cards show an identical 'Select Plan' button with no marker of which plan is current. Add a 'Current plan' badge / disabled state for the active plan. Found via manual QA, mobile."
   },
   {
     "id": "196",
