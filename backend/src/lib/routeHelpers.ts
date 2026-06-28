@@ -36,7 +36,7 @@ export function isPrismaError(e: unknown, code: string): boolean {
 }
 
 export function isP2002UsernameViolation(err: unknown): boolean {
-  if (!err || typeof err !== 'object' || !('code' in err) || err.code !== 'P2002') return false;
+  if (!(err instanceof Error) || !('code' in err) || (err as Record<string, unknown>).code !== 'P2002') return false;
   const meta = (err as { meta?: Record<string, unknown> }).meta ?? {};
   // Prisma v7 adapter-style
   const adapterFields: string[] =

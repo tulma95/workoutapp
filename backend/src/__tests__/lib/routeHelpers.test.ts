@@ -66,7 +66,7 @@ describe('isPrismaError', () => {
 
 describe('isP2002UsernameViolation', () => {
   it('returns true with Prisma v7 adapter-style driverAdapterError containing username field', () => {
-    const err = {
+    const err = Object.assign(new Error('prisma'), {
       code: 'P2002',
       meta: {
         driverAdapterError: {
@@ -77,39 +77,44 @@ describe('isP2002UsernameViolation', () => {
           },
         },
       },
-    };
+    });
     expect(isP2002UsernameViolation(err)).toBe(true);
   });
 
   it('returns true with legacy array target containing username', () => {
-    const err = {
+    const err = Object.assign(new Error('prisma'), {
       code: 'P2002',
       meta: { target: ['username'] },
-    };
+    });
     expect(isP2002UsernameViolation(err)).toBe(true);
   });
 
   it('returns true with legacy string target containing username', () => {
-    const err = {
+    const err = Object.assign(new Error('prisma'), {
       code: 'P2002',
       meta: { target: 'users_username_key' },
-    };
+    });
     expect(isP2002UsernameViolation(err)).toBe(true);
   });
 
   it('returns false when the constrained field is email, not username', () => {
-    const err = {
+    const err = Object.assign(new Error('prisma'), {
       code: 'P2002',
       meta: { target: ['email'] },
-    };
+    });
     expect(isP2002UsernameViolation(err)).toBe(false);
   });
 
   it('returns false when error code is not P2002', () => {
-    const err = {
+    const err = Object.assign(new Error('prisma'), {
       code: 'P2025',
       meta: { target: ['username'] },
-    };
+    });
+    expect(isP2002UsernameViolation(err)).toBe(false);
+  });
+
+  it('returns false for a plain object (not an Error instance)', () => {
+    const err = { code: 'P2002', meta: { target: ['username'] } };
     expect(isP2002UsernameViolation(err)).toBe(false);
   });
 
