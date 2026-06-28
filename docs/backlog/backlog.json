@@ -294,5 +294,11 @@
     "title": "Flaky WebKit E2E: 'shows previous performance when repeating a workout' times out in fillAmrapAndWait",
     "status": "backlog",
     "description": "workout.spec.ts:307 intermittently fails on WebKit only — page.waitForResponse for the debounced AMRAP PATCH times out at 15s under parallel load, then passes on retry/re-run. Matches the known WebKit controlled-input fill gotcha (memory: webkit-controlled-input-fill). Consider: assert on persisted backend state or visible UI rather than waiting on the network response, or trigger blur to flush the debounce deterministically before waiting."
+  },
+  {
+    "id": "198",
+    "title": "Deep-link does not auto-scroll when event is beyond page 1 of infinite feed",
+    "status": "backlog",
+    "description": "After adding cursor pagination, the deep-link feature (?event=<id>) only auto-scrolls to events visible on the initial page. Events on page 2+ are now reachable via Load More but won't be highlighted/scrolled-to automatically. Was not a regression (events 21+ were previously unreachable), but the gap is now visible."
   }
 ]
