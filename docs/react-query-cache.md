@@ -60,13 +60,13 @@
 Which pages need fresh data after an action on another page:
 
 ```
-WorkoutPage --complete--> Dashboard (current workout), History (calendar), Settings (TMs), Progress (progress), Social (feed), Achievements (achievements)
+WorkoutPage --complete--> Dashboard (current workout), History (calendar), Settings (TMs), Progress (e1RM), Social (feed), Achievements (achievements)
 WorkoutPage --cancel----> Dashboard (current workout), History (calendar)
 HistoryPage --delete---> History (calendar)
 HistoryPage --custom workout save--> History (calendar)
-PlanSelectionPage --subscribe--> Dashboard (plan, TMs, current workout), Settings (plan, TMs, schedule), Progress (progress)
-SetupPage --save TMs--> Dashboard (TMs), Settings (TMs), Progress (progress)
-SettingsPage --edit TM--> Dashboard (TMs), Progress (e1RM history)
+PlanSelectionPage --subscribe--> Dashboard (plan, TMs, current workout), Settings (plan, TMs, schedule), Progress (e1RM)
+SetupPage --save TMs--> Dashboard (TMs), Settings (TMs), Progress (e1RM)
+SettingsPage --edit TM--> Dashboard (TMs), Progress (e1RM)
 SettingsPage --save schedule--> History (calendar)
 SettingsPage --logout---> ALL pages (cache cleared via AuthContext.logout)
 Admin: ExerciseList --CRUD--> ExerciseList only
