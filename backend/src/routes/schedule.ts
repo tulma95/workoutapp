@@ -62,6 +62,16 @@ router.put('/', async (req: AuthRequest, res: Response) => {
     return;
   }
 
+  // Validate duplicate weekdays in body — two plan days on the same weekday
+  // would make TodaysWorkout pick an arbitrary first match, so reject it.
+  const weekdays = schedule.map(e => e.weekday);
+  if (new Set(weekdays).size !== weekdays.length) {
+    res.status(400).json({
+      error: { code: 'VALIDATION_ERROR', message: 'Duplicate weekdays in schedule' },
+    });
+    return;
+  }
+
   // Find active plan
   const userPlan = await prisma.userPlan.findFirst({
     where: { userId, isActive: true },

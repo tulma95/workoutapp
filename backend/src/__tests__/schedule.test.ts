@@ -225,6 +225,21 @@ describe('Schedule API', () => {
       expect(res.status).toBe(400);
     });
 
+    it('returns 400 for duplicate weekdays in body', async () => {
+      const res = await request(app)
+        .put('/api/schedule')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          schedule: [
+            { dayNumber: 1, weekday: 2 },
+            { dayNumber: 2, weekday: 2 },
+          ],
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.message).toMatch(/duplicate weekdays/i);
+    });
+
     it('returns 400 when user has no active plan', async () => {
       const res = await request(app)
         .put('/api/schedule')

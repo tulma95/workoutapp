@@ -40,7 +40,7 @@
 ## Schedule Endpoints (JWT required)
 
 - `GET /api/schedule` - returns `{ schedule: [{ dayNumber, weekday }] }` for active plan; empty array if no active plan
-- `PUT /api/schedule` - `{ schedule: [{ dayNumber, weekday }] }` — atomically replaces all schedule rows for the active plan; validates weekday 0–6, dayNumber ≤ plan.daysPerWeek, no duplicate dayNumbers; empty array clears schedule
+- `PUT /api/schedule` - `{ schedule: [{ dayNumber, weekday }] }` — atomically replaces all schedule rows for the active plan; validates weekday 0–6, dayNumber ≤ plan.daysPerWeek, no duplicate dayNumbers, no duplicate weekdays; empty array clears schedule
 
 ## Plan Endpoints (JWT required)
 
