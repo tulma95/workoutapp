@@ -62,4 +62,40 @@ test.describe('Plan switch discards in-progress workout', () => {
       dashboard.getDayCard(1).getByRole('link', { name: /start workout/i }),
     ).toBeVisible();
   });
+
+  // Regression for ticket 190: arriving at /select-plan via a full (cold-cache)
+  // navigation must still open the confirmation modal — previously the decision
+  // read plan.current() from the React Query cache, which is empty on direct load,
+  // so the switch happened silently. Also covers ticket 195 (current-plan marker).
+  test('direct navigation to select-plan still confirms before switching', async ({
+    setupCompletePage,
+  }) => {
+    const { page } = setupCompletePage;
+    const dashboard = new DashboardPage(page);
+    await dashboard.expectLoaded();
+
+    const planName = await createSecondPlan(page);
+
+    // Full-page navigation -> React Query in-memory cache starts cold.
+    await page.goto('/select-plan');
+    await expect(page.getByRole('heading', { name: /choose a workout plan/i })).toBeVisible();
+
+    // Ticket 195: the active plan is marked and cannot be re-selected.
+    await expect(page.getByRole('button', { name: 'Current Plan', exact: true })).toBeDisabled();
+
+    // Ticket 190: selecting a different plan opens the confirmation modal
+    // instead of switching immediately.
+    await page
+      .getByRole('article')
+      .filter({ has: page.getByRole('heading', { name: planName, exact: true }) })
+      .getByRole('button', { name: /select plan/i })
+      .click();
+
+    await expect(page.getByRole('heading', { name: /switch to/i })).toBeVisible();
+
+    // Cancel leaves us on the page with no switch performed.
+    await page.getByRole('button', { name: /cancel/i }).click();
+    await expect(page.getByRole('heading', { name: /choose a workout plan/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Current Plan', exact: true })).toBeDisabled();
+  });
 });

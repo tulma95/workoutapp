@@ -6,6 +6,7 @@ import styles from '../styles/PlanSelectionPage.module.css'
 
 type Props = {
   plans: WorkoutPlan[]
+  currentPlanId: number | null
   subscribing: number | null
   error: string
   showModal: boolean
@@ -18,6 +19,7 @@ type Props = {
 
 export function PlanSelectionContent({
   plans,
+  currentPlanId,
   subscribing,
   error,
   showModal,
@@ -39,10 +41,15 @@ export function PlanSelectionContent({
       )}
 
       <div className={styles.list}>
-        {plans.map((plan) => (
+        {plans.map((plan) => {
+          const isCurrent = plan.id === currentPlanId
+          return (
           <article key={plan.id} className={styles.card}>
             <div className={styles.cardHeader}>
-              <h2>{plan.name}</h2>
+              <h2>
+                {plan.name}
+                {isCurrent && <span className={styles.currentBadge}>Current plan</span>}
+              </h2>
               {plan.description && (
                 <p className={styles.description}>{plan.description}</p>
               )}
@@ -72,12 +79,13 @@ export function PlanSelectionContent({
 
             <Button
               onClick={() => onSelectPlan(plan.id)}
-              disabled={subscribing !== null}
+              disabled={subscribing !== null || isCurrent}
             >
-              {subscribing === plan.id ? 'Subscribing...' : 'Select Plan'}
+              {isCurrent ? 'Current Plan' : subscribing === plan.id ? 'Subscribing...' : 'Select Plan'}
             </Button>
           </article>
-        ))}
+          )
+        })}
       </div>
 
       {plans.length === 0 && (

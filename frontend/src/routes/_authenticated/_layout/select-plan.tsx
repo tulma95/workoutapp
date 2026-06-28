@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useSuspenseQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useSuspenseQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getPlans, subscribeToPlan, getCurrentPlan, type WorkoutPlan, type Exercise } from '../../../api/plans'
 import { getCurrentWorkout } from '../../../api/workouts'
-import { getTrainingMaxes } from '../../../api/trainingMaxes'
 import { SkeletonLine, SkeletonHeading, SkeletonCard } from '../../../components/Skeleton'
 import { ErrorMessage } from '../../../components/ErrorMessage'
 import { type PlanSwitchWarnings } from '../../../components/PlanSwitchConfirmModal'
@@ -62,6 +61,10 @@ function PlanSelectionPage() {
     queryKey: queryKeys.plan.list(),
     queryFn: getPlans,
   })
+  const { data: currentPlan } = useQuery({
+    queryKey: queryKeys.plan.current(),
+    queryFn: getCurrentPlan,
+  })
 
   const [subscribing, setSubscribing] = useState<number | null>(null)
   const [error, setError] = useState('')
@@ -88,23 +91,31 @@ function PlanSelectionPage() {
   })
 
   async function handleSelectPlan(planId: number) {
-    const currentPlan = queryClient.getQueryData<WorkoutPlan | null>(queryKeys.plan.current())
+    // Fetch (not just read-from-cache) the current plan: the loader only primes
+    // plan.list(), and removeCacheAfterPlanSwitch() clears plan.current() after any
+    // switch, so getQueryData is usually undefined here and the confirmation modal
+    // would be silently skipped on the common direct-navigation path.
+    let currentPlan: WorkoutPlan | null
+    try {
+      currentPlan = await queryClient.ensureQueryData({
+        queryKey: queryKeys.plan.current(),
+        queryFn: getCurrentPlan,
+      })
+    } catch {
+      currentPlan = queryClient.getQueryData<WorkoutPlan | null>(queryKeys.plan.current()) ?? null
+    }
     if (currentPlan && currentPlan.id !== planId) {
-      await showSwitchConfirmation(planId)
+      await showSwitchConfirmation(planId, currentPlan)
     } else {
       setSubscribing(planId)
       subscribeMutation.mutate(planId)
     }
   }
 
-  async function showSwitchConfirmation(planId: number) {
+  async function showSwitchConfirmation(planId: number, currentPlan: WorkoutPlan) {
     setError('')
     try {
-      const [currentPlan, currentWorkout] = await Promise.all([
-        getCurrentPlan(),
-        getCurrentWorkout(),
-        getTrainingMaxes(),
-      ])
+      const currentWorkout = await getCurrentWorkout()
       const targetPlan = plans.find(p => p.id === planId)
 
       if (!targetPlan) {
@@ -113,13 +124,11 @@ function PlanSelectionPage() {
       }
 
       const currentExerciseIds = new Set<number>()
-      if (currentPlan) {
-        currentPlan.days.forEach((day) => {
-          day.exercises.forEach((ex) => {
-            currentExerciseIds.add(ex.tmExerciseId)
-          })
+      currentPlan.days.forEach((day) => {
+        day.exercises.forEach((ex) => {
+          currentExerciseIds.add(ex.tmExerciseId)
         })
-      }
+      })
 
       const targetExercises = new Map<number, Exercise>()
       targetPlan.days.forEach((day) => {
@@ -171,6 +180,7 @@ function PlanSelectionPage() {
   return (
     <PlanSelectionContent
       plans={plans}
+      currentPlanId={currentPlan?.id ?? null}
       subscribing={subscribing}
       error={error}
       showModal={showModal}

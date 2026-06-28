@@ -40,6 +40,19 @@
   margin: 0 0 var(--space-sm) 0;
   font-size: 1.25rem;
   color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.currentBadge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.125rem var(--space-sm);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--primary) 15%, transparent);
+  color: var(--primary);
 }
 
 .description {
