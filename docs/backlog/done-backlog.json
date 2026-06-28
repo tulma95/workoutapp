@@ -849,5 +849,11 @@
     "title": "Bound the stall-detection query (getStalls loads all progression sets)",
     "status": "done",
     "description": "From ticket 009 review (minor, deferred). getStalls fetches every completed isProgression set for the user, then keeps only the newest 3 per exercise in JS. For a multi-year user that's hundreds of rows to use ~12. Bound it with a per-exercise window/limit or a smarter query. Acceptable for now (bounded by user history)."
+  },
+  {
+    "id": "163",
+    "title": "Feed cursor pagination (load more)",
+    "status": "done",
+    "description": "social.ts feed is take 20 with no cursor/offset and no load-more, so once a user has >20 events older history is unreachable. Add cursor-based pagination."
   }
 ]

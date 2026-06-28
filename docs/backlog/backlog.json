@@ -212,12 +212,6 @@
     "description": "26 E2E specs, none use axe-core/playwright, so a11y regressions ship undetected despite the project's touch-target/semantic-HTML conventions. Add axe checks to key flows."
   },
   {
-    "id": "163",
-    "title": "Feed cursor pagination (load more)",
-    "status": "backlog",
-    "description": "social.ts feed is take 20 with no cursor/offset and no load-more, so once a user has >20 events older history is unreachable. Add cursor-based pagination."
-  },
-  {
     "id": "143",
     "title": "Password reset / forgot password flow",
     "status": "backlog",
