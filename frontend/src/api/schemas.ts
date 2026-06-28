@@ -359,6 +359,7 @@ export const FeedEventPayloadSchema = z.discriminatedUnion('eventType', [
     eventType: z.literal('workout_completed'),
     workoutId: z.number(),
     dayNumber: z.number(),
+    isCustom: z.boolean().optional().default(false),
   }),
   z.object({
     eventType: z.literal('tm_increased'),

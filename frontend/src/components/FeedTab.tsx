@@ -21,7 +21,9 @@ function renderEventText(event: FeedEvent): string | null {
   const payload = parsed.data;
 
   if (payload.eventType === 'workout_completed') {
-    const base = `${event.username} completed Day ${payload.dayNumber}`;
+    const base = payload.isCustom
+      ? `${event.username} logged a workout`
+      : `${event.username} completed Day ${payload.dayNumber}`;
     return event.streak >= 2 ? `${base} — ${event.streak}-day streak` : base;
   }
   if (payload.eventType === 'tm_increased') {
