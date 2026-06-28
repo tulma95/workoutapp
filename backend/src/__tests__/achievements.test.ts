@@ -343,6 +343,35 @@ describe('Achievements API', () => {
       const slugs = newAchievements.map((a) => a.slug);
       expect(slugs).toContain('century-club');
     });
+
+    it('does NOT unlock century-club when every Day 1 set is below 100 kg', async () => {
+      // Default benchTM=100 → bench TM = 90 kg. Day 1's heaviest bench set is
+      // 85% = 76.5 kg and OHP is 27 kg, so no set reaches 100 kg. (Day 1 only —
+      // the default squat TM of 126 would hit 107 kg at 85% on Day 2.)
+      const { token: negToken } = await registerAndSetup(
+        'ach-cc-neg',
+        sharedPlanId,
+        sharedBenchExId,
+        sharedSquatExId,
+        sharedOhpExId,
+        sharedDeadliftExId,
+      );
+
+      const { newAchievements } = await doWorkout(negToken, 1);
+
+      const slugs = newAchievements.map((a) => a.slug);
+      expect(slugs).not.toContain('century-club');
+
+      // And it stays locked when queried directly.
+      const res = await request(app)
+        .get('/api/achievements')
+        .set('Authorization', `Bearer ${negToken}`);
+      const centuryClub = res.body.achievements.find(
+        (a: { slug: string }) => a.slug === 'century-club',
+      );
+      expect(centuryClub).toBeDefined();
+      expect(centuryClub.unlockedAt).toBeNull();
+    });
   });
 
   // -------------------------------------------------------------------------
