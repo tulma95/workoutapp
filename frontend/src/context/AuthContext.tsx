@@ -5,6 +5,7 @@ import {
   useMemo,
   type ReactNode,
 } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import * as authApi from '../api/auth'
 import { clearSetLogQueue } from '../utils/setLogQueue'
 
@@ -22,6 +23,7 @@ interface AuthContextValue {
 export const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient()
   const [token, setToken] = useState<string | null>(
     () => localStorage.getItem('accessToken'),
   )
@@ -57,8 +59,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Don't let one user's un-delivered offline set-logs flush under the next
     // user's credentials on a shared device.
     clearSetLogQueue()
+    // Wipe the React Query cache so stale workout/feed data doesn't linger in
+    // memory on a shared device after the session ends. Also covers account
+    // deletion, which calls logout() before navigating away.
+    queryClient.clear()
     setToken(null)
-  }, [])
+  }, [queryClient])
 
   const value = useMemo(
     () => ({ token, login, logout, register }),

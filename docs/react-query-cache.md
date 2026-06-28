@@ -46,7 +46,7 @@
 | **Plan archive** | admin/plans.index.tsx | `['admin-plans']` |
 | **Plan create** | PlanEditorPage.tsx | `['admin-plans']` |
 | **Schedule save** | settings.tsx | set `['schedule']` (via setQueryData), invalidate `['workoutCalendar']` |
-| **Logout** | settings.tsx | ALL (`queryClient.clear()`) |
+| **Logout / account deletion** | AuthContext.tsx (`logout` callback) | ALL (`queryClient.clear()`) |
 | **Accept friend request** | FriendsTab.tsx | `['social', 'friend-requests']`, `['social', 'friends']` |
 | **Decline friend request** | FriendsTab.tsx | `['social', 'friend-requests']`, `['social', 'friends']` |
 | **Remove friend** | FriendsTab.tsx | `['social', 'friends']`, `['social', 'leaderboard']` |
@@ -68,7 +68,7 @@ PlanSelectionPage --subscribe--> Dashboard (plan, TMs, current workout), Setting
 SetupPage --save TMs--> Dashboard (TMs), Settings (TMs), Progress (progress)
 SettingsPage --edit TM--> Dashboard (TMs), Progress (e1RM history)
 SettingsPage --save schedule--> History (calendar)
-SettingsPage --logout---> ALL pages (cache cleared)
+SettingsPage --logout---> ALL pages (cache cleared via AuthContext.logout)
 Admin: ExerciseList --CRUD--> ExerciseList only
 Admin: PlanEditor --create--> PlanList only
 Admin: PlanList --archive--> PlanList only
